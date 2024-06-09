@@ -20,14 +20,14 @@ environment.staging = {
   authProps: ["je/token", "je/user"],
   backendUrl: import.meta.env.VITE_BACKEND_URL,
   routes,
-  padding: { x: "lg", y: "10px" },
+  padding: { x: "lg", y: "10rem" },
 };
 
 environment.production = {
   authProps: ["je/token", "je/user"],
   backendUrl: import.meta.env.VITE_BACKEND_URL,
   routes,
-  padding: { x: "lg", y: "10px" },
+  padding: { x: "lg", y: "10rem" },
 };
 // DO NOT REMOVE
 // console.log(process.env.REACT_APP_ENV);
