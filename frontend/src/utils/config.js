@@ -2,11 +2,11 @@ const environment = {};
 
 const routes = {
   home: "/",
-  services: "/services",
-  portfolio: "/portfolio",
-  packages: "/packages",
-  contact: "/contact",
-  cart: "/cart",
+  services: "/",
+  portfolio: "/",
+  packages: "/",
+  contact: "/",
+  cart: "/",
 };
 
 environment.development = {
