@@ -1,0 +1,159 @@
+body {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+
+.manrope-light {
+  font-family: "Manrope", sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal;
+}
+
+.manrope-regular {
+  font-family: "Manrope", sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal;
+}
+
+.manrope-medium {
+  font-family: "Manrope", sans-serif !important;
+  font-weight: 500 !important;
+  font-style: normal;
+}
+
+.manrope-semibold {
+  font-family: "Manrope", sans-serif !important;
+  font-weight: 600 !important;
+  font-style: normal;
+}
+
+.manrope-bold {
+  font-family: "Manrope", sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal;
+}
+
+.manrope-extrabold {
+  font-family: "Manrope", sans-serif !important;
+  font-weight: 800 !important;
+  font-style: normal;
+}
+
+
+.sora-light {
+  font-family: "Sora", sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal;
+}
+
+.sora-regular {
+  font-family: "Sora", sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal;
+}
+
+.sora-medium {
+  font-family: "Sora", sans-serif !important;
+  font-weight: 500 !important;
+  font-style: normal;
+}
+
+.sora-semibold {
+  font-family: "Sora", sans-serif !important;
+  font-weight: 600 !important;
+  font-style: normal;
+}
+
+.sora-bold {
+  font-family: "Sora", sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal;
+}
+
+.sora-extrabold {
+  font-family: "Sora", sans-serif !important;
+  font-weight: 800 !important;
+  font-style: normal;
+}
+
+
+
+.inter-light {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal;
+}
+
+.inter-regular {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal;
+}
+
+.inter-medium {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 500 !important;
+  font-style: normal;
+}
+
+.inter-semibold {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 600 !important;
+  font-style: normal;
+}
+
+.inter-bold {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal;
+}
+
+.inter-extrabold {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 800 !important;
+  font-style: normal;
+}
+
+header .rotate-infinite {
+  animation: rotate 6s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+
+.cityBackground {
+  background-image: url('/homeBackground.svg');
+}
+
+.overlay {
+  position: absolute;
+  background-color: rgba(219, 70, 76, 0.75);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.carousel .arrow-down {
+  content: " ";
+  width: 100px;
+  height: 100px;
+  background: #FDFAEC;
+  /* margin-left: 60px; */
+  bottom: -30px;
+  left: 20px;
+  border-radius: 0px 1000px 0px 100px;
+  transform: rotate(318deg);
+}
