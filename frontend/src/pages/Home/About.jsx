@@ -12,7 +12,7 @@ const About = () => {
   }, [active]);
 
   return (
-    <section className="cityBackground flex items-center justify-between lg:pb-20 lg:pt-0 py-20">
+    <section className="energyBackground flex items-center justify-between lg:pb-20 lg:pt-0 py-20">
       <Container maxWidth="lg" className="relative">
         <div className="flex flex-col lg:flex-row items-center justify-center lg:flex-nowrap flex-wrap">
           <img src="/engineer.svg" className="z-10 lg:ml-0" />

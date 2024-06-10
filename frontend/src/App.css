@@ -133,7 +133,7 @@ header .rotate-infinite {
 
 
 
-.cityBackground {
+.energyBackground {
   background-image: url('/homeBackground.svg');
 }
 
@@ -156,4 +156,12 @@ header .rotate-infinite {
   left: 20px;
   border-radius: 0px 1000px 0px 100px;
   transform: rotate(318deg);
+}
+
+.services {
+  background-image: url("/headerImage.webp");
+  width: 100%;
+  /* height: 400px; */
+  background-size: cover;
+  background-position: center;
 }
