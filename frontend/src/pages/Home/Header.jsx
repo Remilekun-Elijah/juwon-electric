@@ -21,14 +21,14 @@ const Header = () => {
 
           <p className="inter-medium text-lg md:my-8 my-5 md:text-left text-center">
             {" "}
-            Let&apos;s lighting your every day life. We believe we can make a
+            Let&apos;s lighten your every day life. We believe we can make a
             difference to this world, to this very earth on which we live.
           </p>
 
           <div className="flex flex-wrap md:gap-10 gap-2">
             <Button
               style={{ backgroundColor: "#DB464C", color: "white" }}
-              className="!rounded-full !p-4 !px-7"
+              className="!rounded-full  !py-3 md:!px-7 !px-5"
               size="large"
             >
               SHOP NOW
@@ -46,14 +46,14 @@ const Header = () => {
           </div>
         </div>
 
-        <div className="relativ flex items-start w-full md:order-1 gap-0 justify-center">
+        <div className="flex items-start w-full md:order-1 gap-0 justify-center">
           {/* HEADER IMAGE */}
           <img src="header.svg" alt="" className="w-[80%] md:w-max -mt-5" />
           {/* ROTATING IMAGE */}
           <img
             src="circular.svg"
             alt="get in touch"
-            className="lg:-ml-28 -ml-14 -mb-12 rotate-infinite lg:w-fit w-[50px]"
+            className="lg:-ml-28 -ml-12 -mb-12 rotate-infinite lg:w-fit w-[50px]"
           />
         </div>
       </div>
