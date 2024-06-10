@@ -8,10 +8,10 @@ const Footer = () => {
   return (
     <section className="bg-deep_red p-5">
       <Container maxWidth={config.padding.x}>
-        <footer className="flex md:mt-10 md:justify-between justify-center text-[#E67E82] flex-wrap md:items-stretch items-center">
-          <div className="about md:mb-0 mb-10 md:mt-0 mt-8">
+        <footer className="flex md:mt-10 lg:justify-between justify-center text-[#E67E82] flex-wrap md:items-stretch items-center">
+          <div className="about lg:mb-0 mb-10 md:mt-0 mt-8">
             <img src="/logo.svg" className="md:mx-0 mx-auto" />
-            <h1 className="inter-medium text-lg text-[#E67E82] my-5">
+            <h1 className="inter-medium text-lg md:text-left text-center text-[#E67E82] my-5">
               Be the first to know our new product
             </h1>
 
@@ -82,15 +82,15 @@ const Footer = () => {
           </div>
         </footer>
 
-        <div className="flex justify-between flex-wrap md:text-white text-[#E67E82] mt-10 gap-5">
+        <div className="flex lg:justify-between justify-center flex-wrap md:text-white text-[#E67E82] mt-10 gap-5">
           <p className="text-center ">
             © 2024 Juwon Electric Inc. Copyright and rights reserved
           </p>
 
-          <div className="flex gap-10 flex-wrap ">
+          <div className="flex md:gap-10 gap-2 flex-wrap ">
             <Link>Terms and Conditions</Link>
             <ul>
-              <li className="list-style" style={{ listStyleType: "disc" }}>
+              <li className="md:list-disc">
                 <Link>Privacy Policy</Link>
               </li>
             </ul>

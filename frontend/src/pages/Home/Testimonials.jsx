@@ -56,14 +56,14 @@ const Testimonials = () => {
 
   return (
     <div>
-      <Container maxWidth={config.padding.x} className="md:mt-40 mt-28 mb-10">
+      <Container maxWidth={config.padding.x} className="md:mt-40 mt-24 mb-10">
         <CustomChip text="Testimonials" className="flex justify-center my-5" />
 
         <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:my-16 my-10 md:px-0 px-2 text-center">
           What Our Clients Say About Us
         </h2>
 
-        <Carousel autoPlay infiniteLoop showThumbs={false}>
+        <Carousel autoPlay infiniteLoop swipeable={false} showThumbs={false}>
           {reviews.map((a, i) => (
             <Slider data={a} key={i} />
           ))}
