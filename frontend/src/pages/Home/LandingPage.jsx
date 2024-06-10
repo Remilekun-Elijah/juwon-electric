@@ -12,7 +12,7 @@ const LandingPage = () => {
     <>
       <Navbar />
       <div
-        className={`pb-10`}
+        className="pb-10"
         style={{
           paddingTop: config.padding.y,
           background: "linear-gradient(to right, white, rgb(251, 233, 233))",
