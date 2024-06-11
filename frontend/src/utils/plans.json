@@ -1,0 +1,494 @@
+[
+  {
+    "plan": [
+      {
+        "type": "tubular",
+        "name": "Silver",
+        "load": "2 fans, 1 TV, 1 decoder, 1 sound system, 6 lighting points, 1 laptop & charging of phones",
+        "kva": 1.1,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 700000,
+            "kits": "1 battery & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 1150000,
+            "kits": "2 panels, 1 battery & installation kits"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Platinum",
+        "load": "3 fans, 1 TV, 1 decoder, 1 sound system, 8 lighting points, 1 laptop & charging of phones",
+        "kva": 1.7,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1000000,
+            "kits": "2 batteries & accessories with installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 1620000,
+            "kits": "4 panels & 2 batteries"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Gold",
+        "load": "3 fans, 1 TV, 1 decoder, 1 sound system, 1 freezer, 1 microwave, 1 blender, 10 lighting points, 2 laptops & charging of phones",
+        "kva": 2.0,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1030000,
+            "kits": "2 batteries & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 1770000,
+            "kits": "4 panels, 2 batteries & 60ah PWM charge controller"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "plan": [
+      {
+        "type": "tubular",
+        "name": "Silver",
+        "load": "3 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 12 lighting points, 3 laptops & charging of phones",
+        "kva": 2.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1060000,
+            "kits": "2 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 1830000,
+            "kits": "2 batteries, 6 panels & 60ah PWM charge controller"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Platinum",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 3.2,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1140000,
+            "kits": "2 batteries & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 2050000,
+            "kits": "6 panels & 60ah Felicity MPPT charge controller & 2 batteries"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Gold",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 3.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1270000,
+            "kits": "2 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 2200000,
+            "kits": "6 panels , 80ah Felicity MPPT charge controller & 2 batteries"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "plan": [
+      {
+        "type": "tubular",
+        "name": "Silver",
+        "load": "3 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 12 lighting points, 3 laptops & charging of phones",
+        "kva": 2.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1060000,
+            "kits": "2 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 1830000,
+            "kits": "2 batteries, 6 panels & 60ah PWM charge controller"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Platinum",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 3.2,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1140000,
+            "kits": "2 batteries & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 2050000,
+            "kits": "6 panels & 60ah Felicity MPPT charge controller & 2 batteries"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Gold",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 3.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 1270000,
+            "kits": "2 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 2200000,
+            "kits": "6 panels , 80ah Felicity MPPT charge controller & 2 batteries"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "plan": [
+      {
+        "type": "tubular",
+        "name": "Silver",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 3.5,
+        "volt": 48,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 2180000,
+            "kits": "4 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 2970000,
+            "kits": "4 batteries, 9 panels & 60ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Platinum",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 2470000,
+            "kits": "4 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 3450000,
+            "kits": "12 panels,  4 batteries & 80ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Gold",
+        "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+        "kva": 7.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 2650000,
+            "kits": "4 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 3800000,
+            "kits": "12 panels,  4 batteries & 80ah Felicity MPPT charge controller"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
+        "type": "tubular",
+        "name": "Silver",
+        "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+        "kva": 7.5,
+        "volt": 96,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 3360000,
+            "kits": "8 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 5500000,
+            "kits": "20 panels,  8 batteries & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "tubular",
+        "name": "Platinum",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4000000,
+            "kits": "8 batteries & accessories"
+          },
+          {
+            "name": "With solar",
+            "price": 6050000,
+            "kits": "24 panels,  8 batteries & 120ah Felicity MPPT charge controller"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
+        "type": "lithium",
+        "name": "Silver",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 3500000,
+            "kits": "10kwh battery & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 4550000,
+            "kits": "12 panels,  10kwh battery & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "lithium",
+        "name": "Platinum",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4500000,
+            "kits": "15kwh battery & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 5450000,
+            "kits": "15 panels, 15kwh battery & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "lithium",
+        "name": "Gold",
+        "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+        "kva": 5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4000000,
+            "kits": "10kwh SRNE battery with 10yrs warranty & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 5000000,
+            "kits": "12 panels, 10kwh SRNE battery with 10yrs warranty & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "plan": [
+      {
+        "type": "lithium",
+        "name": "Silver",
+        "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+        "kva": 7.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4000000,
+            "kits": "10kwh battery & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 4950000,
+            "kits": "12 panels,  10kwh battery & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "lithium",
+        "name": "Platinum",
+        "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+        "kva": 7.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4300000,
+            "kits": "15kwh battery with 5yrs warranty & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 5600000,
+            "kits": "15 panels, 15kwh battery with 5yrs warranty & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "lithium",
+        "name": "Gold",
+        "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+        "kva": 7.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4200000,
+            "kits": "10kwh SRNE battery with 10yrs warranty & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 5300000,
+            "kits": "12 panels, 10kwh SRNE battery with 10yrs warranty & 100ah Felicity MPPT charge controller"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
+        "type": "lithium",
+        "name": "Starter",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4800000,
+            "kits": "15kwh battery with 5yrs & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 6950000,
+            "kits": "15kwh battery with 5yrs warranty, 16 panels & 120ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+      {
+        "type": "lithium",
+        "name": "Silver",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 8500000,
+            "kits": "20kwh SRNE battery with 10yrs warranty & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 11600000,
+            "kits": "20kwh battery with 20 panels(550w) & 120ah Felicity MPPT charge controller"
+          }
+        ]
+      },
+
+      {
+        "type": "lithium",
+        "name": "Platinum",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 9800000,
+            "kits": "32kwh SRNE battery with 10yrs warranty & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 14000000,
+            "kits": "(30kwh battery with 10yrs warranty, 24 panels (550w) & 100ah Felicity MPPT X2 charge controller)"
+          }
+        ]
+      },
+      {
+        "type": "lithium",
+        "name": "Gold",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 8650000,
+            "kits": "30kwh battery with 5yrs warranty & installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 11800000,
+            "kits": "30kwh battery with 5yrs warranty, 24 panels (550w) & 100ah Felicity MPPT X2 charge controller"
+          }
+        ]
+      }
+    ]
+  }
+]
