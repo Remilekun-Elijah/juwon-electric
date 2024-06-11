@@ -19,7 +19,7 @@ const Header = () => {
           {/* CURVE IMAGE */}
           <img src="curve_line.svg" alt="curve_line" />
 
-          <p className="inter-medium text-lg md:my-8 my-5 md:text-left text-center">
+          <p className="inter-medium md:text-lg text-base md:my-8 my-5 md:text-left text-center">
             {" "}
             Let&apos;s lighten your every day life. We believe we can make a
             difference to this world, to this very earth on which we live.
@@ -35,7 +35,7 @@ const Header = () => {
             </Button>
 
             <Button
-              className="!text-black"
+              className="!text-black md:!text-sm !text-xs"
               LinkComponent={Link}
               to="https://www.tiktok.com/@juwon_electric"
               startIcon={<PlayCircleOutlineIcon />}

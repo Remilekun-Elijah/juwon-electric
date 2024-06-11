@@ -32,7 +32,7 @@ const About = () => {
                 navMenu={["Our Mission", "Our Vision", "Quality Assurance"]}
               />
             </div>
-            <p className="text-base lg:text-left text-justify mt-5 inter-medium text-faint">
+            <p className="md:text-base text-sm lg:text-left text-justify mt-5 inter-medium text-faint">
               {about}
             </p>
           </div>
