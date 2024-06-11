@@ -28,7 +28,7 @@ function MiniTab({ active, setActive, data = [] }) {
 }
 
 const Packages = () => {
-  const [active, setActive] = useState(1);
+  const [active, setActive] = useState(0);
 
   let tubular = [],
     lithium = [];
