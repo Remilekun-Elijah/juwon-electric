@@ -83,7 +83,7 @@ export default function Navbar() {
                           item.current
                             ? "border-b-black_color border-b-2 text-white"
                             : "hover:border-b-black_color hover:border-b-2  ",
-                          "uppercase text-sm font-medium mx-5 pb- text-white"
+                          "capitalize text-sm font-medium mx-5 pb- text-white"
                         )}
                         aria-current={item.current ? "page" : undefined}
                       >
