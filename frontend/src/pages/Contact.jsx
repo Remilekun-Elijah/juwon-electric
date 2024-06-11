@@ -37,7 +37,7 @@ const Contact = () => {
             We would be happy to help you :)
           </p>
 
-          <section className="shadow p-10 bg-offWhite mt-10 rounded">
+          <section className="shadow md:p-10 py-5 px-5 bg-offWhite mt-10 rounded">
             <div>
               <div className="flex justify-center lg:mb-16 mb-5">
                 <h2 className="text-deep_red lg:inline-block hidden border-b-[3px] border-deep_red sora-bold md:text-2xl text-xl text-center">
