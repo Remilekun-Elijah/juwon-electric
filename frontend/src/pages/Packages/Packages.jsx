@@ -86,7 +86,7 @@ const Packages = () => {
                       {"Basic" || a.name}
                     </h4>
 
-                    <p className="inter-medium md:text-lg text-sm text-center mb-5 text-[#EDA4A6]">
+                    <p className="inter-medium md:text-lg text-sm text-center mb-5 md:text-[#EDA4A6] text-[#e26767]">
                       {a.load}
                     </p>
 
@@ -155,7 +155,9 @@ const Packages = () => {
                     <p
                       className={`inter-medium md:text-lg text-sm text-center mb-5 
                       ${
-                        a.name === "Platinum" ? "text-white" : "text-[#EDA4A6]"
+                        a.name === "Platinum"
+                          ? "text-white"
+                          : "md:text-[#EDA4A6] text-[#e26767]"
                       }`}
                     >
                       {a.load}
