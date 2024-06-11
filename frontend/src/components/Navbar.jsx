@@ -11,7 +11,9 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Container } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import config from "../utils/config";
-
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useSelector } from "react-redux";
+import { getCartData } from "../features/cart";
 const { routes } = config;
 
 let navigation = [
@@ -25,6 +27,7 @@ let navigation = [
 
 export default function Navbar() {
   const { pathname } = useLocation();
+  const { cart } = useSelector(getCartData);
 
   const handleNavigate = (newPage) => {
     const newNav = navigation.map((page) => {
@@ -82,12 +85,23 @@ export default function Navbar() {
                         className={classNames(
                           item.current
                             ? "border-b-black_color border-b-2 text-white"
-                            : "hover:border-b-black_color hover:border-b-2  ",
+                            : "hover:text-gray-200",
                           "capitalize text-sm font-medium mx-5 pb- text-white"
                         )}
                         aria-current={item.current ? "page" : undefined}
                       >
-                        {item.name === "Home" ? <HomeIcon /> : item.name}
+                        {item.name === "Home" ? (
+                          <HomeIcon />
+                        ) : item.name === "Cart" ? (
+                          <div className="relative">
+                            <ShoppingCartIcon />
+                            <span className="md:block hidden absolute py-[0px] px-[5px] rounded-full left-4 bottom-3 !bg-red !text-white">
+                              {cart.length}
+                            </span>
+                          </div>
+                        ) : (
+                          item.name
+                        )}
                       </Link>
                     ))}
                   </div>
