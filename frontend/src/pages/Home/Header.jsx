@@ -27,6 +27,8 @@ const Header = () => {
 
           <div className="flex flex-wrap md:justify-start justify-center md:gap-10 gap-2">
             <Button
+              LinkComponent={Link}
+              to={config.routes.packages}
               style={{ backgroundColor: "#DB464C", color: "white" }}
               className="!rounded-full  !py-3 md:!px-7 !px-5"
               size="large"
@@ -50,11 +52,12 @@ const Header = () => {
           {/* HEADER IMAGE */}
           <img src="header.svg" alt="" className="w-[80%] md:w-max -mt-5" />
           {/* ROTATING IMAGE */}
-          <img
-            src="circular.svg"
-            alt="get in touch"
+          <Link
             className="lg:-ml-28 -ml-12 -mb-12 rotate-infinite lg:w-fit w-[50px]"
-          />
+            to={config.routes.contact}
+          >
+            <img src="circular.svg" alt="get in touch" />
+          </Link>
         </div>
       </div>
     </Box>
