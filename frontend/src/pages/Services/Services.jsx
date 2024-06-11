@@ -102,7 +102,7 @@ const Services = () => {
             we offer our customers
           </p>
 
-          <section className="mt-10 grid xl:grid-cols-3 md:grid-cols-2 justify-center gap-10">
+          <section className="mt-10 grid xl:grid-cols-3 md:grid-cols-2 justify-center xl:gap-16 gap-10">
             {offeringData.map((a, i) => (
               <div
                 key={i}
