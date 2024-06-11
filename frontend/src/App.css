@@ -136,6 +136,9 @@ header .rotate-infinite {
 .energyBackground {
   background-image: url('/homeBackground.svg');
 }
+.energyBackground {
+  background-image: url('/contactBackground.svg');
+}
 
 .overlay {
   position: absolute;
