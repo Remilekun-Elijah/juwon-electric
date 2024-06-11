@@ -20,7 +20,10 @@ const Benefits = () => {
     },
   ];
   return (
-    <Container maxWidth={config.padding.x} className="lg:mt-30 px-5 mx-auto">
+    <Container
+      maxWidth={config.padding.x}
+      className="lg:mt-36 lg:mb-20 px-5 mx-auto"
+    >
       <h1 className="text-deep_red lg:text-[40px] md:text-4xl text-2xl text-center mt-20 mb-10 inter-bold">
         Benefits of solar energy
       </h1>
@@ -34,10 +37,10 @@ const Benefits = () => {
             <div className="flex gap-5">
               <img src={a.img} alt="" />
               <div>
-                <p className="text-deep_red sora-semibold md:text-2xl text-xl">
+                <p className="text-deep_red sora-semibold md:text-2xl text-lg">
                   {a.title}
                 </p>
-                <p className="text-faint manrope-medium md:text-xl text-lg">
+                <p className="text-faint manrope-medium md:text-xl text-base">
                   {a.subtitle}
                 </p>
               </div>
