@@ -35,13 +35,15 @@ const Cart = () => {
                 Review Your Cart
               </p>
 
-              <button
-                onClick={emptyCart}
-                className="border rounded border-deep_red hover:bg-deep_red hover:text-white text-deep_red flex items-center mb- gap- py-2 px-5 sora-regular text-lg"
-              >
-                <DeleteIcon />
-                <p>Clear</p>
-              </button>
+              {cart.length > 0 && (
+                <button
+                  onClick={emptyCart}
+                  className="border rounded border-deep_red hover:bg-deep_red hover:text-white text-deep_red flex items-center mb- gap- py-2 px-5 sora-regular text-lg"
+                >
+                  <DeleteIcon />
+                  <p>Clear</p>
+                </button>
+              )}
             </div>
 
             {cart.length ? (
