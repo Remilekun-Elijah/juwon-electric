@@ -42,7 +42,7 @@ const Portfolio = () => {
       mobile: false,
     },
     {
-      name: "4.2kwp Trinna Solar",
+      name: "4.2kwp Trina Solar",
       img: "/image-7.svg",
       link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
       mobile: false,
@@ -74,15 +74,20 @@ const Portfolio = () => {
 
       <div className="flex justify-center item-center gap-10 flex-wrap">
         {recentWork.map((work, i) => (
-          <div key={i} className={`relative  ${!work.mobile && "hidden"}`}>
+          <div
+            key={i}
+            className={`relative  ${!work.mobile && "md:block hidden"}`}
+          >
             <div
               className={`overlay rounded-2xl flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
             >
-              <p className="sora-bold text-xl text-white">{work.name}</p>
+              <p className="sora-bold text-xl text-white text-center">
+                {work.name}
+              </p>
               <Link
                 target="_blank"
                 to={work.link}
-                className="flex items-center gap-1 text-white mt-1"
+                className="flex items-center text-center gap-1 text-white mt-1"
               >
                 <InstagramIcon />
                 <p className="manrope-semibold text-xl">Follow Us</p>
