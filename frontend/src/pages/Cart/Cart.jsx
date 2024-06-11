@@ -50,12 +50,11 @@ const Cart = () => {
               <EmptyCartUi />
             )}
 
-            <button
-              // to={config.routes.packages}
-              className="mt-7 border rounded w-full bg-red text-white flex items-center justify-center text-center py-2 px-5 sora-regular text-lg"
-            >
-              Proceed
-            </button>
+            {cart.length > 0 && (
+              <button className="mt-7 border rounded w-full bg-red text-white flex items-center justify-center text-center py-2 px-5 sora-regular text-lg">
+                Proceed
+              </button>
+            )}
           </div>
         </Container>
       </div>
