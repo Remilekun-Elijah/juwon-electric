@@ -29,10 +29,5 @@ environment.production = {
   routes,
   padding: { x: "lg", y: "10rem" },
 };
-// DO NOT REMOVE
-// console.log(process.env.REACT_APP_ENV);
-console.log(import.meta.env.VITE_BACKEND_URL);
-// console.log(process.env.REACT_APP_TYPE);
-console.log(import.meta.env);
 
 export default environment[import.meta.env.MODE || "development"];
