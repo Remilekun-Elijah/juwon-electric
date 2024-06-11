@@ -25,7 +25,7 @@ const Header = () => {
             difference to this world, to this very earth on which we live.
           </p>
 
-          <div className="flex flex-wrap md:gap-10 gap-2">
+          <div className="flex flex-wrap md:justify-start justify-center md:gap-10 gap-2">
             <Button
               style={{ backgroundColor: "#DB464C", color: "white" }}
               className="!rounded-full  !py-3 md:!px-7 !px-5"

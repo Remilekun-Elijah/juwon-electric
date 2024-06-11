@@ -82,7 +82,7 @@ const Packages = () => {
                     key={i}
                     className="shadow rounded-xl py-5 md:px-3 px-5 bg-white"
                   >
-                    <h4 className="sora-semibold md:text-2xl text-lg mb-5 mt-2 text-center">
+                    <h4 className="sora-semibold text-2xl mb-5 mt-2 text-center">
                       {"Basic" || a.name}
                     </h4>
 
@@ -145,14 +145,19 @@ const Packages = () => {
                     }`}
                   >
                     <h4
-                      className={`sora-semibold md:text-2xl text-lg mb-5 mt-2 text-center ${
+                      className={`sora-semibold text-2xl mb-5 mt-2 text-center ${
                         a.name === "Platinum" ? "text-white" : "text-black"
                       }`}
                     >
                       {a.name}
                     </h4>
 
-                    <p className="inter-medium md:text-lg text-sm text-center mb-5 text-[#EDA4A6]">
+                    <p
+                      className={`inter-medium md:text-lg text-sm text-center mb-5 
+                      ${
+                        a.name === "Platinum" ? "text-white" : "text-[#EDA4A6]"
+                      }`}
+                    >
                       {a.load}
                     </p>
 
