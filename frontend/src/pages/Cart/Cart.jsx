@@ -45,7 +45,7 @@ const Cart = () => {
               {cart?.length > 0 && (
                 <button
                   onClick={emptyCart}
-                  className="border rounded border-black hover:bg-black hover:text-white text-black flex items-center mb- gap-2 md:py- py-1 px-3 sora-regular text-lg"
+                  className="border rounded border-black hover:bg-black hover:text-white text-black flex items-center gap-2 md:py- py-1 px-3 sora-regular text-lg"
                 >
                   <DeleteIcon />
                   <p>Clear</p>
@@ -61,7 +61,7 @@ const Cart = () => {
 
             {cart?.length > 0 && (
               <button
-                onClick={(_) => setOpen(true)}
+                onClick={() => setOpen(true)}
                 className="mt-7 border rounded w-full bg-red text-white flex items-center justify-center text-center py-2 px-5 sora-regular text-lg"
               >
                 Proceed
