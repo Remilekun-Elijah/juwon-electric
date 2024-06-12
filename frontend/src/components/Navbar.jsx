@@ -107,27 +107,38 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
+
+              <div className="absolute md:hidden inset-y-0 right-0 flex items-center pr-2 md:static md:inset-auto sm:ml-6 sm:pr-0">
+                <Link className="relative" to={config.routes.cart}>
+                  <ShoppingCartIcon />
+                  <span className=" absolute py-[0px] px-[5px] rounded-full left-4 bottom-3 !bg-red !text-white">
+                    {cart?.length || 0}
+                  </span>
+                </Link>
+              </div>
             </div>
           </div>
 
           <DisclosurePanel className="md:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
-              {navigation.map((item) => (
-                <DisclosureButton
-                  key={item.name}
-                  as={Link}
-                  to={item.href}
-                  className={classNames(
-                    item.current
-                      ? "bg-gray-900 !text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:!text-white",
-                    "capitalize block rounded-md px-3 !text-white text-center py-2 text-base font-medium"
-                  )}
-                  aria-current={item.current ? "page" : undefined}
-                >
-                  {item.name}
-                </DisclosureButton>
-              ))}
+              {navigation
+                .filter((a) => a.name.toLowerCase() != "cart")
+                .map((item) => (
+                  <DisclosureButton
+                    key={item.name}
+                    as={Link}
+                    to={item.href}
+                    className={classNames(
+                      item.current
+                        ? "bg-gray-900 !text-white"
+                        : "text-gray-300 hover:bg-gray-700 hover:!text-white",
+                      "capitalize block rounded-md px-3 !text-white text-center py-2 text-base font-medium"
+                    )}
+                    aria-current={item.current ? "page" : undefined}
+                  >
+                    {item.name}
+                  </DisclosureButton>
+                ))}
             </div>
           </DisclosurePanel>
         </Container>
