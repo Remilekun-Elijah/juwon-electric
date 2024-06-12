@@ -36,7 +36,7 @@ const Footer = () => {
                   <Link to={"/"}>Account information</Link>
                 </li>
                 <li>
-                  <Link to={"/"}>About</Link>
+                  <Link to={"#about"}>About</Link>
                 </li>
                 <li className="my-1">
                   <Link to={"/"}>Contact us</Link>
@@ -97,7 +97,6 @@ const Footer = () => {
           </div>
         </div>
       </Container>
-      ;
     </section>
   );
 };

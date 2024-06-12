@@ -13,7 +13,7 @@ const Header = () => {
       <div className="flex gap-16 md:flex-nowrap flex-wrap mt:pt-10 overflow-x-visible">
         <div className="order-1">
           <h1 className="inter-bold md:text-4xl lg:text-5xl xl:text-[64px] text-2xl md:text-left text-center mb-8 text-header_color xl:leading-[90px]">
-            We’re here to Give excellent Services
+            We are here to give excellent services
           </h1>
 
           {/* CURVE IMAGE */}
@@ -39,7 +39,8 @@ const Header = () => {
             <Button
               className="!text-black md:!text-sm !text-xs"
               LinkComponent={Link}
-              to="https://www.tiktok.com/@juwon_electric"
+              target="_blank"
+              to={config.socials.tt}
               startIcon={<PlayCircleOutlineIcon />}
             >
               {" "}

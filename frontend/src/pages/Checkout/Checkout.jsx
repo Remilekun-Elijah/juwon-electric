@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import { useRef, useState } from "react";
-import Alert from "../../utils/Alert";
+import { useRef } from "react";
+// import Alert from "../../utils/Alert";
 import CustomModal from "../../components/Modal";
 import {} from "react-redux";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -9,12 +9,8 @@ import Form from "./Form";
 
 // eslint-disable-next-line react/prop-types
 const CheckoutModal = ({ open, setOpen, total }) => {
-  const [withSolar, setWithSolar] = useState(null);
+  // const [withSolar, setWithSolar] = useState(null);
   const solarRef = useRef();
-
-  function addProductToCart() {
-    Alert({ message: "Package added to cart" });
-  }
 
   // const handleChange = (event) => {
   //   setWithSolar(event.target.value);
@@ -26,7 +22,6 @@ const CheckoutModal = ({ open, setOpen, total }) => {
         open,
         setOpen: (v) => {
           setOpen(v);
-          setWithSolar(null);
           solarRef.current?.reset?.();
         },
         width: "550px",

@@ -114,22 +114,16 @@ const Contact = () => {
                   </div>
 
                   <div className="flex items-center gap-5 text-deep_red lg:mt-5 lg:justify-start justify-center mt-10">
-                    <Link
-                      target="_blank"
-                      to="https://www.instagram.com/juwon__electric"
-                    >
+                    <Link target="_blank" to={config.socials.insta}>
                       <InstagramIcon />
                     </Link>
-                    <Link>
+                    <Link target="_blank" to={config.socials.fb}>
                       <FacebookIcon />
                     </Link>
-                    <Link>
+                    <Link target="_blank" to={config.socials.x}>
                       <XIcon />
                     </Link>
-                    <Link
-                      target="_blank"
-                      to="https://www.tiktok.com/@juwon_electric"
-                    >
+                    <Link target="_blank" to={config.socials.tt}>
                       <FaTiktok className="text-xl" />
                     </Link>
                   </div>

@@ -5,7 +5,7 @@ const Benefits = () => {
   const options = [
     {
       title: "Affordable Price",
-      subtitle: "Friendly-budget cost",
+      subtitle: "Budget-friendly cost",
       img: "/price_tag.svg",
     },
     {
@@ -15,7 +15,7 @@ const Benefits = () => {
     },
     {
       title: "Low Maintenance",
-      subtitle: "Effortlessly upkeep solution",
+      subtitle: "Effortless upkeep solution",
       img: "/maintenance.svg",
     },
   ];
