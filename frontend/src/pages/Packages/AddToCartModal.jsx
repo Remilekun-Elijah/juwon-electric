@@ -64,9 +64,9 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
       }
     >
       <div className="px-4">
-        <div className="px-">
-          <p>Packages Options</p>
-        </div>
+        <p className="inter-regular text-base text-[#0B0B0B]">
+          Packages Options
+        </p>
 
         <div className="mt-5 border-2 rounded-lg border-dashed py-5">
           <form ref={solarRef} className="mx-3">

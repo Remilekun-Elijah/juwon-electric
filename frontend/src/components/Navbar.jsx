@@ -18,7 +18,7 @@ const { routes } = config;
 
 let navigation = [
   { name: "Home", href: routes.home, current: true },
-  { name: "Our Services", href: routes.services, current: false },
+  { name: "Services", href: routes.services, current: false },
   { name: "Portfolio", href: routes.portfolio, current: false },
   { name: "Packages", href: routes.packages, current: false },
   { name: "Contact", href: routes.contact, current: false },
@@ -96,7 +96,7 @@ export default function Navbar() {
                           <div className="relative">
                             <ShoppingCartIcon />
                             <span className="md:block hidden absolute py-[0px] px-[5px] rounded-full left-4 bottom-3 !bg-red !text-white">
-                              {cart.length}
+                              {cart?.length || 0}
                             </span>
                           </div>
                         ) : (
@@ -115,13 +115,13 @@ export default function Navbar() {
               {navigation.map((item) => (
                 <DisclosureButton
                   key={item.name}
-                  as="a"
-                  href={item.href}
+                  as={Link}
+                  to={item.href}
                   className={classNames(
                     item.current
                       ? "bg-gray-900 !text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:!text-white",
-                    "uppercase block rounded-md px-3 !text-white text-center py-2 text-base font-medium"
+                    "capitalize block rounded-md px-3 !text-white text-center py-2 text-base font-medium"
                   )}
                   aria-current={item.current ? "page" : undefined}
                 >

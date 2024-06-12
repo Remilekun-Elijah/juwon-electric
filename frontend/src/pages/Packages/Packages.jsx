@@ -33,7 +33,7 @@ const Packages = () => {
       <Header text="PACKAGES" />
 
       <div
-        className=" py-20"
+        className="py-20"
         style={{
           backgroundImage: "url('/contactBackground.svg')",
           backgroundPosition: "center",
@@ -46,7 +46,7 @@ const Packages = () => {
             className="flex justify-center my-10"
           />
           <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:mt-12 mt-10 mb-7 text-center">
-            <p className="mb-1">Choose Packages</p>{" "}
+            <p className="mb-1">Choose packages</p>{" "}
             <p> that&apos;s right for you</p>
           </h2>
 
