@@ -4,19 +4,25 @@ import { Container } from "@mui/material";
 import config from "../../utils/config";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
-import { clearCart, getCartData } from "../../features/cart";
+import { clearCart, getCartData, getTotal } from "../../features/cart";
 import CartItem from "./CartItem";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import EmptyCartUi from "./EmptyCartUi";
+import CheckoutModal from "../Checkout/Checkout";
 
 const Cart = () => {
-  const { cart } = useSelector(getCartData);
+  const { cart, total } = useSelector(getCartData);
   const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => console.log(cart), []);
   function emptyCart() {
     dispatch(clearCart());
   }
+
+  useEffect(() => {
+    dispatch(getTotal());
+  }, [cart]);
+
   return (
     <div>
       <Navbar />
@@ -35,10 +41,10 @@ const Cart = () => {
                 Review Your Cart
               </p>
 
-              {cart.length > 0 && (
+              {cart?.length > 0 && (
                 <button
                   onClick={emptyCart}
-                  className="border rounded border-deep_red hover:bg-deep_red hover:text-white text-deep_red flex items-center mb- gap- py-2 px-5 sora-regular text-lg"
+                  className="border rounded border-black hover:bg-black hover:text-white text-black flex items-center mb- gap-2 md:py- py-1 px-3 sora-regular text-lg"
                 >
                   <DeleteIcon />
                   <p>Clear</p>
@@ -46,14 +52,17 @@ const Cart = () => {
               )}
             </div>
 
-            {cart.length ? (
-              cart.map((item, i) => <CartItem key={i} {...{ item }} />)
+            {cart?.length ? (
+              cart?.map((item, i) => <CartItem key={i} {...{ item }} />)
             ) : (
               <EmptyCartUi />
             )}
 
-            {cart.length > 0 && (
-              <button className="mt-7 border rounded w-full bg-red text-white flex items-center justify-center text-center py-2 px-5 sora-regular text-lg">
+            {cart?.length > 0 && (
+              <button
+                onClick={(_) => setOpen(true)}
+                className="mt-7 border rounded w-full bg-red text-white flex items-center justify-center text-center py-2 px-5 sora-regular text-lg"
+              >
                 Proceed
               </button>
             )}
@@ -61,6 +70,7 @@ const Cart = () => {
         </Container>
       </div>
 
+      <CheckoutModal {...{ open, setOpen, total }} />
       <Footer />
     </div>
   );

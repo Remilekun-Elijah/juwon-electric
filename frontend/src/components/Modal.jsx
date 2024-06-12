@@ -45,7 +45,7 @@ export default function CustomModal({ open, setOpen, children, width, title }) {
                 }[state],
                 width,
               }}
-              className="!py-5"
+              className="!py-5 !bg-[#fff]"
             >
               <div className="flex items-center justify-between">
                 <DialogTitle className="text-left inter-extrabold text-lg px-5 inline-block">

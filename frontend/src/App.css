@@ -132,10 +132,36 @@ header .rotate-infinite {
 
 
 
+*::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.App::-webkit-scrollbar,
+.scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 5px;
+}
+
+.tab-component-bs::-webkit-scrollbar {
+  width: 7px;
+  height: 3px;
+}
+
+body::-webkit-scrollbar-thumb,
+.App::-webkit-scrollbar-thumb,
+.scroll::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: repeating-linear-gradient(#DB464C, #333, #DB464C);
+}
+
+body::-webkit-scrollbar-track,
+.App::-webkit-scrollbar-track,
+.scroll::-webkit-scrollbar-track {
+  width: 8px;
+}
 
 .energyBackground {
   background-image: url('/homeBackground.svg');
 }
+
 .energyBackground {
   background-image: url('/contactBackground.svg');
 }
@@ -154,7 +180,6 @@ header .rotate-infinite {
   width: 100px;
   height: 100px;
   background: #FDFAEC;
-  /* margin-left: 60px; */
   bottom: -30px;
   left: 20px;
   border-radius: 0px 1000px 0px 100px;
@@ -164,7 +189,6 @@ header .rotate-infinite {
 .services {
   background-image: url("/headerImage.webp");
   width: 100%;
-  /* height: 400px; */
   background-size: cover;
   background-position: center;
 }

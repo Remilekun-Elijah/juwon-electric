@@ -23,7 +23,7 @@ const CartItem = ({ item }) => {
         className="p-1 rounded-md md:shadow md:w-fit w-[50%]"
         alt="product"
       />
-      <p className="md:inter-regular inter-semibold text-base md:w-[450px]">
+      <p className="md:inter-regular inter-semibold md:text-left text-center text-base md:w-[450px]">
         {item?.kva}kva inverter with {item?.type} battery
       </p>
 
@@ -35,6 +35,8 @@ const CartItem = ({ item }) => {
               checked={item?.withSolar == "true"}
               onChange={() => updateQuantity("panel")}
               sx={{
+                pl: 0,
+                ml: 0,
                 color: "#DB464C",
                 "&.Mui-checked": {
                   color: "#DB464C",
@@ -49,22 +51,22 @@ const CartItem = ({ item }) => {
             <button
               disabled={item?.quantity === 1}
               onClick={() => updateQuantity("decrease")}
-              className="disabled:!cursor-not-allowed"
+              className="disabled:!cursor-not-allowed h-5 w-6 justify-center flex items-center !p-0  shadow disabled:bg-[#eee] disabled:border-red disabled:border- disabled:text-red bg-red text-white rounded"
             >
-              <RemoveIcon className="shadow bg-red text-white rounded" />
+              <RemoveIcon className="!p-0 !m-0 !w-5" />
             </button>
             <p className="text-red drop-shadow-xl text-lg">{item?.quantity}</p>
             <button
               onClick={() => updateQuantity("increase")}
-              className="disabled:!cursor-not-allowed"
+              className="h-5 w-6 justify-center flex items-center !p-0 shadow bg-red text-white rounded"
             >
-              <AddIcon className="shadow cursor-pointer bg-red text-white rounded" />
+              <AddIcon className="!w-5" />
             </button>
           </div>
         </div>
 
         <div className="flex gap-5 md:justify-around justify-between">
-          <p className="md:inter-medium inter-semibold text-red md:text-black">
+          <p className="md:inter-medium inter-semibold text-red ml-2 md:ml-0 md:text-black">
             ₦{getAmount(item?.price * item?.quantity)}
           </p>
           <p className="inter-medium">

@@ -40,6 +40,7 @@ const initialState = {
   cart: localStorage.getItem("je/cart")
     ? JSON.parse(localStorage.getItem("je/cart"))
     : [],
+  total: 0,
   pagination: {
     page: 1,
     pageSize: 10,
@@ -109,6 +110,12 @@ export const cartSlice = createSlice({
       state.cart = [];
       localStorage.setItem("je/cart", JSON.stringify([]));
     },
+    getTotal: (state) => {
+      const amount = state?.cart?.map((a) => a?.price * a?.quantity);
+
+      const total = amount.length && amount?.reduce((a, b) => b + a, 0);
+      state.total = total;
+    },
   },
   extraReducers: () => {
     /** GET GRADE **/
@@ -146,6 +153,7 @@ export const {
   updateCart,
   removeFromCart,
   clearCart,
+  getTotal,
 } = cartSlice.actions;
 export const getCartData = (state) => state.carts;
 export default cartSlice.reducer;
