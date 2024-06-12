@@ -35,7 +35,6 @@ const CartItem = ({ item }) => {
               checked={item?.withSolar == "true"}
               onChange={() => updateQuantity("panel")}
               sx={{
-                pl: 0,
                 ml: 0,
                 color: "#DB464C",
                 "&.Mui-checked": {

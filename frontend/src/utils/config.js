@@ -14,6 +14,12 @@ environment.development = {
   backendUrl: import.meta.env.VITE_BACKEND_URL,
   routes,
   padding: { x: "lg", y: "10rem" },
+  socials: {
+    fb: "https://www.facebook.com/juwonelectric?mibextid=LQQJ4d",
+    insta: "https://www.instagram.com/juwon__electric",
+    tt: "https://www.tiktok.com/@juwon_electric",
+    x: "https://x.com/juwon_electric?s=21&t=V5eLolxJSbC7bJ7s6X0dVQ",
+  },
 };
 
 environment.staging = {
@@ -21,6 +27,12 @@ environment.staging = {
   backendUrl: import.meta.env.VITE_BACKEND_URL,
   routes,
   padding: { x: "lg", y: "10rem" },
+  socials: {
+    fb: "https://www.facebook.com/juwonelectric?mibextid=LQQJ4d",
+    insta: "https://www.instagram.com/juwon__electric",
+    tt: "https://www.tiktok.com/@juwon_electric",
+    x: "https://x.com/juwon_electric?s=21&t=V5eLolxJSbC7bJ7s6X0dVQ",
+  },
 };
 
 environment.production = {
@@ -28,6 +40,12 @@ environment.production = {
   backendUrl: import.meta.env.VITE_BACKEND_URL,
   routes,
   padding: { x: "lg", y: "10rem" },
+  socials: {
+    fb: "https://www.facebook.com/juwonelectric?mibextid=LQQJ4d",
+    insta: "https://www.instagram.com/juwon__electric",
+    tt: "https://www.tiktok.com/@juwon_electric",
+    x: "https://x.com/juwon_electric?s=21&t=V5eLolxJSbC7bJ7s6X0dVQ",
+  },
 };
 
 export default environment[import.meta.env.MODE || "development"];
