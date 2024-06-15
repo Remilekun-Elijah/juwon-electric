@@ -108,7 +108,7 @@ const Services = () => {
                 key={i}
                 className={`shadow-md px-6 ${
                   i !== 1 ? "py-5" : "pb-5"
-                } bg-offWhite`}
+                } bg-white rounded`}
               >
                 <div
                   className={`flex justify-center mb-10 ${i == 1 && "!-mt-10"}`}

@@ -36,7 +36,7 @@ const Cart = () => {
         }}
       >
         <Container maxWidth={config.padding.x}>
-          <div className="bg-offWhite shadow-lg rounded-lg p-5 md:p-10 mt-12">
+          <div className="bg-white shadow-lg rounded-lg p-5 md:p-10 mt-12">
             <div className="border-b-2 border-deep_red flex items-center justify-between pb-3 mb-5">
               <p className="text-deep_red sora-bold md:text-2xl text-xl">
                 Review Your Cart
