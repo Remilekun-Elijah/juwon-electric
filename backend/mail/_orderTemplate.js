@@ -5,6 +5,7 @@ export default function orderTemplate({
   emailAddress,
   name,
   deliveryAddress,
+  total,
   order,
 }) {
   return `
@@ -258,7 +259,7 @@ export default function orderTemplate({
                             <p>Package: ${a.package} </p>
                             <p>Type: ${a.type} battery </p>
                             <p>
-                              Price: <span style='color: #DB464C'>${a.price}<span>
+                              Price: <span style='color: #DB464C'>${a.price} x ${a.quantity}<span>
                             </p>
                             </div>
                           </td>
@@ -267,6 +268,10 @@ export default function orderTemplate({
                       <tr>
                       <td align="left" style="font-size:0px;padding:5px 40px 0 40px;word-break:break-word;">
                       
+                      <div style="padding-top:0; margin-top:0;font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
+                          <p>Total Amount: <span style='color:#DB464C'>${total}</span> </p>
+                          </div>
+
                       <div style="padding-top:0; margin-top:0;font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
                           <p>Delivery Address: <span style='color:#DB464C'>${deliveryAddress}</span> </p>
                           </div>
@@ -277,7 +282,7 @@ export default function orderTemplate({
                       
                        
                       <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                        <p>Email: ${emailAddress} </p>
+                        <p>Email Address: ${emailAddress} </p>
                         </div>
                       
                         </td>
