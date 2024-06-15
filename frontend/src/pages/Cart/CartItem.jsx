@@ -5,9 +5,13 @@ import AddIcon from "@mui/icons-material/Add";
 import { removeFromCart, updateCart } from "../../features/cart";
 import { useDispatch } from "react-redux";
 import { Checkbox } from "@mui/material";
+import CustomModal from "../../components/Modal";
+import { useState } from "react";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
 
   function updateQuantity(type) {
     dispatch(updateCart({ action: type, id: item.id }));
@@ -46,7 +50,7 @@ const CartItem = ({ item }) => {
               With solar
             </p>
           </div>
-          <div className="md:w-12 inline-flex gap-4 items-center justify-center">
+          <div className="md:w-12 inline-flex gap-4 items-center justify-center items-center">
             <button
               disabled={item?.quantity === 1}
               onClick={() => updateQuantity("decrease")}
@@ -64,20 +68,57 @@ const CartItem = ({ item }) => {
           </div>
         </div>
 
-        <div className="flex gap-5 md:justify-around justify-between">
+        <div className="flex gap-5 md:justify-around justify-between items-center">
           <p className="md:inter-medium inter-semibold text-red ml-2 md:ml-0 md:text-black">
             ₦{getAmount(item?.price * item?.quantity)}
           </p>
           <p className="inter-medium">
             <button
-              onClick={RemoveItem}
+              onClick={() => setOpen(true)}
               className="text-white bg-red md:px-2 px-5 py-1 rounded cursor-pointer"
             >
-              Delete{" "}
+              Remove{" "}
             </button>
           </p>
         </div>
       </div>
+
+      <CustomModal
+        {...{
+          open,
+          setOpen,
+          width: "550px",
+        }}
+        title={
+          <div className="flex items-center gap-3">
+            <ShoppingCartIcon />
+            <p className="inter-bold text-lg">Remove item</p>
+          </div>
+        }
+      >
+        <div className="flex justify-center items-center px-5">
+          <div className="flex flex-col justify-center items-center">
+            <p className="block inter-regular text-base mb-5 text-center md:px-3">
+              {" "}
+              Are you sure you want to remove this item?
+            </p>
+            <div className="flex nd:justify-between md:gap-10 gap-3 mb-5 flex-wrap justify-center">
+              <button
+                onClick={() => setOpen(false)}
+                className="border-2 border-red text-red rounded-lg py-2 px-5"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={RemoveItem}
+                className="border-0 text-white bg-red rounded-lg py-2 px-5"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </CustomModal>
     </div>
   );
 };

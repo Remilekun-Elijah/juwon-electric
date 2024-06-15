@@ -63,7 +63,6 @@ export const cartSlice = createSlice({
       state.pagination = { ...state.pagination, ...payload };
     },
     addToCart: (state, { payload }) => {
-      console.log(state);
       state.cart = [...state.cart, { ...payload, quantity: 1 }];
       localStorage.setItem("je/cart", JSON.stringify(state.cart));
     },

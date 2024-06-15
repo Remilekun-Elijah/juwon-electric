@@ -15,7 +15,7 @@ const LandingPage = () => {
         className="pb-10"
         style={{
           paddingTop: config.padding.y,
-          background: "linear-gradient(to right, white, rgb(251, 233, 233))",
+          background: "#fff",
         }}
       >
         <Header />

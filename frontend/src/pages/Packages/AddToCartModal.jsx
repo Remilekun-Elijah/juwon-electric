@@ -22,6 +22,10 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
 
     product.price =
       withSolar == "true" ? product.withSolarPrice : product.withoutSolarPrice;
+    product.package =
+      withSolar == "true"
+        ? product?.options?.[1]?.kits
+        : product?.options?.[0]?.kits;
 
     dispatch(addToCart({ ...product, withSolar }));
     setWithSolar(null);

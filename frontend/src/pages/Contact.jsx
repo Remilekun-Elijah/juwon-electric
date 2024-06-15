@@ -2,7 +2,7 @@ import Navbar from "../components/Navbar";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import config from "../utils/config";
-import { Container } from "@mui/material";
+import { CircularProgress, Container } from "@mui/material";
 import CustomChip from "../components/CustomChip";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
@@ -13,8 +13,42 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import XIcon from "@mui/icons-material/X";
 import { FaTiktok } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserData, sendMessage } from "../features/user";
+import Alert from "../utils/Alert";
 
 const Contact = () => {
+  // const [payload, setPayload] =useS
+  const { loading } = useSelector(getUserData),
+    dispatch = useDispatch(),
+    handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const payload = {
+          name: e.target.name.value,
+          phoneNumber: e.target.phoneNumber.value,
+          emailAddress: e.target.emailAddress.value,
+          message: e.target.message.value,
+        };
+
+        const emailRegex =
+          /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/gi;
+
+        if (
+          payload.emailAddress &&
+          emailRegex.test(payload.emailAddress) === false
+        ) {
+          Alert({ message: "Invalid email address", type: "error" });
+          return;
+        }
+
+        const res = await dispatch(sendMessage(payload)).unwrap();
+
+        if (res.success) e.target.reset();
+      } catch (error) {
+        console.error(error);
+      }
+    };
   return (
     <div>
       <Navbar />
@@ -37,7 +71,7 @@ const Contact = () => {
             We would be happy to help you :)
           </p>
 
-          <section className="shadow md:p-10 py-5 px-5 bg-offWhite mt-10 rounded">
+          <section className="shadow md:p-10 py-5 px-5 bg-white mt-10 rounded">
             <div>
               <div className="flex justify-center lg:mb-16 mb-5">
                 <h2 className="text-deep_red lg:inline-block hidden border-b-[3px] border-deep_red sora-bold md:text-2xl text-xl text-center">
@@ -46,7 +80,10 @@ const Contact = () => {
               </div>
 
               <div className="flex gap-10 justify-around w-full flex-wrap">
-                <form className="contact_form gap-5 flex flex-col">
+                <form
+                  onSubmit={handleSubmit}
+                  className="contact_form gap-5 flex flex-col"
+                >
                   <img
                     src="/getInTouch.svg"
                     alt=""
@@ -58,21 +95,27 @@ const Contact = () => {
                   <input
                     type="text"
                     name="name"
+                    required
                     id="name"
+                    minLength={2}
                     placeholder="Name"
                     className="input md:w-[350px] w-full border-2 bg-transparent p-3 rounded focus:outline-none block"
                   />
                   <input
                     type="tel"
                     name="phoneNumber"
+                    required
                     id="phoneNumber"
+                    minLength={11}
+                    maxLength={14}
                     placeholder="Phone Number"
                     className="input md:w-[350px] w-full border-2 bg-transparent p-3 rounded focus:outline-none block"
                   />
                   <input
                     type="email"
-                    name="email"
-                    id="email"
+                    name="emailAddress"
+                    // required
+                    id="emailAddress"
                     placeholder="Email Address"
                     className="input md:w-[350px] w-full border-2 bg-transparent p-3 rounded focus:outline-none block"
                   />
@@ -82,11 +125,27 @@ const Contact = () => {
                     className="resize-none md:w-[350px] w-full border-2 bg-transparent p-3 rounded focus:outline-none block"
                     placeholder="Your Message"
                     name="message"
+                    required
+                    minLength={3}
+                    maxLength={3000}
                     id="message"
                   ></textarea>
 
-                  <button className="flex gap-5 items-center inter-bold text-lg bg-red text-white py-2 justify-center rounded-md">
-                    <p>Send</p> <SendIcon />
+                  <button
+                    disabled={loading}
+                    className="flex gap-5 items-center inter-bold text-lg bg-red text-white py-2 justify-center rounded-md"
+                  >
+                    {loading ? (
+                      <CircularProgress
+                        color="error"
+                        sx={{ color: "white" }}
+                        size={20}
+                      />
+                    ) : (
+                      <>
+                        <p>Send</p> <SendIcon />
+                      </>
+                    )}
                   </button>
                 </form>
 

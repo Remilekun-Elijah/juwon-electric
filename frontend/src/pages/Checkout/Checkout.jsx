@@ -1,8 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useRef } from "react";
-// import Alert from "../../utils/Alert";
 import CustomModal from "../../components/Modal";
-import {} from "react-redux";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { getAmount } from "../../utils/helper";
 import Form from "./Form";
@@ -11,11 +9,6 @@ import Form from "./Form";
 const CheckoutModal = ({ open, setOpen, total }) => {
   // const [withSolar, setWithSolar] = useState(null);
   const solarRef = useRef();
-
-  // const handleChange = (event) => {
-  //   setWithSolar(event.target.value);
-  // };
-
   return (
     <CustomModal
       {...{
@@ -39,7 +32,7 @@ const CheckoutModal = ({ open, setOpen, total }) => {
         </p>
 
         <div className="mt-5 border-2 rounded-lg border-dashed py-5">
-          <form ref={solarRef} className="mx-3">
+          <div ref={solarRef} className="mx-3">
             <div className="flex justify-between mt-2">
               <p className="cursor-pointer inter-regular text-base text-[#878787]">
                 Sub total
@@ -69,15 +62,9 @@ const CheckoutModal = ({ open, setOpen, total }) => {
                 ₦{getAmount(total)}
               </span>
             </div>
-          </form>
+          </div>
         </div>
-        <Form />
-        <button
-          // onClick={addProductToCart}
-          className="w-full py-2 bg-red text-white mt-5 rounded-lg"
-        >
-          Place Order
-        </button>
+        <Form {...{ setOpen }} />
       </div>
     </CustomModal>
   );
