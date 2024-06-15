@@ -7,9 +7,16 @@ import cors from "cors";
 const app = express();
 if (app.get("env") === "development") env.config();
 
+app.use(cors({ origin: "*", methods: ["POST", "GET", "HEAD"] }));
 app.use(express.json());
-app.use(cors("*"));
 
 app.use(userRouter);
+
+app.get("/", (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    message: "Juwon Electric API",
+  });
+});
 
 app.listen(config.port, (_) => console.log("App started on port", config.port));
