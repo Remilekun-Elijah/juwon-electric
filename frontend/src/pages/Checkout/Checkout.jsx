@@ -64,7 +64,7 @@ const CheckoutModal = ({ open, setOpen, total }) => {
             </div>
           </div>
         </div>
-        <Form {...{ setOpen }} />
+        <Form {...{ setOpen, total }} />
       </div>
     </CustomModal>
   );

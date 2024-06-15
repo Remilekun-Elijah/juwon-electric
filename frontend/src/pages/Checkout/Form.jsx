@@ -9,7 +9,7 @@ import CustomModal from "../../components/Modal";
 import { useState } from "react";
 
 // eslint-disable-next-line react/prop-types
-const Form = ({ setOpen }) => {
+const Form = ({ setOpen, total }) => {
   const [modal, setModal] = useState(false);
   const { loading } = useSelector(getUserData),
     { cart } = useSelector(getCartData),
@@ -20,10 +20,12 @@ const Form = ({ setOpen }) => {
       try {
         const order = cart.map((a) => {
           const p = {};
-          p.kva = `${a.kva}kva ${a.volt ? a.volt + "volt" : ""}`.trim();
+          p.kva = `${a.kva}kva ${a.volt ? "+ " + a.volt + "volt" : ""}`.trim();
           p.price = "₦" + getAmount(a.price);
           p.package = `${p.kva} inverter with ${a.package}`;
           p.type = a.type;
+          p.quantity = a.quantity;
+
           return p;
         });
 
@@ -33,6 +35,7 @@ const Form = ({ setOpen }) => {
           emailAddress: e.target.emailAddress.value,
           deliveryAddress: e.target.deliveryAddress.value,
           order,
+          total: "₦" + getAmount(total),
         };
 
         const emailRegex =
