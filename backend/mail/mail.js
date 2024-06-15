@@ -5,11 +5,12 @@ import config from "../config.js";
 const { info, error, log } = console;
 
 export const sendMail = async function (message, template) {
+  console.log(config);
   // config
   // const config = {
-    // smtp_secret: process.env.SMTP_SECRET,
-    // smtp_user: process.env.SMTP_USER,
-    // smtp_from: process.env.SMTP_FROM,
+  // smtp_secret: process.env.SMTP_SECRET,
+  // smtp_user: process.env.SMTP_USER,
+  // smtp_from: process.env.SMTP_FROM,
   //   application_name: "GIFT SHORES",
   //   smtp_host: process.env.SMTP_HOST,
   // };
