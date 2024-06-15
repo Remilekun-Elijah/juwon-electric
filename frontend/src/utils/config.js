@@ -11,7 +11,7 @@ const routes = {
 
 environment.development = {
   authProps: ["je/token", "je/user"],
-  backendUrl: "http://localhost:9000" || import.meta.env.VITE_BACKEND_URL,
+  backendUrl: import.meta.env.VITE_BACKEND_URL,
   routes,
   padding: { x: "lg", y: "10rem" },
   socials: {
