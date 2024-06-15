@@ -103,7 +103,10 @@ const Form = ({ setOpen }) => {
           id="deliveryAddress"
         ></textarea>
 
-        <button className="w-full py-2 bg-red text-white mt-5 rounded-lg">
+        <button
+          disabled={loading}
+          className="w-full py-2 bg-red text-white mt-5 rounded-lg"
+        >
           {loading ? (
             <CircularProgress color="error" sx={{ color: "white" }} size={20} />
           ) : (
