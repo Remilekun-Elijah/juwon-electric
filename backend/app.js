@@ -7,7 +7,7 @@ import cors from "cors";
 const app = express();
 if (app.get("env") === "development") env.config();
 
-app.use(cors("*"));
+app.use(cors());
 app.use(express.json());
 
 app.use(userRouter);
