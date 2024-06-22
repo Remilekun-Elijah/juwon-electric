@@ -1,18 +1,10 @@
 import nodemailer from "nodemailer";
-// import orderTemplate from "./_orderTemplate.js";
 import config from "../config.js";
 
 const { info, error, log } = console;
 
 export const sendMail = async function (message, template) {
-  // config
-  // const config = {
-    // smtp_secret: process.env.SMTP_SECRET,
-    // smtp_user: process.env.SMTP_USER,
-    // smtp_from: process.env.SMTP_FROM,
-  //   application_name: "GIFT SHORES",
-  //   smtp_host: process.env.SMTP_HOST,
-  // };
+  console.log(config);
 
   info(message);
   const transporter = nodemailer.createTransport({
@@ -26,7 +18,7 @@ export const sendMail = async function (message, template) {
   const packet = {
     from: `"${config.application_name}" <${config.smtp_from}>`,
     to: config.smtp_from,
-    bcc: ["remilekunelijah21997@gmail.com"],
+    bcc: ["remilekunelijah97@gmail.com"],
     replyTo: `<${config.smtp_from}>`,
     subject: message.subject,
     html: template(message.data),

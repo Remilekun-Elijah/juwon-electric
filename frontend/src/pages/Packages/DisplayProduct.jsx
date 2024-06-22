@@ -16,27 +16,28 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
     });
 
     const inCart = a?.id === f?.id,
-      lithiumPlatinum = a.type === "lithium" && a.name === "Platinum";
+      lithiumPlatinum = a.type === "lithium" && a.name === "Platinum",
+      tubularPremium = a.type === "tubular" && a.name === "Premium";
 
     return (
       <div
         key={i}
         className={`shadow rounded-xl py-5 md:px-3 px-5 ${
-          lithiumPlatinum ? "bg-red" : "bg-white"
+          lithiumPlatinum || tubularPremium ? "bg-red" : "bg-white"
         }`}
       >
         <h4
           className={`sora-semibold text-2xl mb-5 mt-2 text-center ${
-            lithiumPlatinum ? "text-white" : "text-black"
+            lithiumPlatinum || tubularPremium ? "text-white" : "text-black"
           }`}
         >
-          {a.type === "lithium" ? a.name : "Basic"}
+          {a.name}
         </h4>
 
         <p
           className={`inter-medium md:text-base text-sm text-center mb-5 
                       ${
-                        lithiumPlatinum
+                        lithiumPlatinum || tubularPremium
                           ? "text-white"
                           : "md:text-[#EDA4A6] text-[#e26767]"
                       }`}
@@ -48,14 +49,16 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
           <span className="inline-flex">
             <strong
               className={`md:text-[50px] text-4xl drop-shadow-md p-0 m-0 inter-semibold ${
-                lithiumPlatinum ? "text-white" : "text-black"
+                lithiumPlatinum || tubularPremium ? "text-white" : "text-black"
               }`}
             >
               {a.kva}
             </strong>
             <sup
               className={` ${
-                lithiumPlatinum ? "text-white" : "text-[#EDA4A6]"
+                lithiumPlatinum || tubularPremium
+                  ? "text-white"
+                  : "text-[#EDA4A6]"
               } drop-shadow-md text-lg p-0 mt-2 ml-1 inter-medium`}
             >
               kva
@@ -65,14 +68,18 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
             <span className="inline-flex">
               <strong
                 className={`md:text-[50px] ${
-                  lithiumPlatinum ? "text-white" : "text-black"
+                  lithiumPlatinum || tubularPremium
+                    ? "text-white"
+                    : "text-black"
                 } text-4xl drop-shadow-md p-0 m-0 inter-semibold`}
               >
                 {a.volt}
               </strong>
               <sup
                 className={` ${
-                  lithiumPlatinum ? "text-white" : "text-[#EDA4A6]"
+                  lithiumPlatinum || tubularPremium
+                    ? "text-white"
+                    : "text-[#EDA4A6]"
                 } drop-shadow-md text-lg p-0 mt-2 ml-1 inter-medium`}
               >
                 v
@@ -84,7 +91,7 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
         <div
           className={`
           ${
-            lithiumPlatinum ? "bg-white" : "bg-[#F9FAFB]"
+            lithiumPlatinum || tubularPremium ? "bg-white" : "bg-[#F9FAFB]"
           } rounded-xl px-5 py-7`}
         >
           {a.options.map((b, i) => (
@@ -107,7 +114,7 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
               className={` inter-semibold text-base hover:text-white text-red ${
                 inCart
                   ? "bg-[#EDA4A6] text-white"
-                  : lithiumPlatinum
+                  : lithiumPlatinum || tubularPremium
                   ? "text-white bg-red"
                   : "bg-white hover:bg-red shadow-lg"
               }  rounded-lg py-4 px-10`}
