@@ -71,12 +71,6 @@ const Footer = () => {
                 <li className="">
                   <Link to={config.routes.contact}>Help Center</Link>
                 </li>
-                {/* <li className="my-1">
-                  <Link>Account information</Link>
-                </li> */}
-                {/* <li>
-                  <Link to={config.routes.contact}>About</Link>
-                </li> */}
                 <li className="my-1">
                   <Link to={config.routes.contact}>Contact us</Link>
                 </li>
