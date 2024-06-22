@@ -35,7 +35,6 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
   }
 
   const controlProps = (item) => {
-    console.log(withSolar, item);
     return {
       checked: withSolar === String(item),
       onChange: handleChange,

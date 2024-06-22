@@ -14,13 +14,15 @@ const Testimonials = () => {
       {
         name: "Damilare James",
         img: "/person-1.svg",
-        message: text,
+        message: `It's working perfectly. It worth it.
+        Have never been in a blackout for a sec. I Dey follow all the procedures told during installment. So I'm good.`,
         rating: 5,
       },
       {
-        name: "Clement Anthony",
+        name: "Juliet Anthony",
         img: "/person-2.svg",
-        message: text,
+        message:
+          "Working well, except that more power is more consumption and more consumption is more expenditure 😄😄😄 \nNice job. My happiness\n level has increased.",
         rating: 4.5,
       },
     ],
@@ -28,13 +30,16 @@ const Testimonials = () => {
       {
         name: "Kehinde Ayodeji",
         img: "/person-3.svg",
-        message: text,
-        rating: 4,
+        message:
+          "Absolutely loved how professional your team was. Started using my inverter already and yes, I LOVE it already, Will definitely be back for more. I hundred percent recommend @juwon_electric to anyone looking to get an inverter.",
+        rating: 5,
       },
       {
         name: "Victor Okonkwo",
         img: "/person-4.svg",
-        message: text,
+        message: `
+        Thanks for the good job juwon electric. I have never regret your services since am on the grid of 2.5kva inverter it Amazing, it has reduced the cost fuelling Gen and environmental population reduced totally.
+        Thanks alot.`,
         rating: 4.5,
       },
     ],
@@ -42,13 +47,18 @@ const Testimonials = () => {
       {
         name: "Caroline Felix",
         img: "/person-5.svg",
-        message: text,
+        message: `
+        No complaints!
+Probably our fav purchase this year.
+I also recommended a friend to you as well.
+They just moved to Lagos so when they're ready, they will reach out.
+Thank you.`,
         rating: 4.5,
       },
       {
         name: "Moses Adebayo",
         img: "/person-6.svg",
-        message: text,
+        message: `Thank you for your time and assistance. I am happy I chose Juwon Electric. You are absolutely unbelievable. 😃😃🔥🔥😇`,
         rating: 5,
       },
     ],
