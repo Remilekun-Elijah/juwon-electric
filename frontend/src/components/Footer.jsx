@@ -62,21 +62,21 @@ const Footer = () => {
             </form>
           </div>
 
-          <div className="flex md:flex-row flex-col md:text-left text-center md:justify-between justify-center flex-wrap md:item-start items-center gap-10">
+          <div className="flex md:flex-row flex-col md:text-left text-center md:justify-between justify-center flex-wrap md:items-start items-center gap-10">
             <div>
               <h1 className="inter-medium text-lg !text-white mb-4">
                 Supports
               </h1>
-              <ul className="!gap-y-5 inter-medium text-lg">
+              <ul className="!gap-y-5 inter-medium text-lg text-center">
                 <li className="">
                   <Link to={config.routes.contact}>Help Center</Link>
                 </li>
-                <li className="my-1">
-                  <Link to={"/"}>Account information</Link>
-                </li>
-                <li>
+                {/* <li className="my-1">
+                  <Link>Account information</Link>
+                </li> */}
+                {/* <li>
                   <Link to={config.routes.contact}>About</Link>
-                </li>
+                </li> */}
                 <li className="my-1">
                   <Link to={config.routes.contact}>Contact us</Link>
                 </li>
@@ -86,16 +86,12 @@ const Footer = () => {
               <h1 className="inter-medium text-lg !text-white mb-4">
                 Help and Solution
               </h1>
-              <ul className="">
+              <ul className="text-center">
                 <li>
                   <Link to={config.routes.contact}>Talk to support</Link>
                 </li>
-                <li className="my-1">
-                  <Link to={"/"}>Support docs</Link>
-                </li>
-                <li>
-                  <Link to={"/"}>System status</Link>
-                </li>
+                {/* <li className="my-1">Support docs</li>
+                <li>System status</li> */}
                 <li className="my-1">
                   <Link to={config.routes.contact}>Urgent response</Link>
                 </li>
@@ -103,18 +99,12 @@ const Footer = () => {
             </div>
             <div>
               <h1 className="inter-medium text-lg !text-white mb-4">Product</h1>
-              <ul className="">
-                <li>
-                  <Link to={"/"}>Update</Link>
-                </li>
+              <ul className="text-center">
+                {/* <li>Update</li>
+                <li className="my-1">Security</li>
+                <li>Beta test</li> */}
                 <li className="my-1">
-                  <Link to={"/"}>Security</Link>
-                </li>
-                <li>
-                  <Link to={"/"}>Beta test</Link>
-                </li>
-                <li className="my-1">
-                  <Link to={config.routes.packages}>Pricing product</Link>
+                  <Link to={config.routes.packages}>Pricing</Link>
                 </li>
               </ul>
             </div>
