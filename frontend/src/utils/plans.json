@@ -81,7 +81,7 @@
           {
             "name": "With solar",
             "price": 1830000,
-            "kits": "2 batteries, 6 panels & 60ah PWM charge controller"
+            "kits": "2 batteries, 4 panels & 60ah PWM charge controller"
           }
         ]
       },
@@ -89,7 +89,7 @@
         "id": 4,
         "type": "tubular",
         "name": "Premium",
-        "load": "3 fans, 2 tvs, 2 decoder, 1 sound, 12 points, 1 fridge/ freezer, 1 microwave, 1 blender, 3 laptops and charging of phones.",
+        "load": "3 fans, 2 TVs, 2 decoders, 1 sound system, 1 fridge/freezer, 1 microwave, 1 blender, 12 lighting points, 3 laptops & charging of phones",
         "kva": 2.5,
         "volt": null,
         "options": [
@@ -101,7 +101,7 @@
           {
             "name": "With solar",
             "price": 2000000,
-            "kits": "6 panels, 60ah Felicity MPPT charge controller and 2 batteries"
+            "kits": "2 batteries, 6 panels & 60ah Felicity MPPT charge controller"
           }
         ]
       },
