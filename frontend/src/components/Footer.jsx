@@ -69,16 +69,16 @@ const Footer = () => {
               </h1>
               <ul className="!gap-y-5 inter-medium text-lg">
                 <li className="">
-                  <Link to={"/"}>Help Center</Link>
+                  <Link to={config.routes.contact}>Help Center</Link>
                 </li>
                 <li className="my-1">
                   <Link to={"/"}>Account information</Link>
                 </li>
                 <li>
-                  <Link to={"#about"}>About</Link>
+                  <Link to={config.routes.contact}>About</Link>
                 </li>
                 <li className="my-1">
-                  <Link to={"/"}>Contact us</Link>
+                  <Link to={config.routes.contact}>Contact us</Link>
                 </li>
               </ul>
             </div>
@@ -88,7 +88,7 @@ const Footer = () => {
               </h1>
               <ul className="">
                 <li>
-                  <Link to={"/"}>Talk to support</Link>
+                  <Link to={config.routes.contact}>Talk to support</Link>
                 </li>
                 <li className="my-1">
                   <Link to={"/"}>Support docs</Link>
@@ -97,7 +97,7 @@ const Footer = () => {
                   <Link to={"/"}>System status</Link>
                 </li>
                 <li className="my-1">
-                  <Link to={"/"}>Urgent response</Link>
+                  <Link to={config.routes.contact}>Urgent response</Link>
                 </li>
               </ul>
             </div>
@@ -114,7 +114,7 @@ const Footer = () => {
                   <Link to={"/"}>Beta test</Link>
                 </li>
                 <li className="my-1">
-                  <Link to={"/"}>Pricing product</Link>
+                  <Link to={config.routes.packages}>Pricing product</Link>
                 </li>
               </ul>
             </div>

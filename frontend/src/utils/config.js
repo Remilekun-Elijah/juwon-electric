@@ -11,7 +11,7 @@ const routes = {
 
 environment.development = {
   authProps: ["je/token", "je/user"],
-  backendUrl: import.meta.env.VITE_BACKEND_URL,
+  backendUrl: import.meta.env.VITE_BACKEND_URL || "http://localhost:9000",
   routes,
   padding: { x: "lg", y: "10rem" },
   socials: {
@@ -24,7 +24,8 @@ environment.development = {
 
 environment.staging = {
   authProps: ["je/token", "je/user"],
-  backendUrl: import.meta.env.VITE_BACKEND_URL,
+  backendUrl:
+    import.meta.env.VITE_BACKEND_URL || "https://juwon-electric.onrender.com",
   routes,
   padding: { x: "lg", y: "10rem" },
   socials: {
