@@ -24,7 +24,7 @@ const Header = ({ text }) => {
         playsInline
         className="header-video  h-screen  w-screen md:hidden block"
       >
-        <source src="/background_video.mov" className="" type="video/mp4" />
+        <source src="/background_video.mp4" className="" type="video/mp4" />
       </video>
       <div className="header-content flex flex-col justify-center items-center lg:h-screen h-full w-full">
         <h2 className="text-center inter-bold xl:text-6xl lg:text-5xl md:text-4xl text-3xl text-offWhite">
