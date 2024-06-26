@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import CustomChip from "../../components/CustomChip";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import { useState } from "react";
+import { Container } from "@mui/material";
+import config from "../../utils/config";
 
 const Portfolio = () => {
   const [recentWork, setRecentWork] = useState([
@@ -72,47 +74,49 @@ const Portfolio = () => {
         Our Recent Work
       </h2>
 
-      <div className="flex justify-center item-center gap-10 flex-wrap">
-        {recentWork.map((work, i) => (
-          <div
-            key={i}
-            className={`relative  ${!work.mobile && "md:block hidden"}`}
-          >
+      <Container maxWidth={config.padding.x} className="">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-center item-center gap-10">
+          {recentWork.map((work, i) => (
             <div
-              className={`overlay rounded-2xl flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
+              key={i}
+              className={`relative  ${!work.mobile && "md:block hidden"}`}
             >
-              <p className="sora-bold text-xl text-white text-center">
-                {work.name}
-              </p>
-              <Link
-                target="_blank"
-                to={work.link}
-                className="flex items-center text-center gap-1 text-white mt-1"
+              <div
+                className={`overlay rounded-2xl flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
               >
-                <InstagramIcon />
-                <p className="manrope-semibold text-xl">Follow Us</p>
-              </Link>
+                <p className="sora-bold text-xl text-white text-center">
+                  {work.name}
+                </p>
+                <Link
+                  target="_blank"
+                  to={work.link}
+                  className="flex items-center text-center gap-1 text-white mt-1"
+                >
+                  <InstagramIcon />
+                  <p className="manrope-semibold text-xl">Follow Us</p>
+                </Link>
+              </div>
+
+              <img className="w-full" src={work.img} alt={`work ${i + 1}`} />
             </div>
+          ))}
+        </div>
 
-            <img className="" src={work.img} alt={`work ${i + 1}`} />
-          </div>
-        ))}
-      </div>
-
-      <div
-        className={`md:hidden ${
-          recentWork.filter((a) => a.mobile).length > 4 && "hidden"
-        }`}
-      >
-        <br />
-        <br />
-        <Link
-          onClick={(e) => handleMobileExpand(e, recentWork, setRecentWork)}
-          className={`text-deep_red underline pb-1 inter-medium text-xl text-center block mt-`}
+        <div
+          className={`md:hidden ${
+            recentWork.filter((a) => a.mobile).length > 4 && "hidden"
+          }`}
         >
-          See All
-        </Link>
-      </div>
+          <br />
+          <br />
+          <Link
+            onClick={(e) => handleMobileExpand(e, recentWork, setRecentWork)}
+            className={`text-deep_red underline pb-1 inter-medium text-xl text-center block mt-`}
+          >
+            See All
+          </Link>
+        </div>
+      </Container>
     </div>
   );
 };

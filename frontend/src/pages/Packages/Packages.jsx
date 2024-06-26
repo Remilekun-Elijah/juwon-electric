@@ -33,7 +33,7 @@ const Packages = () => {
       <Header text="PACKAGES" />
 
       <div
-        className="py-20"
+        className="pt-10 pb-20"
         style={{
           backgroundImage: "url('/contactBackground.svg')",
           backgroundPosition: "center",
@@ -58,7 +58,7 @@ const Packages = () => {
             <MiniTab
               {...{
                 active,
-                setActive,
+                setActive, 
                 data: ["Tubular Battery", "Lithium Battery"],
               }}
             />
