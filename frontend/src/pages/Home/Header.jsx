@@ -17,7 +17,7 @@ const Header = () => {
           </h1>
 
           {/* CURVE IMAGE */}
-          <img src="curve_line.svg" alt="curve_line" />
+          <img src="/curve_line.svg" alt="curve_line" />
 
           <p className="inter-medium md:text-lg text-base md:my-8 my-5 md:text-left text-center">
             {" "}
@@ -44,14 +44,14 @@ const Header = () => {
               startIcon={<PlayCircleOutlineIcon />}
             >
               {" "}
-              View us on tiktok
+              View us on TikTok
             </Button>
           </div>
         </div>
 
         <div className="flex items-start w-full md:order-1 gap-0 justify-center">
           {/* HEADER IMAGE */}
-          <img src="header.svg" alt="" className="w-[80%] md:w-max -mt-5" />
+          <img src="/header.svg" alt="" className="w-[80%] md:w-max -mt-5" />
           {/* ROTATING IMAGE */}
           <Link
             className="lg:-ml-28 -ml-12 -mb-12 rotate-infinite lg:w-fit w-[50px]"

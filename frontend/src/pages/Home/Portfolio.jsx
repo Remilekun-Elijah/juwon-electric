@@ -8,7 +8,7 @@ import config from "../../utils/config";
 const Portfolio = () => {
   const [recentWork, setRecentWork] = useState([
     {
-      name: "1.2kwp Canadian Solar",
+      name: "2.1kwp Canadian Solar",
       img: "/image-1.svg",
       link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ==",
       mobile: true,
@@ -79,7 +79,9 @@ const Portfolio = () => {
           {recentWork.map((work, i) => (
             <div
               key={i}
-              className={`relative  ${!work.mobile && "md:block hidden"}`}
+              className={`relative  ${
+                !work.mobile && "md:block hidden"
+              } md:w-[285px] md:h-[285px] `}
             >
               <div
                 className={`overlay rounded-2xl flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
@@ -97,7 +99,11 @@ const Portfolio = () => {
                 </Link>
               </div>
 
-              <img className="w-full" src={work.img} alt={`work ${i + 1}`} />
+              <img
+                className="object-cover h-full w-full rounded-2xl"
+                src={work.img}
+                alt={`work ${i + 1}`}
+              />
             </div>
           ))}
         </div>

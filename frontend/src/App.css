@@ -214,3 +214,7 @@ body::-webkit-scrollbar-track,
   /* width: calc(100vw) */
   background-color: rgba(0, 0, 0, .5);
 }
+
+img {
+  pointer-events: none;
+}
