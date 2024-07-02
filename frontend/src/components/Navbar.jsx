@@ -127,8 +127,8 @@ export default function Navbar() {
                 .map((item) => (
                   <DisclosureButton
                     key={item.name}
-                    as={Link}
-                    to={item.href}
+                    as={"a"}
+                    href={item.href}
                     className={classNames(
                       item.current
                         ? "bg-gray-900 !text-white"

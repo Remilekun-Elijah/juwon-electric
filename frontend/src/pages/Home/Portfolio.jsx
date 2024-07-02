@@ -44,7 +44,7 @@ const Portfolio = () => {
       mobile: false,
     },
     {
-      name: "4.2kwp Trina Solar",
+      name: "2.1kwp Trina Solar",
       img: "/image-7.svg",
       link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
       mobile: false,
@@ -81,7 +81,7 @@ const Portfolio = () => {
               key={i}
               className={`relative  ${
                 !work.mobile && "md:block hidden"
-              } md:w-[285px] md:h-[285px] `}
+              } md:w-[285px] md:h-[285px] sm:w-[350px] sm:h-[350px]  h-[350px]`}
             >
               <div
                 className={`overlay rounded-2xl flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
