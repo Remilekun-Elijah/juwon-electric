@@ -16,34 +16,48 @@ const Services = () => {
   const offeringData = [
     {
       img: "/offer-1.svg",
-      title: "Sales And Installation",
-      subtitle,
+      title: "System Design and Architecture",
+      subtitle: `
+      Our team does not just work, we do thorough inspections, assess the roof, and determine the best location for solar panels, batteries location and circuit boxes. 
+
+Spacing the power line is our priority. This application of theoretical knowledge has made us stand out among many.
+
+We are here for you!
+
+      `,
     },
     {
       img: "/offer-2.svg",
-      title: "System Design And Architecture",
-      subtitle,
+      title: "Energy Audit",
+      subtitle: `Our team provides expert assessments of your energy usage and solar potential, tailoring recommendations to best fit your unique residential and commercial properties.
+`,
     },
     {
       img: "/offer-3.svg",
-      title: "Energy Audit",
-      subtitle,
+      title: "Light Solution",
+      subtitle: `Light is needed everywhere and quick fixes are easy to find. At Juwon Electric, we take pride in delivering sustainable lighting solutions which is key. 
+`,
     },
     {
       img: "/offer-4.svg",
-      title: "Light Solutions",
-      subtitle,
+      title: "After Sales Services",
+      subtitle: `Selling to a customer is like winning a game of chess because we trust our services which in turn generates a cohesive and lasting relationship with our clients. 
+
+We offer this After Sales Services.
+`,
     },
     {
       img: "/offer-5.svg",
-      title: "After Sales Service",
-      subtitle,
+      title: "Maintenance ",
+      subtitle: `Trust takes one higher. Our dedicated team does not rest until you are happy with the best maintenance of your equipment.
+
+Trust us to take you higher.`,
     },
-    {
-      img: "/offer-6.svg",
-      title: "Maintenance",
-      subtitle,
-    },
+    // {
+    //   img: "/offer-6.svg",
+    //   title: "Maintenance",
+    //   subtitle,
+    // },
   ];
 
   const customerData = [
