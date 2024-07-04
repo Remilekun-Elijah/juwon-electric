@@ -162,7 +162,7 @@ const Contact = () => {
                   <div className="flex gap-2 my-4">
                     <EmailIcon className="text-deep_red" />{" "}
                     <p className="inter-regular text-base">
-                      juwonofficial@gmail.com
+                      inquiries@juwonelectric.com
                     </p>
                   </div>
                   <div className="flex gap-2">
