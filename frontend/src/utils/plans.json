@@ -290,7 +290,7 @@
           {
             "name": "With solar",
             "price": 9700000,
-            "kits": "24 panels (550w), 12 batteries & 80ah Felicity solar charge controller MPPT X2"
+            "kits": "20 panels (550w), 12 batteries & 80ah Felicity solar charge controller MPPT X2"
           }
         ]
       }
@@ -314,7 +314,7 @@
           },
           {
             "name": "With solar",
-            "price": 4550000,
+            "price": 4750000,
             "kits": "12 panels,  10kwh battery & 100ah Felicity MPPT charge controller"
           }
         ]
@@ -330,19 +330,15 @@
           {
             "name": "Without solar",
             "price": 4500000,
-            "kits": "15kwh battery & installation kits"
+            "kits": "15kwh lithium battery, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5450000,
-            "kits": "15 panels, 15kwh battery & 100ah Felicity MPPT charge controller"
+            "price": 5500000,
+            "kits": "15kwh lithium battery, 15 panels, 100ah felicity solar charge controller"
           }
         ]
-      }
-    ]
-  },
-  {
-    "plan": [
+      },
       {
         "id": 15,
         "type": "lithium",
@@ -353,16 +349,20 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4000000,
-            "kits": "10kwh SRNE battery with 10yrs warranty & installation kits"
+            "price": 4900000,
+            "kits": "10kwh SRNE lithium battery with 10 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5000000,
-            "kits": "12 panels, 10kwh SRNE battery with 10yrs warranty & 100ah Felicity MPPT charge controller"
+            "price": 5800000,
+            "kits": "12 panels, 10kwh SRNE lithium battery with 10 years warranty, 100ah felicity solar charge controller"
           }
         ]
-      },
+      }
+    ]
+  },
+  {
+    "plan": [
       {
         "id": 16,
         "type": "lithium",
@@ -374,12 +374,12 @@
           {
             "name": "Without solar",
             "price": 4000000,
-            "kits": "10kwh battery & installation kits"
+            "kits": "10kwh lithum battery, installation kits"
           },
           {
             "name": "With solar",
             "price": 4950000,
-            "kits": "12 panels,  10kwh battery & 100ah Felicity MPPT charge controller"
+            "kits": "12 panels, 10kwh lithium battery 100ah felicity solar charge controller Mppt"
           }
         ]
       },
@@ -394,12 +394,12 @@
           {
             "name": "Without solar",
             "price": 4300000,
-            "kits": "15kwh battery with 5yrs warranty & installation kits"
+            "kits": "15kwh lithum battery with 5 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5600000,
-            "kits": "15 panels, 15kwh battery with 5yrs warranty & 100ah Felicity MPPT charge controller"
+            "price": 5900000,
+            "kits": "15 panels, 15kwh lithium battery with 5 years warranty, 100ah felicity solar charge controller Mppt"
           }
         ]
       },
@@ -413,13 +413,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4200000,
-            "kits": "10kwh SRNE battery with 10yrs warranty & installation kits"
+            "price": 5050000,
+            "kits": "10kwh SRNE lithum battery with 10 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5300000,
-            "kits": "12 panels, 10kwh SRNE battery with 10yrs warranty & 100ah Felicity MPPT charge controller"
+            "price": 6000000,
+            "kits": "12 panels, 10kwh SRNE lithium battery with 10 years warranty, 100ah felicity solar charge controller Mppt"
           }
         ]
       }
@@ -438,13 +438,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4800000,
-            "kits": "15kwh battery with 5yrs & installation kits"
+            "price": 4900000,
+            "kits": "15kwh lithium battery with 5 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 6950000,
-            "kits": "15kwh battery with 5yrs warranty, 16 panels & 120ah Felicity MPPT charge controller"
+            "price": 7250000,
+            "kits": "15kwh lithium battery with 5 years warranty, 16 panels, 120ah felicity solar charge controller MPPT"
           }
         ]
       },
@@ -458,13 +458,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 8500000,
-            "kits": "20kwh SRNE battery with 10yrs warranty & installation kits"
+            "price": 9500000,
+            "kits": "20kwh SRNE lithium battery with 10 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 11600000,
-            "kits": "20kwh battery with 20 panels(550w) & 120ah Felicity MPPT charge controller"
+            "price": 12600000,
+            "kits": "20kwh SRNE lithium battery, with 10 years warranty, 20 panels{550w"
           }
         ]
       },
@@ -479,13 +479,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 9800000,
-            "kits": "32kwh SRNE battery with 10yrs warranty & installation kits"
+            "price": 11700000,
+            "kits": "32kwh SRNE lithium battery with 1Oyears warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 14000000,
-            "kits": "30kwh battery with 10yrs warranty, 24 panels (550w) & 100ah Felicity MPPT X2 charge controller"
+            "price": 16400000,
+            "kits": "32kwh SRNE lithium battery with 10years warranty, 24 panels{550w"
           }
         ]
       },
@@ -500,12 +500,12 @@
           {
             "name": "Without solar",
             "price": 8650000,
-            "kits": "30kwh battery with 5yrs warranty & installation kits"
+            "kits": "30kwh lithium battery with 5years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 11800000,
-            "kits": "30kwh battery with 5yrs warranty, 24 panels (550w) & 100ah Felicity MPPT X2 charge controller"
+            "price": 12000000,
+            "kits": "30kwh lithium battery with 5years warranty, 24 panels{550w} 80ah felicity solar charge controller MPPT X2"
           }
         ]
       }
