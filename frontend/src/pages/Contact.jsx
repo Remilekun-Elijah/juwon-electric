@@ -157,7 +157,9 @@ const Contact = () => {
                   />
                   <div className="flex gap-2">
                     <PhoneIcon className="text-deep_red" />{" "}
-                    <p className="inter-regular text-base">+234 81-4457-1553</p>
+                    <p className="inter-regular text-base">
+                      +2348144571553, +2347042394925, +2349032560291
+                    </p>
                   </div>
                   <div className="flex gap-2 my-4">
                     <EmailIcon className="text-deep_red" />{" "}
@@ -168,7 +170,7 @@ const Contact = () => {
                   <div className="flex gap-2">
                     <LocationOnIcon className="text-deep_red" />{" "}
                     <p className="inter-regular text-base">
-                      86, aladelola street. Ikosi ketu, Lagos, Nigeria
+                      86, aladelola street, Ikosi ketu, Lagos, Nigeria
                     </p>
                   </div>
 
