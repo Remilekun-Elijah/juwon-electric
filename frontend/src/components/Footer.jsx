@@ -21,7 +21,10 @@ const Footer = () => {
         e.preventDefault();
         if (emailRegex.test(emailAddress)) {
           const res = await dispatch(subscribe({ emailAddress })).unwrap();
-          if (res.success) e.target.reset();
+          if (res.success) {
+            e.target.reset();
+            setEmailAddress("");
+          }
         } else Alert({ message: "Invalid email address", type: "error" });
       } catch (error) {
         console.error(error);
