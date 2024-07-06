@@ -14,6 +14,7 @@ import config from "../utils/config";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useSelector } from "react-redux";
 import { getCartData } from "../features/cart";
+import { ILogoImg } from "../utils/icon";
 const { routes } = config;
 
 let navigation = [
@@ -74,7 +75,7 @@ export default function Navbar() {
 
               <div className="flex flex-1 items-center justify-start md:items-center md:justify-center lg:justify-between">
                 <div className="flex flex-shrink-0 items-center sm:ml-0 ml-9">
-                  <img className="" src="/logo.svg" alt="Your Company" />
+                  <img className="" src={ILogoImg} alt="Your Company" />
                 </div>
                 <div className="hidden md:ml-10 lg:ml-20 md:block mt-1">
                   <div className="flex">
