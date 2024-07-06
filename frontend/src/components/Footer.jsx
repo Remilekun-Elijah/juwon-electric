@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserData, subscribe } from "../features/user";
 import { useState } from "react";
 import Alert from "../utils/Alert";
+import { ILogoImg } from "../utils/icon";
 
 const Footer = () => {
   const { loading } = useSelector(getUserData),
@@ -32,7 +33,7 @@ const Footer = () => {
       <Container maxWidth={config.padding.x}>
         <footer className="flex md:mt-10 lg:justify-between justify-center text-[#E67E82] flex-wrap md:items-stretch items-center">
           <div className="about lg:mb-0 mb-10 md:mt-0 mt-8">
-            <img src="/logo.svg" className="md:mx-0 mx-auto" />
+            <img src={ILogoImg} className="md:mx-0 mx-auto" />
             <h1 className="inter-medium text-lg md:text-left text-center text-[#E67E82] my-5">
               Stay informed about our latest product.
             </h1>
