@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 // eslint-disable-next-line react/prop-types
 const Header = ({ text }) => {
@@ -31,8 +31,8 @@ const Header = ({ text }) => {
           {text}
         </h2>
 
-        <Link
-          to="/"
+        <a
+          href="/"
           className="mt-10 sm:px-20 px-10 py-3 sora-bold md:text-xl text-base text-white border-2"
           style={{
             background:
@@ -46,7 +46,7 @@ const Header = ({ text }) => {
           }}
         >
           GO HOME
-        </Link>
+        </a>
       </div>
     </header>
   );

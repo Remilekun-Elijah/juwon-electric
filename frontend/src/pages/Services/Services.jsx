@@ -10,9 +10,6 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 
 const Services = () => {
-  const subtitle =
-    "We sell and deploy premium quality products, we execute professional installations of our systems and technologies ensuring compliance with safety standards and quality assurance.";
-
   const offeringData = [
     {
       img: "/offer-1.svg",
@@ -49,15 +46,8 @@ We offer this After Sales Services.
     {
       img: "/offer-5.svg",
       title: "Maintenance ",
-      subtitle: `Trust takes one higher. Our dedicated team does not rest until you are happy with the best maintenance of your equipment.
-
-Trust us to take you higher.`,
+      subtitle: `Trust takes one higher. Our dedicated team does not rest until you are happy with the best maintenance of your equipment. Trust us to take you higher.`,
     },
-    // {
-    //   img: "/offer-6.svg",
-    //   title: "Maintenance",
-    //   subtitle,
-    // },
   ];
 
   const customerData = [
