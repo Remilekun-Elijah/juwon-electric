@@ -196,3 +196,25 @@ body::-webkit-scrollbar-track,
   background-size: cover;
   background-position: center;
 }
+
+.header-video {
+
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  top: 0;
+  /* background-color: rgba(0, 0, 0, .5); */
+}
+
+.header-content {
+  /* z-index: 10; */
+
+  /* width: calc(100vw) */
+  background-color: rgba(0, 0, 0, .5);
+}
+
+img {
+  pointer-events: none;
+}

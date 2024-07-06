@@ -18,7 +18,7 @@ const About = () => {
     >
       <Container maxWidth="lg" className="relative">
         <div className="flex flex-col lg:flex-row items-center justify-center lg:flex-nowrap flex-wrap">
-          <img src="/engineer.svg" className="z-10 lg:ml-0" />
+          <img src="/engineer.svg" className="z-10 lg:ml-0 shadow" />
 
           <div className="lg:-ml-10 max-w-[700px] lg:mt- -mt-4 lg:mt-60 z-10 div p-5 bg-offWhite rounded-lg shadow-lg w-full lg:min-h-[500px] md:min-h-[450px] h-full">
             <CustomChip
