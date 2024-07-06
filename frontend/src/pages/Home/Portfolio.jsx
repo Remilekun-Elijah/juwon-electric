@@ -71,7 +71,7 @@ const Portfolio = () => {
       <CustomChip text="Portfolio" className="flex justify-center" />
 
       <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:my-16 my-10 text-center">
-        Our Recent Work
+        Our latest projects
       </h2>
 
       <Container maxWidth={config.padding.x} className="">

@@ -46,19 +46,20 @@ const Packages = () => {
             className="flex justify-center my-10"
           />
           <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:mt-12 mt-10 mb-7 text-center">
-            <p className="mb-1">Choose packages</p>{" "}
-            <p> that&apos;s right for you</p>
+            <p className="mb-1">Select the package</p>
+            <p>that suits you best</p>
           </h2>
 
           <p className="inter-medium text-base text-center text-faint">
-            Choose plan that works best for you, feel free to contact us
+            Select the plan that fits your needs best, and don&apos;t hesitate
+            to reach out to us.
           </p>
 
           <div className="flex justify-center my-10">
             <MiniTab
               {...{
                 active,
-                setActive, 
+                setActive,
                 data: ["Tubular Battery", "Lithium Battery"],
               }}
             />

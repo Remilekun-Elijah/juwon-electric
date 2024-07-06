@@ -34,7 +34,7 @@ const Footer = () => {
           <div className="about lg:mb-0 mb-10 md:mt-0 mt-8">
             <img src="/logo.svg" className="md:mx-0 mx-auto" />
             <h1 className="inter-medium text-lg md:text-left text-center text-[#E67E82] my-5">
-              Be the first to know our new product
+              Stay informed about our latest product.
             </h1>
 
             <form onSubmit={handleChange}>
@@ -64,9 +64,7 @@ const Footer = () => {
 
           <div className="flex md:flex-row flex-col md:text-left text-center md:justify-between justify-center flex-wrap md:items-start items-center gap-10">
             <div>
-              <h1 className="inter-medium text-lg !text-white mb-4">
-                Supports
-              </h1>
+              <h1 className="inter-medium text-lg !text-white mb-4">Support</h1>
               <ul className="!gap-y-5 inter-medium text-lg text-center">
                 <li className="">
                   <Link to={config.routes.contact}>Help Center</Link>
@@ -84,8 +82,6 @@ const Footer = () => {
                 <li>
                   <Link to={config.routes.contact}>Talk to support</Link>
                 </li>
-                {/* <li className="my-1">Support docs</li>
-                <li>System status</li> */}
                 <li className="my-1">
                   <Link to={config.routes.contact}>Urgent response</Link>
                 </li>
@@ -94,9 +90,6 @@ const Footer = () => {
             <div>
               <h1 className="inter-medium text-lg !text-white mb-4">Product</h1>
               <ul className="text-center">
-                {/* <li>Update</li>
-                <li className="my-1">Security</li>
-                <li>Beta test</li> */}
                 <li className="my-1">
                   <Link to={config.routes.packages}>Pricing</Link>
                 </li>

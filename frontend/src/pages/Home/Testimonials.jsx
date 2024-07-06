@@ -6,9 +6,6 @@ import config from "../../utils/config";
 import Slider from "../../components/Slider";
 
 const Testimonials = () => {
-  const text =
-    "is a Nigerian energy company specialized in clean renewable energy – Particularly Inverter systems, Battery backup and Solar solutions. Over the years we have powered various homes, offices and government institution across the country. ";
-
   const reviews = [
     [
       {
@@ -70,7 +67,7 @@ Thank you.`,
         <CustomChip text="Testimonials" className="flex justify-center my-5" />
 
         <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:my-16 my-10 md:px-0 px-2 text-center">
-          What Our Clients Say About Us
+          Clients testimonials
         </h2>
 
         <Carousel autoPlay infiniteLoop swipeable={false} showThumbs={false}>

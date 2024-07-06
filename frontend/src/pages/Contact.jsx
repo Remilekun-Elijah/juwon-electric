@@ -67,8 +67,8 @@ const Contact = () => {
             className="md:flex justify-center py-10 hidden"
           />
           <p className="inter-medium text-base text-center text-faint">
-            Have questions? Drop us a line via phone contact or send us email.
-            We would be happy to help you :)
+            Have questions? Feel free to reach out to us via phone or email.
+            We&apos;re here to assist you!
           </p>
 
           <section className="shadow md:p-10 py-5 px-5 bg-white mt-10 rounded">
