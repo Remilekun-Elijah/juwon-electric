@@ -9,27 +9,27 @@ import config from "../utils/config";
 const Portfolio = () => {
   const [portfolioData, setPortfolioData] = useState([
     {
-      name: "4.2Kwp Trina Solar Panel",
-      img: "/portfolio-1.svg",
+      name: "2.1Kwp Trina Solar Panel",
+      img: "/image-1.svg",
       mobile: true,
     },
     {
       name: "5Kva Tubular Battery Energy",
-      img: "/portfolio-2.svg",
+      img: "/image-3.svg",
       mobile: true,
     },
     {
       name: "8.8Kwp Canadian Solar Panel",
-      img: "/portfolio-3.svg",
+      img: "/image-6.svg",
       mobile: true,
     },
     {
       name: "7.5Kva Lithium Battery",
-      img: "/portfolio-4.svg",
+      img: "/image-2.svg",
       mobile: true,
     },
     {
-      name: "350W Mono-Crystalline Solar Panel",
+      name: "550W Mono-Crystalline Solar Panel",
       img: "/portfolio-5.svg",
       mobile: true,
     },
@@ -55,7 +55,7 @@ const Portfolio = () => {
     },
     {
       name: "1.2Kwp Canadian Solar Panel",
-      img: "/portfolio-10.svg",
+      img: "/image-4.svg",
       mobile: false,
     },
     {

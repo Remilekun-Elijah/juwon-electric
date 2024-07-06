@@ -1,6 +1,7 @@
 import StarIcon from "@mui/icons-material/Star";
 import StarHalfIcon from "@mui/icons-material/StarHalf";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import { Avatar } from "@mui/material";
 // eslint-disable-next-line react/prop-types
 const Slider = ({ data = [] }) => {
   return (
@@ -23,8 +24,8 @@ const Slider = ({ data = [] }) => {
               </div>
               <div className="arrow-down absolute shadow"></div>
             </div>
-            <div className="flex items-center mt-14 ml-5 gap-4">
-              <img src={a.img} className="!w-20 z-20 !h-full" />
+            <div className="flex items-center mt-14 sm:ml-10 ml-9 gap-4">
+              <Avatar className="!w-16 z-20 !h-16" />
               <div>
                 <p>{a.name}</p>
                 {Array(5)

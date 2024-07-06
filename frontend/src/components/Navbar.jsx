@@ -14,6 +14,7 @@ import config from "../utils/config";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useSelector } from "react-redux";
 import { getCartData } from "../features/cart";
+import { ILogoImg } from "../utils/icon";
 const { routes } = config;
 
 let navigation = [
@@ -51,8 +52,8 @@ export default function Navbar() {
       className="bg-navbar_color text-white fixed top-0 py-1 right-0 left-0 shadow z-50"
     >
       {({ open }) => (
-        <Container maxWidth="lg">
-          <div className="mx-auto px-2 sm:px-6 lg:px-8">
+        <Container className="px-0">
+          <div className="mx-auto sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
               <div className="absolute inset-y-0 left-0 flex items-center md:hidden">
                 {/* Mobile menu button*/}
@@ -71,9 +72,10 @@ export default function Navbar() {
                   )}
                 </DisclosureButton>
               </div>
-              <div className="flex flex-1 items-center justify-center md:items-center md:justify-center lg:justify-between">
-                <div className="flex flex-shrink-0 items-center">
-                  <img className="" src="/logo.svg" alt="Your Company" />
+
+              <div className="flex flex-1 items-center justify-start md:items-center md:justify-center lg:justify-between">
+                <div className="flex flex-shrink-0 items-center sm:ml-0 ml-9">
+                  <img className="" src={ILogoImg} alt="Your Company" />
                 </div>
                 <div className="hidden md:ml-10 lg:ml-20 md:block mt-1">
                   <div className="flex">
@@ -126,8 +128,8 @@ export default function Navbar() {
                 .map((item) => (
                   <DisclosureButton
                     key={item.name}
-                    as={Link}
-                    to={item.href}
+                    as={"a"}
+                    href={item.href}
                     className={classNames(
                       item.current
                         ? "bg-gray-900 !text-white"
