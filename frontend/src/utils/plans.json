@@ -310,12 +310,12 @@
           {
             "name": "Without solar",
             "price": 3500000,
-            "kits": "10kwh battery & installation kits"
+            "kits": "10kwh lithium battery & installation kits"
           },
           {
             "name": "With solar",
             "price": 4750000,
-            "kits": "12 panels,  10kwh battery & 100ah Felicity MPPT charge controller"
+            "kits": "12 panels,  10kwh lithium battery, 100ah felicity solar charge controller MPPT"
           }
         ]
       },
@@ -329,13 +329,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4500000,
-            "kits": "15kwh lithium battery, installation kits"
+            "price": 4900000,
+            "kits": "10kwh SRNE lithium battery with 10yrs warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5500000,
-            "kits": "15kwh lithium battery, 15 panels, 100ah felicity solar charge controller"
+            "price": 5800000,
+            "kits": "15 panels, 10kwh SRNE lithium battery with 10yrs warranty, 100ah felicity solar charge controller"
           }
         ]
       },
@@ -349,13 +349,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4900000,
-            "kits": "10kwh SRNE lithium battery with 10 years warranty, installation kits"
+            "price": 4500000,
+            "kits": "15kwh lithium battery, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5800000,
-            "kits": "12 panels, 10kwh SRNE lithium battery with 10 years warranty, 100ah felicity solar charge controller"
+            "price": 5500000,
+            "kits": "15kwh lithium battery, 15 panels, 100ah felicity solar charge controller"
           }
         ]
       }
@@ -379,7 +379,7 @@
           {
             "name": "With solar",
             "price": 4950000,
-            "kits": "12 panels, 10kwh lithium battery 100ah felicity solar charge controller Mppt"
+            "kits": "15 panels, 10kwh lithium battery, 100ah felicity solar charge controller MPPT"
           }
         ]
       },
@@ -393,13 +393,13 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4300000,
-            "kits": "15kwh lithum battery with 5 years warranty, installation kits"
+            "price": 5050000,
+            "kits": "10kwh SRNE lithium battery with 10 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 5900000,
-            "kits": "15 panels, 15kwh lithium battery with 5 years warranty, 100ah felicity solar charge controller Mppt"
+            "price": 6000000,
+            "kits": "15 panels, 10kwh SRNE lithium battery with 10 years warranty, 100ah felicity solar charge controller MPPT"
           }
         ]
       },
@@ -413,13 +413,33 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 5050000,
-            "kits": "10kwh SRNE lithum battery with 10 years warranty, installation kits"
+            "price": 4100000,
+            "kits": "15kwh lithium battery with 5 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 6000000,
-            "kits": "12 panels, 10kwh SRNE lithium battery with 10 years warranty, 100ah felicity solar charge controller Mppt"
+            "price": 5750000,
+            "kits": "16 panels, 15kwh lithium battery with 5 years warranty, 100ah felicity solar charge controller MPPT"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "type": "lithium",
+        "name": "Diamond",
+        "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+        "kva": 7.5,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4300000,
+            "kits": "17.5kwh lithium battery with 5 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 6100000,
+            "kits": "18 panels, 17.5kwh lithium battery with 5 years warranty, 100ah felicity solar charge controller MPPT"
           }
         ]
       }
@@ -429,7 +449,7 @@
   {
     "plan": [
       {
-        "id": 19,
+        "id": 20,
         "type": "lithium",
         "name": "Starter",
         "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
@@ -438,18 +458,38 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4900000,
+            "price": 4500000,
             "kits": "15kwh lithium battery with 5 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 7250000,
-            "kits": "15kwh lithium battery with 5 years warranty, 16 panels, 120ah felicity solar charge controller MPPT"
+            "price": 6950000,
+            "kits": "15kwh lithium battery with 5 years warranty, 16 panels(550w), 120ah felicity solar charge controller MPPT"
           }
         ]
       },
       {
-        "id": 20,
+        "id": 21,
+        "type": "lithium",
+        "name": "Starter Pro",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 4600000,
+            "kits": "17.5kwh lithium battery with 5 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 7350000,
+            "kits": "15kwh lithium battery with 5 years warranty, 18 panels(550w), 120ah felicity solar charge controller MPPT"
+          }
+        ]
+      },
+      {
+        "id": 22,
         "type": "lithium",
         "name": "Silver",
         "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
@@ -458,19 +498,19 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 9500000,
+            "price": 9100000,
             "kits": "20kwh SRNE lithium battery with 10 years warranty, installation kits"
           },
           {
             "name": "With solar",
             "price": 12600000,
-            "kits": "20kwh SRNE lithium battery, with 10 years warranty, 20 panels{550w"
+            "kits": "20kwh SRNE lithium battery, with 10 years warranty, 20 panels(550w)"
           }
         ]
       },
 
       {
-        "id": 21,
+        "id": 23,
         "type": "lithium",
         "name": "Platinum",
         "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
@@ -479,33 +519,54 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 11700000,
-            "kits": "32kwh SRNE lithium battery with 1Oyears warranty, installation kits"
+            "price": 7350000,
+            "kits": "30kwh SRNE lithium battery with 5 years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 16400000,
-            "kits": "32kwh SRNE lithium battery with 10years warranty, 24 panels{550w"
+            "price": 11800000,
+            "kits": "30kwh lithium battery with 5 years warranty, 24 panels(550w), 80ah felicity solar charge controller MPPT X2"
           }
         ]
       },
       {
-        "id": 22,
+        "id": 24,
         "type": "lithium",
         "name": "Gold",
+        "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points, 6 laptops & charging of phones",
+        "kva": 10,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 8200000,
+            "kits": "35kwh lithium battery with 7years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 12100000,
+            "kits": "35kwh lithium battery with 7years warranty, 24 panels(565w) 100ah felicity solar charge controller MPPT X2"
+          }
+        ]
+      },
+
+      {
+        "id": 25,
+        "type": "lithium",
+        "name": "Diamond",
         "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
         "kva": 10,
         "volt": null,
         "options": [
           {
             "name": "Without solar",
-            "price": 8650000,
-            "kits": "30kwh lithium battery with 5years warranty, installation kits"
+            "price": 11400000,
+            "kits": "32kwh SRNE lithium battery with 1O years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 12000000,
-            "kits": "30kwh lithium battery with 5years warranty, 24 panels{550w} 80ah felicity solar charge controller MPPT X2"
+            "price": 16200000,
+            "kits": "32kwh SRNE lithium battery with 10 years warranty, 24 panels(550w)"
           }
         ]
       }
