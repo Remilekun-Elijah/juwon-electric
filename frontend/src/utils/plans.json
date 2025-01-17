@@ -300,6 +300,51 @@
   {
     "plan": [
       {
+        "id": 133,
+        "type": "lithium",
+        "name": "Starter",
+        "load": "3.5kva To power; 4 fans, 2 tvs, 2 decoders, 1 sound system, 15 lighting points, 1 fridge/freezer, 1 washing machine, 1 microwave, 1 blender, 4 laptops and charging of phones.",
+        "kva": 3.5,
+        "volt": 24,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 2000000,
+            "kits": "5kwh lithium battery, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 3300000,
+            "kits": "9 panels, 5kwh lithium battery, 80ah felicity solar charge controller MPPT"
+          }
+        ]
+      },
+      {
+        "id": 134,
+        "type": "lithium",
+        "name": "Starter Pro",
+        "load": "3.5kva To power; 4 fans, 2 tvs, 2 decoders, 1 sound system, 15 lighting points, 1 fridge/freezer, 1 washing machine, 1 microwave, 1 blender, 4 laptops and charging of phones.",
+        "kva": 4.5,
+        "volt": 48,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 2070000,
+            "kits": "5kwh lithium battery, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 3450000,
+            "kits": "12 panels, 5kwh 48v lithium battery"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
         "id": 13,
         "type": "lithium",
         "name": "Silver",
@@ -349,7 +394,7 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 4500000,
+            "price": 4000000,
             "kits": "15kwh lithium battery, installation kits"
           },
           {
@@ -539,12 +584,12 @@
         "options": [
           {
             "name": "Without solar",
-            "price": 8200000,
+            "price": 7700000,
             "kits": "35kwh lithium battery with 7years warranty, installation kits"
           },
           {
             "name": "With solar",
-            "price": 12100000,
+            "price": 12200000,
             "kits": "35kwh lithium battery with 7years warranty, 24 panels(565w) 100ah felicity solar charge controller MPPT X2"
           }
         ]
@@ -567,6 +612,141 @@
             "name": "With solar",
             "price": 16200000,
             "kits": "32kwh SRNE lithium battery with 10 years warranty, 24 panels(550w)"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
+        "id": 26,
+        "type": "lithium",
+        "name": "Silver",
+        "load": "6 fans, 3 tvs, 2 decoders, 2 sound system, 1 microwave, 30 lighting points, 1 fridge, 1 freezer, (4) 1 - 2hp inverter ac, pumping machine, blender, 6 laptops and charging of phones.",
+        "kva": 15,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 8200000,
+            "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 12500000,
+            "kits": "35kwh lithium battery with 7 years warranty, 24 panels(565w} 120ah Felicity solar charge controller MPPT X2"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
+        "id": 27,
+        "type": "lithium",
+        "name": "Silver",
+        "load": "8 fans,4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+        "kva": 20,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 8300000,
+            "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 12800000,
+            "kits": "35kwh lithium battery with 7 years warranty, 24 panels(565w} 100ah Felicity solar charge controller MPPT X2"
+          }
+        ]
+      },
+      {
+        "id": 28,
+        "type": "lithium",
+        "name": "Gold",
+        "load": "8 fans,4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+        "kva": 20,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 13400000,
+            "kits": "60kwh lithium battery with 5 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 24000000,
+            "kits": "60kwh lithium battery with 5 years warranty, 40panels(565w}"
+          }
+        ]
+      },
+      {
+        "id": 29,
+        "type": "lithium",
+        "name": "Diamond",
+        "load": "8 fans,4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+        "kva": 20,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 18800000,
+            "kits": "90kwh lithium battery with 5 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 33000000,
+            "kits": "90kwh lithium battery with 5 years warranty, 65 panels(565w}"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "plan": [
+      {
+        "id": 30,
+        "type": "lithium",
+        "name": "Silver",
+        "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1 - 2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+        "kva": 30,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 14800000,
+            "kits": "60kwh lithium battery with 5 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 25700000,
+            "kits": "60kwh lithium battery with 5 years warranty, 42 panels(565w}"
+          }
+        ]
+      },
+      {
+        "id": 31,
+        "type": "lithium",
+        "name": "Gold",
+        "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1 - 2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+        "kva": 30,
+        "volt": null,
+        "options": [
+          {
+            "name": "Without solar",
+            "price": 19800000,
+            "kits": "90kwh lithium battery with 5 years warranty, installation kits"
+          },
+          {
+            "name": "With solar",
+            "price": 34800000,
+            "kits": "90kwh lithium battery with 5 years warranty, 72 panels(550w}"
           }
         ]
       }
