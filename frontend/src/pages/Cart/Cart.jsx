@@ -1,15 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
-import { Container } from "@mui/material";
-import config from "../../utils/config";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useDispatch, useSelector } from "react-redux";
-import { clearCart, getCartData, getTotal } from "../../features/cart";
-import CartItem from "./CartItem";
+import { Container } from "@mui/material";
 import { useEffect, useState } from "react";
-import EmptyCartUi from "./EmptyCartUi";
+import { useDispatch, useSelector } from "react-redux";
+import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
+import { clearCart, getCartData, getTotal } from "../../features/cart";
+import config from "../../utils/config";
 import CheckoutModal from "../Checkout/Checkout";
+import CartItem from "./CartItem";
+import EmptyCartUi from "./EmptyCartUi";
 
 const Cart = () => {
   const { cart, total } = useSelector(getCartData);
