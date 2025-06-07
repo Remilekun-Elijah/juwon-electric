@@ -1,17 +1,17 @@
-import Navbar from "../../components/Navbar";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-import CustomChip from "../../components/CustomChip";
-import config from "../../utils/config";
 import { Container } from "@mui/material";
 import { useState } from "react";
-import plans from "../../utils/plans.json";
 import { useSelector } from "react-redux";
+import CustomChip from "../../components/CustomChip";
+import Footer from "../../components/Footer";
+import Header from "../../components/Header";
+import Navbar from "../../components/Navbar";
 import { getCartData } from "../../features/cart";
+import config from "../../utils/config";
+import plans from "../../utils/plans.json";
 
+import AddToCartModal from "./AddToCartModal";
 import DisplayProduct from "./DisplayProduct";
 import MiniTab from "./MiniTab";
-import AddToCartModal from "./AddToCartModal";
 
 const Packages = () => {
   const [active, setActive] = useState(0);
@@ -19,11 +19,18 @@ const Packages = () => {
   const [product, setProduct] = useState(null);
   const { cart } = useSelector(getCartData);
 
+  const categoryTypes = ["Tubular", "Lithium", "Hybrid Lithium"];
   let tubular = [],
-    lithium = [];
+    lithium = [],
+    hybrid = [];
+
   plans.map((a) =>
     a.plan.map((a) =>
-      a.type === "tubular" ? tubular.push(a) : lithium.push(a)
+      a.type === "tubular"
+        ? tubular.push(a)
+        : a.type === "lithium"
+        ? lithium.push(a)
+        : hybrid.push(a)
     )
   );
 
@@ -55,12 +62,12 @@ const Packages = () => {
             to reach out to us.
           </p>
 
-          <div className="flex justify-center my-10">
+          <div className="flex justify-center my-10 ">
             <MiniTab
               {...{
                 active,
                 setActive,
-                data: ["Tubular Battery", "Lithium Battery"],
+                data: categoryTypes,
               }}
             />
           </div>
@@ -68,7 +75,8 @@ const Packages = () => {
           <div className="grid xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2 gap-10">
             <DisplayProduct
               {...{
-                products: active === 0 ? tubular : lithium,
+                products:
+                  active === 0 ? tubular : active === 1 ? lithium : hybrid,
                 setOpen,
                 setProduct,
                 cart,

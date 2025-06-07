@@ -1,13 +1,13 @@
 /* eslint-disable react/prop-types */
-import { getAmount } from "../../utils/helper";
-import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
-import { removeFromCart, updateCart } from "../../features/cart";
-import { useDispatch } from "react-redux";
-import { Checkbox } from "@mui/material";
-import CustomModal from "../../components/Modal";
-import { useState } from "react";
+import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { Checkbox } from "@mui/material";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import CustomModal from "../../components/Modal";
+import { removeFromCart, updateCart } from "../../features/cart";
+import { getAmount } from "../../utils/helper";
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
@@ -27,9 +27,28 @@ const CartItem = ({ item }) => {
         className="p-1 rounded-md md:shadow md:w-fit w-[50%]"
         alt="product"
       />
-      <p className="md:inter-regular inter-semibold md:text-left text-center text-base md:w-[450px]">
-        {item?.kva}kva inverter with {item?.type} battery
-      </p>
+      <div>
+        <p className="md:inter-regular inter-semibold md:text-left text-center text-base md:w-[450px] pb-0 mb-0">
+          {item.type === "hybrid"
+            ? `${item?.kva}kva hybrid inverter with lithium battery`
+            : `${item?.kva}kva inverter with ${item?.type} battery`}
+        </p>
+        <small
+          className={`text-bold 
+            ${
+              ["platinum", "premium"].includes(item.name.toLowerCase())
+                ? "text-[#e26767]"
+                : item.name.toLowerCase() === "gold"
+                ? "text-[var(--gold)]"
+                : item.name.toLowerCase() === "diamond"
+                ? "text-[var(--diamond)]"
+                : "text-gray-500"
+            }
+          }]`}
+        >
+          - {item?.name} package
+        </small>
+      </div>
 
       <div className="fle grid lg:grid-cols-2 gap-5 w-full px-2">
         <div className="flex md:justify-around justify-between w-full">

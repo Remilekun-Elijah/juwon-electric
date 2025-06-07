@@ -11,6 +11,10 @@ export default {
         faint: "#85793E",
         red: "#DB464C",
         milk: "#D9D9D9",
+        diamond: "#A7C6ED",
+      },
+      backgroundColor: {
+        diamond: "#A7C6ED",
       },
     },
   },

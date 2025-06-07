@@ -6,7 +6,7 @@ const MiniTab = ({ active, setActive, data = [] }) => {
         <p
           onClick={() => setActive(i)}
           key={i}
-          className={`py-2 rounded-md cursor-pointer inter-medium px-3 ${
+          className={`py-2 rounded-md uppercase cursor-pointer inter-medium px-3 ${
             active === i ? "bg-red text-white shadow-lg" : "bg-white text-black"
           }`}
         >
