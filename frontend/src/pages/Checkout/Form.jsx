@@ -1,12 +1,12 @@
 import { CircularProgress } from "@mui/material";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import CustomModal from "../../components/Modal";
+import { clearCart, getCartData } from "../../features/cart";
 import { getUserData, placeOrder } from "../../features/user";
 import Alert from "../../utils/Alert";
-import { clearCart, getCartData } from "../../features/cart";
 import { getAmount } from "../../utils/helper";
 import OrderSentModal from "./OrderSentModal";
-import CustomModal from "../../components/Modal";
-import { useState } from "react";
 
 // eslint-disable-next-line react/prop-types
 const Form = ({ setOpen, total }) => {
@@ -23,7 +23,10 @@ const Form = ({ setOpen, total }) => {
           p.kva = `${a.kva}kva ${a.volt ? "+ " + a.volt + "volt" : ""}`.trim();
           p.price = "₦" + getAmount(a.price);
           p.package = `${p.kva} inverter with ${a.package}`;
-          p.type = a.type;
+          p.type =
+            a.type === "hybrid lithium"
+              ? "Hybrid inverter with lithium"
+              : `Inverter + ${a.type}`;
           p.quantity = a.quantity;
 
           return p;
