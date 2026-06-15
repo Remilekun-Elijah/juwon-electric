@@ -81,9 +81,9 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
                 With Solar
               </label>
 
-              <Radio
-                id="withSolar"
-                {...controlProps(false)}
+                <Radio
+                  id="withSolar"
+                {...controlProps(true)}
                 sx={{
                   color: "#DB464C",
                   "&.Mui-checked": {
@@ -100,9 +100,9 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
                 Without Solar
               </label>
 
-              <Radio
-                id="withoutSolar"
-                {...controlProps(true)}
+                <Radio
+                  id="withoutSolar"
+                {...controlProps(false)}
                 sx={{
                   color: "#DB464C",
                   "&.Mui-checked": {

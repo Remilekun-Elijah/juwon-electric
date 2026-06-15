@@ -1,13 +1,14 @@
 import { Container } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import CustomChip from "../../components/CustomChip";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import Navbar from "../../components/Navbar";
 import { getCartData } from "../../features/cart";
+import { getPublicData } from "../../utils/api";
 import config from "../../utils/config";
-import plans from "../../utils/plans.json";
+import fallbackPlans from "../../utils/plans.json";
 
 import AddToCartModal from "./AddToCartModal";
 import DisplayProduct from "./DisplayProduct";
@@ -17,21 +18,28 @@ const Packages = () => {
   const [active, setActive] = useState(0);
   const [open, setOpen] = useState(false);
   const [product, setProduct] = useState(null);
+  const [products, setProducts] = useState([]);
   const { cart } = useSelector(getCartData);
 
   const categoryTypes = ["Tubular", "Lithium", "Hybrid Lithium"];
+  const fallbackProducts = fallbackPlans.flatMap((group) => group.plan || []);
+  const packageData = products.length ? products : fallbackProducts;
   let tubular = [],
     lithium = [],
     hybrid = [];
 
-  plans.map((a) =>
-    a.plan.map((a) =>
+  useEffect(() => {
+    getPublicData("/packages")
+      .then((response) => setProducts(response.data || []))
+      .catch(() => setProducts([]));
+  }, []);
+
+  packageData.map((a) =>
       a.type === "tubular"
         ? tubular.push(a)
         : a.type === "lithium"
         ? lithium.push(a)
         : hybrid.push(a)
-    )
   );
 
   return (

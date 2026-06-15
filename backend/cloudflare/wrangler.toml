@@ -1,0 +1,8 @@
+name = "juwon-electric-api"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "juwon-electric"
+database_id = "cb59a683-d80a-4b77-9929-2485f99f09cd"

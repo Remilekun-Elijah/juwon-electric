@@ -8,13 +8,14 @@ import CustomChip from "../../components/CustomChip";
 import EastIcon from "@mui/icons-material/East";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
+import { useEffect, useState } from "react";
+import { getPublicData } from "../../utils/api";
 
-const Services = () => {
-  const offeringData = [
-    {
-      img: "/offer-1.svg",
-      title: "System Design and Architecture",
-      subtitle: `
+const defaultOfferings = [
+  {
+    image: "/offer-1.svg",
+    title: "System Design and Architecture",
+    subtitle: `
       Our team does not just work, we do thorough inspections, assess the roof, and determine the best location for solar panels, batteries location and circuit boxes. 
 
 Spacing the power line is our priority. This application of theoretical knowledge has made us stand out among many.
@@ -22,71 +23,91 @@ Spacing the power line is our priority. This application of theoretical knowledg
 We are here for you!
 
       `,
-    },
-    {
-      img: "/offer-2.svg",
-      title: "Energy Audit",
-      subtitle: `Our team provides expert assessments of your energy usage and solar potential, tailoring recommendations to best fit your unique residential and commercial properties.
+  },
+  {
+    image: "/offer-2.svg",
+    title: "Energy Audit",
+    subtitle: `Our team provides expert assessments of your energy usage and solar potential, tailoring recommendations to best fit your unique residential and commercial properties.
 `,
-    },
-    {
-      img: "/offer-3.svg",
-      title: "Light Solution",
-      subtitle: `Light is needed everywhere and quick fixes are easy to find. At Juwon Electric, we take pride in delivering sustainable lighting solutions which is key. 
+  },
+  {
+    image: "/offer-3.svg",
+    title: "Light Solution",
+    subtitle: `Light is needed everywhere and quick fixes are easy to find. At Juwon Electric, we take pride in delivering sustainable lighting solutions which is key. 
 `,
-    },
-    {
-      img: "/offer-4.svg",
-      title: "After Sales Services",
-      subtitle: `Selling to a customer is like winning a game of chess because we trust our services which in turn generates a cohesive and lasting relationship with our clients. 
+  },
+  {
+    image: "/offer-4.svg",
+    title: "After Sales Services",
+    subtitle: `Selling to a customer is like winning a game of chess because we trust our services which in turn generates a cohesive and lasting relationship with our clients. 
 
 We offer this After Sales Services.
 `,
-    },
-    {
-      img: "/offer-5.svg",
-      title: "Maintenance ",
-      subtitle: `Trust takes one higher. Our dedicated team does not rest until you are happy with the best maintenance of your equipment. Trust us to take you higher.`,
-    },
-  ];
+  },
+  {
+    image: "/offer-5.svg",
+    title: "Maintenance ",
+    subtitle: `Trust takes one higher. Our dedicated team does not rest until you are happy with the best maintenance of your equipment. Trust us to take you higher.`,
+  },
+];
 
-  const customerData = [
-    {
-      title: "Banking Sectors",
-      subtitle: `Information technology must be reliable and available 24
+const defaultCustomers = [
+  {
+    title: "Banking Sectors",
+    subtitle: `Information technology must be reliable and available 24
                     hours a day, seven (7) days a week. Only solar systems and
                     back-up systems can provide such reliability for IT
                     Infrastructure, ATMs, and telecoms. This increases the reach
                     of the bank to more customers in rural, semi-urban areas,
                     Urban as well as schools and universities.`,
-      image: "/panel-1.webp",
-    },
-    {
-      title: "Hospitals",
-      subtitle: `There is a demand for reliable and cost-effective electricity supplies to service remote medical and health care applications. Solar photovoltaic power is ideally suited to these applications because it is highly reliable, has low recurrent costs.`,
-      image: "/panel-2.webp",
-    },
-    {
-      title: "Community",
-      subtitle: `We are capable of providing a large or small community with solar installations, such as; Mini grids, Solar powered boreholes, Solar powered street lights and solar powered community halls.`,
-      image: "/panel-3.webp",
-    },
-    {
-      title: "Farms",
-      subtitle: `Most farms don’t have access to power. With our Solar powered system we provide electricity to farm and solar powered borehole for agriculture.`,
-      image: "/panel-4.webp",
-    },
-    {
-      title: "Government Institutions",
-      subtitle: `Most government institution don’t have reliable power to aid their work. We provide reliable and sustainable power through renewable energy.`,
-      image: "/panel-5.webp",
-    },
-    {
-      title: "Academic Institutions",
-      subtitle: `We design and install suitable solar and backup systems for schools in both urban and rural areas.`,
-      image: "/panel-6.webp",
-    },
-  ];
+    image: "/panel-1.webp",
+  },
+  {
+    title: "Hospitals",
+    subtitle: `There is a demand for reliable and cost-effective electricity supplies to service remote medical and health care applications. Solar photovoltaic power is ideally suited to these applications because it is highly reliable, has low recurrent costs.`,
+    image: "/panel-2.webp",
+  },
+  {
+    title: "Community",
+    subtitle: `We are capable of providing a large or small community with solar installations, such as; Mini grids, Solar powered boreholes, Solar powered street lights and solar powered community halls.`,
+    image: "/panel-3.webp",
+  },
+  {
+    title: "Farms",
+    subtitle: `Most farms don’t have access to power. With our Solar powered system we provide electricity to farm and solar powered borehole for agriculture.`,
+    image: "/panel-4.webp",
+  },
+  {
+    title: "Government Institutions",
+    subtitle: `Most government institution don’t have reliable power to aid their work. We provide reliable and sustainable power through renewable energy.`,
+    image: "/panel-5.webp",
+  },
+  {
+    title: "Academic Institutions",
+    subtitle: `We design and install suitable solar and backup systems for schools in both urban and rural areas.`,
+    image: "/panel-6.webp",
+  },
+];
+
+const Services = () => {
+  const [offeringData, setOfferingData] = useState(defaultOfferings);
+  const [customerData, setCustomerData] = useState(defaultCustomers);
+
+  useEffect(() => {
+    getPublicData("/services")
+      .then((response) => {
+        setOfferingData(response.data?.offerings?.length ? response.data.offerings : defaultOfferings);
+        setCustomerData(
+          response.data?.customerSegments?.length
+            ? response.data.customerSegments
+            : defaultCustomers
+        );
+      })
+      .catch(() => {
+        setOfferingData(defaultOfferings);
+        setCustomerData(defaultCustomers);
+      });
+  }, []);
 
   return (
     <>
@@ -117,7 +138,7 @@ We offer this After Sales Services.
                 <div
                   className={`flex justify-center mb-10 ${i == 1 && "!-mt-10"}`}
                 >
-                  <img src={a.img} alt="" />
+                  <img src={a.image || a.img} alt="" />
                 </div>
 
                 <h4 className="text-deep_red sora-semibold text-2xl text-center md:text-left mb-4">

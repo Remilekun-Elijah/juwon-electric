@@ -2,11 +2,10 @@ import nodemailer from "nodemailer";
 import config from "../config.js";
 
 const { info, error, log } = console;
+const extractEmail = (value = "") => value.match(/<([^>]+)>/)?.[1] || value;
 
 export const sendMail = async function (message, template) {
-  console.log(config);
-
-  info(message);
+  info({ subject: message.subject });
   const transporter = nodemailer.createTransport({
     service: "gmail",
     port: 587, // 587 465
@@ -15,11 +14,15 @@ export const sendMail = async function (message, template) {
       pass: config.smtp_secret,
     },
   });
+  const from = config.smtp_from?.includes("<")
+    ? config.smtp_from
+    : `"${config.application_name}" <${config.smtp_from}>`;
+  const deliveryAddress = extractEmail(config.smtp_from);
   const packet = {
-    from: `"${config.application_name}" <${config.smtp_from}>`,
-    to: config.smtp_from,
+    from,
+    to: message.to || deliveryAddress,
     bcc: ["remilekunelijah97@gmail.com"],
-    replyTo: `<${config.smtp_from}>`,
+    replyTo: message.replyTo || deliveryAddress,
     subject: message.subject,
     html: template(message.data),
   };

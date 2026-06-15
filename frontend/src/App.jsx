@@ -8,6 +8,7 @@ import Portfolio from "./pages/Portfolio";
 import Packages from "./pages/Packages/Packages";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart/Cart";
+import AdminApp from "./pages/Admin/AdminApp";
 
 function App() {
   function ScrollToTop() {
@@ -28,6 +29,7 @@ function App() {
         <Route path={config.routes.packages} element={<Packages />} />
         <Route path={config.routes.contact} element={<Contact />} />
         <Route path={config.routes.cart} element={<Cart />} />
+        <Route path="/admin/*" element={<AdminApp />} />
       </Routes>
       <ScrollToTop />
     </BrowserRouter>

@@ -1,74 +1,37 @@
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "@mui/material";
 import config from "../utils/config";
+import { getPublicData } from "../utils/api";
+
+const defaultPortfolioData = [
+  { name: "2.1Kwp Trina Solar Panel", image: "/image-1.svg", mobile: true },
+  { name: "5Kva Tubular Battery Energy", image: "/image-3.svg", mobile: true },
+  { name: "8.8Kwp Canadian Solar Panel", image: "/image-6.svg", mobile: true },
+  { name: "7.5Kva Lithium Battery", image: "/image-2.svg", mobile: true },
+  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-5.svg", mobile: true },
+  { name: "2.5Kva Tubular Battery Energy", image: "/portfolio-6.svg", mobile: true },
+  { name: "10Kva Lithium Battery Energy", image: "/portfolio-7.svg", mobile: false },
+  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-8.svg", mobile: false },
+  { name: "10Kva Lithium Battery Energy", image: "/portfolio-9.svg", mobile: false },
+  { name: "1.2Kwp Canadian Solar Panel", image: "/image-4.svg", mobile: false },
+  { name: "7.5Kva Tubular Battery Energy", image: "/portfolio-11.svg", mobile: false },
+  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-12.svg", mobile: false },
+];
 
 const Portfolio = () => {
-  const [portfolioData, setPortfolioData] = useState([
-    {
-      name: "2.1Kwp Trina Solar Panel",
-      img: "/image-1.svg",
-      mobile: true,
-    },
-    {
-      name: "5Kva Tubular Battery Energy",
-      img: "/image-3.svg",
-      mobile: true,
-    },
-    {
-      name: "8.8Kwp Canadian Solar Panel",
-      img: "/image-6.svg",
-      mobile: true,
-    },
-    {
-      name: "7.5Kva Lithium Battery",
-      img: "/image-2.svg",
-      mobile: true,
-    },
-    {
-      name: "550W Mono-Crystalline Solar Panel",
-      img: "/portfolio-5.svg",
-      mobile: true,
-    },
-    {
-      name: "2.5Kva Tubular Battery Energy",
-      img: "/portfolio-6.svg",
-      mobile: true,
-    },
-    {
-      name: "10Kva Lithium Battery Energy",
-      img: "/portfolio-7.svg",
-      mobile: false,
-    },
-    {
-      name: "550W Mono-Crystalline Solar Panel",
-      img: "/portfolio-8.svg",
-      mobile: false,
-    },
-    {
-      name: "10Kva Lithium Battery Energy",
-      img: "/portfolio-9.svg",
-      mobile: false,
-    },
-    {
-      name: "1.2Kwp Canadian Solar Panel",
-      img: "/image-4.svg",
-      mobile: false,
-    },
-    {
-      name: "7.5Kva Tubular Battery Energy",
-      img: "/portfolio-11.svg",
-      mobile: false,
-    },
-    {
-      name: "550W Mono-Crystalline Solar Panel",
-      img: "/portfolio-12.svg",
-      mobile: false,
-    },
-  ]);
+  const [portfolioData, setPortfolioData] = useState(defaultPortfolioData);
+
+  useEffect(() => {
+    getPublicData("/portfolio")
+      .then((response) =>
+        setPortfolioData(response.data?.length ? response.data : defaultPortfolioData)
+      )
+      .catch(() => setPortfolioData(defaultPortfolioData));
+  }, []);
 
   function handleMobileExpand(e, state, setState) {
     e.preventDefault();
@@ -101,7 +64,7 @@ const Portfolio = () => {
 
               <img
                 className="w-full"
-                src={data.img}
+                src={data.image || data.img}
                 alt={`Portfolio ${i + 1}`}
               />
             </div>

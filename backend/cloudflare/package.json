@@ -1,0 +1,16 @@
+ {
+  "name": "juwon-electric-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "d1:migrate:local": "wrangler d1 migrations apply juwon-electric --local",
+    "d1:migrate": "wrangler d1 migrations apply juwon-electric --remote",
+    "d1:seed": "node scripts/export-seed-sql.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
