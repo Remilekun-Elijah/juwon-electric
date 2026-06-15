@@ -1,3 +1,10 @@
+import {
+  contactNotificationTemplate,
+  contactReplyTemplate,
+  orderNotificationTemplate,
+  subscriberNotificationTemplate,
+} from "./emailTemplates.js";
+
 const COLLECTIONS = [
   "packages",
   "newsletters",
@@ -575,6 +582,7 @@ const handlePublic = async (request, env, path, body, url) => {
       to: env.ADMIN_NOTIFY_EMAIL,
       subject: "You have a message",
       text: `${message.name}\n${message.phoneNumber}\n${message.emailAddress}\n\n${message.message}`,
+      html: contactNotificationTemplate(message),
     });
     return created("Message sent.", message);
   }
@@ -589,6 +597,7 @@ const handlePublic = async (request, env, path, body, url) => {
       to: env.ADMIN_NOTIFY_EMAIL,
       subject: "You have a new subscriber",
       text: subscriber.emailAddress,
+      html: subscriberNotificationTemplate(subscriber),
     });
     return created(
       "Thank you for subscribing to our newsletter. We will keep you up to date when we add a new product.",
@@ -612,6 +621,7 @@ const handlePublic = async (request, env, path, body, url) => {
       to: env.ADMIN_NOTIFY_EMAIL,
       subject: "You have a new order",
       text: `${order.name}\n${order.phoneNumber}\n${order.deliveryAddress}\nTotal: ${order.total}`,
+      html: orderNotificationTemplate(order),
     });
     return created("Order placed successfully.", order);
   }
@@ -838,7 +848,11 @@ const handleAdmin = async (request, env, path, body, admin) => {
       to: contact.emailAddress,
       subject,
       text: reply,
-      html: `<p>Hello ${contact.name || "there"},</p><p>${reply.replaceAll("\n", "<br>")}</p>`,
+      html: contactReplyTemplate({
+        name: contact.name,
+        originalMessage: contact.message,
+        reply,
+      }),
     });
     const sentAt = now();
     const message = await updateCollectionItem(env, "contacts", id, {
