@@ -22,6 +22,8 @@ const ORDER_STATUSES = ["pending", "completed", "cancelled"];
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 12;
 const RESET_TTL_MS = 1000 * 60 * 30;
 const PBKDF2_ITERATIONS = 100000;
+const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([^\]]+)\]/i;
+const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -66,6 +68,9 @@ const optionalString = (body, key) => {
   const value = body?.[key];
   return typeof value === "string" ? value.trim() : value ?? "";
 };
+
+const cleanContactThreadSubject = (subject) =>
+  (subject || DEFAULT_CONTACT_REPLY_SUBJECT).replace(CONTACT_THREAD_PATTERN, "").trim();
 
 const requiredString = (body, key, label = key) => {
   const value = optionalString(body, key);
@@ -639,7 +644,7 @@ const handlePublic = async (request, env, path, body, url) => {
     const message = optionalString(body, "text") || optionalString(body, "body") || optionalString(body, "message");
     if (!message) badRequest("Inbound message body is required.");
 
-    const subjectMatch = subject.match(/\[JE-CONTACT:([^\]]+)\]/i);
+    const subjectMatch = subject.match(CONTACT_THREAD_PATTERN);
     const contact = subjectMatch
       ? await getCollectionItem(env, "contacts", subjectMatch[1])
       : await findCollectionItem(env, "contacts", { emailAddress: fromEmail });
@@ -841,9 +846,7 @@ const handleAdmin = async (request, env, path, body, admin) => {
     const contact = await getCollectionItem(env, "contacts", id);
     if (!contact.emailAddress) badRequest("This contact did not provide an email address.");
     const reply = requiredString(body, "message", "Reply message");
-    const subject = (optionalString(body, "subject") || "Re: Your message to Juwon Electric").includes("[JE-CONTACT:")
-      ? optionalString(body, "subject")
-      : `${optionalString(body, "subject") || "Re: Your message to Juwon Electric"} [JE-CONTACT:${contact.id}]`;
+    const subject = cleanContactThreadSubject(optionalString(body, "subject"));
     await sendNotification(env, {
       to: contact.emailAddress,
       subject,

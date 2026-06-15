@@ -20,6 +20,9 @@ const getStatusOptions = (type) =>
   type === "orders" ? orderStatusOptions : leadStatusOptions;
 
 const getDefaultStatus = (type) => (type === "orders" ? "pending" : "new");
+const contactThreadPattern = /\s*\[JE-CONTACT:[^\]]+\]\s*/gi;
+const cleanContactSubject = (subject) =>
+  (subject || "No subject").replace(contactThreadPattern, "").trim() || "No subject";
 
 const OrderDetails = ({ order, onClose }) => {
   if (!order) {
@@ -163,7 +166,7 @@ const ContactDetails = ({ contact, onClose, onSent }) => {
           {thread.map((reply, index) => (
             <article key={`${reply.at}-${index}`}>
               <div>
-                <strong>{reply.direction}: {reply.subject || "No subject"}</strong>
+                <strong>{reply.direction}: {cleanContactSubject(reply.subject)}</strong>
                 <small>{reply.message}</small>
               </div>
               <div>

@@ -115,7 +115,7 @@ Inbound contact reply webhook:
 ```json
 {
   "fromEmail": "customer@example.com",
-  "subject": "Re: Your message [JE-CONTACT:contact-id]",
+  "subject": "Re: Your message",
   "text": "Customer reply body"
 }
 ```

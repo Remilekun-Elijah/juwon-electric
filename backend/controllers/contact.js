@@ -14,13 +14,9 @@ import {
 import { optionalString, requiredString, validateEmail } from "../services/validators.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([^\]]+)\]/i;
-
-const getContactThreadSubject = (subject, id) => {
-  const cleanSubject = subject || "Re: Your message to Juwon Electric";
-  return cleanSubject.includes("[JE-CONTACT:")
-    ? cleanSubject
-    : `${cleanSubject} [JE-CONTACT:${id}]`;
-};
+const DEFAULT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
+const cleanContactThreadSubject = (subject) =>
+  (subject || DEFAULT_REPLY_SUBJECT).replace(CONTACT_THREAD_PATTERN, "").trim();
 
 export const contactUs = asyncHandler(async (req, res) => {
   const message = await appendCollectionItem("contacts", {
@@ -64,10 +60,7 @@ export const adminReplyMessage = asyncHandler(async (req, res) => {
   }
 
   const reply = requiredString(req.body, "message", "Reply message");
-  const subject = getContactThreadSubject(
-    optionalString(req.body, "subject"),
-    contact.id
-  );
+  const subject = cleanContactThreadSubject(optionalString(req.body, "subject"));
   const sentAt = new Date().toISOString();
   const replyRecord = {
     subject,

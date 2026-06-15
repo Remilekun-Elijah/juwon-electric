@@ -24,9 +24,9 @@ export default function contactReplyTemplate({ name, originalMessage, reply }) {
           <div style="font-size:15px;line-height:1.7;margin-bottom:22px;white-space:pre-wrap;">${safeReply}</div>
           ${
             originalMessage
-              ? `<div style="background:#fdfaec;border:1px solid #ede4b9;border-radius:7px;padding:14px;margin-top:20px;">
-                  <p style="color:#85793e;font-size:12px;font-weight:bold;text-transform:uppercase;margin:0 0 8px;">Your original message</p>
-                  <p style="margin:0;line-height:1.6;white-space:pre-wrap;">${safeOriginalMessage}</p>
+              ? `<div style="background:#fff1f1;border:1px solid #f4b7ba;border-left:5px solid #db464c;border-radius:7px;padding:16px;margin-top:20px;">
+                  <p style="color:#811418;font-size:12px;font-weight:bold;text-transform:uppercase;margin:0 0 8px;">Your original message</p>
+                  <p style="margin:0;line-height:1.6;white-space:pre-wrap;color:#202124;">${safeOriginalMessage}</p>
                 </div>`
               : ""
           }
