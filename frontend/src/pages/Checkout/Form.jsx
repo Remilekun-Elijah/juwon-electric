@@ -25,7 +25,7 @@ const Form = ({ setOpen, total }) => {
           p.package = `${p.kva} inverter with ${a.package}`;
           p.type =
             a.type === "hybrid lithium"
-              ? "Hybrid inverter with lithium"
+              ? "Hybrid inverter + lithium"
               : `Inverter + ${a.type}`;
           p.quantity = a.quantity;
 
