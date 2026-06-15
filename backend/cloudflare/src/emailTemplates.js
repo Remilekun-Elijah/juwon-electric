@@ -241,8 +241,10 @@ export const contactReplyTemplate = ({ name, originalMessage, reply }) =>
       originalMessage
         ? contentRow(
             `
-              <p style="display:block;margin:13px 0;color:#9B9B9B;font-size:13px;font-weight:500;">Your original message</p>
-              <p style="display:block;margin:13px 0;">${nl2br(originalMessage)}</p>
+              <div style="background:#fff1f1;border:1px solid #f4b7ba;border-left:5px solid #DB464C;border-radius:7px;padding:16px;">
+                <p style="display:block;margin:0 0 8px;color:#811418;font-size:12px;font-weight:700;text-transform:uppercase;">Your original message</p>
+                <p style="display:block;margin:0;color:#202124;line-height:24px;">${nl2br(originalMessage)}</p>
+              </div>
             `,
             "20px 40px 0 40px"
           )
