@@ -10,6 +10,7 @@ import Alert from "../utils/Alert";
 import { ILogoImg } from "../utils/icon";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
   const { loading } = useSelector(getUserData),
     [emailAddress, setEmailAddress] = useState(""),
     dispatch = useDispatch(),
@@ -104,7 +105,7 @@ const Footer = () => {
 
         <div className="flex lg:justify-between justify-center flex-wrap md:text-white text-[#E67E82] mt-10 gap-5">
           <p className="text-center ">
-            © 2024 Juwon Electric Inc. Copyright and rights reserved
+            © {currentYear} Juwon Electric Inc. Copyright and rights reserved
           </p>
 
           <div className="flex md:gap-10 gap-2 flex-wrap ">

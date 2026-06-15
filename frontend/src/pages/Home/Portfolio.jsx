@@ -1,61 +1,72 @@
 import { Link } from "react-router-dom";
 import CustomChip from "../../components/CustomChip";
 import InstagramIcon from "@mui/icons-material/Instagram";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "@mui/material";
 import config from "../../utils/config";
+import { getPublicData } from "../../utils/api";
+
+const defaultRecentWork = [
+  {
+    name: "2.1kwp Canadian Solar",
+    image: "/image-1.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ==",
+    mobile: true,
+  },
+  {
+    name: "7.5Kva Lithium Battery",
+    image: "/image-2.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: true,
+  },
+  {
+    name: "5Kva Tubular Battery",
+    image: "/image-3.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: true,
+  },
+  {
+    name: "1.2kwp Canadian Solar",
+    image: "/image-4.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: true,
+  },
+  {
+    name: "3.2Kva Tubular Battery",
+    image: "/image-5.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: false,
+  },
+  {
+    name: "8.8kwp Canadian Solar",
+    image: "/image-6.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: false,
+  },
+  {
+    name: "2.1kwp Trina Solar",
+    image: "/image-7.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: false,
+  },
+  {
+    name: "10Kva Lithium Battery",
+    image: "/image-8.svg",
+    link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
+    mobile: false,
+  },
+];
 
 const Portfolio = () => {
-  const [recentWork, setRecentWork] = useState([
-    {
-      name: "2.1kwp Canadian Solar",
-      img: "/image-1.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ==",
-      mobile: true,
-    },
-    {
-      name: "7.5Kva Lithium Battery",
-      img: "/image-2.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: true,
-    },
-    {
-      name: "5Kva Tubular Battery",
-      img: "/image-3.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: true,
-    },
-    {
-      name: "1.2kwp Canadian Solar",
-      img: "/image-4.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: true,
-    },
-    {
-      name: "3.2Kva Tubular Battery",
-      img: "/image-5.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: false,
-    },
-    {
-      name: "8.8kwp Canadian Solar",
-      img: "/image-6.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: false,
-    },
-    {
-      name: "2.1kwp Trina Solar",
-      img: "/image-7.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: false,
-    },
-    {
-      name: "10Kva Lithium Battery",
-      img: "/image-8.svg",
-      link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ%3D%3D",
-      mobile: false,
-    },
-  ]);
+  const [recentWork, setRecentWork] = useState(defaultRecentWork);
+
+  useEffect(() => {
+    getPublicData("/portfolio", { featured: true })
+      .then((response) =>
+        setRecentWork(response.data?.length ? response.data : defaultRecentWork)
+      )
+      .catch(() => setRecentWork(defaultRecentWork));
+  }, []);
 
   function handleMobileExpand(e, state, setState) {
     e.preventDefault();
@@ -101,7 +112,7 @@ const Portfolio = () => {
 
               <img
                 className="object-cover h-full w-full rounded-2xl"
-                src={work.img}
+                src={work.image || work.img}
                 alt={`work ${i + 1}`}
               />
             </div>

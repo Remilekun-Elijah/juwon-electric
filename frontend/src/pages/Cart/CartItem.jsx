@@ -30,7 +30,7 @@ const CartItem = ({ item }) => {
       <div>
         <p className="md:inter-regular inter-semibold md:text-left text-center text-base md:w-[450px] pb-0 mb-0">
           {item?.type?.toLowerCase() === "hybrid lithium"
-            ? `${item?.kva}kva hybrid inverter with lithium battery`
+            ? `${item?.kva}kva hybrid inverter + lithium battery`
             : `${item?.kva}kva inverter with ${item?.type} battery`}
         </p>
         <small
@@ -39,10 +39,10 @@ const CartItem = ({ item }) => {
               ["platinum", "premium"].includes(item.name.toLowerCase())
                 ? "text-[#e26767]"
                 : item.name.toLowerCase() === "gold"
-                ? "text-[var(--gold)]"
-                : item.name.toLowerCase() === "diamond"
-                ? "text-[var(--diamond)]"
-                : "text-gray-500"
+                  ? "text-[var(--gold)]"
+                  : item.name.toLowerCase() === "diamond"
+                    ? "text-[var(--diamond)]"
+                    : "text-gray-500"
             }
           }]`}
         >

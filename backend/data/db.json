@@ -1,0 +1,2144 @@
+{
+  "meta": {
+    "application": "Juwon Electric",
+    "version": 1,
+    "createdAt": "2026-06-15T10:14:47.679Z",
+    "updatedAt": "2026-06-15T14:50:07.498Z"
+  },
+  "packages": [
+    {
+      "id": "e292504c-9a6e-4dbe-a8df-27a5ca376c80",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "2 fans, 1 TV, 1 decoder, 1 sound system, 6 lighting points, 1 laptop & charging of phones",
+      "kva": 1.1,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 700000,
+          "kits": "1 battery & installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 1150000,
+          "kits": "2 panels, 1 battery & installation kits"
+        }
+      ],
+      "legacyId": 0,
+      "category": "tubular"
+    },
+    {
+      "id": "d68e106e-7894-4df7-aaeb-13315f33b561",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 2,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "3 fans, 1 TV, 1 decoder, 1 sound system, 8 lighting points, 1 laptop & charging of phones",
+      "kva": 1.7,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 1000000,
+          "kits": "2 batteries & accessories with installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 1620000,
+          "kits": "4 panels & 2 batteries"
+        }
+      ],
+      "legacyId": 1,
+      "category": "tubular"
+    },
+    {
+      "id": "7c2bbd91-1f3d-41d3-a614-fdeaf6fe97f7",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 3,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "3 fans, 1 TV, 1 decoder, 1 sound system, 1 freezer, 1 microwave, 1 blender, 10 lighting points, 2 laptops & charging of phones",
+      "kva": 2,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 1030000,
+          "kits": "2 batteries & installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 1770000,
+          "kits": "4 panels, 2 batteries & 60ah PWM charge controller"
+        }
+      ],
+      "legacyId": 2,
+      "category": "tubular"
+    },
+    {
+      "id": "6842610b-7a30-4b47-a33d-5b354c49b6de",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 4,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "3 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 12 lighting points, 3 laptops & charging of phones",
+      "kva": 2.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 1060000,
+          "kits": "2 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 1830000,
+          "kits": "2 batteries, 4 panels & 60ah PWM charge controller"
+        }
+      ],
+      "legacyId": 3,
+      "category": "tubular"
+    },
+    {
+      "id": "7cfb75ca-7ec7-4cb3-ad68-dabf0a549348",
+      "slug": "premium",
+      "isActive": true,
+      "sortOrder": 5,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Premium",
+      "load": "3 fans, 2 TVs, 2 decoders, 1 sound system, 1 fridge/freezer, 1 microwave, 1 blender, 12 lighting points, 3 laptops & charging of phones",
+      "kva": 2.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 1060000,
+          "kits": "2 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 2000000,
+          "kits": "2 batteries, 6 panels & 60ah Felicity MPPT charge controller"
+        }
+      ],
+      "legacyId": 4,
+      "category": "tubular"
+    },
+    {
+      "id": "eca44fc0-95ba-47c6-9336-8921d96d8349",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 3.2,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 1140000,
+          "kits": "2 batteries & installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 2050000,
+          "kits": "6 panels & 60ah Felicity MPPT charge controller & 2 batteries"
+        }
+      ],
+      "legacyId": 5,
+      "category": "tubular"
+    },
+    {
+      "id": "cdfb1684-49dd-4e1f-82a0-c3dcde8fc2ac",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 7,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 3.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 1270000,
+          "kits": "2 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 2200000,
+          "kits": "6 panels , 80ah Felicity MPPT charge controller & 2 batteries"
+        }
+      ],
+      "legacyId": 6,
+      "category": "tubular"
+    },
+    {
+      "id": "6b3d52b9-e33f-4064-a98a-3fc61cfeab58",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 8,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 3.5,
+      "volt": 48,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2180000,
+          "kits": "4 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 2970000,
+          "kits": "4 batteries, 9 panels & 60ah Felicity MPPT charge controller"
+        }
+      ],
+      "legacyId": 7,
+      "category": "tubular"
+    },
+    {
+      "id": "dce832cb-7fa7-4b97-a431-065908cfaabd",
+      "slug": "premium",
+      "isActive": true,
+      "sortOrder": 9,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Premium",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 3.5,
+      "volt": 48,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2180000,
+          "kits": "4 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 3200000,
+          "kits": "4 batteries, 12 panels & 80ah Felicity charge controller"
+        }
+      ],
+      "legacyId": 7,
+      "category": "tubular"
+    },
+    {
+      "id": "298c2d43-9ada-4803-b6bd-c49ddd4bfeaf",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 10,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2470000,
+          "kits": "4 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 3450000,
+          "kits": "12 panels,  4 batteries & 80ah Felicity MPPT charge controller"
+        }
+      ],
+      "legacyId": 8,
+      "category": "tubular"
+    },
+    {
+      "id": "9e03c45d-6a08-494b-97c6-443bb0a01ece",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 11,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 7.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2650000,
+          "kits": "4 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 3800000,
+          "kits": "12 panels,  4 batteries & 80ah Felicity MPPT charge controller"
+        }
+      ],
+      "legacyId": 9,
+      "category": "tubular"
+    },
+    {
+      "id": "de4d8945-a3e3-439c-bad8-dddd0e231849",
+      "slug": "premium",
+      "isActive": true,
+      "sortOrder": 12,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Premium",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 7.5,
+      "volt": 96,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 3360000,
+          "kits": "8 batteries & accessories"
+        },
+        {
+          "name": "With solar",
+          "price": 5500000,
+          "kits": "20 panels,  8 batteries & 100ah Felicity MPPT charge controller"
+        }
+      ],
+      "legacyId": 10,
+      "category": "tubular"
+    },
+    {
+      "id": "826f18cd-3167-48e7-a416-8598f6899f70",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 13,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Basic",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points, 6 laptops & charging of phones",
+      "kva": 10,
+      "volt": 96,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4000000,
+          "kits": "8 batteries & installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 6600000,
+          "kits": "24 panels,  8 batteries & 120ah Felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 11,
+      "category": "tubular"
+    },
+    {
+      "id": "7be1eb5f-7d00-4e32-9fcd-75c12f15161e",
+      "slug": "premium",
+      "isActive": true,
+      "sortOrder": 14,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "tubular",
+      "name": "Premium",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points, 6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 5350000,
+          "kits": "12 batteries & installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 9700000,
+          "kits": "20 panels (550w), 12 batteries & 80ah Felicity solar charge controller MPPT X2"
+        }
+      ],
+      "legacyId": 12,
+      "category": "tubular"
+    },
+    {
+      "id": "08745168-5d58-4838-ba90-b137ecb85d07",
+      "slug": "starter",
+      "isActive": true,
+      "sortOrder": 15,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Starter",
+      "load": "3.5kva To power; 4 fans, 2 tvs, 2 decoders, 1 sound system, 15 lighting points, 1 fridge/freezer, 1 washing machine, 1 microwave, 1 blender, 4 laptops and charging of phones.",
+      "kva": 3.5,
+      "volt": 24,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2000000,
+          "kits": "5kwh lithium battery, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 3300000,
+          "kits": "9 panels, 5kwh lithium battery, 80ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 133,
+      "category": "lithium"
+    },
+    {
+      "id": "0b0764ae-6d12-458d-b914-b23eb0753c01",
+      "slug": "starter-pro",
+      "isActive": true,
+      "sortOrder": 16,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Starter Pro",
+      "load": "3.5kva To power; 4 fans, 2 tvs, 2 decoders, 1 sound system, 15 lighting points, 1 fridge/freezer, 1 washing machine, 1 microwave, 1 blender, 4 laptops and charging of phones.",
+      "kva": 4.5,
+      "volt": 48,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2070000,
+          "kits": "5kwh lithium battery, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 3450000,
+          "kits": "12 panels, 5kwh 48v lithium battery"
+        }
+      ],
+      "legacyId": 134,
+      "category": "lithium"
+    },
+    {
+      "id": "4bbe4fb4-c777-436f-9374-51b50e209c0a",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 17,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Silver",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 3500000,
+          "kits": "10kwh lithium battery & installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 4750000,
+          "kits": "12 panels,  10kwh lithium battery, 100ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 13,
+      "category": "lithium"
+    },
+    {
+      "id": "37d9ddcc-147f-4b36-8ec1-0900c145f2fb",
+      "slug": "platinum",
+      "isActive": true,
+      "sortOrder": 18,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Platinum",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4900000,
+          "kits": "10kwh SRNE lithium battery with 10yrs warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 5800000,
+          "kits": "15 panels, 10kwh SRNE lithium battery with 10yrs warranty, 100ah felicity solar charge controller"
+        }
+      ],
+      "legacyId": 14,
+      "category": "lithium"
+    },
+    {
+      "id": "045eb526-be06-4ee8-890d-e7000a53a1b0",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 19,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Gold",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4000000,
+          "kits": "15kwh lithium battery, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 5500000,
+          "kits": "15kwh lithium battery, 15 panels, 100ah felicity solar charge controller"
+        }
+      ],
+      "legacyId": 15,
+      "category": "lithium"
+    },
+    {
+      "id": "a41c03d4-f704-4523-a6ed-588bd30eaefb",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 20,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Silver",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 7.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4000000,
+          "kits": "10kwh lithum battery, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 4950000,
+          "kits": "15 panels, 10kwh lithium battery, 100ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 16,
+      "category": "lithium"
+    },
+    {
+      "id": "4ede4eff-c282-42c2-951f-c07a4652903a",
+      "slug": "platinum",
+      "isActive": true,
+      "sortOrder": 21,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Platinum",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 7.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 5050000,
+          "kits": "10kwh SRNE lithium battery with 10 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 6000000,
+          "kits": "16 panels, 10kwh SRNE lithium battery with 10 years warranty, 100ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 17,
+      "category": "lithium"
+    },
+    {
+      "id": "46312a34-2a98-4743-a825-bd47612eb441",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 22,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Gold",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 7.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4100000,
+          "kits": "15kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 5750000,
+          "kits": "16 panels, 15kwh lithium battery with 5 years warranty, 100ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 18,
+      "category": "lithium"
+    },
+    {
+      "id": "8481a19c-a486-48c0-b82b-28705c5c819c",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 23,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Diamond",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 7.5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4750000,
+          "kits": "17.5kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 6800000,
+          "kits": "18 panels, 17.5kwh lithium battery with 7 years warranty, 100ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 19,
+      "category": "lithium"
+    },
+    {
+      "id": "5d2476c2-05a1-4f59-88af-c1c885cbf93e",
+      "slug": "starter",
+      "isActive": true,
+      "sortOrder": 24,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Starter",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4500000,
+          "kits": "15kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 6950000,
+          "kits": "15kwh lithium battery with 5 years warranty, 14/16 panels(550w,650w), 120ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 20,
+      "category": "lithium"
+    },
+    {
+      "id": "c82c8e78-a953-4cf9-aef2-610d87fa9c2b",
+      "slug": "starter-pro",
+      "isActive": true,
+      "sortOrder": 25,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Starter Pro",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 5500000,
+          "kits": "17.5kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 8300000,
+          "kits": "17.5kwh lithium battery with 7 years warranty, 15/18 panels(550w,650w), 120ah felicity solar charge controller MPPT"
+        }
+      ],
+      "legacyId": 21,
+      "category": "lithium"
+    },
+    {
+      "id": "b5a9b87b-ac18-4398-85b8-82ddee9a7abd",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 26,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Silver",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 9100000,
+          "kits": "20kwh SRNE lithium battery with 10 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 12600000,
+          "kits": "20kwh SRNE lithium battery, with 10 years warranty, 20 panels(550w)"
+        }
+      ],
+      "legacyId": 22,
+      "category": "lithium"
+    },
+    {
+      "id": "dfe94a8e-d237-4a02-bd2f-129dcb6a2e23",
+      "slug": "platinum",
+      "isActive": true,
+      "sortOrder": 27,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Platinum",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 11400000,
+          "kits": "32kwh SRNE lithium battery with 10 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 15600000,
+          "kits": "32kwh lithium battery with 10 years warranty, 24 panels(550w"
+        }
+      ],
+      "legacyId": 23,
+      "category": "lithium"
+    },
+    {
+      "id": "5fc0b7ca-d335-499c-8816-821a27184ba9",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 28,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Gold",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points, 6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 7350000,
+          "kits": "30kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 11800000,
+          "kits": "30kwh lithium battery with 5 years warranty, 24 panels(550w) 100ah felicity solar charge controller MPPT X2"
+        }
+      ],
+      "legacyId": 24,
+      "category": "lithium"
+    },
+    {
+      "id": "c4176759-5b5e-4737-a561-7493513a403e",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 29,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Diamond",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 9800000,
+          "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 14100000,
+          "kits": "35kwh lithium battery with 7 years warranty, 20/24 panels(565w,650w), 100ah Felicity solar charge controller MPPT X2"
+        }
+      ],
+      "legacyId": 25,
+      "category": "lithium"
+    },
+    {
+      "id": "811ee981-0fae-4718-9a5a-9cc2af9bcc94",
+      "slug": "premium",
+      "isActive": true,
+      "sortOrder": 30,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Premium",
+      "load": "5 fans, 3 TVs, 4 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp-2hp inverter ac(2), 1 pumping machine, 20 lighting points,  6 laptops & charging of phones",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10050000,
+          "kits": "45kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 17000000,
+          "kits": "45kwh lithium battery with 5 years warranty, 35 panels(550), 100ah Felicity solar charge controller MPPT X3"
+        }
+      ],
+      "legacyId": 57,
+      "category": "lithium"
+    },
+    {
+      "id": "55ee186c-728e-4e23-984b-7f010987f9bc",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 31,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Silver",
+      "load": "6 fans, 3 tvs, 2 decoders, 2 sound system, 1 microwave, 30 lighting points, 1 fridge, 1 freezer, (4) 1 - 2hp inverter ac, pumping machine, blender, 6 laptops and charging of phones.",
+      "kva": 15,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10300000,
+          "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 14700000,
+          "kits": "35kwh lithium battery with 7 years warranty, 24 panels(565w} 100ah Felicity solar charge controller MPPT X2"
+        }
+      ],
+      "legacyId": 26,
+      "category": "lithium"
+    },
+    {
+      "id": "af66b7af-91f7-4585-aec4-811855b2a7be",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 32,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Silver",
+      "load": "8 fans,4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10950000,
+          "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 15300000,
+          "kits": "35kwh lithium battery with 7 years warranty, 24 panels(565w} 100ah Felicity solar charge controller MPPT X2"
+        }
+      ],
+      "legacyId": 27,
+      "category": "lithium"
+    },
+    {
+      "id": "2d9b35e4-3bc8-4ca1-b323-681e3e4fa81d",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 33,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Gold",
+      "load": "8 fans,4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 13400000,
+          "kits": "60kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 24000000,
+          "kits": "60kwh lithium battery with 5 years warranty, 40panels(565w)"
+        }
+      ],
+      "legacyId": 28,
+      "category": "lithium"
+    },
+    {
+      "id": "ace0a90b-d8bf-48a7-a952-67858e3d2a60",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 34,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Diamond",
+      "load": "8 fans,4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 19800000,
+          "kits": "90kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 34500000,
+          "kits": "90kwh lithium battery with 5 years warranty, 72 panels(585w)"
+        }
+      ],
+      "legacyId": 29,
+      "category": "lithium"
+    },
+    {
+      "id": "20d6d438-3923-45ba-a821-1b5e9976f720",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 35,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Silver",
+      "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1 - 2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+      "kva": 30,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 14800000,
+          "kits": "60kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 25700000,
+          "kits": "60kwh lithium battery with 5 years warranty, 42 panels(565w)"
+        }
+      ],
+      "legacyId": 30,
+      "category": "lithium"
+    },
+    {
+      "id": "c8031603-7cc7-495f-9a6b-5082cff02ae7",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 36,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "lithium",
+      "name": "Gold",
+      "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1 - 2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+      "kva": 30,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 21400000,
+          "kits": "90kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 35600000,
+          "kits": "90kwh lithium battery with 5 years warranty, 72 panels(600w)"
+        }
+      ],
+      "legacyId": 31,
+      "category": "lithium"
+    },
+    {
+      "id": "ee17cce5-eddd-4104-84aa-3184419ff543",
+      "slug": "basic",
+      "isActive": true,
+      "sortOrder": 37,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Basic",
+      "load": "4kva To power; 4 fans, 2 tvs, 2 decoders, 1 sound system, 15 lighting points, 1 fridge/ freezer, 1 washing machine, 1 microwave, 1 blender, 4 laptops and charging of phones.",
+      "kva": 4,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 2150000,
+          "kits": "5kwh lithum battery, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 3250000,
+          "kits": "5/6 panels (550w/650w), 5kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 32,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "7ae9ce74-f185-46d1-bb3a-ea6d56132072",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 38,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 3450000,
+          "kits": "10kwh lithum battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 4700000,
+          "kits": "8 panels(550w), 10kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 33,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "62bf98d0-03d1-4873-aaa7-a17cad15caaa",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 39,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 5,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 3950000,
+          "kits": "15kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 5750000,
+          "kits": "12 panels (550w), 15kwh lithum battery with S years warranty, installation kits"
+        }
+      ],
+      "legacyId": 34,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "c811a337-d54a-4c08-8f95-90bc2bd8eeb4",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 40,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 6,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 3500000,
+          "kits": "10kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 4800000,
+          "kits": "8 panels (550w), 10 lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 35,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "4a5c892f-15ee-4cb8-86b2-7438530373e9",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 41,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "4 fans, 2 TVs, 2 decoders, 1 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1hp inverter ac, 1 pumping machine, 15 lighting points,  laptops & charging of phones",
+      "kva": 6,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 3950000,
+          "kits": "15kwh lithum battery, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 5800000,
+          "kits": "12 panels (550w), 15kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 36,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "80de60b4-3c10-4573-81ec-c56736ef1a6b",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 42,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 8,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4050000,
+          "kits": "10kwh lithum battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 4900000,
+          "kits": "8 panels(550w), 10kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 37,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "b55fab6f-840f-4acb-a301-c33c52b44fb3",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 43,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 8,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4100000,
+          "kits": "15kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 5900000,
+          "kits": "12 panels (550w), 15kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 38,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "f444061e-821d-4709-8e9d-21e0dca9149b",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 44,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Diamond",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 8,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4750000,
+          "kits": "17.5kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 7300000,
+          "kits": "12-14 panels (550w/650w), 17.5kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 39,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "c8354566-b7e6-425a-85c7-d67577639294",
+      "slug": "platinum",
+      "isActive": true,
+      "sortOrder": 45,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Platinum",
+      "load": "5 fans, 3 TVs, 2 decoders, 2 sound system, 1 freezer, 1 microwave, 1 blender, 1 washing machine, 1-1.5 hp inverter ac(2), 1 pumping machine, 25 lighting points,  4 laptops & charging of phones",
+      "kva": 8,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 6100000,
+          "kits": "20kwh lithum battery with 5 years warranty installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 9850000,
+          "kits": "18 panels (550w), 20kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 40,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "74e16d19-f082-46e0-8332-dd1443724538",
+      "slug": "starter",
+      "isActive": true,
+      "sortOrder": 46,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Starter",
+      "load": "10kva to power; 5 fans, 3 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 4800000,
+          "kits": "15kWh lithium lithum battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 7600000,
+          "kits": "16/18 panels(550w/650w), 15kWh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 41,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "a4bf5817-0b92-4093-97d8-4323be953f57",
+      "slug": "starter-pro",
+      "isActive": true,
+      "sortOrder": 47,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Starter Pro",
+      "load": "10kva to power; 5 fans, 3 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 6000000,
+          "kits": "17.5kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 8950000,
+          "kits": "16/18 panels (550w/650w) 17.5kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 42,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "776af0c5-4d23-43a8-898f-04189a097f09",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 48,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "10kva to power; 5 fans, 3 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 6850000,
+          "kits": "20kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 10700000,
+          "kits": "20 panels (550w), 20kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 43,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "fbcb43ca-43d8-4d2c-bfa5-be1990cd6a96",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 49,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "10kva to power; 5 fans, 3 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 7200000,
+          "kits": "30kwh lithum battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 11700000,
+          "kits": "24 panels (550w), 30kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 44,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "285939c3-d97a-402b-bcf6-6e5565d206ff",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 50,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Diamond",
+      "load": "10kva to power; 5 fans, 3 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10000000,
+          "kits": "35kwh lithium lithum battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 14600000,
+          "kits": "20/24 panels(565w,650w), 35kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 45,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "22b3af6b-1ca2-4b81-a3c2-3d295d5488fc",
+      "slug": "platinum",
+      "isActive": true,
+      "sortOrder": 51,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Platinum",
+      "load": "10kva to power; 5 fans, 3 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 10,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10000000,
+          "kits": "45kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 16500000,
+          "kits": "32 panels (550w), 45kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 46,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "d610dda8-02a6-485b-b084-6bd63840e9bd",
+      "slug": "starter",
+      "isActive": true,
+      "sortOrder": 52,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Starter",
+      "load": "12kva to power; 6 fans, 4 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 12,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 5000000,
+          "kits": "15kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 7700000,
+          "kits": "16 panels (550w), 15k Wh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 47,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "e4cd0c94-2351-4a12-82fb-b4abe6b69fed",
+      "slug": "starter-pro",
+      "isActive": true,
+      "sortOrder": 53,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Starter Pro",
+      "load": "12kva to power; 6 fans, 4 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 12,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 6000000,
+          "kits": "17.5kwh lithum battery with 5 years warranty installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 9100000,
+          "kits": "16/18 panels (550w/650w), 17.5kwh lithium battery with 7 years warranty"
+        }
+      ],
+      "legacyId": 48,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "f2345595-02d5-45d8-8b42-82819aa26e45",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 54,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "12kva to power; 6 fans, 4 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 12,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 7300000,
+          "kits": "30kwh lithum battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 11800000,
+          "kits": "24 panels(565w), 30kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 49,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "e1cad7ec-6716-4e23-b528-3a4606382e0c",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 55,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "12kva to power; 6 fans, 4 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 12,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 9700000,
+          "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 14600000,
+          "kits": "24 panels (565w), 35kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 50,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "2bb3619b-0cfe-4504-b425-98ef02602dd3",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 56,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Diamond",
+      "load": "12kva to power; 6 fans, 4 tvs, 4 decoders, 2 sound system, 1 microwave, 20 lighting points, 1 fridge, 1 freezer, (3) 1hp- 2hp  inverter ac, pumping  machine, blenders, 6 laptops and charging of phones.",
+      "kva": 12,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10150000,
+          "kits": "45kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 17000000,
+          "kits": "35 panels (550w), 45 kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 51,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "89837b04-cfbb-4e9f-a946-f927dccdb84e",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 57,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "6 fans, 3 tvs, 2 decoders, 2 sound system, 1 microwave, 30 lighting points, 1 fridge, 1 freezer, (4) 1-2hp inverter ac, pumping machine, blender, 6 laptops and charging of phones.",
+      "kva": 16,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 7700000,
+          "kits": "30kwh lithum battery with 5 years warranty installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 12500000,
+          "kits": "24 panels (565w), 30kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 52,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "2a0f2d47-19d9-4f54-9774-d913786f2dcc",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 58,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "6 fans, 3 tvs, 2 decoders, 2 sound system, 1 microwave, 30 lighting points, 1 fridge, 1 freezer, (4) 1-2hp inverter ac, pumping machine, blender, 6 laptops and charging of phones.",
+      "kva": 16,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 10400000,
+          "kits": "35kwh lithum battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 14800000,
+          "kits": "24 panels(565w), 35kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 53,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "e39a93ea-5ab4-41ba-bd88-95d6bc5a0d01",
+      "slug": "starter",
+      "isActive": true,
+      "sortOrder": 59,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Starter",
+      "load": "8 fans, 4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1-2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 9750000,
+          "kits": "30kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 13600000,
+          "kits": "24 panels (565w), 30kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 54,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "0d0c0f6f-3923-411c-bfe7-c24c85abb6e3",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 60,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "8 fans, 4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 11700000,
+          "kits": "35kwh lithium battery with 7 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 15500000,
+          "kits": "24 panels (570w), 35kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 55,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "1a8a6015-61ac-4ebf-a7d4-da6781adc7a6",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 61,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "8 fans, 4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1-2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 12550000,
+          "kits": "45kwh lithum battery with 5 years warranty installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 19000000,
+          "kits": "35 panels (570w), 45kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 56,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "417baefc-8baa-414c-8730-0f2b4df3eaed",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 62,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Diamond",
+      "load": "8 fans, 4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 15550000,
+          "kits": "60kwh lithum battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 23200000,
+          "kits": "36 panels(550w), 60kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 57,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "c4fe05de-726b-4c8e-889b-1cfccd199b6b",
+      "slug": "platinum",
+      "isActive": true,
+      "sortOrder": 63,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Platinum",
+      "load": "8 fans, 4 tvs, 2 decoders, 2 sound system, 1 microwave, 40 lighting points, 1 fridge, 1 freezer, (5) 1 - 2hp inverter ac, pumping machine, blender, 8 laptops and charging of phones.",
+      "kva": 20,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 21000000,
+          "kits": "90kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 33400000,
+          "kits": "60 panels (570w), 90kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 58,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "2c594db6-73b7-4eff-879a-aea92f1619e8",
+      "slug": "silver",
+      "isActive": true,
+      "sortOrder": 64,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Silver",
+      "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1-2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+      "kva": 30,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 13900000,
+          "kits": "45kwh lithium battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 21400000,
+          "kits": "40 panels (570w), 45 kwh lithum battery with 7 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 59,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "7b3fdccf-7058-4586-961f-2533625fcccd",
+      "slug": "gold",
+      "isActive": true,
+      "sortOrder": 65,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Gold",
+      "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1-2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+      "kva": 30,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 16700000,
+          "kits": "60kwh lithum battery with 5 years warranty installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 25500000,
+          "kits": "40 panels (585w), 60kwh lithium battery with 5 years warranty"
+        }
+      ],
+      "legacyId": 60,
+      "category": "hybrid lithium"
+    },
+    {
+      "id": "531238ad-0e1d-483c-a835-b6a3cf06c81d",
+      "slug": "diamond",
+      "isActive": true,
+      "sortOrder": 66,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "type": "hybrid lithium",
+      "name": "Diamond",
+      "load": "12 fans, 5 tvs, 2 decoders, 2 sound system, 1 microwave, 45 lighting points, 1 fridge, 1 freezer, (8) 1-2hp inverter ac, pumping machine, blender, 10 laptops and charging of phones.",
+      "kva": 30,
+      "volt": null,
+      "options": [
+        {
+          "name": "Without solar",
+          "price": 22350000,
+          "kits": "90kwh lithum battery with 5 years warranty, installation kits"
+        },
+        {
+          "name": "With solar",
+          "price": 34900000,
+          "kits": "64 panels(600w), 90kwh lithum battery with 5 years warranty, installation kits"
+        }
+      ],
+      "legacyId": 56,
+      "category": "hybrid lithium"
+    }
+  ],
+  "newsletters": [],
+  "services": [
+    {
+      "id": "20fec905-a603-4570-b625-b60e54b5e544",
+      "slug": "system-design-and-architecture",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "System Design and Architecture",
+      "subtitle": "Our team inspects each site, assesses the roof, and determines the best location for solar panels, batteries, and circuit boxes.",
+      "image": "/offer-1.svg",
+      "ctaLabel": "Let's go",
+      "ctaUrl": "/packages"
+    },
+    {
+      "id": "d5fca661-10f4-48cd-b098-c3cbf67bf63d",
+      "slug": "energy-audit",
+      "isActive": true,
+      "sortOrder": 2,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Energy Audit",
+      "subtitle": "Expert assessments of energy usage and solar potential, with recommendations tailored to residential and commercial properties.",
+      "image": "/offer-2.svg",
+      "ctaLabel": "Let's go",
+      "ctaUrl": "/packages"
+    },
+    {
+      "id": "53e5f9a9-d4a8-46ec-9fe4-0f532c0a5a5c",
+      "slug": "light-solution",
+      "isActive": true,
+      "sortOrder": 3,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Light Solution",
+      "subtitle": "Sustainable lighting solutions for homes, businesses, communities, and public spaces.",
+      "image": "/offer-3.svg",
+      "ctaLabel": "Let's go",
+      "ctaUrl": "/packages"
+    },
+    {
+      "id": "2cb07993-e5fb-4392-95e3-90a8adbd73d4",
+      "slug": "after-sales-services",
+      "isActive": true,
+      "sortOrder": 4,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "After Sales Services",
+      "subtitle": "Reliable post-installation support that keeps customer systems working well after the first sale.",
+      "image": "/offer-4.svg",
+      "ctaLabel": "Let's go",
+      "ctaUrl": "/packages"
+    },
+    {
+      "id": "deaeffd6-0509-4cf6-96ef-1edb7738d1ee",
+      "slug": "maintenance",
+      "isActive": true,
+      "sortOrder": 5,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Maintenance",
+      "subtitle": "Dedicated maintenance for solar and backup power equipment, focused on dependable long-term performance.",
+      "image": "/offer-5.svg",
+      "ctaLabel": "Let's go",
+      "ctaUrl": "/packages"
+    }
+  ],
+  "customerSegments": [
+    {
+      "id": "bf0ab6e8-7c08-483f-a108-4bb469c7dd45",
+      "slug": "banking-sectors",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Banking Sectors",
+      "subtitle": "Reliable solar and backup systems for IT infrastructure, ATMs, telecoms, and branch operations.",
+      "image": "/panel-1.webp"
+    },
+    {
+      "id": "020150cd-ea58-4a7b-b65f-f596ac11b156",
+      "slug": "hospitals",
+      "isActive": true,
+      "sortOrder": 2,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Hospitals",
+      "subtitle": "Reliable, cost-effective electricity for medical and health care applications.",
+      "image": "/panel-2.webp"
+    },
+    {
+      "id": "69710da6-7395-4336-9340-733c9cf2fd4b",
+      "slug": "community",
+      "isActive": true,
+      "sortOrder": 3,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Community",
+      "subtitle": "Mini grids, solar powered boreholes, street lights, and community power systems.",
+      "image": "/panel-3.webp"
+    },
+    {
+      "id": "f3df2748-121d-4cfa-a070-73eff72a5dbd",
+      "slug": "farms",
+      "isActive": true,
+      "sortOrder": 4,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Farms",
+      "subtitle": "Solar power and water solutions for farms with limited access to grid electricity.",
+      "image": "/panel-4.webp"
+    },
+    {
+      "id": "1e98b5be-39a5-4361-bfe4-690c789c28ee",
+      "slug": "government-institutions",
+      "isActive": true,
+      "sortOrder": 5,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Government Institutions",
+      "subtitle": "Renewable power systems for reliable institutional operations.",
+      "image": "/panel-5.webp"
+    },
+    {
+      "id": "83aa0c1f-06f3-4649-884d-bbc019a4c031",
+      "slug": "academic-institutions",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "title": "Academic Institutions",
+      "subtitle": "Solar and backup systems for schools in urban and rural areas.",
+      "image": "/panel-6.webp"
+    }
+  ],
+  "portfolio": [
+    {
+      "id": "4aa57972-706d-4a7a-81af-b5e8b7f9766a",
+      "slug": "2-1kwp-trina-solar-panel",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "2.1Kwp Trina Solar Panel",
+      "image": "/image-1.svg",
+      "featured": true,
+      "mobile": true
+    },
+    {
+      "id": "ebc263ec-8266-4a3f-8a9a-ab49b0eb891f",
+      "slug": "7-5kva-lithium-battery",
+      "isActive": true,
+      "sortOrder": 2,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "7.5Kva Lithium Battery",
+      "image": "/image-2.svg",
+      "featured": true,
+      "mobile": true
+    },
+    {
+      "id": "7566f276-5fc8-43aa-b043-3e6193c94558",
+      "slug": "5kva-tubular-battery-energy",
+      "isActive": true,
+      "sortOrder": 3,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "5Kva Tubular Battery Energy",
+      "image": "/image-3.svg",
+      "featured": true,
+      "mobile": true
+    },
+    {
+      "id": "27148cbc-5fb8-4beb-92f4-4448b9689f06",
+      "slug": "1-2kwp-canadian-solar-panel",
+      "isActive": true,
+      "sortOrder": 4,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "1.2Kwp Canadian Solar Panel",
+      "image": "/image-4.svg",
+      "featured": true,
+      "mobile": true
+    },
+    {
+      "id": "5ae9fa72-1d40-4eb2-90ba-855523897bbc",
+      "slug": "3-2kva-tubular-battery",
+      "isActive": true,
+      "sortOrder": 5,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "3.2Kva Tubular Battery",
+      "image": "/image-5.svg",
+      "featured": true,
+      "mobile": false
+    },
+    {
+      "id": "63e34b6b-7830-4053-ba14-6cb01f4ee089",
+      "slug": "8-8kwp-canadian-solar-panel",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "8.8Kwp Canadian Solar Panel",
+      "image": "/image-6.svg",
+      "featured": true,
+      "mobile": false
+    },
+    {
+      "id": "1225e47f-c417-4e3e-b535-8626010c1e4b",
+      "slug": "2-1kwp-trina-solar",
+      "isActive": true,
+      "sortOrder": 7,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "2.1kwp Trina Solar",
+      "image": "/image-7.svg",
+      "featured": true,
+      "mobile": false
+    },
+    {
+      "id": "c99d942b-59ff-4ed8-a87f-8168a9139c14",
+      "slug": "10kva-lithium-battery",
+      "isActive": true,
+      "sortOrder": 8,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "10Kva Lithium Battery",
+      "image": "/image-8.svg",
+      "featured": true,
+      "mobile": false
+    },
+    {
+      "id": "b1cf5bed-e8aa-454d-b498-52ef888a9bbb",
+      "slug": "550w-mono-crystalline-solar-panel",
+      "isActive": true,
+      "sortOrder": 9,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "550W Mono-Crystalline Solar Panel",
+      "image": "/portfolio-5.svg",
+      "featured": false,
+      "mobile": true
+    },
+    {
+      "id": "e937f944-5e9e-4cea-93be-0c2d7f27ba4f",
+      "slug": "2-5kva-tubular-battery-energy",
+      "isActive": true,
+      "sortOrder": 10,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "2.5Kva Tubular Battery Energy",
+      "image": "/portfolio-6.svg",
+      "featured": false,
+      "mobile": true
+    },
+    {
+      "id": "5622e0d0-b8e1-4b9c-835b-c8191531626e",
+      "slug": "10kva-lithium-battery-energy",
+      "isActive": true,
+      "sortOrder": 11,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "10Kva Lithium Battery Energy",
+      "image": "/portfolio-7.svg",
+      "featured": false,
+      "mobile": false
+    },
+    {
+      "id": "f06d012e-e026-47cd-90aa-03832e41ea14",
+      "slug": "550w-mono-crystalline-solar-panel",
+      "isActive": true,
+      "sortOrder": 12,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "550W Mono-Crystalline Solar Panel",
+      "image": "/portfolio-8.svg",
+      "featured": false,
+      "mobile": false
+    },
+    {
+      "id": "3e6e8a4e-2b18-44ab-aa8e-9d208ce001b2",
+      "slug": "10kva-lithium-battery-energy",
+      "isActive": true,
+      "sortOrder": 13,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "10Kva Lithium Battery Energy",
+      "image": "/portfolio-9.svg",
+      "featured": false,
+      "mobile": false
+    },
+    {
+      "id": "c173b02d-6f84-4630-b1d1-d789ce92fe9a",
+      "slug": "7-5kva-tubular-battery-energy",
+      "isActive": true,
+      "sortOrder": 14,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "7.5Kva Tubular Battery Energy",
+      "image": "/portfolio-11.svg",
+      "featured": false,
+      "mobile": false
+    },
+    {
+      "id": "318ec7db-aac4-4e95-b07c-1e28241acfe6",
+      "slug": "550w-mono-crystalline-solar-panel",
+      "isActive": true,
+      "sortOrder": 15,
+      "createdAt": "2026-06-15T10:14:47.679Z",
+      "updatedAt": "2026-06-15T10:14:47.679Z",
+      "name": "550W Mono-Crystalline Solar Panel",
+      "image": "/portfolio-12.svg",
+      "featured": false,
+      "mobile": false
+    }
+  ],
+  "contacts": [],
+  "carts": [],
+  "orders": [],
+  "admins": [
+    {
+      "id": "09550b43-1aed-4dee-aa72-8bf500fc79d5",
+      "slug": "super-admin",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2026-06-15T13:57:04.905Z",
+      "updatedAt": "2026-06-15T14:50:07.498Z",
+      "name": "Super Admin",
+      "email": "remilekunelijah21997@gmail.com",
+      "passwordHash": "0c3245d8ebc69e10f7e048669dfd8ac2:fb9b7de8aae0e14085961b9361312e1734c516edd2057c37f9159cd58390138686a956cd198ec466d2d7f273aed3fcb8d6185cb2e87a09e60c90d139c5dee80d",
+      "role": "super_admin",
+      "passwordChangedAt": "2026-06-15T14:24:02.978Z",
+      "lastLoginAt": "2026-06-15T14:50:07.497Z"
+    }
+  ],
+  "passwordResets": [
+    {
+      "id": "be639d98-9627-4d45-bb8e-6bef55392b28",
+      "slug": "1781533442915-0",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2026-06-15T14:24:02.915Z",
+      "updatedAt": "2026-06-15T14:24:02.979Z",
+      "adminId": "09550b43-1aed-4dee-aa72-8bf500fc79d5",
+      "email": "remilekunelijah21997@gmail.com",
+      "tokenHash": "a9430bcf00dc38205828cde2c0bacd4c:8980a9c012f76f47eea2e0df1b6b564b18d21cf4f602a3bcb5be962a4e0b783fc405435a968d68b3c4ed84df4acb085b9f098427f10daa12ed6e299ad959bf4a",
+      "expiresAt": "2026-06-15T14:54:02.914Z",
+      "usedAt": "2026-06-15T14:24:02.979Z"
+    }
+  ]
+}

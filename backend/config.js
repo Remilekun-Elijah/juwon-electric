@@ -15,6 +15,7 @@ environment.development = {
   smtp_secret: process.env.SMTP_SECRET,
   smtp_user: process.env.SMTP_USER,
   smtp_from: process.env.SMTP_FROM,
+  mongodb_uri: process.env.MONGODB_DIRECT_URI || process.env.MONGODB_URI,
 };
 
 environment.production = {
@@ -25,6 +26,7 @@ environment.production = {
   smtp_secret: process.env.SMTP_SECRET,
   smtp_user: process.env.SMTP_USER,
   smtp_from: process.env.SMTP_FROM,
+  mongodb_uri: process.env.MONGODB_DIRECT_URI || process.env.MONGODB_URI,
 };
 
-export default environment[process.env.NODE_ENV];
+export default environment[process.env.NODE_ENV] || environment.development;
