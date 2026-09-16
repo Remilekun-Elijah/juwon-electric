@@ -284,3 +284,87 @@ export const deleteCollectionItem = async (env, collection, existing) => {
   if (changesOf(result) !== 1) notFound(notFoundMessage(collection));
   return existing;
 };
+
+// ---------------------------------------------------------------------------
+// Admin read status (migrations/0006_admin_reads.sql)
+// ---------------------------------------------------------------------------
+// Stored per admin, apart from the records, so marking something read never
+// changes a contact or order. Times are epoch milliseconds.
+
+export const READ_TYPES = ["contacts", "orders"];
+
+export const readKey = (type, id) => `${type}:${id}`;
+
+const dateMs = (value) => {
+  if (value === undefined || value === null || value === "") return 0;
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+};
+
+// Latest customer activity on a contact or order (0 when no date is usable).
+export const recordActivity = (type, record) => {
+  const created = dateMs(record?.receivedAt) || dateMs(record?.createdAt);
+  if (type !== "contacts") return created;
+  const replies = Array.isArray(record?.inboundReplies) ? record.inboundReplies : [];
+  return replies.reduce(
+    (latest, reply) => Math.max(latest, dateMs(reply?.receivedAt)),
+    Math.max(created, dateMs(record?.lastInboundReplyAt))
+  );
+};
+
+const ensureReadState = async (env, adminId, timestamp) => {
+  await env.DB.prepare(
+    "INSERT INTO admin_read_state (admin_id, since, updated_at) VALUES (?, ?, ?) ON CONFLICT (admin_id) DO NOTHING"
+  )
+    .bind(adminId, timestamp, timestamp)
+    .run();
+};
+
+// Drops rows already covered by since, then returns the rest as { key: readAt }.
+const readItemsAfter = async (env, adminId, since) => {
+  await env.DB.prepare("DELETE FROM admin_reads WHERE admin_id = ? AND read_at <= ?").bind(adminId, since).run();
+  const rows = await env.DB.prepare("SELECT record_key, read_at FROM admin_reads WHERE admin_id = ?")
+    .bind(adminId)
+    .all();
+  return Object.fromEntries((rows.results || []).map((row) => [row.record_key, Number(row.read_at)]));
+};
+
+// { since, items }; creates the admin's baseline (since = now) on first use.
+export const getReadStatus = async (env, adminId) => {
+  const timestamp = Date.now();
+  await ensureReadState(env, adminId, timestamp);
+  const row = await env.DB.prepare("SELECT since FROM admin_read_state WHERE admin_id = ?").bind(adminId).first();
+  const since = Number(row?.since ?? timestamp);
+  return { since, items: await readItemsAfter(env, adminId, since) };
+};
+
+// Upserts the read time, keeping the larger value. Resolves to the stored read time.
+export const markRecordRead = async (env, adminId, key, readAt) => {
+  await ensureReadState(env, adminId, Date.now());
+  const row = await env.DB.prepare(
+    `INSERT INTO admin_reads (admin_id, record_key, read_at) VALUES (?, ?, ?)
+      ON CONFLICT (admin_id, record_key) DO UPDATE SET read_at = MAX(admin_reads.read_at, excluded.read_at)
+      RETURNING read_at`
+  )
+    .bind(adminId, key, readAt)
+    .first();
+  return Number(row?.read_at ?? readAt);
+};
+
+// Moves the admin's since forward (never back) and clears the rows it covers.
+export const markAllRead = async (env, adminId, since) => {
+  const row = await env.DB.prepare(
+    `INSERT INTO admin_read_state (admin_id, since, updated_at) VALUES (?, ?, ?)
+      ON CONFLICT (admin_id) DO UPDATE SET since = MAX(admin_read_state.since, excluded.since), updated_at = excluded.updated_at
+      RETURNING since`
+  )
+    .bind(adminId, since, Date.now())
+    .first();
+  const stored = Number(row?.since ?? since);
+  return { since: stored, items: await readItemsAfter(env, adminId, stored) };
+};
+
+// Removes a deleted record's read rows for every admin.
+export const deleteRecordReads = async (env, key) => {
+  await env.DB.prepare("DELETE FROM admin_reads WHERE record_key = ?").bind(key).run();
+};

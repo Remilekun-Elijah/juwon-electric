@@ -30,6 +30,7 @@ The Worker keeps the same frontend-facing route shape:
 - `GET /health`
 - `GET /admin/dashboard`
 - `GET /admin/audit-logs`
+- `GET /admin/reads`, `POST /admin/reads`, `POST /admin/reads/all` (per-admin read status, migration 0006)
 - Admin CRUD routes for packages, services, portfolio, contacts, newsletter, carts, and orders (including `DELETE /admin/orders/:id`, `DELETE /admin/contacts/:id`, `DELETE /admin/newsletter/:id`)
 
 The `/api` and `/api/admin` prefixes are also supported.
@@ -46,7 +47,7 @@ npx wrangler d1 create juwon-electric
 
 Copy the returned D1 `database_id` into `wrangler.toml`.
 
-Apply the schema (runs every file in `migrations/` that has not been applied yet, including `0002_rate_limits.sql`, `0004_admin_security.sql` and `0005_hardening.sql`):
+Apply the schema (runs every file in `migrations/` that has not been applied yet, including `0002_rate_limits.sql`, `0004_admin_security.sql`, `0005_hardening.sql` and `0006_admin_reads.sql`):
 
 ```bash
 npm run d1:migrate
@@ -249,3 +250,27 @@ For local development, put `TURNSTILE_DISABLED=true` (and optionally `DEV_EXPOSE
   - The `[JE-CONTACT:<id>]` tag matches record ids only.
 - **Health and tracing:** `GET /health` returns `{ success: true, status: "ok" }`, or 503 `{ success: false, status: "unavailable" }` when D1 is unreachable. Every response has `X-Request-Id`, which is echoed when the client sends a valid one and included in server error logs. `HEAD` works on every `GET` route.
 - **Logs:** email provider failures log only the HTTP status or error name/message, never bodies or recipients.
+
+## Admin read status (migration 0006)
+
+### Deploying this change
+
+1. Apply the migration, then deploy the Worker:
+
+```bash
+npx wrangler d1 migrations apply juwon-electric --remote
+npm run deploy
+```
+
+2. Deploy the frontend that uses `/admin/reads`.
+
+`0006_admin_reads.sql` is idempotent and adds `admin_read_state (admin_id, since, updated_at)` and `admin_reads (admin_id, record_key, read_at)` (primary key `(admin_id, record_key)`, plus an index on `record_key`). Until it is applied the three read-status routes return 500 "Something went wrong." (the error is logged) and the admin console keeps read status in the browser; deleting a contact or order still works and logs "Failed to delete read status". For local development run `npm run d1:migrate:local`.
+
+### Behaviour
+
+Read status is stored per admin (`admin.id`, or `static-token` for `ADMIN_TOKEN`) and never touches the records, so it creates no audit entries and no compare-and-set conflicts. Record keys are `contacts:<id>` / `orders:<id>`; times are epoch milliseconds. Activity is `receivedAt` (or `createdAt`), and for contacts also `lastInboundReplyAt` and every `inboundReplies[].receivedAt`, whichever is newest (invalid dates count as 0). The routes are not audited or rate limited, send `Cache-Control: no-store`, and POST bodies must be `application/json` (415).
+
+- `GET /admin/reads`: creates the admin's row with `since = now` on first use, removes item rows with `read_at <= since`, and returns `{ since, items: { "<key>": readAt } }` ("Read status retrieved.").
+- `POST /admin/reads` `{ type, id }`: 400 "Type must be contacts or orders." / "Id is required." (non-empty string, at most 64 characters), 404 "Contact not found." / "Order not found." (`id` is resolved like the admin get-by-id routes). Stores `max(now, activity)` with `ON CONFLICT ... DO UPDATE SET read_at = MAX(admin_reads.read_at, excluded.read_at)` and returns `{ key, readAt }` with the stored value ("Marked as read.").
+- `POST /admin/reads/all`: body ignored. Moves `since` to `max(stored since, now, newest activity across all contacts and orders)`, removes the rows it covers and returns `{ since, items }` ("All marked as read.").
+- `DELETE /admin/contacts/:id` and `DELETE /admin/orders/:id` also remove that record's read rows for every admin (best effort).

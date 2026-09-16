@@ -6,6 +6,7 @@ import {
   requestPasswordReset,
   resetPassword,
 } from "../controllers/adminAuth.js";
+import { adminGetReads, adminMarkAllRead, adminMarkRead } from "../controllers/adminReads.js";
 import { adminListAuditLogs } from "../controllers/auditLogs.js";
 import { adminListCarts } from "../controllers/cart.js";
 import {
@@ -62,6 +63,11 @@ router.post("/auth/logout", logout);
 
 router.get("/dashboard", adminDashboard);
 router.get("/audit-logs", adminListAuditLogs);
+
+// Per-admin read status (not audited, not rate limited).
+router.get("/reads", adminGetReads);
+router.post("/reads", adminMarkRead);
+router.post("/reads/all", adminMarkAllRead);
 
 router.get("/packages", asyncHandler(adminListPackages));
 router.post("/packages", asyncHandler(adminCreatePackage));

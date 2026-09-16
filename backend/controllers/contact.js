@@ -3,6 +3,7 @@ import contactReplyTemplate from "../mail/_contactReply.js";
 import { sendMail } from "../mail/mail.js";
 import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
+import { forgetRecordReads } from "./adminReads.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 import { safeEqual } from "../services/adminAuthService.js";
 import { audit, auditDelete, auditUpdate } from "../services/audit.js";
@@ -109,6 +110,7 @@ export const adminUpdateMessage = asyncHandler(async (req, res) => {
 export const adminDeleteMessage = asyncHandler(async (req, res) => {
   const existing = await getCollectionItem("contacts", req.params.id);
   const contact = await deleteCollectionItem("contacts", existing.id);
+  await forgetRecordReads("contacts", contact.id);
   auditDelete(req, "contact", contact);
   ok(res, "Message deleted.", contact);
 });
