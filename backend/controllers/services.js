@@ -1,46 +1,78 @@
+import { catalogHandlers } from "./_catalog.js";
+import { ok } from "../services/http.js";
+import { listCollection } from "../services/store.js";
 import {
-  createCollectionItem,
-  deleteCollectionItem,
-  getCollectionItem,
-  listCollection,
-  updateCollectionItem,
-} from "../services/store.js";
-import { created, ok } from "../services/http.js";
-import {
-  normalizeSlug,
+  LIMITS,
+  deriveSlug,
   optionalBoolean,
-  optionalNumber,
+  optionalSlug,
   optionalString,
+  optionalUrl,
   requiredString,
+  requiredUrl,
+  sortOrderField,
 } from "../services/validators.js";
 
-const servicePayload = (body, existing = {}) => {
-  const title = requiredString(body, "title");
+// Update: optional fields that are absent (or blank text) are not written.
+const servicePayload = (body, { isUpdate }) => {
+  const title = requiredString(body, "title", "Title", { max: LIMITS.serviceTitle });
+  const slug = optionalSlug(body);
+  const subtitle = requiredString(body, "subtitle", "Subtitle", { max: LIMITS.serviceSubtitle });
+  const image = requiredUrl(body, "image", "Image");
+  const ctaLabel = optionalString(body, "ctaLabel", { label: "CTA label", max: LIMITS.ctaLabel });
+  const ctaUrl = optionalUrl(body, "ctaUrl", "CTA URL");
+  const isActive = optionalBoolean(body, "isActive", undefined);
+  const sortOrder = sortOrderField(body);
 
   return {
     title,
-    slug: body.slug || existing.slug || normalizeSlug(title),
-    subtitle: requiredString(body, "subtitle"),
-    image: requiredString(body, "image"),
-    ctaLabel: optionalString(body, "ctaLabel") || existing.ctaLabel || "Let's go",
-    ctaUrl: optionalString(body, "ctaUrl") || existing.ctaUrl || "/packages",
-    isActive: optionalBoolean(body, "isActive", existing.isActive ?? true),
-    sortOrder: optionalNumber(body, "sortOrder") ?? existing.sortOrder,
+    slug: slug ?? (isUpdate ? undefined : deriveSlug(title)),
+    subtitle,
+    image,
+    ctaLabel: ctaLabel || (isUpdate ? undefined : "Let's go"),
+    ctaUrl: ctaUrl || (isUpdate ? undefined : "/packages"),
+    isActive: isUpdate ? isActive : isActive ?? true,
+    sortOrder,
   };
 };
 
-const segmentPayload = (body, existing = {}) => {
-  const title = requiredString(body, "title");
+const segmentPayload = (body, { isUpdate }) => {
+  const title = requiredString(body, "title", "Title", { max: LIMITS.serviceTitle });
+  const slug = optionalSlug(body);
+  const subtitle = requiredString(body, "subtitle", "Subtitle", { max: LIMITS.serviceSubtitle });
+  const image = requiredUrl(body, "image", "Image");
+  const isActive = optionalBoolean(body, "isActive", undefined);
+  const sortOrder = sortOrderField(body);
 
   return {
     title,
-    slug: body.slug || existing.slug || normalizeSlug(title),
-    subtitle: requiredString(body, "subtitle"),
-    image: requiredString(body, "image"),
-    isActive: optionalBoolean(body, "isActive", existing.isActive ?? true),
-    sortOrder: optionalNumber(body, "sortOrder") ?? existing.sortOrder,
+    slug: slug ?? (isUpdate ? undefined : deriveSlug(title)),
+    subtitle,
+    image,
+    isActive: isUpdate ? isActive : isActive ?? true,
+    sortOrder,
   };
 };
+
+const serviceHandlers = catalogHandlers({
+  collection: "services",
+  entity: "service",
+  buildPayload: servicePayload,
+  slugSource: (item) => item.title,
+  messages: { create: "Service created.", update: "Service updated.", delete: "Service deleted." },
+});
+
+const segmentHandlers = catalogHandlers({
+  collection: "customerSegments",
+  entity: "customerSegment",
+  buildPayload: segmentPayload,
+  slugSource: (item) => item.title,
+  messages: {
+    create: "Customer segment created.",
+    update: "Customer segment updated.",
+    delete: "Customer segment deleted.",
+  },
+});
 
 export const listServices = async (_req, res) => {
   const [offerings, customerSegments] = await Promise.all([
@@ -58,38 +90,9 @@ export const adminListServices = async (_req, res) => {
   ok(res, "Services retrieved.", { offerings, customerSegments });
 };
 
-export const adminCreateService = async (req, res) => {
-  const item = await createCollectionItem("services", servicePayload(req.body));
-  created(res, "Service created.", item);
-};
-
-export const adminUpdateService = async (req, res) => {
-  const existing = await getCollectionItem("services", req.params.id);
-  const item = await updateCollectionItem("services", req.params.id, servicePayload(req.body, existing));
-  ok(res, "Service updated.", item);
-};
-
-export const adminDeleteService = async (req, res) => {
-  const item = await deleteCollectionItem("services", req.params.id);
-  ok(res, "Service deleted.", item);
-};
-
-export const adminCreateCustomerSegment = async (req, res) => {
-  const item = await createCollectionItem("customerSegments", segmentPayload(req.body));
-  created(res, "Customer segment created.", item);
-};
-
-export const adminUpdateCustomerSegment = async (req, res) => {
-  const existing = await getCollectionItem("customerSegments", req.params.id);
-  const item = await updateCollectionItem(
-    "customerSegments",
-    req.params.id,
-    segmentPayload(req.body, existing)
-  );
-  ok(res, "Customer segment updated.", item);
-};
-
-export const adminDeleteCustomerSegment = async (req, res) => {
-  const item = await deleteCollectionItem("customerSegments", req.params.id);
-  ok(res, "Customer segment deleted.", item);
-};
+export const adminCreateService = serviceHandlers.create;
+export const adminUpdateService = serviceHandlers.update;
+export const adminDeleteService = serviceHandlers.remove;
+export const adminCreateCustomerSegment = segmentHandlers.create;
+export const adminUpdateCustomerSegment = segmentHandlers.update;
+export const adminDeleteCustomerSegment = segmentHandlers.remove;

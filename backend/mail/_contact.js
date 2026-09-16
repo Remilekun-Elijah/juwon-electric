@@ -1,4 +1,5 @@
 import config from "../config.js";
+import { escapeHtml } from "./_contactReply.js";
 
 export default function contactTemplate({
   name,
@@ -196,7 +197,7 @@ export default function contactTemplate({
                   <tbody>
                     <tr>
                       <td align="center" style="font-size:0px;padding:0px;padding-top:10px;word-break:break-word;">
-                        <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:500;line-height:24px;text-align:center;color:#000000;">${name} sent you a message</div>
+                        <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:500;line-height:24px;text-align:center;color:#000000;">${escapeHtml(name)} sent you a message</div>
                       </td>
                     </tr>
                   </tbody>
@@ -234,7 +235,7 @@ export default function contactTemplate({
                       </tr>
                       <tr>
                         <td align="left" style="font-size:0px;padding:20px 40px 0 40px;word-break:break-word;">
-                          <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">${message}</div>
+                          <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">${escapeHtml(message)}</div>
                         </td>
                       </tr>
                       
@@ -242,12 +243,12 @@ export default function contactTemplate({
                       <tr>
                         <td align="left" style="font-size:0px;padding:5px 40px 0 40px;word-break:break-word;">
                           <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                          <p>Email: ${emailAddress} </p>
+                          <p>Email: ${escapeHtml(emailAddress)} </p>
                           </div>
                         
                         
                           <div style="padding-top:0; margin-top:0;font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                          <p>Phone Number: ${phoneNumber} </p>
+                          <p>Phone Number: ${escapeHtml(phoneNumber)} </p>
                           </div>
                         </td>
                       </tr>

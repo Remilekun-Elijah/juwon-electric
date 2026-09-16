@@ -1,17 +1,17 @@
+import { catalogHandlers } from "./_catalog.js";
+import { badRequest, notFound } from "../services/errors.js";
+import { ok } from "../services/http.js";
+import { getCollectionItem, listCollection } from "../services/store.js";
 import {
-  createCollectionItem,
-  deleteCollectionItem,
-  getCollectionItem,
-  listCollection,
-  updateCollectionItem,
-} from "../services/store.js";
-import { created, ok } from "../services/http.js";
-import {
-  normalizeSlug,
+  LIMITS,
+  deriveSlug,
+  legacyIdField,
+  numberField,
   optionalBoolean,
-  optionalNumber,
-  requiredNumber,
+  optionalSlug,
+  optionalString,
   requiredString,
+  sortOrderField,
   validateOptions,
 } from "../services/validators.js";
 
@@ -28,24 +28,58 @@ const serializeForClient = (item) => ({
   options: item.options,
 });
 
-const packagePayload = (body, existing = {}) => {
-  const type = requiredString(body, "type").toLowerCase();
-  const name = requiredString(body, "name");
+const positive = (value, label) => {
+  if (value !== undefined && value !== null && !(value > 0)) {
+    throw badRequest(`${label} must be greater than 0.`);
+  }
+  return value;
+};
+
+// Update: optional fields that are absent (or blank text) are not written.
+const packagePayload = (body, { isUpdate }) => {
+  const type = requiredString(body, "type", "Type", { max: LIMITS.packageType }).toLowerCase();
+  const name = requiredString(body, "name", "Name", { max: LIMITS.packageName });
+  const kva = positive(
+    numberField(body, "kva", "kVA", { required: true, maxLength: LIMITS.packageKva }),
+    "kVA"
+  );
+  const volt = positive(
+    numberField(body, "volt", "Volt", { maxLength: LIMITS.packageVolt }),
+    "Volt"
+  );
+  const category = optionalString(body, "category", {
+    label: "Category",
+    max: LIMITS.packageType,
+  });
+  const legacyId = legacyIdField(body);
+  const slug = optionalSlug(body);
+  const load = requiredString(body, "load", "Load", { max: LIMITS.packageLoad, multiline: true });
+  const options = validateOptions(body.options);
+  const isActive = optionalBoolean(body, "isActive", undefined);
+  const sortOrder = sortOrderField(body);
 
   return {
-    legacyId: body.legacyId ?? existing.legacyId,
+    legacyId,
     type,
-    category: body.category || type,
+    category: category || type,
     name,
-    slug: body.slug || existing.slug || normalizeSlug(`${name}-${type}-${body.kva || existing.kva}`),
-    load: requiredString(body, "load"),
-    kva: requiredNumber(body, "kva"),
-    volt: optionalNumber(body, "volt"),
-    options: validateOptions(body.options),
-    isActive: optionalBoolean(body, "isActive", existing.isActive ?? true),
-    sortOrder: optionalNumber(body, "sortOrder") ?? existing.sortOrder,
+    slug: slug ?? (isUpdate ? undefined : deriveSlug(`${name}-${type}-${kva}`)),
+    load,
+    kva,
+    volt: isUpdate ? volt : volt ?? null,
+    options,
+    isActive: isUpdate ? isActive : isActive ?? true,
+    sortOrder,
   };
 };
+
+const handlers = catalogHandlers({
+  collection: "packages",
+  entity: "package",
+  buildPayload: packagePayload,
+  slugSource: (item) => `${item.name}-${item.type}-${item.kva}`,
+  messages: { create: "Package created.", update: "Package updated.", delete: "Package deleted." },
+});
 
 export const listPackages = async (_req, res) => {
   const packages = await listCollection("packages");
@@ -54,6 +88,7 @@ export const listPackages = async (_req, res) => {
 
 export const getPackage = async (req, res) => {
   const item = await getCollectionItem("packages", req.params.id);
+  if (item.isActive === false) throw notFound("packages");
   ok(res, "Package retrieved.", serializeForClient(item));
 };
 
@@ -62,22 +97,6 @@ export const adminListPackages = async (req, res) => {
   ok(res, "Packages retrieved.", packages);
 };
 
-export const adminCreatePackage = async (req, res) => {
-  const item = await createCollectionItem("packages", packagePayload(req.body));
-  created(res, "Package created.", item);
-};
-
-export const adminUpdatePackage = async (req, res) => {
-  const existing = await getCollectionItem("packages", req.params.id);
-  const item = await updateCollectionItem(
-    "packages",
-    req.params.id,
-    packagePayload(req.body, existing)
-  );
-  ok(res, "Package updated.", item);
-};
-
-export const adminDeletePackage = async (req, res) => {
-  const item = await deleteCollectionItem("packages", req.params.id);
-  ok(res, "Package deleted.", item);
-};
+export const adminCreatePackage = handlers.create;
+export const adminUpdatePackage = handlers.update;
+export const adminDeletePackage = handlers.remove;

@@ -1,56 +1,69 @@
 import nodemailer from "nodemailer";
 import config from "../config.js";
 
-const { info, error, log } = console;
-const extractEmail = (value = "") => value.match(/<([^>]+)>/)?.[1] || value;
+const extractEmail = (value = "") => value.match(/<([^<>]+)>/)?.[1] || value;
 
-export const sendMail = async function (message, template) {
-  info({ subject: message.subject });
-  const transporter = nodemailer.createTransport({
+// Only the error's name, code and message: provider errors can include
+// recipients, message bodies or server responses.
+const describeError = (err) =>
+  [err?.name, err?.code, err?.responseCode, err?.message].filter(Boolean).join(" ");
+
+let warnedUnconfigured = false;
+const smtpConfigured = () => Boolean(config.smtp_user && config.smtp_secret && config.smtp_from);
+
+let transporter = null;
+const getTransporter = () => {
+  transporter ||= nodemailer.createTransport({
     service: "gmail",
-    port: 587, // 587 465
     auth: {
       user: config.smtp_user,
       pass: config.smtp_secret,
     },
   });
-  const from = config.smtp_from?.includes("<")
-    ? config.smtp_from
-    : `"${config.application_name}" <${config.smtp_from}>`;
-  const deliveryAddress = extractEmail(config.smtp_from);
-  const packet = {
-    from,
-    to: message.to || deliveryAddress,
-    bcc: ["remilekunelijah97@gmail.com"],
-    replyTo: message.replyTo || deliveryAddress,
-    subject: message.subject,
-    html: template(message.data),
-  };
+  return transporter;
+};
+
+// Never rejects: callers fire-and-forget this, and an unhandled rejection would
+// crash the process. Resolves to true when the mail was delivered.
+export const sendMail = async function (message, template) {
+  if (!smtpConfigured()) {
+    if (!warnedUnconfigured) {
+      warnedUnconfigured = true;
+      console.warn("SMTP is not configured (SMTP_USER, SMTP_SECRET, SMTP_FROM): emails are not sent.");
+    }
+    return false;
+  }
 
   try {
-    /* send the mail */
-    transporter.sendMail(packet, (err, infos) => {
-      if (err) {
-        error("email sending failed:", err.message);
-        info("attempting to send mail again...");
-        transporter.sendMail(packet, (err, info) => {
-          if (err) {
-            console.error(err);
-            error("Failed to send mail");
-            message?.handleError?.();
-          } else {
-            message?.handleSuccess?.();
-            log("Email sent to:", info.messageId, "after failed trial ");
-          }
-        });
-      } else {
+    const from = config.smtp_from.includes("<")
+      ? config.smtp_from
+      : `"${config.application_name}" <${config.smtp_from}>`;
+    const deliveryAddress = extractEmail(config.smtp_from);
+    const packet = {
+      from,
+      to: message.to || deliveryAddress,
+      // BCC is opt-in via MAIL_BCC (comma-separated); none by default.
+      ...(config.mail_bcc?.length ? { bcc: config.mail_bcc } : {}),
+      replyTo: message.replyTo || deliveryAddress,
+      subject: message.subject,
+      html: template(message.data),
+    };
+
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        await getTransporter().sendMail(packet);
         message?.handleSuccess?.();
-        log("Email sent to:", infos.messageId);
+        console.log("Email sent.");
+        return true;
+      } catch (err) {
+        console.error(`Email sending failed (attempt ${attempt}):`, describeError(err));
       }
-    });
+    }
+    message?.handleError?.();
+    return false;
   } catch (e) {
-    throw new Error(
-      "Something is wrong with the mail service, please try again."
-    );
+    console.error("Something is wrong with the mail service:", describeError(e));
+    message?.handleError?.();
+    return false;
   }
 };

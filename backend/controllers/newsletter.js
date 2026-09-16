@@ -1,31 +1,80 @@
 import subscriberTemplate from "../mail/_subscriber.js";
 import { sendMail } from "../mail/mail.js";
+import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
+import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
 import { asyncHandler } from "../services/asyncHandler.js";
+import { auditDelete, auditUpdate } from "../services/audit.js";
 import { created, ok } from "../services/http.js";
+import { track } from "../services/runtime.js";
 import {
-  appendCollectionItem,
+  deleteCollectionItem,
+  getCollectionItem,
   listCollection,
   updateCollectionItem,
+  upsertCollectionItem,
 } from "../services/store.js";
-import { optionalString, validateEmail } from "../services/validators.js";
+import {
+  LIMITS,
+  optionalBoolean,
+  optionalString,
+  enumField,
+  validateEmail,
+} from "../services/validators.js";
+
+const NEWSLETTER_STATUSES = ["new", "active", "inactive"];
+const SUBSCRIBED_MESSAGE = "You're subscribed.";
 
 export const subscribe = asyncHandler(async (req, res) => {
-  const emailAddress = validateEmail(req.body.emailAddress || req.body.email, true);
-  const subscriber = await appendCollectionItem("newsletters", {
+  const turnstileToken = takeTurnstileToken(req.body);
+  const emailKey =
+    req.body?.emailAddress !== undefined && req.body?.emailAddress !== null && req.body?.emailAddress !== ""
+      ? "emailAddress"
+      : "email";
+  const emailAddress = validateEmail(
+    optionalString(req.body, emailKey, { label: "Email address", max: LIMITS.email }),
+    true
+  );
+  const fields = {
     emailAddress,
-    name: optionalString(req.body, "name"),
-    source: optionalString(req.body, "source") || "client",
-  });
+    name: optionalString(req.body, "name", { label: "Name", max: LIMITS.personName }),
+    source:
+      optionalString(req.body, "source", { label: "Source", max: LIMITS.source }) || "client",
+  };
 
-  sendMail(
+  await enforceLimit(req, res, "public-subscribe", RATE_LIMITS.publicWrite);
+  await verifyTurnstile(req, turnstileToken, "subscribe");
+
+  // One record per email: an existing subscriber is reactivated, never duplicated.
+  // Same body either way (only the status code differs) so emails can't be enumerated.
+  const { item: subscriber, created: isNew } = await upsertCollectionItem(
+    "newsletters",
+    { emailAddress },
     {
-      subject: "You have a new subscriber",
-      data: subscriber,
-    },
-    subscriberTemplate
+      create: { ...fields, status: "new", receivedAt: new Date().toISOString() },
+      update: (existing) =>
+        existing.isActive === false || existing.status === "inactive"
+          ? {
+              isActive: true,
+              ...(existing.status === "inactive" ? { status: "active" } : {}),
+            }
+          : null,
+    }
   );
 
-  created(res, "Thank you for subscribing to our newsletter. We will keep you up to date when we add a new product.", subscriber);
+  if (isNew) {
+    track(
+      sendMail(
+        {
+          subject: "You have a new subscriber",
+          data: subscriber,
+        },
+        subscriberTemplate
+      )
+    );
+    created(res, SUBSCRIBED_MESSAGE, { emailAddress });
+  } else {
+    ok(res, SUBSCRIBED_MESSAGE, { emailAddress });
+  }
 });
 
 export const adminListSubscribers = asyncHandler(async (_req, res) => {
@@ -34,9 +83,25 @@ export const adminListSubscribers = asyncHandler(async (_req, res) => {
 });
 
 export const adminUpdateSubscriber = asyncHandler(async (req, res) => {
-  const subscriber = await updateCollectionItem("newsletters", req.params.id, {
-    status: req.body.status || "new",
-    isActive: req.body.isActive ?? true,
+  const body = req.body || {};
+  const existing = await getCollectionItem("newsletters", req.params.id);
+  const status = enumField(body, "status", NEWSLETTER_STATUSES, {
+    label: "Status",
+    existing: existing.status,
   });
+  const isActive = optionalBoolean(body, "isActive", undefined);
+
+  // Only the fields that were sent are written (against the fresh record).
+  const patch = { status, isActive };
+  const changedKeys = Object.keys(patch).filter((key) => patch[key] !== undefined);
+  const subscriber = await updateCollectionItem("newsletters", existing.id, patch);
+  auditUpdate(req, "newsletter", existing, subscriber, changedKeys);
   ok(res, "Subscriber updated.", subscriber);
+});
+
+export const adminDeleteSubscriber = asyncHandler(async (req, res) => {
+  const existing = await getCollectionItem("newsletters", req.params.id);
+  const subscriber = await deleteCollectionItem("newsletters", existing.id);
+  auditDelete(req, "newsletter", subscriber);
+  ok(res, "Subscriber deleted.", subscriber);
 });

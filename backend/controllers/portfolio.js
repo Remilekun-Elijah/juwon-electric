@@ -1,33 +1,52 @@
+import { catalogHandlers } from "./_catalog.js";
+import { notFound } from "../services/errors.js";
+import { ok } from "../services/http.js";
+import { getCollectionItem, listCollection } from "../services/store.js";
 import {
-  createCollectionItem,
-  deleteCollectionItem,
-  getCollectionItem,
-  listCollection,
-  updateCollectionItem,
-} from "../services/store.js";
-import { created, ok } from "../services/http.js";
-import {
-  normalizeSlug,
+  LIMITS,
+  deriveSlug,
   optionalBoolean,
-  optionalNumber,
-  optionalString,
+  optionalSlug,
+  optionalUrl,
   requiredString,
+  requiredUrl,
+  sortOrderField,
 } from "../services/validators.js";
 
-const portfolioPayload = (body, existing = {}) => {
-  const name = requiredString(body, "name");
+// Update: optional fields that are absent (or blank text) are not written.
+const portfolioPayload = (body, { isUpdate }) => {
+  const name = requiredString(body, "name", "Name", { max: LIMITS.portfolioName });
+  const slug = optionalSlug(body);
+  const image = requiredUrl(body, "image", "Image");
+  const link = optionalUrl(body, "link", "Link");
+  const featured = optionalBoolean(body, "featured", undefined);
+  const mobile = optionalBoolean(body, "mobile", undefined);
+  const isActive = optionalBoolean(body, "isActive", undefined);
+  const sortOrder = sortOrderField(body);
 
   return {
     name,
-    slug: body.slug || existing.slug || normalizeSlug(name),
-    image: requiredString(body, "image"),
-    link: optionalString(body, "link") || existing.link || "",
-    featured: optionalBoolean(body, "featured", existing.featured ?? false),
-    mobile: optionalBoolean(body, "mobile", existing.mobile ?? true),
-    isActive: optionalBoolean(body, "isActive", existing.isActive ?? true),
-    sortOrder: optionalNumber(body, "sortOrder") ?? existing.sortOrder,
+    slug: slug ?? (isUpdate ? undefined : deriveSlug(name)),
+    image,
+    link: link || (isUpdate ? undefined : ""),
+    featured: isUpdate ? featured : featured ?? false,
+    mobile: isUpdate ? mobile : mobile ?? true,
+    isActive: isUpdate ? isActive : isActive ?? true,
+    sortOrder,
   };
 };
+
+const handlers = catalogHandlers({
+  collection: "portfolio",
+  entity: "portfolio",
+  buildPayload: portfolioPayload,
+  slugSource: (item) => item.name,
+  messages: {
+    create: "Portfolio item created.",
+    update: "Portfolio item updated.",
+    delete: "Portfolio item deleted.",
+  },
+});
 
 export const listPortfolio = async (req, res) => {
   const items = await listCollection("portfolio");
@@ -37,6 +56,7 @@ export const listPortfolio = async (req, res) => {
 
 export const getPortfolioItem = async (req, res) => {
   const item = await getCollectionItem("portfolio", req.params.id);
+  if (item.isActive === false) throw notFound("portfolio");
   ok(res, "Portfolio item retrieved.", item);
 };
 
@@ -45,18 +65,6 @@ export const adminListPortfolio = async (_req, res) => {
   ok(res, "Portfolio retrieved.", items);
 };
 
-export const adminCreatePortfolioItem = async (req, res) => {
-  const item = await createCollectionItem("portfolio", portfolioPayload(req.body));
-  created(res, "Portfolio item created.", item);
-};
-
-export const adminUpdatePortfolioItem = async (req, res) => {
-  const existing = await getCollectionItem("portfolio", req.params.id);
-  const item = await updateCollectionItem("portfolio", req.params.id, portfolioPayload(req.body, existing));
-  ok(res, "Portfolio item updated.", item);
-};
-
-export const adminDeletePortfolioItem = async (req, res) => {
-  const item = await deleteCollectionItem("portfolio", req.params.id);
-  ok(res, "Portfolio item deleted.", item);
-};
+export const adminCreatePortfolioItem = handlers.create;
+export const adminUpdatePortfolioItem = handlers.update;
+export const adminDeletePortfolioItem = handlers.remove;

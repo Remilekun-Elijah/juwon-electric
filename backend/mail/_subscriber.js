@@ -1,4 +1,5 @@
 import config from "../config.js";
+import { escapeHtml } from "./_contactReply.js";
 
 export default function subscriberTemplate({ emailAddress }) {
   return `
@@ -242,7 +243,7 @@ export default function subscriberTemplate({ emailAddress }) {
                       <tr>
                         <td align="left" style="font-size:0px;padding:5px 40px 10px 40px;word-break:break-word;">
                           <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                          <p>Email: ${emailAddress} </p>
+                          <p>Email: ${escapeHtml(emailAddress)} </p>
                           </div>
                         </td>
                       </tr>

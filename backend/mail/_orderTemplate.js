@@ -1,4 +1,5 @@
 import config from "../config.js";
+import { escapeHtml } from "./_contactReply.js";
 
 export default function orderTemplate({
   phoneNumber,
@@ -243,12 +244,12 @@ export default function orderTemplate({
                       </tr>
                       <tr>
                         <td align="left" style="font-size:0px;padding:20px 40px 0 40px;word-break:break-word;">
-                          <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">Congrats! you have just received an order from ${name} and below are the details:</div>
+                          <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">Congrats! you have just received an order from ${escapeHtml(name)} and below are the details:</div>
                         </td>
                       </tr>
                       
 
-                      ${order.map(
+                      ${(order || []).map(
                         (a) =>
                           `<tr style='borderBottom: 1px solid #DB464C'>
                           <td
@@ -256,33 +257,33 @@ export default function orderTemplate({
                             style="font-size:0px;padding:5px 40px 0 40px;word-break:break-word;"
                           >
                             <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                            <p>Package: ${a.package} </p>
-                            <p>Type: ${a.type} battery </p>
+                            <p>Package: ${escapeHtml(a.package)} </p>
+                            <p>Type: ${escapeHtml(a.type)} battery </p>
                             <p>
-                              Price: <span style='color: #DB464C'>${a.price} x ${a.quantity}<span>
+                              Price: <span style='color: #DB464C'>${escapeHtml(a.price)} x ${escapeHtml(a.quantity)}</span>
                             </p>
                             </div>
                           </td>
                         </tr>`
-                      )}
+                      ).join("")}
                       <tr>
                       <td align="left" style="font-size:0px;padding:5px 40px 0 40px;word-break:break-word;">
                       
                       <div style="padding-top:0; margin-top:0;font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                          <p>Total Amount: <span style='color:#DB464C'>${total}</span> </p>
+                          <p>Total Amount: <span style='color:#DB464C'>${escapeHtml(total)}</span> </p>
                           </div>
 
                       <div style="padding-top:0; margin-top:0;font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                          <p>Delivery Address: <span style='color:#DB464C'>${deliveryAddress}</span> </p>
+                          <p>Delivery Address: <span style='color:#DB464C'>${escapeHtml(deliveryAddress)}</span> </p>
                           </div>
 
                       <div style="padding-top:0; margin-top:0;font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                      <p>Phone Number: ${phoneNumber} </p>
+                      <p>Phone Number: ${escapeHtml(phoneNumber)} </p>
                       </div>
                       
                        
                       <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                        <p>Email Address: ${emailAddress} </p>
+                        <p>Email Address: ${escapeHtml(emailAddress)} </p>
                         </div>
                       
                         </td>

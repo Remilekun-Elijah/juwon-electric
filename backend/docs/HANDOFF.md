@@ -151,15 +151,15 @@ Admin routes support CRUD for content and status updates for operational records
 
 ## Environment Variables
 
-Recommended backend `.env`:
+Recommended backend `.env` (see `backend/.env.example` for every variable):
 
 ```bash
-NODE_ENV=development
+NODE_ENV=production          # local development may use development
 PORT=9000
-ADMIN_TOKEN=replace-with-a-long-random-token
-ADMIN_AUTH_SECRET=replace-with-a-long-random-session-secret
+ADMIN_AUTH_SECRET=           # required in production; openssl rand -base64 48
+ADMIN_TOKEN=                 # optional static script token; openssl rand -base64 48
 SUPERADMIN_EMAIL=admin@example.com
-SUPERADMIN_PASSWORD=replace-with-a-strong-password
+SUPERADMIN_PASSWORD=         # 12-128 chars, must not contain the email name
 SUPERADMIN_NAME=Super Admin
 SMTP_USER=
 SMTP_SECRET=
@@ -167,7 +167,12 @@ SMTP_FROM=
 MONGODB_URI=
 MONGODB_DIRECT_URI=
 MONGODB_REQUIRED=false
+TRUST_PROXY=1                # behind Render's proxy
+ALLOWED_ORIGINS=https://juwonelectric.com,https://www.juwonelectric.com
+TURNSTILE_SECRET_KEY=
 ```
+
+Placeholder or short (<32 character) `ADMIN_TOKEN` / `ADMIN_AUTH_SECRET` values are ignored with a warning. In production a missing `ADMIN_AUTH_SECRET` disables admin sign-in (500), a missing `TURNSTILE_SECRET_KEY` makes public forms answer 503 (set `TURNSTILE_DISABLED=true` to skip deliberately), and an unreachable `MONGODB_URI` stops the process at startup.
 
 Email still uses the existing Nodemailer Gmail transport in `backend/mail/mail.js`.
 
@@ -205,7 +210,6 @@ All returned successful JSON responses.
 - If MongoDB Atlas `mongodb+srv` DNS TXT lookup fails locally, generate a standard/direct connection string from Atlas and place it in `MONGODB_DIRECT_URI`.
 - Wire the client frontend to GET backend data instead of hard-coded arrays.
 - Build the admin frontend on top of the `/admin` API.
-- Improve `backend/mail/mail.js` so it does not log config and can fail gracefully if SMTP credentials are missing.
 
 ## Cloudflare Workers Backend
 
