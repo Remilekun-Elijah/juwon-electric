@@ -7,6 +7,7 @@ import { adminRequest } from "../../../utils/api";
 import { LIMITS } from "../../../utils/validation";
 import { contactStatusOptions } from "../constants/adminConstants";
 import { formatDateTime, getRecordDate } from "../utils/adminFormatters";
+import { extractLatestReply } from "../utils/replyText";
 import DetailList from "./DetailList";
 
 const contactThreadPattern = /\s*\[JE-CONTACT:[^\]]+\]\s*/gi;
@@ -14,6 +15,30 @@ const cleanContactSubject = (subject) =>
   (subject || "No subject").replace(contactThreadPattern, "").trim() || "No subject";
 
 const linkClasses = "text-brand-600 hover:text-brand-700 hover:underline underline-offset-4";
+
+// Customer replies show only their newest text; the quoted email history is one click away.
+const InboundMessage = ({ message }) => {
+  const [showFull, setShowFull] = useState(false);
+  const full = String(message || "").trim();
+  const latest = extractLatestReply(full);
+  const hasHistory = latest !== full;
+
+  return (
+    <>
+      <p className="mt-1 whitespace-pre-line break-words text-sm text-slate-600">{showFull ? full : latest}</p>
+      {hasHistory && (
+        <button
+          type="button"
+          className={cn("mt-2 text-xs font-medium", linkClasses)}
+          aria-expanded={showFull}
+          onClick={() => setShowFull((value) => !value)}
+        >
+          {showFull ? "Hide earlier messages" : "Show full email"}
+        </button>
+      )}
+    </>
+  );
+};
 
 export const ContactDetails = ({ contact, updating, onStatusChange, onSent }) => {
   const [subject, setSubject] = useState("Re: Your message to Juwon Electric");
@@ -117,7 +142,11 @@ export const ContactDetails = ({ contact, updating, onStatusChange, onSent }) =>
                   <span className="text-xs text-slate-500">{formatDateTime(reply.at)}</span>
                 </div>
                 <p className="mt-2 text-sm font-medium text-slate-900">{cleanContactSubject(reply.subject)}</p>
-                <p className="mt-1 whitespace-pre-line break-words text-sm text-slate-600">{reply.message}</p>
+                {reply.direction === "client" ? (
+                  <InboundMessage message={reply.message} />
+                ) : (
+                  <p className="mt-1 whitespace-pre-line break-words text-sm text-slate-600">{reply.message}</p>
+                )}
               </li>
             ))}
           </ol>
