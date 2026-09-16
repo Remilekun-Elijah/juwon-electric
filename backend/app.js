@@ -17,6 +17,8 @@ import { ApiError, SERVICE_UNAVAILABLE_MESSAGE } from "./services/errors.js";
 import { isMongoMode, waitForPending } from "./services/runtime.js";
 import { backupJsonStore, ensureSecurityIndexes } from "./services/store.js";
 import mongoose from "mongoose";
+import userRouter from "./routes/user.js";
+import vacanciesRouter from "./routes/vacancies.js";
 
 const app = express();
 if (app.get("env") === "development") env.config();
@@ -76,6 +78,9 @@ app.use(publicRouter);
 app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
+
+// Vacancies endpoints
+app.use('/vacancies', vacanciesRouter);
 
 app.get("/", (req, res, next) => {
   res.status(200).json({
