@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { Mails, MessageSquareText, ReceiptText, SearchX, Trash2 } from "lucide-react";
 import {
   Alert,
+  Badge,
   Button,
   ConfirmDialog,
   Drawer,
@@ -116,7 +117,7 @@ const buildUpdateBody = (type, item, changes) => {
 const statusLabel = (type, status) =>
   getStatusMeta(type === "orders" ? "order" : type === "contacts" ? "contact" : "newsletter", status).label;
 
-const Operations = ({ type, data, reload, invalidate, removeRecord }) => {
+const Operations = ({ type, data, reload, invalidate, removeRecord, unread, onSeen }) => {
   const { loaded, error: loadError, refresh, loading } = useAdmin();
   const settings = config[type];
   const items = useMemo(() => data[type] || [], [data, type]);
@@ -245,8 +246,15 @@ const Operations = ({ type, data, reload, invalidate, removeRecord }) => {
     </Button>
   );
 
+  const unreadKind = (item) => {
+    if (!unread) return null;
+    if (unread instanceof Map) return unread.get(item.id) || null;
+    return unread.has(item.id) ? "new" : null;
+  };
+
   const openOrder = async (item) => {
     if (type !== "orders") return;
+    onSeen?.("orders", item);
     orderRequest.current = item.id;
     setSelectedOrder(null);
     setOrderError("");
@@ -270,6 +278,7 @@ const Operations = ({ type, data, reload, invalidate, removeRecord }) => {
 
   const openContact = (item) => {
     if (type !== "contacts") return;
+    onSeen?.("contacts", item);
     setSelectedContactId(item.id);
     setContactDrawerOpen(true);
   };
@@ -322,7 +331,14 @@ const Operations = ({ type, data, reload, invalidate, removeRecord }) => {
       return (
         <>
           <TD className="max-w-[240px]">
-            <p className="truncate font-medium text-slate-900">{item.name || "Unnamed customer"}</p>
+            <p className="flex items-center gap-2 font-medium text-slate-900">
+              <span className="truncate">{item.name || "Unnamed customer"}</span>
+              {unreadKind(item) && (
+                <Badge tone="brand" dot className="shrink-0">
+                  New
+                </Badge>
+              )}
+            </p>
             <p className="truncate text-sm text-slate-500">{item.phoneNumber || item.deliveryAddress}</p>
           </TD>
           <TD className="hidden whitespace-nowrap md:table-cell">{formatDate(getRecordDate(item))}</TD>
@@ -341,7 +357,14 @@ const Operations = ({ type, data, reload, invalidate, removeRecord }) => {
       return (
         <>
           <TD className="max-w-[240px]">
-            <p className="truncate font-medium text-slate-900">{item.name || "Unnamed"}</p>
+            <p className="flex items-center gap-2 font-medium text-slate-900">
+              <span className="truncate">{item.name || "Unnamed"}</span>
+              {unreadKind(item) && (
+                <Badge tone="brand" dot className="shrink-0">
+                  {unreadKind(item) === "reply" ? "New reply" : "New"}
+                </Badge>
+              )}
+            </p>
             <p className="truncate text-sm text-slate-500">{item.emailAddress || item.phoneNumber}</p>
           </TD>
           <TD className="hidden max-w-[360px] lg:table-cell">
