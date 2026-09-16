@@ -34,3 +34,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+Environment variables
+
+When deploying to Vercel (or any CI), set the following environment variables in the project settings (do NOT commit them to the repo):
+
+- NEXT_PUBLIC_BACKEND_URL  # Public URL of the backend API (e.g. https://api.example.com)
+- MONGODB_URI              # MongoDB connection string used by the backend
+- SMTP_HOST                # SMTP server host (for transactional email)
+- SMTP_PORT                # SMTP server port
+- SMTP_USER                # SMTP username
+- SMTP_PASS                # SMTP password
+
+Notes
+
+- Add the secrets to Vercel (for production/preview) and to GitHub Actions repository secrets for CI builds.
+- For local development, create a .env.local in frontend-next with NEXT_PUBLIC_BACKEND_URL pointing to your running backend (e.g. http://localhost:3000).
+
