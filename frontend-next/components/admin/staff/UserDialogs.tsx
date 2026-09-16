@@ -125,7 +125,11 @@ export function InviteUserDialog({
         role,
         phone: phone.trim() || null,
       });
-      toast.success(`Account created. We’ve emailed ${created.email} a link with a reset token to set their password.`);
+      toast.success(`Account created. We’ve emailed ${created.email} a reset token to set their password.`, {
+        description:
+          "The token expires after 30 minutes. If it has expired, they can use “Forgot password?” on the sign-in page to get a new one.",
+        duration: 10000,
+      });
       onCreated(created);
       close();
     } catch (error) {

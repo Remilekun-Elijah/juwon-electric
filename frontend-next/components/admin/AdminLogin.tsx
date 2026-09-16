@@ -208,7 +208,13 @@ export function AdminLogin({ initialMode = "login" }: { initialMode?: Mode }) {
       setMode("login");
       setMessage(`${response.message || "Password reset successful."} Sign in with your new password.`);
     } catch (caught) {
-      setError(errorMessage(caught));
+      // Invite and reset tokens expire after 30 minutes (contract §13.4): point people at a fresh token.
+      const expired = caught instanceof ApiError && caught.status === 400 && /invalid or expired/i.test(caught.message);
+      setError(
+        expired
+          ? `${caught.message} Reset and invite tokens expire after 30 minutes. Use “Request a new token” below (the same as “Forgot password?”) to get a new one.`
+          : errorMessage(caught)
+      );
     } finally {
       setLoading(false);
     }
