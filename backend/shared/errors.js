@@ -23,7 +23,7 @@ export const OPS_NOT_FOUND_LABELS = {
   categories: "Category",
   products: "Product",
   inventoryMovements: "Inventory movement",
-  installationJobs: "Installation job",
+  installationJobs: "Job",
   settings: "Settings",
   notifications: "Notification",
 };

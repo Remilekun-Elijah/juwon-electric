@@ -1,123 +1,61 @@
 # BE-2 status: Commerce & Operations (`agents/be-ops`)
 
-Branch cut from `v3-agents-base` @ d48b482. No `API_CONTRACT_V3.md` or BE-1 `requireCapability` existed when this work started, so everything here is coded against PLATFORM_PLAN §1 and decision D4a. SUP-BE's contract wins where it differs.
+Base: `v3-agents-base` @ `d48b482`. Contract: `docs/agents/API_CONTRACT_V3.md` on `agents/be-supervisor` (c737453). Endpoint reference: the "Commerce and operations (v3)" section at the end of `backend/docs/API.md`.
 
 ## Progress
 
-| Item | Status | Commit |
-| --- | --- | --- |
-| 1. Categories and products, package components | Done | a8da77f |
-| 2. Inventory, movements, low-stock email | Done | (this commit) |
-| 3. Order fulfilment | Not started | |
-| 4. Installation jobs and staff profiles | Not started | |
-| 5. Settings and notifications | Not started | |
-| 6. Dashboard KPIs | Not started | |
+| Contract item | Status |
+| --- | --- |
+| §4 Catalog: categories, products, package `items` | Done (aligned with the contract) |
+| §5 Inventory: stock view, adjustments, movements, low-stock alerts and check | Done (aligned; `low_stock` notification lands with §8) |
+| §6 Orders and fulfilment (D4a) | Not started |
+| §7 Installation jobs, engineer endpoints, staff | Not started |
+| §8 Settings and notifications | Not started |
+| §9 Dashboard KPIs | Not started |
+
+Commit history: items 1–2 were first built before the contract existed (a8da77f, 68e2c5c), then aligned with it in the commit that adds this file version.
+
+## Integration with BE-1
+
+- **Capabilities.** `backend/shared/capabilities.js`, `backend/middleware/capabilities.js` and `backend/cloudflare/src/capabilities.js` are BE-1's files (checked out from `agents/be-platform` 391a979), unchanged. There are no shims.
+- **Test harness.** Also taken unchanged from BE-1: `backend/test/helpers/express.js`, `backend/cloudflare/test/helpers/{d1,worker}.js`, and BE-1's `backend/cloudflare/src/http.js` (`data: null`). `app.js` uses BE-1's `isEntryPoint` block, and `package.json` matches BE-1's (`"test": "node --test"`, `engines`).
+- **Rich text.** BE-2 owns `backend/shared/richText.js` (`sanitizeRichText`) and `backend/shared/__fixtures__/richText.json`, and both test suites run the fixtures. BE-1 should import it for vacancies rather than write another one.
+- **Routing.** New Express admin routes are on `backend/routes/ops.js` (`opsAdminRouter`), mounted inside `routes/admin.js` after `adminAuth`. New public routes are on `opsPublicRouter`, mounted in `routes/public.js`. The Worker dispatches to `backend/cloudflare/src/ops/*` from `route()` in `src/index.js`.
+- **Expected conflicts** (small, mechanical):
+  - `routes/admin.js` and `routes/public.js`: one import line and one `router.use` line each.
+  - `cloudflare/src/index.js`: imports, package `items`, the ops dispatch and `scheduled`.
+  - `services/errors.js` and `cloudflare/src/store.js`: label maps and `COLLECTIONS`.
+  - `services/store.js`: `ensureSecurityIndexes`.
+  - `docs/API.md`: BE-2's section is appended at the end.
 
 ## How it is built
 
-- **Shared logic** lives in `backend/shared/` (pure ES modules, no dependencies): validation, sanitiser, capability map, transitions, serializers. Express and the Worker both import it, so messages and response shapes match by construction. Shared errors carry `statusCode` and `expose: true`; the Worker's `errorResponse` now exposes them like `ApiError`.
-- **Storage.** New collections go in the existing stores. Express uses the JSON file store or Mongo, with model names prefixed `Ops*` to avoid the `backend/models/*` clash. The Worker uses the D1 `records` table.
-- **Capabilities.** Temporary shims with BE-1's signature: `backend/middleware/capabilities.shim.js` (`requireCapability(...caps)` middleware) and `backend/cloudflare/src/capabilities.shim.js` (`requireCapability(admin, ...caps)`, throws 403). Role map: `backend/shared/capabilities.js`. `super_admin` and the static token count as superadmin; unknown roles get nothing. At integration, swap the imports for BE-1's implementation and delete the shims.
-- **Migrations.** BE-2 uses `0010+`.
-- **Tests.** Run `cd backend && npm test`. Each module test runs the same scenario against Express (temp JSON store) and the Worker (`fetch` against a `node:sqlite` D1 stand-in with every migration applied), then compares response shapes. Mongo mode is not covered.
-- `app.js` exports `app` and skips `start()` when `BACKEND_NO_LISTEN=true`.
+- **Shared logic.** Validation, filters, serializers, the stock plan and the low-stock rules live in `backend/shared/{fields,catalog,inventory,settings,errors,richText}.js` (pure ESM). Shared errors carry `statusCode` and `expose: true`, and the Worker's `errorResponse` exposes them like `ApiError`.
+- **Storage.** New collections go in the existing stores: Express JSON/Mongo with models named `Ops*`, which avoids clashing with `backend/models/*`, and the D1 `records` table. SKU uniqueness regardless of case uses a stored `skuLower` field: a Mongo unique index, and a check under the JSON store lock. D1 uses the contract's `lower(json_extract(...))` index.
+- **Atomic stock** (§5, §6.3). Details are in the API.md section.
+  - JSON store: the lock.
+  - Mongo: conditional `$inc` plus compensation.
+  - D1: a single batch with a compare-and-set update per product and `batch_guard` CHECK rows that roll the whole batch back when a row changed, then retry. `cloudflare/test/inventory.test.js` tests the rollback and retry. The concurrent case (12 parallel decrements of 5 in stock) is tested in both runtimes.
+- **Migrations.**
+  - `0010_catalog.sql`: slug and SKU unique indexes.
+  - `0012_inventory_jobs.sql`: `batch_guard`, plus movement and job indexes.
+  - `0011_orders_fulfilment.sql` comes with §6, and `0013` with §8.
+- **Tests** (`cd backend && npm test`):
+  - Scenarios: `backend/test/scenarios/{catalog,inventory}.js`, plus `opsKit.js` for admin seeding, email capture (nodemailer and Resend) and masking.
+  - Runners: `backend/test/*.test.js` (Express), `backend/cloudflare/test/*.test.js` (Worker) and `backend/test/parity/*.parity.test.js`.
+  - `backend/test/sourceHygiene.test.js` fails on any control or format character in backend sources.
+  - Mongo mode is not covered by tests.
 
-## Endpoints (item 1)
+## Interpretations (SUP-BE please confirm)
 
-Errors follow the existing `{ success: false, message }` shape. 403 message: `You do not have permission to perform this action.`
-
-### Public
-
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/categories` | Active categories: `{ id, name, slug, parentId, description, imageUrl, sortOrder }` |
-| GET | `/categories/:idOrSlug` | 404 when inactive |
-| GET | `/products?category=<idOrSlug>` | Active products. The category filter includes descendant categories; unknown category is 404 |
-| GET | `/products/:idOrSlug` | 404 unless `status` is `active` |
-
-Public product: `{ id, sku, name, slug, categoryId, category: { id, name, slug } | null, brand, descriptionHtml, attributes, price, currency, images, tags, inStock, sortOrder }`. `costPrice`, `stockQuantity` and `reorderLevel` are never public.
-
-### Admin
-
-| Method | Path | Capability |
-| --- | --- | --- |
-| GET | `/admin/categories` | `catalog:read` |
-| POST | `/admin/categories` | `catalog:write` |
-| PUT | `/admin/categories/:id` | `catalog:write` |
-| DELETE | `/admin/categories/:id` | `catalog:write` (409 if it has subcategories or products) |
-| GET | `/admin/products` | `catalog:read` |
-| GET | `/admin/products/:id` | `catalog:read` |
-| POST | `/admin/products` | `catalog:write` |
-| PUT | `/admin/products/:id` | `catalog:write` |
-| DELETE | `/admin/products/:id` | `catalog:write` (409 if a package uses it) |
-
-Admin lists return the stored records.
-
-#### Category body
-
-- `name` (required, ≤100)
-- `slug`: optional. It is normalised and made unique with `-2`, `-3`, ...
-- `parentId`: id or null. It must exist and must not create a cycle.
-- `description` (≤2000)
-- `imageUrl`: https URL or a `/path`
-- `isActive`, `sortOrder`
-
-#### Product body
-
-- `sku` (required): stored upper-case, `[A-Z0-9._-]`, ≤64, unique (409).
-- `name` (required, ≤150), `slug`
-- `categoryId`: id or null
-- `brand`
-- `descriptionHtml`: sanitised server-side by `backend/shared/sanitizeHtml.js` (allowlist; links are forced to `rel="noopener noreferrer nofollow"`)
-- `attributes`: object of up to 50 entries; values are stored as strings
-- `price` (required on create, ≥0), `costPrice`
-- `currency`: always `NGN`
-- `stockQuantity`: create only. On update, a value different from the stored one is rejected with 400; use stock adjustments (item 2).
-- `reorderLevel`: integer, or null to use the settings default
-- `images`: up to 20 URLs; `tags`: up to 20
-- `status`: `active`, `hidden` or `archived`. `isActive` mirrors `status === "active"`.
-- `sortOrder`
-
-On update, absent optional fields are kept, and `null` clears them.
-
-**Packages** accept `components: [{ productId, quantity }]` on admin create and update (quantity 1–1000, duplicates merged, products must exist). Public `/packages` responses are unchanged.
-
-**D1:** migration `0010_catalog.sql` adds a unique index on product SKU and on category/product slugs.
-
-## Endpoints (item 2: inventory)
-
-Stock only changes through movements, including the initial quantity on product create (reason `initial`). Each product update and its movement record are written atomically:
-
-- **JSON store:** one locked read-modify-write.
-- **D1:** one batch. The UPDATE on each product only applies if the row is unchanged (compare-and-set). A `batch_guard` CHECK row then aborts and rolls back the whole batch when an UPDATE matched nothing, and the batch retries on fresh rows (up to 5 attempts).
-- **Mongo:** a conditional `$inc` per product, with the opposite `$inc` applied if a later step fails.
-
-Stock never goes below 0 (409).
-
-| Method | Path | Capability | Notes |
-| --- | --- | --- | --- |
-| POST | `/admin/products/:id/stock-adjustments` | `inventory:write` | Body below. 201 returns `{ product, movement }` |
-| GET | `/admin/products/:id/stock-movements?reason&page&limit` | `inventory:read` | Returns `{ items, page, limit, total }`, newest first |
-| GET | `/admin/inventory/movements?productId&reason&page&limit` | `inventory:read` | Same shape |
-| GET | `/admin/inventory/low-stock` | `inventory:read` | `[{ id, sku, name, status, stockQuantity, reorderLevel }]` |
-| POST | `/admin/inventory/low-stock/notify` | `inventory:write` | Sends the digest now. Returns `{ items, emailed }` |
-
-**Adjustment body:** `{ quantity, reason, note? }`
-
-- `quantity`: a non-zero whole number (a delta) from -1,000,000 to 1,000,000.
-- `reason`: `restock`, `correction`, `damage`, `return` or `other`.
-- 409 `Not enough stock for <name> (<sku>): N available, M needed.`, with `details: { productId, available, requested }`.
-
-**Movement:** `{ id, productId, sku, productName, change, quantityBefore, quantityAfter, reason, note, referenceType, referenceId, createdById, createdByEmail, createdAt, updatedAt, isActive }`. The system writes the reasons `initial`, `order_fulfilment` and `order_cancellation`.
-
-**Low stock.** A product is low when `stockQuantity <= reorderLevel`. The reorder level falls back to `settings.inventory.defaultReorderLevel` (default 5). Archived products are never reported.
-
-#### Email
-
-- When a change moves a product from above its level to at or below it, one email goes out right away.
-- A daily digest also goes out when `settings.inventory.lowStockDigestEnabled` is on.
-  - Worker: cron `0 7 * * *` in `wrangler.toml`, sent through the existing Resend `sendNotification`.
-  - Express: a 24-hour timer started in `start()`, sent through nodemailer.
-- Recipients: `settings.notificationEmails.lowStock`. When that list is empty, the Worker sends to `ADMIN_NOTIFY_EMAIL` and Express to the `SMTP_FROM` mailbox.
-
-**D1:** migration `0011_inventory.sql` adds the `batch_guard` table and a movement index per product.
+1. **Low-stock email recipients.** §5 says to email `lowStockEmails` "if non-empty"; §8.1 says env recipients are the fallback when the arrays are empty. Implemented: no email when `lowStockAlertsEnabled` is false. Otherwise the recipients are `lowStockEmails`, or `SMTP_FROM` (Express) / `ADMIN_NOTIFY_EMAIL` (Worker) when that list is empty.
+2. **Product `reorderLevel` default** is `settings.inventory.defaultReorderLevel`. That setting defaults to 0, which matches "default 0" while making the setting meaningful.
+3. **Public `GET /products?category=<unknown>`** returns an empty page, not 404.
+4. **Public product order** is by name (the contract does not specify it). The public product response keeps `status`, as the `PublicProduct` type implies.
+5. **Adjustments accept a slug or SKU** in `productId`, matching the `:id` resolution rule.
+6. **Parity exclusions.**
+   - Admin package create bodies are compared on `message` and `items` only, because Express seeds a package catalog and the Worker does not.
+   - Two admin product lists are compared as sets, because records written in the same millisecond can tie on `updatedAt`.
+   - The concurrent-adjustment step is compared as sorted statuses.
+7. **Express low-stock digest timer** (24 hours, in `start()`) is the Express counterpart of the optional Worker cron.
+8. **Unknown fields** in request bodies are ignored.

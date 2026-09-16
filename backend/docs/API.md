@@ -452,3 +452,67 @@ Leads and orders:
 `PUT` on contacts, newsletter and orders only changes the fields present in the body (`status`, `note`, `paymentStatus`, `isActive`); omitted fields keep their current values and are not written. Catalog `PUT`s (packages, services, portfolio, customer segments) keep their required fields required; optional fields that are omitted, `null` or blank keep their stored values (except `volt: null`, which clears it). New catalog items without `sortOrder` are placed last.
 
 The deletion endpoints remove customer data permanently; the audit log (kept 180 days) records who deleted what.
+
+## Commerce and operations (v3)
+
+The binding definition is `docs/agents/API_CONTRACT_V3.md` §4–9. This section lists what is implemented, in both Express and the Worker, with any interpretation of the contract. Every admin route below requires the listed capability (`403` `"You do not have permission to perform this action."`). Paged responses are `{ items, page, limit, total }` with the audit-log paging rules.
+
+### Catalog: categories and products
+
+Public:
+
+- `GET /categories`: `200` `"Categories retrieved."`, an array of active categories ordered by `sortOrder`, then `name`.
+- `GET /categories/:id`: by id or slug. `404` `"Category not found."` when inactive.
+- `GET /products?category&q&page&limit` (paged): active products ordered by name. `category` is an id or slug and includes descendants; an unknown category gives an empty page. `q` matches name, SKU, brand or tag (case-insensitive).
+- `GET /products/:id`: by id or slug. `404` `"Product not found."` unless `status` is `active`.
+
+Admin:
+
+- `GET /admin/categories` (`products:read`): array.
+- `POST /admin/categories`, `PUT /admin/categories/:id` (partial), `DELETE /admin/categories/:id` (`products:write`). Delete answers `409` `"Category has subcategories or products."` when the category is referenced.
+- `GET /admin/products?category&status&stock=low|out&q&page&limit` (`products:read`, paged): ordered by `updatedAt` descending.
+- `GET /admin/products/:id` (`products:read`): by id, slug or SKU.
+- `POST /admin/products`, `PUT /admin/products/:id` (partial), `DELETE /admin/products/:id` (`products:write`). Delete answers `409` `"Product is used by a package."`.
+
+Categories:
+
+- Fields: `name` (1–100), `slug`, `parentId`, `description` (≤1000), `imageUrl`, `attributes` (≤30 `{ key, label, type: text|number|boolean, unit }`), `isActive`, `sortOrder`.
+- `400` `"Parent category not found."` and `400` `"A category cannot be its own ancestor."`.
+
+Products:
+
+- **SKU:** 1–64 characters, `[A-Za-z0-9][A-Za-z0-9._-]*`, stored as sent and unique regardless of case (`409` `"Another product already uses SKU <sku>."`).
+- **Required on create:** `name` (1–150) and `price` (>0, ≤1,000,000,000).
+- **Optional:** `brand` (≤100), `costPrice`, `images` (≤10 URLs), `tags` (≤20) and `status` (`active`, `hidden`, `archived`).
+- **Attributes:** up to 50 keys; each value is a string of at most 200 characters, a number or a boolean.
+- **`descriptionHtml`:** sanitised by `shared/richText.js`, at most 50,000 characters after sanitising.
+- **`reorderLevel`:** 0–1,000,000. It defaults to `settings.inventory.defaultReorderLevel`, which is 0.
+- **`stockQuantity`:** can only be set on create (0–1,000,000), where it is written as an `initial` movement. A `PUT` with a different value answers `400` `"Use an inventory adjustment to change stock."`.
+- **Responses:** add `lowStock` (`stockQuantity <= reorderLevel`). Public products omit `costPrice`, `stockQuantity`, `reorderLevel` and `lowStock`, and add `inStock` and `category`.
+
+Packages accept `items: [{ productId, quantity (1–1000), note (≤200) }]` (≤50). Every product must exist, otherwise `400` `"Product not found."`. Public `GET /packages` and `GET /packages/:id` are unchanged for packages without items. With items, they add `items: [{ productId, quantity, note, name, slug, sku }]`.
+
+Audit actions: `category.create|update|delete`, `product.create|update|delete`.
+
+### Inventory
+
+- `GET /admin/inventory?stock=all|low|out&category&q&page&limit` (`inventory:read`, paged): `200` `"Inventory retrieved."`. Rows are `{ productId, sku, name, categoryId, stockQuantity, reorderLevel, lowStock, status, updatedAt }`, low stock first, then by name.
+- `POST /admin/inventory/adjustments` (`inventory:adjust`), body `{ productId, change, reason, note? }`: `201` `"Stock adjusted."` with `data: { movement, product }`.
+  - `productId` can also be a slug or SKU.
+  - `change` is a non-zero whole number with an absolute value of at most 1,000,000 (`400` `"Change must be a non-zero whole number."`).
+  - `reason` is `restock`, `adjustment`, `damage`, `return` or `correction` (`400` `"Reason is not valid."`). `note` is at most 500 characters.
+  - `409` `"Stock cannot go below zero."`.
+- `GET /admin/inventory/movements?productId&reason&from&to&page&limit` (`inventory:read`, paged): `200` `"Movements retrieved."`. Newest first; movements written together are ordered by SKU. Invalid dates answer `400` `"from must be a valid date."` or `"to must be a valid date."`.
+- `POST /admin/inventory/low-stock-check` (`inventory:adjust`): `200` `"Low-stock check complete."` with `data: { lowStock, emailed }`. It emails a digest of all active low-stock products. The Worker also runs it daily from a cron trigger (`wrangler.toml`), and Express from a 24-hour timer started in `start()`.
+
+Movement: `{ id, productId, sku, productName, change, stockBefore, stockAfter, reason, referenceType, referenceId, note, createdBy: { id, email } | null, createdAt }`. Reasons written by the system are `initial`, `sale` and `sale_reversal`.
+
+**Atomicity.** The stock update and its movement are never written separately:
+
+- **JSON store:** one locked read-modify-write.
+- **Mongo:** a conditional `$inc` (`stockQuantity >= -change`), and every step that already ran is undone if a later one fails.
+- **D1:** one `batch` (a transaction). Each product `UPDATE` compares the stored JSON document and is followed by `INSERT INTO batch_guard (ok) SELECT changes()`. A guard row of 0 violates `CHECK (ok = 1)` and rolls back the whole batch, which then retries on fresh rows (up to 5 times, then `409`). Migration `0012` creates `batch_guard`.
+
+**Low-stock alert.** It fires when a movement takes stock from above the reorder level to at or below it, provided the level is above 0 or the stock reaches 0. It emails `settings.notifications.lowStockEmails`; when that list is empty it falls back to `SMTP_FROM` (Express) or `ADMIN_NOTIFY_EMAIL` (Worker). Nothing is sent when `settings.inventory.lowStockAlertsEnabled` is false. Email never fails the adjustment.
+
+Audit action: `inventory.adjust` (entity `product`).

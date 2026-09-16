@@ -1,5 +1,6 @@
-// v3 commerce and operations routes (BE-2). The admin router is mounted inside
-// routes/admin.js after adminAuth; every route is capability-gated.
+// v3 commerce and operations routes (BE-2, API_CONTRACT_V3 §4-9). The public router is
+// mounted by routes/public.js; the admin router inside routes/admin.js after adminAuth.
+// Every admin route is capability-gated (§1.2).
 import { Router } from "express";
 import {
   adminCreateCategory,
@@ -18,12 +19,11 @@ import {
 } from "../controllers/catalog.js";
 import {
   adminAdjustStock,
+  adminListInventory,
   adminListMovements,
-  adminListProductMovements,
-  adminLowStock,
-  adminNotifyLowStock,
+  adminLowStockCheck,
 } from "../controllers/inventory.js";
-import { requireCapability as can } from "../middleware/capabilities.shim.js";
+import { requireCapability as can } from "../middleware/capabilities.js";
 
 export const opsPublicRouter = Router();
 
@@ -34,19 +34,18 @@ opsPublicRouter.get("/products/:id", getPublicProduct);
 
 export const opsAdminRouter = Router();
 
-opsAdminRouter.get("/categories", can("catalog:read"), adminListCategories);
-opsAdminRouter.post("/categories", can("catalog:write"), adminCreateCategory);
-opsAdminRouter.put("/categories/:id", can("catalog:write"), adminUpdateCategory);
-opsAdminRouter.delete("/categories/:id", can("catalog:write"), adminDeleteCategory);
+opsAdminRouter.get("/categories", can("products:read"), adminListCategories);
+opsAdminRouter.post("/categories", can("products:write"), adminCreateCategory);
+opsAdminRouter.put("/categories/:id", can("products:write"), adminUpdateCategory);
+opsAdminRouter.delete("/categories/:id", can("products:write"), adminDeleteCategory);
 
-opsAdminRouter.get("/products", can("catalog:read"), adminListProducts);
-opsAdminRouter.post("/products", can("catalog:write"), adminCreateProduct);
-opsAdminRouter.get("/products/:id", can("catalog:read"), adminGetProduct);
-opsAdminRouter.put("/products/:id", can("catalog:write"), adminUpdateProduct);
-opsAdminRouter.delete("/products/:id", can("catalog:write"), adminDeleteProduct);
+opsAdminRouter.get("/products", can("products:read"), adminListProducts);
+opsAdminRouter.post("/products", can("products:write"), adminCreateProduct);
+opsAdminRouter.get("/products/:id", can("products:read"), adminGetProduct);
+opsAdminRouter.put("/products/:id", can("products:write"), adminUpdateProduct);
+opsAdminRouter.delete("/products/:id", can("products:write"), adminDeleteProduct);
 
-opsAdminRouter.post("/products/:id/stock-adjustments", can("inventory:write"), adminAdjustStock);
-opsAdminRouter.get("/products/:id/stock-movements", can("inventory:read"), adminListProductMovements);
+opsAdminRouter.get("/inventory", can("inventory:read"), adminListInventory);
+opsAdminRouter.post("/inventory/adjustments", can("inventory:adjust"), adminAdjustStock);
 opsAdminRouter.get("/inventory/movements", can("inventory:read"), adminListMovements);
-opsAdminRouter.get("/inventory/low-stock", can("inventory:read"), adminLowStock);
-opsAdminRouter.post("/inventory/low-stock/notify", can("inventory:write"), adminNotifyLowStock);
+opsAdminRouter.post("/inventory/low-stock-check", can("inventory:adjust"), adminLowStockCheck);

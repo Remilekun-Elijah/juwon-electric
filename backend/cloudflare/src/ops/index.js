@@ -1,7 +1,7 @@
 // v3 commerce and operations modules (BE-2). Dispatched from src/index.js: public
 // handlers before the legacy public routes, admin handlers after requireAdmin.
 import { handleCatalogAdmin, handleCatalogPublic } from "./catalog.js";
-import { handleInventoryAdmin, runLowStockDigest } from "./inventory.js";
+import { handleInventoryAdmin, runLowStockCheck } from "./inventory.js";
 
 const PUBLIC_HANDLERS = [handleCatalogPublic];
 const ADMIN_HANDLERS = [handleCatalogAdmin, handleInventoryAdmin];
@@ -19,5 +19,5 @@ export const handleOpsAdmin = (context) => firstResponse(ADMIN_HANDLERS, context
 
 /** Cron trigger (wrangler.toml [triggers]): daily low-stock digest. */
 export const handleOpsScheduled = async (env, sendNotification) => {
-  await runLowStockDigest(env, sendNotification);
+  await runLowStockCheck(env, sendNotification);
 };

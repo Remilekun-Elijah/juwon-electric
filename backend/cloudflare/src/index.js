@@ -86,7 +86,7 @@ import {
 } from "./auth.js";
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
 import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
-import { assertComponentsExist, componentsField } from "../../shared/catalog.js";
+import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../../shared/catalog.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
 const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
@@ -192,10 +192,10 @@ const packagePayload = async (env, body, existing = null) => {
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   slugField(body);
-  // Products this package is made of (stock is committed per component).
-  const components = componentsField(body);
-  if (components?.length) {
-    assertComponentsExist(components, await listCollection(env, "products", { includeInactive: true }));
+  // Products this package is made of (API_CONTRACT_V3 §4.3; stock is committed per item).
+  const items = packageItemsField(body);
+  if (items?.length) {
+    assertPackageItemsExist(items, await listCollection(env, "products", { includeInactive: true }));
   }
 
   await assertLegacyIdUnique(env, legacyId, existing?.id);
@@ -213,9 +213,15 @@ const packagePayload = async (env, body, existing = null) => {
     options,
     isActive,
     sortOrder,
-    components,
+    items,
   };
 };
+
+// Packages with items add `items` (with product name/slug/sku); others are unchanged.
+const productsForPackages = async (env, packages) =>
+  packages.some((pack) => Array.isArray(pack.items) && pack.items.length)
+    ? new Map((await listCollection(env, "products", { includeInactive: true })).map((product) => [product.id, product]))
+    : new Map();
 
 const serializePackage = (item) => ({
   id: item.legacyId ?? item.id,
@@ -823,14 +829,15 @@ const pruneCarts = (env, ctx) => {
 const handlePublic = async (request, env, ctx, path, body, url) => {
   if (request.method === "GET" && path === "/packages") {
     const packages = await listCollection(env, "packages");
-    return ok("Packages retrieved.", packages.map(serializePackage));
+    const products = await productsForPackages(env, packages);
+    return ok("Packages retrieved.", packages.map((pack) => withPublicPackageItems(serializePackage(pack), pack, products)));
   }
 
   const packageId = request.method === "GET" ? idAfter(path, "/packages") : null;
   if (packageId) {
     const item = await getCollectionItem(env, "packages", packageId);
     if (item.isActive === false) notFound("Package not found.");
-    return ok("Package retrieved.", serializePackage(item));
+    return ok("Package retrieved.", withPublicPackageItems(serializePackage(item), item, await productsForPackages(env, [item])));
   }
 
   if (request.method === "GET" && path === "/services") {

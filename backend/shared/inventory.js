@@ -1,65 +1,75 @@
-// Inventory (PRD §6.2): stock adjustments, movement records and low-stock rules.
+// Inventory (API_CONTRACT_V3 §5): adjustments, movement records and low-stock rules.
 //
-// Stock only changes through movements. Every change writes an inventoryMovements record
-// { productId, sku, productName, change, quantityBefore, quantityAfter, reason, note,
-//   referenceType, referenceId, createdById, createdByEmail, createdAt } in the same
-// atomic step as the product update (JSON store lock, D1 batch). In Mongo mode the
-// product updates are conditional $inc writes with compensation (see services/store.js).
-import { badRequest, conflict } from "./errors.js";
-import { OPS_LIMITS, integer, oneOf, text } from "./fields.js";
+// Stock only changes through movements. The product update and its movement insert are
+// written in one atomic step: the JSON store lock, a D1 batch with compare-and-set guards
+// (cloudflare/src/ops/stock.js), or conditional Mongo $inc updates with compensation
+// (services/store.js applyStockChanges).
+import { badRequest, conflict, notFound } from "./errors.js";
+import { OPS_LIMITS, dateTime, isPlainObject, oneOf, queryText, text } from "./fields.js";
 
-/** Reasons an admin can give for a manual adjustment. */
-export const ADJUSTMENT_REASONS = ["restock", "correction", "damage", "return", "other"];
+export const MOVEMENT_REASONS = ["initial", "restock", "adjustment", "damage", "return", "correction", "sale", "sale_reversal"];
+export const ADJUSTMENT_REASONS = ["restock", "adjustment", "damage", "return", "correction"];
 
-/** Reasons written by the system. */
-export const SYSTEM_REASONS = ["initial", "order_fulfilment", "order_cancellation"];
+const INTEGER = /^-?\d+$/;
 
-export const MOVEMENT_REASONS = [...ADJUSTMENT_REASONS, ...SYSTEM_REASONS];
-
+/** POST /admin/inventory/adjustments body: { productId, change, reason, note? }. */
 export const adjustmentPayload = (body) => {
-  const change = integer(body, "quantity", {
-    label: "Quantity",
-    required: true,
-    min: -OPS_LIMITS.adjustmentMax,
-    max: OPS_LIMITS.adjustmentMax,
-  });
-  if (change === 0) throw badRequest("Quantity must not be 0.");
-  return {
-    change,
-    reason: oneOf(body, "reason", ADJUSTMENT_REASONS, { label: "Reason", required: true }),
-    note: text(body, "note", { label: "Note", max: OPS_LIMITS.note, multiline: true }),
-  };
+  const input = isPlainObject(body) ? body : {};
+  const productId = text(input, "productId", { label: "Product", required: true, max: OPS_LIMITS.id });
+  const raw = input.change;
+  const change =
+    typeof raw === "number" ? raw : typeof raw === "string" && INTEGER.test(raw.trim()) ? Number(raw) : Number.NaN;
+  if (!Number.isInteger(change) || change === 0 || Math.abs(change) > 1_000_000) {
+    throw badRequest("Change must be a non-zero whole number.");
+  }
+  const reason = input.reason;
+  if (typeof reason !== "string" || !ADJUSTMENT_REASONS.includes(reason.trim())) throw badRequest("Reason is not valid.");
+  const note = text(input, "note", { label: "Note", max: 500, multiline: true }) || null;
+  return { productId, change, reason: reason.trim(), note };
 };
 
-/** Adds up changes per product: [{ productId, change }] -> Map(productId -> change). */
+/** Adds up changes per product: [{ productId, change }] -> Map(productId -> change), zeros dropped. */
 export const mergeChanges = (lines) => {
   const merged = new Map();
-  for (const { productId, change } of lines) {
-    merged.set(productId, (merged.get(productId) || 0) + change);
-  }
+  for (const { productId, change } of lines) merged.set(productId, (merged.get(productId) || 0) + change);
   for (const [productId, change] of merged) if (change === 0) merged.delete(productId);
   return merged;
 };
 
-export const insufficientStock = (product, change) =>
+/** Default error when a change would take stock below zero. */
+export const belowZero = () => conflict("Stock cannot go below zero.");
+
+/** Error for committing an order: every short product in `details`. */
+export const insufficientStockForOrder = (shortfalls) =>
   conflict(
-    `Not enough stock for ${product.name} (${product.sku}): ${Number(product.stockQuantity) || 0} available, ${-change} needed.`,
-    { productId: product.id, available: Number(product.stockQuantity) || 0, requested: -change }
+    "Insufficient stock to process this order.",
+    shortfalls.map(({ product, change }) => ({
+      productId: product.id,
+      sku: product.sku,
+      required: -change,
+      available: Number(product.stockQuantity) || 0,
+    }))
   );
 
 /**
- * Plans the stock changes against fresh product records. Throws 400 for unknown products
- * and 409 when stock would go below zero. Returns [{ product, change, before, after }].
+ * Plans stock changes against fresh product records. Throws 404 "Product not found." for
+ * unknown products and `onShortfall(shortfalls)` when any product would go below zero.
+ * Returns [{ product, change, before, after }] in productId order.
  */
-export const planStockChanges = (merged, productsById) =>
-  [...merged].map(([productId, change]) => {
+export const planStockChanges = (merged, productsById, onShortfall = belowZero) => {
+  const plans = [];
+  const shortfalls = [];
+  for (const [productId, change] of [...merged].sort(([a], [b]) => a.localeCompare(b))) {
     const product = productsById.get(productId);
-    if (!product) throw badRequest("Product not found.");
+    if (!product) throw notFound("Product not found.");
     const before = Number(product.stockQuantity) || 0;
     const after = before + change;
-    if (after < 0) throw insufficientStock(product, change);
-    return { product, change, before, after };
-  });
+    if (after < 0) shortfalls.push({ product, change });
+    plans.push({ product, change, before, after });
+  }
+  if (shortfalls.length) throw onShortfall(shortfalls);
+  return plans;
+};
 
 export const buildMovement = ({ product, change, before, after }, { id, reason, note, reference, actor, timestamp }) => ({
   id,
@@ -67,77 +77,116 @@ export const buildMovement = ({ product, change, before, after }, { id, reason, 
   sku: product.sku,
   productName: product.name,
   change,
-  quantityBefore: before,
-  quantityAfter: after,
+  stockBefore: before,
+  stockAfter: after,
   reason,
-  note: note || "",
   referenceType: reference?.type ?? null,
   referenceId: reference?.id ?? null,
-  createdById: actor?.id ?? null,
-  createdByEmail: actor?.email ?? null,
-  isActive: true,
+  note: note || null,
+  createdBy: actor ? { id: actor.id, email: actor.email } : null,
   createdAt: timestamp,
   updatedAt: timestamp,
 });
 
-// ---- low stock --------------------------------------------------------------------------
-
-export const reorderThreshold = (product, settings) => {
-  const own = product?.reorderLevel;
-  if (own !== undefined && own !== null && Number.isFinite(Number(own))) return Number(own);
-  return Number(settings?.inventory?.defaultReorderLevel) || 0;
-};
-
-/** Archived products are never reported. */
-export const isLowStock = (product, settings) =>
-  product?.status !== "archived" && (Number(product?.stockQuantity) || 0) <= reorderThreshold(product, settings);
-
-/** True when a change moved the product from above its threshold to at or below it. */
-export const crossedIntoLowStock = ({ product, before, after }, settings) => {
-  const threshold = reorderThreshold(product, settings);
-  return product?.status !== "archived" && before > threshold && after <= threshold;
-};
-
-export const lowStockItem = (product, settings) => ({
-  id: product.id,
-  sku: product.sku,
-  name: product.name,
-  status: product.status,
-  stockQuantity: Number(product.stockQuantity) || 0,
-  reorderLevel: reorderThreshold(product, settings),
+export const serializeMovement = (movement) => ({
+  id: movement.id,
+  productId: movement.productId,
+  sku: movement.sku,
+  productName: movement.productName,
+  change: movement.change,
+  stockBefore: movement.stockBefore,
+  stockAfter: movement.stockAfter,
+  reason: movement.reason,
+  referenceType: movement.referenceType ?? null,
+  referenceId: movement.referenceId ?? null,
+  note: movement.note ?? null,
+  createdBy: movement.createdBy ?? null,
+  createdAt: movement.createdAt,
 });
 
-export const lowStockItems = (products, settings) =>
+/** Movement list filters: { productId, reason, from, to } (from/to as ISO strings or ""). */
+export const movementFilters = (query) => {
+  const reason = queryText(query, "reason");
+  if (reason && !MOVEMENT_REASONS.includes(reason)) throw badRequest("Reason is not valid.");
+  const range = (key) => {
+    const value = queryText(query, key);
+    if (!value) return "";
+    try {
+      return dateTime({ value }, "value", { label: key }) || "";
+    } catch {
+      throw badRequest(`${key} must be a valid date.`);
+    }
+  };
+  return { productId: queryText(query, "productId"), reason, from: range("from"), to: range("to") };
+};
+
+export const matchesMovementFilters = (movement, { productId, reason, from, to }) =>
+  (!productId || movement.productId === productId) &&
+  (!reason || movement.reason === reason) &&
+  (!from || String(movement.createdAt) >= from) &&
+  (!to || String(movement.createdAt) <= to);
+
+// Binary string order, the same as SQLite's default collation.
+const compare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** Newest first; movements written together are ordered by SKU (matches the D1 ORDER BY). */
+export const movementOrder = (a, b) =>
+  compare(String(b.createdAt), String(a.createdAt)) ||
+  compare(String(a.sku), String(b.sku)) ||
+  compare(String(b.id), String(a.id));
+
+// ---- low stock --------------------------------------------------------------------------
+
+/**
+ * A movement triggers a low-stock alert when it crosses the reorder level:
+ * stockBefore > reorderLevel >= stockAfter, and (reorderLevel > 0 or stockAfter === 0).
+ */
+export const crossedIntoLowStock = ({ product, before, after }) => {
+  const level = Number(product?.reorderLevel) || 0;
+  return before > level && after <= level && (level > 0 || after === 0);
+};
+
+export const lowStockLine = (product) => ({
+  sku: product.sku,
+  name: product.name,
+  stockQuantity: Number(product.stockQuantity) || 0,
+  reorderLevel: Number(product.reorderLevel) || 0,
+});
+
+/** Active products at or below their reorder level, lowest headroom first. */
+export const lowStockProducts = (products) =>
   products
-    .filter((product) => isLowStock(product, settings))
-    .map((product) => lowStockItem(product, settings))
-    .sort((a, b) => a.stockQuantity - a.reorderLevel - (b.stockQuantity - b.reorderLevel) || a.name.localeCompare(b.name));
+    .filter((product) => (product.status || "active") === "active" && (Number(product.stockQuantity) || 0) <= (Number(product.reorderLevel) || 0))
+    .sort(
+      (a, b) =>
+        (Number(a.stockQuantity) || 0) - (Number(a.reorderLevel) || 0) - ((Number(b.stockQuantity) || 0) - (Number(b.reorderLevel) || 0)) ||
+        String(a.name).localeCompare(String(b.name))
+    );
 
 const escapeHtml = (value) =>
-  String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-/** Email for low-stock items (a digest, or the products that just crossed their threshold). */
-export const lowStockEmail = (items, { digest = false } = {}) => {
+/** Email body for low-stock lines (an alert for products that just crossed, or the digest). */
+export const lowStockEmail = (lines, { digest = false } = {}) => {
   const subject = digest
-    ? `Low stock report: ${items.length} ${items.length === 1 ? "product" : "products"}`
-    : `Low stock: ${items.map((item) => item.name).join(", ")}`.slice(0, 200);
-  const lines = items.map((item) => `${item.name} (${item.sku}): ${item.stockQuantity} in stock, reorder level ${item.reorderLevel}`);
-  const text = `${digest ? "These products are at or below their reorder level" : "These products just reached their reorder level"}:\n\n${lines.join("\n")}`;
-  const rows = items
+    ? `Low stock report: ${lines.length} ${lines.length === 1 ? "product" : "products"}`
+    : `Low stock: ${lines.map((line) => line.name).join(", ")}`.slice(0, 200);
+  const intro = digest ? "These products are at or below their reorder level:" : "These products just reached their reorder level:";
+  const text = `${intro}\n\n${lines
+    .map((line) => `${line.name} (${line.sku}): ${line.stockQuantity} in stock, reorder level ${line.reorderLevel}`)
+    .join("\n")}`;
+  const cell = 'style="padding:4px 8px"';
+  const rows = lines
     .map(
-      (item) =>
-        `<tr><td style="padding:4px 8px">${escapeHtml(item.name)}</td><td style="padding:4px 8px">${escapeHtml(item.sku)}</td><td style="padding:4px 8px;text-align:right">${item.stockQuantity}</td><td style="padding:4px 8px;text-align:right">${item.reorderLevel}</td></tr>`
+      (line) =>
+        `<tr><td ${cell}>${escapeHtml(line.name)}</td><td ${cell}>${escapeHtml(line.sku)}</td><td ${cell}>${line.stockQuantity}</td><td ${cell}>${line.reorderLevel}</td></tr>`
     )
     .join("");
-  const html = `<p>${digest ? "These products are at or below their reorder level:" : "These products just reached their reorder level:"}</p><table style="border-collapse:collapse"><thead><tr><th style="padding:4px 8px;text-align:left">Product</th><th style="padding:4px 8px;text-align:left">SKU</th><th style="padding:4px 8px;text-align:right">In stock</th><th style="padding:4px 8px;text-align:right">Reorder level</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const html = `<p>${intro}</p><table style="border-collapse:collapse"><thead><tr><th ${cell}>Product</th><th ${cell}>SKU</th><th ${cell}>In stock</th><th ${cell}>Reorder level</th></tr></thead><tbody>${rows}</tbody></table>`;
   return { subject, text, html };
 };
 
-// ---- movement queries ----------------------------------------------------------------------
+/** Email recipients from settings; an empty list means "use the runtime's env fallback". */
+export const lowStockRecipients = (settings) =>
+  settings?.inventory?.lowStockAlertsEnabled === false ? null : settings?.notifications?.lowStockEmails || [];
 
-export const newestFirst = (a, b) =>
-  String(b.createdAt).localeCompare(String(a.createdAt)) || String(b.id).localeCompare(String(a.id));

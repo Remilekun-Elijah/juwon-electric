@@ -6,10 +6,10 @@
 // move). After each CAS UPDATE a guard row `INSERT INTO batch_guard (ok) SELECT changes()`
 // violates CHECK (ok = 1) when the UPDATE matched nothing, which aborts and rolls back the
 // whole batch; the batch then retries against fresh rows. The last statement empties
-// batch_guard (migrations/0011_inventory.sql).
+// batch_guard (migrations/0012_inventory_jobs.sql).
 import { ApiError, notFound } from "../http.js";
 import { notFoundMessage, rowValues } from "../store.js";
-import { buildMovement, mergeChanges, planStockChanges } from "../../../shared/inventory.js";
+import { belowZero, buildMovement, mergeChanges, planStockChanges } from "../../../shared/inventory.js";
 import { withoutUndefined } from "../../../shared/fields.js";
 
 const ATTEMPTS = 5;
@@ -35,7 +35,7 @@ const loadRows = async (env, collection, ids) => {
 
 export const applyStockChanges = async (
   env,
-  { lines, reason, note = "", reference = null, actor = null, record = null }
+  { lines, reason, note = null, reference = null, actor = null, record = null, onShortfall = belowZero }
 ) => {
   const merged = mergeChanges(lines);
   const ids = [...merged.keys()];
@@ -43,7 +43,7 @@ export const applyStockChanges = async (
   for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {
     const rawProducts = await loadRows(env, "products", ids);
     const products = new Map([...rawProducts].map(([id, data]) => [id, JSON.parse(data)]));
-    const plans = planStockChanges(merged, products);
+    const plans = planStockChanges(merged, products, onShortfall);
 
     let rawRecord = null;
     let current = null;

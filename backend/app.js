@@ -1,5 +1,7 @@
 import env from "dotenv";
 import express from "express";
+import { realpathSync } from "fs";
+import { pathToFileURL } from "url";
 import config from "./config.js";
 import { requireJsonBody } from "./middleware/contentType.js";
 import { warnIfStaticAdminToken } from "./middleware/adminAuth.js";
@@ -18,7 +20,7 @@ import { isMongoMode, waitForPending } from "./services/runtime.js";
 import { backupJsonStore, ensureSecurityIndexes } from "./services/store.js";
 import mongoose from "mongoose";
 import userRouter from "./routes/user.js";
-import { runLowStockDigest } from "./controllers/inventory.js";
+import { runLowStockCheck } from "./controllers/inventory.js";
 import vacanciesRouter from "./routes/vacancies.js";
 
 const app = express();
@@ -164,7 +166,7 @@ const start = async () => {
 
   // Daily low-stock digest (the Worker uses a cron trigger instead; see wrangler.toml).
   const digestTimer = setInterval(() => {
-    runLowStockDigest().catch((error) => console.error("Low-stock digest failed:", describeError(error)));
+    runLowStockCheck().catch((error) => console.error("Low-stock digest failed:", describeError(error)));
   }, 24 * 60 * 60 * 1000);
   digestTimer.unref();
 
@@ -197,10 +199,13 @@ const start = async () => {
   process.once("SIGINT", () => shutdown("SIGINT"));
 };
 
-// Tests import the app without listening (BACKEND_NO_LISTEN=true).
 export default app;
 
-if (process.env.BACKEND_NO_LISTEN !== "true") {
+// Only `node app.js` (or nodemon) starts the server; tests import `app`.
+const isEntryPoint =
+  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+
+if (isEntryPoint) {
   start().catch((error) => {
     console.error("Failed to start application:", error.message);
     process.exit(1);

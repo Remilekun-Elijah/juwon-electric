@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 import { customerSegments, portfolioItems, serviceOfferings } from "../data/seed.js";
 import { ApiError, notFound } from "./errors.js";
-import { buildMovement, insufficientStock, mergeChanges, planStockChanges } from "../shared/inventory.js";
+import { belowZero, buildMovement, matchesMovementFilters, mergeChanges, movementOrder, planStockChanges } from "../shared/inventory.js";
 import { isMongoMode, track, useMongo } from "./runtime.js";
 import { normalizeSlug } from "./validators.js";
 
@@ -662,13 +662,22 @@ const CHANGED_ELSEWHERE = "This record was changed by another request. Please tr
  * Applies stock changes and writes one inventory movement per product, optionally
  * together with a compare-and-set update of another record (e.g. an order status move):
  *   { lines: [{ productId, change }], reason, note, reference: { type, id }, actor: { id, email },
- *     record: { collection, id, expect: { field: value }, patch } }
+ *     record: { collection, id, expect: { field: value }, patch }, onShortfall }
  * Resolves to { plans: [{ product, change, before, after }], movements, record }.
- * Throws 400 (unknown product), 409 (not enough stock, or `expect` no longer matches) and
- * 404 (record missing). JSON store: one locked read-modify-write. Mongo: conditional $inc
- * per product, rolled back with the opposite $inc if a later step fails.
+ * Throws 404 (unknown product or record), `onShortfall(shortfalls)` (default 409 "Stock
+ * cannot go below zero.") and 409 when `expect` no longer matches. JSON store: one locked
+ * read-modify-write. Mongo: conditional $inc per product, rolled back with the opposite
+ * $inc if a later step fails.
  */
-export const applyStockChanges = async ({ lines, reason, note = "", reference = null, actor = null, record = null }) => {
+export const applyStockChanges = async ({
+  lines,
+  reason,
+  note = null,
+  reference = null,
+  actor = null,
+  record = null,
+  onShortfall = belowZero,
+}) => {
   const merged = mergeChanges(lines);
 
   if (useMongo()) {
@@ -676,7 +685,7 @@ export const applyStockChanges = async ({ lines, reason, note = "", reference = 
     const fresh = ids.length
       ? (await models.products.find({ id: { $in: ids } }).lean()).map(normalizeMongoRecord)
       : [];
-    const plans = planStockChanges(merged, new Map(fresh.map((product) => [product.id, product])));
+    const plans = planStockChanges(merged, new Map(fresh.map((product) => [product.id, product])), onShortfall);
     if (record) {
       const current = await models[record.collection].findOne(mongoIdFilter(record.id)).lean();
       if (!current) throw notFound(record.collection);
@@ -694,7 +703,7 @@ export const applyStockChanges = async ({ lines, reason, note = "", reference = 
           .lean();
         if (!updated) {
           const latest = normalizeMongoRecord(await models.products.findOne({ id: plan.product.id }).lean());
-          throw insufficientStock(latest || plan.product, plan.change);
+          throw onShortfall([{ product: latest || plan.product, change: plan.change }]);
         }
         applied.push(plan);
         plan.product = normalizeMongoRecord(updated);
@@ -728,7 +737,7 @@ export const applyStockChanges = async ({ lines, reason, note = "", reference = 
 
   return mutateDb((db) => {
     const products = db.products || [];
-    const plans = planStockChanges(merged, new Map(products.map((product) => [product.id, product])));
+    const plans = planStockChanges(merged, new Map(products.map((product) => [product.id, product])), onShortfall);
     let recordIndex = -1;
     const records = record ? db[record.collection] || [] : [];
     if (record) {
@@ -758,27 +767,41 @@ export const applyStockChanges = async ({ lines, reason, note = "", reference = 
 };
 
 /**
- * Newest-first page of a main collection filtered by equality `filter`.
- * Resolves to { items, page, limit, total }.
+ * Page of inventory movements matching { productId, reason, from, to } (shared/inventory.js
+ * movementFilters), newest first. Resolves to { items, page, limit, total } (stored records).
  */
-export const pageCollection = async (collection, { filter = {}, page = 1, limit = 50 } = {}) => {
+export const pageMovements = async (filters, { page = 1, limit = 50 } = {}) => {
   const skip = (page - 1) * limit;
   if (useMongo()) {
-    const model = models[collection];
+    const query = {
+      ...(filters.productId ? { productId: filters.productId } : {}),
+      ...(filters.reason ? { reason: filters.reason } : {}),
+      ...(filters.from || filters.to
+        ? { createdAt: { ...(filters.from ? { $gte: filters.from } : {}), ...(filters.to ? { $lte: filters.to } : {}) } }
+        : {}),
+    };
+    const model = models.inventoryMovements;
     const [items, total] = await Promise.all([
-      model.find(filter).sort({ createdAt: -1, id: -1 }).skip(skip).limit(limit).lean(),
-      model.countDocuments(filter),
+      model.find(query).sort({ createdAt: -1, sku: 1, id: -1 }).skip(skip).limit(limit).lean(),
+      model.countDocuments(query),
     ]);
     return { items: items.map(normalizeMongoRecord), page, limit, total };
   }
   const db = await readDb();
-  const all = (db[collection] || [])
-    .filter((item) => matchesQuery(item, filter))
-    .sort(
-      (a, b) =>
-        String(b.createdAt).localeCompare(String(a.createdAt)) || String(b.id).localeCompare(String(a.id))
-    );
+  const all = (db.inventoryMovements || []).filter((item) => matchesMovementFilters(item, filters)).sort(movementOrder);
   return { items: all.slice(skip, skip + limit), page, limit, total: all.length };
+};
+
+/** Product by id, slug, or case-insensitive SKU (API_CONTRACT_V3 §0.4). */
+export const getProductItem = async (key) => {
+  try {
+    return await getCollectionItem("products", key);
+  } catch (error) {
+    if (error?.statusCode !== 404) throw error;
+    const bySku = await findCollectionItem("products", { skuLower: String(key ?? "").trim().toLowerCase() });
+    if (!bySku) throw error;
+    return bySku;
+  }
 };
 
 export const appendCollectionItem = async (collection, payload) =>
@@ -949,8 +972,8 @@ export const ensureSecurityIndexes = async () => {
 const ensureOpsIndexes = () =>
   Promise.all([
     models.products.collection.createIndex(
-      { sku: 1 },
-      { unique: true, partialFilterExpression: { sku: { $type: "string" } } }
+      { skuLower: 1 },
+      { unique: true, partialFilterExpression: { skuLower: { $type: "string" } } }
     ),
     models.products.collection.createIndex(
       { slug: 1 },
@@ -961,6 +984,7 @@ const ensureOpsIndexes = () =>
       { unique: true, partialFilterExpression: { slug: { $type: "string" } } }
     ),
     models.inventoryMovements.collection.createIndex({ productId: 1, createdAt: -1 }),
+    models.inventoryMovements.collection.createIndex({ referenceId: 1 }),
     models.installationJobs.collection.createIndex({ engineerId: 1, scheduledAt: 1 }),
     models.notifications.collection.createIndex({ createdAt: -1 }),
   ]);

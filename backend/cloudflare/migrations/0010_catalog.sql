@@ -1,14 +1,20 @@
--- v3 catalog (BE-2): categories and products live in `records` as JSON documents
--- (collections 'categories' and 'products'). Idempotent: safe to apply more than once.
--- Migration numbers 0007-0009 are reserved for BE-1 (roles, vacancies).
+-- v3 catalog (BE-2, API_CONTRACT_V3 §4 and §10): categories and products live in `records`
+-- as JSON documents (collections 'categories' and 'products').
+-- Idempotent: safe to apply more than once. These collections are new, so there are no
+-- existing rows to deduplicate. If an index cannot be created because of duplicates, the
+-- migration fails loudly and no data is changed.
 
--- SKU is unique across products (stored upper-case by the API).
-CREATE UNIQUE INDEX IF NOT EXISTS idx_records_products_sku
-  ON records (json_extract(data, '$.sku'))
+-- Slugs are unique per collection (the API also suffixes -2, -3, ... before writing;
+-- the index catches concurrent writes).
+CREATE UNIQUE INDEX IF NOT EXISTS idx_records_products_slug
+  ON records (slug)
   WHERE collection = 'products';
 
--- Slugs are unique per collection for categories and products (the API also suffixes
--- -2, -3, ... before inserting; the index catches concurrent writes).
-CREATE UNIQUE INDEX IF NOT EXISTS idx_records_catalog_slug
-  ON records (collection, slug)
-  WHERE collection IN ('categories', 'products') AND slug IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_records_categories_slug
+  ON records (slug)
+  WHERE collection = 'categories';
+
+-- SKU is unique case-insensitively. The SKU is stored as sent.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_records_products_sku
+  ON records (lower(json_extract(data, '$.sku')))
+  WHERE collection = 'products';

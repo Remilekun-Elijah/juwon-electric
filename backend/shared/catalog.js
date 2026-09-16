@@ -1,5 +1,5 @@
-// Categories and products (PRD §6.1, decision D5): payload validation, relationship
-// checks and public serializers. Storage lives in each runtime; everything here is pure.
+// Categories, products and package items (API_CONTRACT_V3 §4, decision D5): validation,
+// relationship checks, filters and serializers. Pure: storage lives in each runtime.
 import { badRequest, conflict } from "./errors.js";
 import {
   OPS_LIMITS,
@@ -9,6 +9,8 @@ import {
   isPlainObject,
   number,
   oneOf,
+  paginate,
+  queryText,
   slug as slugField,
   sortOrder,
   text,
@@ -16,79 +18,91 @@ import {
   url,
   urlList,
 } from "./fields.js";
-import { sanitizeHtml } from "./sanitizeHtml.js";
+import { sanitizeRichText } from "./richText.js";
 
 export const PRODUCT_STATUSES = ["active", "hidden", "archived"];
+export const ATTRIBUTE_TYPES = ["text", "number", "boolean"];
 export const CURRENCY = "NGN";
 
-const SKU_PATTERN = /^[A-Z0-9][A-Z0-9._-]*$/;
+const KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
+const SKU_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const DESCRIPTION_HTML_MAX = 50000;
 
-export const normalizeSku = (value) => String(value ?? "").trim().toUpperCase();
+const sent = (body, key) => body !== null && typeof body === "object" && body[key] !== undefined;
+const byName = (a, b) => String(a.name).localeCompare(String(b.name)) || String(a.id).localeCompare(String(b.id));
 
-// ---- categories ---------------------------------------------------------------
+/** Lower-cased SKU, stored as `skuLower` for case-insensitive uniqueness and lookup. */
+export const skuKey = (sku) => String(sku ?? "").trim().toLowerCase();
 
-/**
- * Category payload. Create: required fields enforced, defaults applied. Update: absent
- * optional fields are undefined (not written); null clears parentId/description/imageUrl.
- */
-export const categoryPayload = (body, { existing = null } = {}) => {
-  const isUpdate = Boolean(existing);
-  const name = text(body, "name", { label: "Name", required: true, max: OPS_LIMITS.categoryName });
-  const parentId = idRef(body, "parentId", { label: "Parent category" });
-  const description = text(body, "description", {
-    label: "Description",
-    max: OPS_LIMITS.description,
-    multiline: true,
+// ---- categories ---------------------------------------------------------------------
+
+const categoryAttributes = (body) => {
+  const raw = body.attributes;
+  if (raw === null) return [];
+  if (!Array.isArray(raw)) throw badRequest("Attributes must be a list.");
+  if (raw.length > 30) throw badRequest("A category can have at most 30 attributes.");
+  const keys = new Set();
+  return raw.map((entry) => {
+    if (!isPlainObject(entry)) throw badRequest("Invalid category attribute.");
+    const key = text(entry, "key", { label: "Attribute key", required: true, max: 64 });
+    if (!KEY_PATTERN.test(key)) {
+      throw badRequest("Attribute key must start with a letter and contain only letters, numbers and underscores.");
+    }
+    if (keys.has(key)) throw badRequest(`Attribute key "${key}" is used more than once.`);
+    keys.add(key);
+    return {
+      key,
+      label: text(entry, "label", { label: "Attribute label", required: true, max: 100 }),
+      type: oneOf(entry, "type", ATTRIBUTE_TYPES, { label: "Attribute type", required: true }),
+      unit: text(entry, "unit", { label: "Attribute unit", max: 20 }) || null,
+    };
   });
-  const imageUrl = url(body, "imageUrl", { label: "Image URL" });
-  const isActive = boolean(body, "isActive", { label: "isActive" });
-  const order = sortOrder(body);
-  const slug = slugField(body);
-
-  // Sent (including null or "") is written; absent keeps the stored value on update.
-  const clearable = (key, value) => (body?.[key] !== undefined ? value : isUpdate ? undefined : "");
-
-  return {
-    name,
-    slug,
-    parentId: parentId === undefined ? (isUpdate ? undefined : null) : parentId,
-    description: clearable("description", description),
-    imageUrl: clearable("imageUrl", imageUrl),
-    isActive: isActive ?? (isUpdate ? undefined : true),
-    sortOrder: order,
-  };
 };
 
-/** Throws when parentId is unknown, the category itself, or one of its descendants. */
+/**
+ * Category payload. Create: `name` required, defaults applied. Update (partial): only sent
+ * fields are returned; "" or null clears description and imageUrl.
+ */
+export const categoryPayload = (body, { isUpdate = false } = {}) => {
+  const input = isPlainObject(body) ? body : {};
+  const payload = {};
+  if (!isUpdate || sent(input, "name")) {
+    payload.name = text(input, "name", { label: "Name", required: true, max: OPS_LIMITS.categoryName });
+  }
+  if (sent(input, "slug")) payload.slug = slugField(input);
+  if (!isUpdate || sent(input, "parentId")) payload.parentId = idRef(input, "parentId", { label: "Parent category" }) ?? null;
+  if (!isUpdate || sent(input, "description")) {
+    payload.description = text(input, "description", { label: "Description", max: 1000, multiline: true }) || null;
+  }
+  if (!isUpdate || sent(input, "imageUrl")) payload.imageUrl = url(input, "imageUrl", { label: "Image URL" }) || null;
+  if (!isUpdate || sent(input, "attributes")) payload.attributes = sent(input, "attributes") ? categoryAttributes(input) : [];
+  if (!isUpdate || sent(input, "isActive")) payload.isActive = boolean(input, "isActive", { label: "isActive" }) ?? true;
+  if (sent(input, "sortOrder")) payload.sortOrder = sortOrder(input);
+  return payload;
+};
+
+/** Throws when parentId is unknown, or when it is the category itself or one of its descendants. */
 export const assertValidParent = (categories, parentId, selfId = null) => {
   if (!parentId) return;
   const byId = new Map(categories.map((category) => [category.id, category]));
   if (!byId.has(parentId)) throw badRequest("Parent category not found.");
-  if (selfId && parentId === selfId) throw badRequest("A category cannot be its own parent.");
-  let cursor = byId.get(parentId);
   const seen = new Set();
-  while (cursor && cursor.parentId && !seen.has(cursor.id)) {
+  for (let cursor = byId.get(parentId); cursor && !seen.has(cursor.id); cursor = byId.get(cursor.parentId)) {
+    if (cursor.id === selfId) throw badRequest("A category cannot be its own ancestor.");
     seen.add(cursor.id);
-    if (cursor.parentId === selfId) throw badRequest("A category cannot be moved under its own subcategory.");
-    cursor = byId.get(cursor.parentId);
   }
 };
 
 export const assertCategoryDeletable = (category, categories, products) => {
-  if (categories.some((item) => item.parentId === category.id)) {
-    throw conflict("This category has subcategories. Move or delete them first.");
-  }
-  const used = products.filter((product) => product.categoryId === category.id).length;
-  if (used > 0) {
-    throw conflict(`This category is used by ${used} ${used === 1 ? "product" : "products"}. Move them first.`);
+  if (categories.some((item) => item.parentId === category.id) || products.some((item) => item.categoryId === category.id)) {
+    throw conflict("Category has subcategories or products.");
   }
 };
 
 /** Ids of the category and all of its descendants. */
 export const categoryAndDescendants = (categories, rootId) => {
   const ids = new Set([rootId]);
-  let grew = true;
-  while (grew) {
+  for (let grew = true; grew; ) {
     grew = false;
     for (const category of categories) {
       if (category.parentId && ids.has(category.parentId) && !ids.has(category.id)) {
@@ -100,119 +114,115 @@ export const categoryAndDescendants = (categories, rootId) => {
   return ids;
 };
 
-export const serializePublicCategory = (category) => ({
+export const serializeCategory = (category) => ({
   id: category.id,
-  name: category.name,
   slug: category.slug,
+  name: category.name,
   parentId: category.parentId ?? null,
-  description: category.description || "",
-  imageUrl: category.imageUrl || "",
-  sortOrder: category.sortOrder ?? 0,
+  description: category.description || null,
+  imageUrl: category.imageUrl || null,
+  attributes: Array.isArray(category.attributes) ? category.attributes : [],
+  isActive: category.isActive !== false,
+  sortOrder: Number(category.sortOrder) || 0,
+  createdAt: category.createdAt ?? null,
+  updatedAt: category.updatedAt ?? null,
 });
 
-// ---- products -------------------------------------------------------------------
+/** Public categories: active only, sortOrder then name. */
+export const publicCategories = (categories) =>
+  categories
+    .filter((category) => category.isActive !== false)
+    .sort((a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0) || byName(a, b))
+    .map(serializeCategory);
 
-const attributesField = (body) => {
-  const raw = body?.attributes;
-  if (raw === undefined) return undefined;
+// ---- products -------------------------------------------------------------------------
+
+const productAttributes = (body) => {
+  const raw = body.attributes;
   if (raw === null) return {};
-  if (!isPlainObject(raw)) throw badRequest("Attributes must be an object of name/value pairs.");
+  if (!isPlainObject(raw)) throw badRequest("Attributes must be an object.");
   const entries = Object.entries(raw);
-  if (entries.length > OPS_LIMITS.attributeCount) {
-    throw badRequest(`A product can have at most ${OPS_LIMITS.attributeCount} attributes.`);
-  }
+  if (entries.length > 50) throw badRequest("A product can have at most 50 attributes.");
   const out = {};
-  for (const [rawKey, rawValue] of entries) {
-    const key = text({ key: rawKey }, "key", {
-      label: "Attribute name",
-      required: true,
-      max: OPS_LIMITS.attributeKey,
-    });
-    if (key === "__proto__" || key === "constructor" || key === "prototype") {
-      throw badRequest("Attribute name is not allowed.");
+  for (const [key, value] of entries) {
+    if (!KEY_PATTERN.test(key)) {
+      throw badRequest("Attribute key must start with a letter and contain only letters, numbers and underscores.");
     }
-    if (typeof rawValue === "number" || typeof rawValue === "boolean") {
-      if (typeof rawValue === "number" && !Number.isFinite(rawValue)) {
-        throw badRequest("Attribute values must be text, numbers or true/false.");
-      }
-      out[key] = String(rawValue);
-    } else if (typeof rawValue === "string") {
-      out[key] = text({ value: rawValue }, "value", { label: `Attribute "${key}"`, max: OPS_LIMITS.attributeValue });
-    } else {
-      throw badRequest("Attribute values must be text, numbers or true/false.");
-    }
+    if (typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) out[key] = value;
+    else if (typeof value === "string") out[key] = text({ value }, "value", { label: `Attribute ${key}`, max: 200 });
+    else throw badRequest(`Attribute ${key} must be text, a number or true/false.`);
   }
   return out;
 };
 
 const skuField = (body) => {
-  const value = normalizeSku(text(body, "sku", { label: "SKU", required: true, max: OPS_LIMITS.sku }));
-  if (!SKU_PATTERN.test(value)) {
-    throw badRequest("SKU may only contain letters, numbers, dots, dashes and underscores.");
-  }
+  const value = text(body, "sku", { label: "SKU", required: true, max: OPS_LIMITS.sku });
+  if (!SKU_PATTERN.test(value)) throw badRequest("SKU may only contain letters, numbers, dots, dashes and underscores.");
   return value;
 };
 
+const descriptionHtmlField = (body) => {
+  const raw = text(body, "descriptionHtml", { label: "Description", multiline: true });
+  const clean = sanitizeRichText(raw);
+  if (clean.length > DESCRIPTION_HTML_MAX) throw badRequest(`Description must be ${DESCRIPTION_HTML_MAX} characters or fewer.`);
+  return clean;
+};
+
 /**
- * Product payload. Create applies defaults; update leaves absent optional fields
- * undefined. Stock only changes through stock adjustments: on update a stockQuantity
- * different from the stored one is rejected.
+ * Product payload. Create: sku, name and price required; defaults applied (reorderLevel
+ * from `defaultReorderLevel`). Update (partial): only sent fields are returned. Stock only
+ * changes through inventory adjustments: a PUT stockQuantity that differs from the stored
+ * value is rejected, and the same value is ignored.
  */
-export const productPayload = (body, { existing = null } = {}) => {
+export const productPayload = (body, { existing = null, defaultReorderLevel = 0 } = {}) => {
+  const input = isPlainObject(body) ? body : {};
   const isUpdate = Boolean(existing);
-  const sku = skuField(body);
-  const name = text(body, "name", { label: "Name", required: true, max: OPS_LIMITS.productName });
-  const slug = slugField(body);
-  const categoryId = idRef(body, "categoryId", { label: "Category" });
-  const brand = text(body, "brand", { label: "Brand", max: OPS_LIMITS.brand });
-  const rawHtml = text(body, "descriptionHtml", {
-    label: "Description",
-    max: OPS_LIMITS.descriptionHtml,
-    multiline: true,
-  });
-  const attributes = attributesField(body);
-  const price = number(body, "price", { label: "Price", required: !isUpdate, min: 0, max: OPS_LIMITS.moneyMax });
-  const costPrice = number(body, "costPrice", { label: "Cost price", min: 0, max: OPS_LIMITS.moneyMax });
-  const currency = text(body, "currency", { label: "Currency", max: 3 }).toUpperCase();
-  if (currency && currency !== CURRENCY) throw badRequest(`Currency must be ${CURRENCY}.`);
-  const stockQuantity = integer(body, "stockQuantity", {
-    label: "Stock quantity",
-    min: 0,
-    max: OPS_LIMITS.stockMax,
-  });
-  if (isUpdate && stockQuantity !== undefined && stockQuantity !== Number(existing.stockQuantity || 0)) {
-    throw badRequest("Use a stock adjustment to change the stock quantity.");
+  const has = (key) => !isUpdate || sent(input, key);
+  const payload = {};
+
+  if (has("sku")) {
+    payload.sku = skuField(input);
+    payload.skuLower = skuKey(payload.sku);
   }
-  const reorderLevel = integer(body, "reorderLevel", { label: "Reorder level", min: 0, max: OPS_LIMITS.stockMax });
-  const images = urlList(body, "images", { label: "Images", max: OPS_LIMITS.images });
-  const status = oneOf(body, "status", PRODUCT_STATUSES, { label: "Status" });
-  const tags = textList(body, "tags", { label: "Tags", max: OPS_LIMITS.tags, itemMax: OPS_LIMITS.tag });
-  const order = sortOrder(body);
+  if (has("name")) payload.name = text(input, "name", { label: "Name", required: true, max: OPS_LIMITS.productName });
+  if (sent(input, "slug")) payload.slug = slugField(input);
+  if (has("categoryId")) payload.categoryId = idRef(input, "categoryId", { label: "Category" }) ?? null;
+  if (has("brand")) payload.brand = text(input, "brand", { label: "Brand", max: OPS_LIMITS.brand }) || null;
+  if (has("descriptionHtml")) payload.descriptionHtml = descriptionHtmlField(input);
+  if (has("attributes")) payload.attributes = sent(input, "attributes") ? productAttributes(input) : {};
+  if (has("price")) {
+    const price = number(input, "price", { label: "Price", required: true });
+    if (!(price > 0) || price > 1_000_000_000) throw badRequest("Price must be greater than 0 and at most 1,000,000,000.");
+    payload.price = price;
+  }
+  if (has("costPrice")) {
+    const costPrice = number(input, "costPrice", { label: "Cost price" });
+    if (costPrice !== undefined && (costPrice < 0 || costPrice > 1_000_000_000)) {
+      throw badRequest("Cost price must be between 0 and 1,000,000,000.");
+    }
+    payload.costPrice = costPrice ?? null;
+  }
+  if (sent(input, "currency") && input.currency !== null && input.currency !== CURRENCY) {
+    throw badRequest(`Currency must be ${CURRENCY}.`);
+  }
+  if (!isUpdate) payload.currency = CURRENCY;
+  if (has("reorderLevel")) {
+    payload.reorderLevel =
+      integer(input, "reorderLevel", { label: "Reorder level", min: 0, max: 1_000_000 }) ?? defaultReorderLevel;
+  }
+  if (has("images")) payload.images = urlList(input, "images", { label: "Images", max: 10 }) ?? [];
+  if (has("status")) payload.status = oneOf(input, "status", PRODUCT_STATUSES, { label: "Status" }) ?? "active";
+  if (has("tags")) payload.tags = textList(input, "tags", { label: "Tags", max: 20, itemMax: 50 }) ?? [];
 
-  const nextStatus = status ?? (isUpdate ? undefined : "active");
-  const sent = (key) => body?.[key] !== undefined;
+  const stock = integer(input, "stockQuantity", { label: "Stock quantity", min: 0, max: 1_000_000 });
+  if (!isUpdate) payload.stockQuantity = stock ?? 0;
+  else if (stock !== undefined && stock !== Number(existing.stockQuantity || 0)) {
+    throw badRequest("Use an inventory adjustment to change stock.");
+  }
 
-  return {
-    sku,
-    name,
-    slug,
-    categoryId: categoryId === undefined ? (isUpdate ? undefined : null) : categoryId,
-    brand: sent("brand") ? brand : isUpdate ? undefined : "",
-    descriptionHtml: sent("descriptionHtml") ? sanitizeHtml(rawHtml) : isUpdate ? undefined : "",
-    attributes: attributes ?? (isUpdate ? undefined : {}),
-    price,
-    costPrice: sent("costPrice") ? costPrice ?? null : isUpdate ? undefined : null,
-    currency: isUpdate ? undefined : CURRENCY,
-    stockQuantity: isUpdate ? undefined : stockQuantity ?? 0,
-    // null means "use the default reorder level from settings".
-    reorderLevel: sent("reorderLevel") ? reorderLevel ?? null : isUpdate ? undefined : null,
-    images: images ?? (isUpdate ? undefined : []),
-    status: nextStatus,
-    // The records table filters public lists on isActive; it mirrors status === "active".
-    isActive: nextStatus === undefined ? undefined : nextStatus === "active",
-    tags: tags ?? (isUpdate ? undefined : []),
-    sortOrder: order,
-  };
+  // The records table filters public lists on isActive; it mirrors status === "active".
+  if (payload.status !== undefined) payload.isActive = payload.status === "active";
+  return payload;
 };
 
 export const assertCategoryExists = (categories, categoryId) => {
@@ -224,96 +234,186 @@ export const assertCategoryExists = (categories, categoryId) => {
 export const skuConflict = (sku) => conflict(`Another product already uses SKU ${sku}.`);
 
 export const assertSkuFree = (products, sku, selfId = null) => {
-  if (products.some((product) => product.id !== selfId && normalizeSku(product.sku) === sku)) {
-    throw skuConflict(sku);
-  }
+  const key = skuKey(sku);
+  if (products.some((product) => product.id !== selfId && skuKey(product.sku) === key)) throw skuConflict(sku);
 };
-
-/** Packages whose components reference the product. */
-export const packagesUsingProduct = (packages, productId) =>
-  packages.filter(
-    (pack) => Array.isArray(pack.components) && pack.components.some((component) => component?.productId === productId)
-  );
 
 export const assertProductDeletable = (product, packages) => {
-  const used = packagesUsingProduct(packages, product.id).length;
-  if (used > 0) {
-    throw conflict(
-      `This product is a component of ${used} ${used === 1 ? "package" : "packages"}. Remove it from them first, or archive the product.`
-    );
-  }
+  const used = packages.some(
+    (pack) => Array.isArray(pack.items) && pack.items.some((item) => item?.productId === product.id)
+  );
+  if (used) throw conflict("Product is used by a package.");
 };
 
+export const isLowStockProduct = (product) =>
+  (Number(product.stockQuantity) || 0) <= (Number(product.reorderLevel) || 0);
+
+export const serializeProduct = (product) => ({
+  id: product.id,
+  sku: product.sku,
+  slug: product.slug,
+  name: product.name,
+  categoryId: product.categoryId ?? null,
+  brand: product.brand || null,
+  descriptionHtml: product.descriptionHtml || "",
+  attributes: isPlainObject(product.attributes) ? product.attributes : {},
+  price: Number(product.price) || 0,
+  costPrice: product.costPrice ?? null,
+  currency: CURRENCY,
+  stockQuantity: Number(product.stockQuantity) || 0,
+  reorderLevel: Number(product.reorderLevel) || 0,
+  lowStock: isLowStockProduct(product),
+  images: Array.isArray(product.images) ? product.images : [],
+  status: product.status || "active",
+  tags: Array.isArray(product.tags) ? product.tags : [],
+  createdAt: product.createdAt ?? null,
+  updatedAt: product.updatedAt ?? null,
+});
+
 export const serializePublicProduct = (product, categoriesById = new Map()) => {
-  const category = product.categoryId ? categoriesById.get(product.categoryId) : null;
+  const { costPrice, stockQuantity, reorderLevel, lowStock, ...rest } = serializeProduct(product);
+  const category = rest.categoryId ? categoriesById.get(rest.categoryId) : null;
   return {
-    id: product.id,
-    sku: product.sku,
-    name: product.name,
-    slug: product.slug,
-    categoryId: product.categoryId ?? null,
-    category:
-      category && category.isActive !== false
-        ? { id: category.id, name: category.name, slug: category.slug }
-        : null,
-    brand: product.brand || "",
-    descriptionHtml: product.descriptionHtml || "",
-    attributes: product.attributes || {},
-    price: Number(product.price) || 0,
-    currency: product.currency || CURRENCY,
-    images: Array.isArray(product.images) ? product.images : [],
-    tags: Array.isArray(product.tags) ? product.tags : [],
-    inStock: Number(product.stockQuantity) > 0,
-    sortOrder: product.sortOrder ?? 0,
+    ...rest,
+    inStock: stockQuantity > 0,
+    category: category && category.isActive !== false ? { id: category.id, slug: category.slug, name: category.name } : null,
   };
 };
 
-export const isPublicProduct = (product) => product && product.status === "active" && product.isActive !== false;
+export const isPublicProduct = (product) => Boolean(product) && (product.status || "active") === "active";
 
-/**
- * Public product list: active products, optionally limited to a category (id or slug)
- * and its active descendants. Unknown or inactive category: 404 message returned as null.
- */
-export const filterPublicProducts = (products, categories, categoryKey) => {
-  const visible = products.filter(isPublicProduct);
-  if (!categoryKey) return visible;
-  const category = categories.find(
-    (item) => item.isActive !== false && (item.id === categoryKey || item.slug === categoryKey)
+const matchesQuery = (product, q) => {
+  if (!q) return true;
+  const needle = q.toLowerCase();
+  return [product.name, product.sku, product.brand, ...(Array.isArray(product.tags) ? product.tags : [])].some((value) =>
+    String(value ?? "").toLowerCase().includes(needle)
   );
-  if (!category) return null;
-  const active = categories.filter((item) => item.isActive !== false);
-  const ids = categoryAndDescendants(active, category.id);
-  return visible.filter((product) => product.categoryId && ids.has(product.categoryId));
 };
 
-// ---- package components (packages reference products) ----------------------------
+/** Category filter (id or slug, including descendants). null when the category is unknown. */
+const categoryFilter = (categories, key, { activeOnly }) => {
+  if (!key) return () => true;
+  const pool = activeOnly ? categories.filter((item) => item.isActive !== false) : categories;
+  const category = pool.find((item) => item.id === key || item.slug === key);
+  if (!category) return null;
+  const ids = categoryAndDescendants(pool, category.id);
+  return (product) => Boolean(product.categoryId) && ids.has(product.categoryId);
+};
+
+export const STOCK_FILTERS = ["all", "low", "out"];
+
+const stockFilter = (query) => {
+  const stock = queryText(query, "stock");
+  if (stock && !STOCK_FILTERS.includes(stock)) throw badRequest("stock must be one of: all, low, out.");
+  if (stock === "low") return isLowStockProduct;
+  if (stock === "out") return (product) => (Number(product.stockQuantity) || 0) <= 0;
+  return () => true;
+};
 
 /**
- * components: [{ productId, quantity }] on packages. Undefined when absent; null or []
- * clears. Duplicate product ids are merged.
+ * GET /products: active products, `category` (unknown -> empty page) and `q`, name order.
+ * Returns the paged data; `page` = { page, limit } already validated.
  */
-export const componentsField = (body) => {
-  const raw = body?.components;
+export const publicProductPage = (products, categories, query, page) => {
+  const inCategory = categoryFilter(categories, queryText(query, "category"), { activeOnly: true });
+  const q = queryText(query, "q");
+  const byId = new Map(categories.map((category) => [category.id, category]));
+  const items = inCategory
+    ? products.filter((product) => isPublicProduct(product) && inCategory(product) && matchesQuery(product, q)).sort(byName)
+    : [];
+  const paged = paginate(items, page);
+  return { ...paged, items: paged.items.map((product) => serializePublicProduct(product, byId)) };
+};
+
+const byUpdatedDesc = (a, b) =>
+  String(b.updatedAt).localeCompare(String(a.updatedAt)) || byName(a, b);
+
+/** GET /admin/products: every product, filters category/status/stock/q, updatedAt desc. */
+export const adminProductPage = (products, categories, query, page) => {
+  const inCategory = categoryFilter(categories, queryText(query, "category"), { activeOnly: false });
+  const status = queryText(query, "status");
+  if (status && !PRODUCT_STATUSES.includes(status)) throw badRequest("status must be one of: active, hidden, archived.");
+  const inStock = stockFilter(query);
+  const q = queryText(query, "q");
+  const items = inCategory
+    ? products
+        .filter((product) => inCategory(product) && (!status || (product.status || "active") === status) && inStock(product) && matchesQuery(product, q))
+        .sort(byUpdatedDesc)
+    : [];
+  const paged = paginate(items, page);
+  return { ...paged, items: paged.items.map(serializeProduct) };
+};
+
+/** GET /admin/inventory rows: low stock first, then name. */
+export const inventoryPage = (products, categories, query, page) => {
+  const inCategory = categoryFilter(categories, queryText(query, "category"), { activeOnly: false });
+  const inStock = stockFilter(query);
+  const q = queryText(query, "q");
+  const items = inCategory
+    ? products
+        .filter((product) => inCategory(product) && inStock(product) && matchesQuery(product, q))
+        .sort((a, b) => Number(isLowStockProduct(b)) - Number(isLowStockProduct(a)) || byName(a, b))
+    : [];
+  const paged = paginate(items, page);
+  return {
+    ...paged,
+    items: paged.items.map((product) => ({
+      productId: product.id,
+      sku: product.sku,
+      name: product.name,
+      categoryId: product.categoryId ?? null,
+      stockQuantity: Number(product.stockQuantity) || 0,
+      reorderLevel: Number(product.reorderLevel) || 0,
+      lowStock: isLowStockProduct(product),
+      status: product.status || "active",
+      updatedAt: product.updatedAt ?? null,
+    })),
+  };
+};
+
+// ---- package items (packages reference products, §4.3) ---------------------------------
+
+/** items: [{ productId, quantity, note }] on packages. Undefined when absent; null or [] clears. */
+export const packageItemsField = (body) => {
+  const raw = body?.items;
   if (raw === undefined) return undefined;
   if (raw === null) return [];
-  if (!Array.isArray(raw)) throw badRequest("Components must be a list.");
-  if (raw.length > OPS_LIMITS.components) {
-    throw badRequest(`A package can have at most ${OPS_LIMITS.components} components.`);
-  }
-  const merged = new Map();
-  for (const entry of raw) {
-    if (!isPlainObject(entry)) throw badRequest("Invalid package component.");
-    const productId = text(entry, "productId", { label: "Component product", required: true, max: OPS_LIMITS.id });
-    const quantity =
-      integer(entry, "quantity", { label: "Component quantity", min: 1, max: OPS_LIMITS.componentQuantityMax }) ?? 1;
-    merged.set(productId, Math.min((merged.get(productId) || 0) + quantity, OPS_LIMITS.componentQuantityMax));
-  }
-  return [...merged].map(([productId, quantity]) => ({ productId, quantity }));
+  if (!Array.isArray(raw)) throw badRequest("Items must be a list.");
+  if (raw.length > 50) throw badRequest("A package can have at most 50 items.");
+  return raw.map((entry) => {
+    if (!isPlainObject(entry)) throw badRequest("Invalid package item.");
+    return {
+      productId: text(entry, "productId", { label: "Product", required: true, max: OPS_LIMITS.id }),
+      quantity: integer(entry, "quantity", { label: "Item quantity", required: true, min: 1, max: 1000 }),
+      note: text(entry, "note", { label: "Item note", max: 200 }) || null,
+    };
+  });
 };
 
-export const assertComponentsExist = (components, products) => {
-  if (!components?.length) return;
+export const assertPackageItemsExist = (items, products) => {
+  if (!items?.length) return;
   const ids = new Set(products.map((product) => product.id));
-  const missing = components.find((component) => !ids.has(component.productId));
-  if (missing) throw badRequest("Component product not found.");
+  if (items.some((item) => !ids.has(item.productId))) throw badRequest("Product not found.");
+};
+
+/**
+ * Public package response: unchanged for packages without items; otherwise adds
+ * items: [{ productId, quantity, note, name, slug, sku }].
+ */
+export const withPublicPackageItems = (serialized, stored, productsById) => {
+  if (!Array.isArray(stored.items) || stored.items.length === 0) return serialized;
+  return {
+    ...serialized,
+    items: stored.items.map((item) => {
+      const product = productsById.get(item.productId);
+      return {
+        productId: item.productId,
+        quantity: item.quantity,
+        note: item.note ?? null,
+        name: product?.name ?? null,
+        slug: product?.slug ?? null,
+        sku: product?.sku ?? null,
+      };
+    }),
+  };
 };
