@@ -4,9 +4,9 @@ import axios from "axios";
 import config from "./config.js";
 
 class BACKEND {
-  constructor(url = config.backendUrl, token) {
+  constructor(url = config.backendUrl) {
     const newInstance = axios.create();
-    this._API = new API_INSTANCE({ url, token }).create(newInstance);
+    this._API = new API_INSTANCE({ url }).create(newInstance);
   }
 
   send({ type, to, payload, cb, header = {}, useAlert }) {
@@ -14,7 +14,7 @@ class BACKEND {
       url: to,
       method: type,
       data: payload,
-      header,
+      headers: header,
       signal: AbortSignal.timeout(120000 /* 2m */),
     })
       .then(function (response) {
@@ -42,20 +42,17 @@ class BACKEND {
         }
       })
       .catch(function (e) {
-        if (e?.name === "AbortError") {
-          console.log("Axios terminated request");
-        }
-        const err = "error";
-        const message = e?.message || e?.[err] || "Something went wrong";
+        const message =
+          e?.response?.data?.message ||
+          e?.message ||
+          e?.error ||
+          "Something went wrong";
 
-        // if (useAlert) {
-        message &&
-          Alert({
-            type: err,
-            message: message instanceof Array ? message[0] : message,
-          });
-        // }
-        return e;
+        Alert({
+          type: "error",
+          message: message instanceof Array ? message[0] : message,
+        });
+        return e?.response?.data || e;
       });
   }
 }

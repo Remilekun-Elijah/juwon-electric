@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Container } from "@mui/material";
 import config from "../utils/config";
 import { getPublicData } from "../utils/api";
+import { showAllOnMobile } from "../utils/helper";
 
 const defaultPortfolioData = [
   { name: "2.1Kwp Trina Solar Panel", image: "/image-1.svg", mobile: true },
@@ -33,13 +34,9 @@ const Portfolio = () => {
       .catch(() => setPortfolioData(defaultPortfolioData));
   }, []);
 
-  function handleMobileExpand(e, state, setState) {
+  function handleMobileExpand(e) {
     e.preventDefault();
-    const newState = state.map((data) => {
-      data.mobile = true;
-      return data;
-    });
-    setState(newState);
+    setPortfolioData(showAllOnMobile(portfolioData));
   }
 
   return (
@@ -47,15 +44,15 @@ const Portfolio = () => {
       <Navbar />
       <Header text="PORTFOLIO" />
 
-      <Container maxWidth={config.padding.x} className="lg:my-36 my-24">
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-center item-center gap-10">
+      <Container maxWidth={config.padding.x} className="lg:my-28 my-20">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-center gap-10">
           {portfolioData.map((data, i) => (
             <div
-              key={i}
+              key={data.id ?? data.image ?? i}
               className={`relative  ${!data.mobile && "lg:block hidden"}`}
             >
               <div
-                className={`overlay rounded flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
+                className="overlay rounded-lg flex flex-col justify-center items-center px-4 opacity-0 hover:opacity-100 transition-opacity"
               >
                 <p className="sora-bold text-xl text-white text-center">
                   {data.name}
@@ -63,9 +60,11 @@ const Portfolio = () => {
               </div>
 
               <img
-                className="w-full"
+                className="w-full aspect-[380/525] object-cover rounded-lg"
+                width={380}
+                height={525}
                 src={data.image || data.img}
-                alt={`Portfolio ${i + 1}`}
+                alt={data.name || `Portfolio ${i + 1}`}
               />
             </div>
           ))}
@@ -73,16 +72,12 @@ const Portfolio = () => {
 
         <div
           className={`mt-14 flex justify-center items-center lg:hidden ${
-            portfolioData.filter((a) => a.mobile).length > 6 && "hidden"
+            portfolioData.every((a) => a.mobile) && "hidden"
           }`}
         >
-          <br />
-          <br />
           <Link
-            onClick={(e) =>
-              handleMobileExpand(e, portfolioData, setPortfolioData)
-            }
-            className={`text-red border-2 border-red hover:bg-red hover:text-white py-3 rounded-md md:w-[400px] inter-medium text-xl text-center block w-full`}
+            onClick={handleMobileExpand}
+            className="flex items-center justify-center min-h-[52px] py-3 rounded-lg text-brand-500 border-2 border-brand-500 hover:bg-brand-500 hover:text-white transition-colors duration-150 md:w-[400px] inter-medium text-xl text-center w-full"
           >
             Load More
           </Link>

@@ -6,4 +6,8 @@ export const whatDrivesUs = [
   "We are well known for our top notch professional installation and special love for premium quality. Our team are highly trained with vast experience, we sell and deploy only premium quality products.",
 ];
 
+// Returns copies of the items with `mobile` set, so every item shows on small screens.
+export const showAllOnMobile = (items) =>
+  items.map((item) => ({ ...item, mobile: true }));
+
 export const getAmount = (num) => new Intl.NumberFormat().format(num);

@@ -1,6 +1,7 @@
-// import React from "react";
 import CheckIcon from "@mui/icons-material/Check";
 import { getAmount } from "../../utils/helper";
+import { getCartItemKey } from "../../features/cart";
+import { cardTitle } from "../../lib/publicStyles";
 
 const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
   function openModal(product) {
@@ -8,14 +9,10 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
     setOpen(true);
   }
 
-  return products.map((a, i) => {
-    const f = cart.find((c) => {
-      if (c.type === a.type && c.kva === a.kva && c.id === a.id) {
-        return c;
-      }
-    });
-
-    const inCart = a?.id === f?.id,
+  return products.map((a) => {
+    const inCart = cart.some(
+        (c) => getCartItemKey(c) === getCartItemKey(a)
+      ),
       lithiumPlatinum = a.name === "Platinum",
       lithiumDiamond = a.name === "Diamond",
       tubularPremium = a.name === "Premium";
@@ -28,17 +25,18 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
 
     return (
       <div
-        key={i}
-        className={`shadow rounded-xl py-5 md:px-3 px-5 ${
+        key={getCartItemKey(a)}
+        // flex-col + flex-1 options panel + mt-auto button: panels and buttons line up across a row.
+        className={`shadow rounded-xl py-5 md:px-3 px-5 flex flex-col ${
           lithiumPlatinum || tubularPremium
-            ? "bg-gradient-to-b to-pink-400 from-red"
+            ? "bg-gradient-to-b to-pink-400 from-brand-500"
             : lithiumDiamond
             ? diamondGradient("b")
             : "bg-white"
         }`}
       >
         <h4
-          className={`sora-semibold text-2xl mb-5 mt-2 text-center ${
+          className={`${cardTitle} mb-4 mt-2 text-center ${
             lithiumPlatinum || tubularPremium || lithiumDiamond
               ? "text-white"
               : "text-black"
@@ -109,13 +107,13 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
             lithiumPlatinum || tubularPremium || lithiumDiamond
               ? "bg-white"
               : "bg-[#F9FAFB]"
-          } rounded-xl px-5 py-7`}
+          } rounded-xl px-5 py-7 flex-1 flex flex-col`}
         >
           {a.options.map((b, i) => (
             <div key={i} className="flex gap-3 mb-5">
               <CheckIcon
-                className={`p-1 ${
-                  lithiumDiamond ? "bg-[var(--diamond)]" : "bg-red"
+                className={`p-1 shrink-0 ${
+                  lithiumDiamond ? "bg-[var(--diamond)]" : "bg-brand-500"
                 } text-white rounded-full`}
               />
               <div>
@@ -123,7 +121,7 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
                   {b.name},{" "}
                   <span
                     className={`${
-                      lithiumDiamond ? "text-[var(--diamond)]" : "text-red"
+                      lithiumDiamond ? "text-[var(--diamond)]" : "text-brand-500"
                     }`}
                   >
                     ₦{getAmount(b.price)}
@@ -134,21 +132,21 @@ const DisplayProduct = ({ products, setOpen, setProduct, cart }) => {
             </div>
           ))}
 
-          <div className="flex justify-center mt-7">
+          <div className="flex justify-center mt-auto pt-2">
             <button
               onClick={() => openModal(a)}
               disabled={inCart}
-              className={` inter-semibold text-base hover:text-white text-red ${
+              className={` inter-semibold text-base hover:text-white text-brand-500 ${
                 inCart && lithiumDiamond
                   ? "text-white bg-[#edbe71]"
                   : inCart
                   ? "bg-[#EDA4A6] text-white"
                   : lithiumPlatinum || tubularPremium
-                  ? "text-white bg-gradient-to-r to-pink-500 from-red"
+                  ? "text-white bg-gradient-to-r to-pink-500 from-brand-500"
                   : lithiumDiamond
                   ? `text-white ${diamondGradient("r")}`
-                  : "bg-white hover:bg-red shadow-lg"
-              }  rounded-lg py-4 px-10`}
+                  : "bg-white hover:bg-brand-500 shadow-lg"
+              }  rounded-lg min-h-[52px] py-3 px-10 transition-colors duration-150 disabled:cursor-not-allowed`}
             >
               {inCart ? "In Cart" : "Add To Cart"}
             </button>

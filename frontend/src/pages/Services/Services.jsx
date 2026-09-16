@@ -10,6 +10,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 import { useEffect, useState } from "react";
 import { getPublicData } from "../../utils/api";
+import { buttonBase, buttonHover, cardTitle, sectionTitle } from "../../lib/publicStyles";
 
 const defaultOfferings = [
   {
@@ -121,33 +122,37 @@ const Services = () => {
             className="flex justify-center my-10"
           />
 
-          <p className="inter-medium text-base text-faint text-center md:mb-20">
+          <p className="inter-medium text-base leading-relaxed text-faint text-center max-w-4xl mx-auto md:mb-20">
             Our Mission is to provide uninterrupted electric power to every
             Nigerian through clean renewable energy. Below is a list of service
             we offer our customers
           </p>
 
           <section className="mt-10 grid xl:grid-cols-3 md:grid-cols-2 justify-center xl:gap-16 gap-10">
-            {offeringData.map((a, i) => (
+            {offeringData.map((a) => (
               <div
-                key={i}
-                className={`shadow-md px-6 ${
-                  i !== 1 ? "py-5" : "pb-5"
-                } bg-white rounded`}
+                key={a.id ?? a.title}
+                className="shadow-md px-6 pt-5 pb-6 bg-white rounded-lg flex flex-col"
               >
-                <div
-                  className={`flex justify-center mb-10 ${i == 1 && "!-mt-10"}`}
-                >
-                  <img src={a.image || a.img} alt="" />
+                {/* Same-height illustration box so titles line up across cards (replaces the per-card -mt-10 offset). */}
+                <div className="flex justify-center items-end md:h-44 mb-8">
+                  <img
+                    src={a.image || a.img}
+                    alt=""
+                    className="max-h-44 w-auto object-contain"
+                  />
                 </div>
 
-                <h4 className="text-deep_red sora-semibold text-2xl text-center md:text-left mb-4">
+                <h4 className={`text-deep_red ${cardTitle} text-center md:text-left mb-4`}>
                   {a.title}
                 </h4>
-                <p className="text-faint inter-medium text-justify md:text-left text-base mb-4">
+                <p className="text-faint inter-medium text-justify hyphens-auto md:hyphens-manual md:text-left text-base leading-relaxed mb-4">
                   {a.subtitle}
                 </p>
-                <Link className="text-faint" to={config.routes.packages}>
+                <Link
+                  className="text-faint inline-flex items-center gap-1 self-start mt-auto min-h-[40px] hover:underline underline-offset-4"
+                  to={config.routes.packages}
+                >
                   Let&apos;s go <EastIcon />
                 </Link>
               </div>
@@ -158,24 +163,24 @@ const Services = () => {
 
       <section className="my-5">
         <Container maxWidth={config.padding.x} className=" pt-10 pb-20">
-          <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:my-16 my-10 text-center">
+          <h2 className={`text-deep_red ${sectionTitle} lg:mt-10 lg:mb-14 mt-8 mb-10 text-center`}>
             Our Customers
           </h2>
 
           <Carousel autoPlay infiniteLoop swipeable={false} showThumbs={false}>
-            {customerData.map((a, i) => (
-              <div key={i} className="h-full">
+            {customerData.map((a) => (
+              <div key={a.id ?? a.title} className="h-full">
                 <div className="flex lg:flex-nowrap flex-wrap justify-center h-full">
-                  <div className="bg-offWhite px-5 py-10 order-1 w-[700px] md:mt-0 -mt-12 rounded-t-xl">
-                    <h4 className="text-deep_red my-5 sora-bold text-[22px]">
+                  <div className="bg-offWhite px-6 pt-10 pb-16 lg:pb-10 order-1 w-full lg:w-[700px] md:mt-0 -mt-12 rounded-t-xl">
+                    <h4 className={`text-deep_red my-5 ${cardTitle}`}>
                       {a.title}
                     </h4>
 
-                    <p className="text-faint inter-medium mb-12">
+                    <p className="text-faint inter-medium leading-relaxed mb-10">
                       {a.subtitle}
                     </p>
 
-                    <Link className="cursor-pointer bg-red text-white rounded-lg px-7 py-4 inter-bold md:!text-base !text-sm">
+                    <Link to={config.routes.contact} className={`${buttonBase} ${buttonHover} cursor-pointer bg-brand-500 text-white`}>
                       Contact us
                     </Link>
                   </div>
@@ -183,7 +188,7 @@ const Services = () => {
                   <img
                     src={a.image}
                     alt=""
-                    className="h-[400px]  lg:order-1 w-full"
+                    className="h-[400px] lg:order-1 w-full object-cover"
                   />
                 </div>
               </div>

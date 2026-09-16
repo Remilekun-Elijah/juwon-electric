@@ -4,6 +4,7 @@ import { Carousel } from "react-responsive-carousel";
 import { Container } from "@mui/material";
 import config from "../../utils/config";
 import Slider from "../../components/Slider";
+import { sectionTitle } from "../../lib/publicStyles";
 
 const Testimonials = () => {
   const reviews = [
@@ -64,15 +65,15 @@ Thank you.`,
   return (
     <div>
       <Container maxWidth={config.padding.x} className="md:mt-40 mt-24 mb-10">
-        <CustomChip text="Testimonials" className="flex justify-center my-5" />
+        <CustomChip text="Testimonials" className="flex justify-center" />
 
-        <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:my-16 my-10 md:px-0 px-2 text-center">
+        <h2 className={`text-deep_red ${sectionTitle} lg:mt-10 lg:mb-14 mt-8 mb-10 md:px-0 px-2 text-center`}>
           Client testimonials
         </h2>
 
         <Carousel autoPlay infiniteLoop swipeable={false} showThumbs={false}>
-          {reviews.map((a, i) => (
-            <Slider data={a} key={i} />
+          {reviews.map((a) => (
+            <Slider data={a} key={a[0].name} />
           ))}
         </Carousel>
       </Container>

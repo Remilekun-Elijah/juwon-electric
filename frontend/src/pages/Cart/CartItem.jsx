@@ -6,56 +6,67 @@ import { Checkbox } from "@mui/material";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import CustomModal from "../../components/Modal";
-import { removeFromCart, updateCart } from "../../features/cart";
+import {
+  MAX_QUANTITY,
+  getCartItemKey,
+  removeFromCart,
+  updateCart,
+} from "../../features/cart";
 import { getAmount } from "../../utils/helper";
+import { buttonHover, buttonSmall } from "../../lib/publicStyles";
+
+// Quantity stepper button: 32px square (was 20x24), same look in both states.
+const stepButton =
+  "disabled:!cursor-not-allowed h-8 w-8 shrink-0 justify-center flex items-center !p-0 shadow rounded-md transition-opacity duration-150";
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
 
   function updateQuantity(type) {
-    dispatch(updateCart({ action: type, id: item.id }));
+    dispatch(updateCart({ action: type, cartKey: getCartItemKey(item) }));
   }
-  function RemoveItem() {
-    dispatch(removeFromCart({ id: item.id }));
+  function removeItem() {
+    dispatch(removeFromCart({ cartKey: getCartItemKey(item) }));
   }
 
   return (
-    <div className="shadow rounded flex md:flex-row flex-col gap-4 justify-between items-center mt-5 py-3 px-4">
+    <div className="shadow rounded-lg flex md:flex-row flex-col gap-4 justify-between items-center mt-5 py-3 px-4">
       <img
         src="/cartImage.svg"
-        className="p-1 rounded-md md:shadow md:w-fit w-[50%]"
+        width={74}
+        height={74}
+        className="p-1 rounded-md md:shadow md:w-fit w-[50%] md:shrink-0"
         alt="product"
       />
-      <div>
-        <p className="md:inter-regular inter-semibold md:text-left text-center text-base md:w-[450px] pb-0 mb-0">
+      {/* 450px preferred width, but allowed to shrink so the row never overflows (768/1024). */}
+      <div className="md:basis-[450px] md:shrink md:min-w-0">
+        <p className="inter-semibold md:text-left text-center text-base leading-snug pb-0 mb-0">
           {item?.type?.toLowerCase() === "hybrid lithium"
             ? `${item?.kva}kva hybrid inverter + lithium battery`
             : `${item?.kva}kva inverter with ${item?.type} battery`}
         </p>
         <small
-          className={`text-bold 
-            ${
-              ["platinum", "premium"].includes(item.name.toLowerCase())
-                ? "text-[#e26767]"
-                : item.name.toLowerCase() === "gold"
-                  ? "text-[var(--gold)]"
-                  : item.name.toLowerCase() === "diamond"
-                    ? "text-[var(--diamond)]"
-                    : "text-gray-500"
-            }
-          }]`}
+          className={
+            ["platinum", "premium"].includes(item.name.toLowerCase())
+              ? "text-[#e26767]"
+              : item.name.toLowerCase() === "gold"
+                ? "text-[var(--gold)]"
+                : item.name.toLowerCase() === "diamond"
+                  ? "text-[var(--diamond)]"
+                  : "text-gray-500"
+          }
         >
           - {item?.name} package
         </small>
       </div>
 
-      <div className="fle grid lg:grid-cols-2 gap-5 w-full px-2">
-        <div className="flex md:justify-around justify-between w-full">
+      <div className="grid lg:grid-cols-2 gap-5 w-full md:flex-1 lg:min-w-[460px] px-2">
+        <div className="flex md:justify-around justify-between gap-3 w-full">
           {" "}
           <div className="inter-regular text-base flex items-center">
             <Checkbox
-              checked={item?.withSolar == "true"}
+              checked={item?.withSolar === "true"}
               onChange={() => updateQuantity("panel")}
               sx={{
                 ml: 0,
@@ -65,22 +76,28 @@ const CartItem = ({ item }) => {
                 },
               }}
             />
-            <p className="md:inter-regular inter-regular text-base">
+            <p className="inter-regular text-base whitespace-nowrap">
               With solar
             </p>
           </div>
-          <div className="md:w-12 inline-flex gap-4 items-center justify-center items-center">
+          <div className="inline-flex gap-3 items-center justify-center">
             <button
               disabled={item?.quantity === 1}
               onClick={() => updateQuantity("decrease")}
-              className="disabled:!cursor-not-allowed h-5 w-6 justify-center flex items-center !p-0  shadow disabled:bg-[#eee] disabled:border-red disabled:border- disabled:text-red bg-red text-white rounded"
+              className={`${stepButton} disabled:bg-[#eee] disabled:border-brand-500 disabled:text-brand-500 bg-brand-500 text-white`}
             >
               <RemoveIcon className="!p-0 !m-0 !w-5" />
             </button>
-            <p className="text-red drop-shadow-xl text-lg">{item?.quantity}</p>
+            <p className="text-brand-500 drop-shadow-xl text-lg min-w-[1.5rem] text-center">{item?.quantity}</p>
             <button
+              disabled={item?.quantity >= MAX_QUANTITY}
+              title={
+                item?.quantity >= MAX_QUANTITY
+                  ? `You can order up to ${MAX_QUANTITY} of each package.`
+                  : undefined
+              }
               onClick={() => updateQuantity("increase")}
-              className="h-5 w-6 justify-center flex items-center !p-0 shadow bg-red text-white rounded"
+              className={`${stepButton} disabled:bg-[#eee] disabled:text-brand-500 bg-brand-500 text-white`}
             >
               <AddIcon className="!w-5" />
             </button>
@@ -88,13 +105,13 @@ const CartItem = ({ item }) => {
         </div>
 
         <div className="flex gap-5 md:justify-around justify-between items-center">
-          <p className="md:inter-medium inter-semibold text-red ml-2 md:ml-0 md:text-black">
+          <p className="inter-semibold text-brand-500 ml-2 md:ml-0 md:text-black md:min-w-[7.5rem] md:text-center whitespace-nowrap">
             ₦{getAmount(item?.price * item?.quantity)}
           </p>
           <p className="inter-medium">
             <button
               onClick={() => setOpen(true)}
-              className="text-white bg-red md:px-2 px-5 py-1 rounded cursor-pointer"
+              className={`${buttonSmall} ${buttonHover} text-white bg-brand-500 cursor-pointer`}
             >
               Remove{" "}
             </button>
@@ -121,16 +138,16 @@ const CartItem = ({ item }) => {
               {" "}
               Are you sure you want to remove this item?
             </p>
-            <div className="flex nd:justify-between md:gap-10 gap-3 mb-5 flex-wrap justify-center">
+            <div className="flex md:gap-10 gap-3 mb-5 flex-wrap justify-center">
               <button
                 onClick={() => setOpen(false)}
-                className="border-2 border-red text-red rounded-lg py-2 px-5"
+                className="min-h-[44px] border-2 border-brand-500 text-brand-500 rounded-lg py-2 px-5"
               >
                 Cancel
               </button>
               <button
-                onClick={RemoveItem}
-                className="border-0 text-white bg-red rounded-lg py-2 px-5"
+                onClick={removeItem}
+                className="min-h-[44px] border-0 text-white bg-brand-500 rounded-lg py-2 px-5 transition-opacity duration-150 hover:opacity-90"
               >
                 Remove
               </button>

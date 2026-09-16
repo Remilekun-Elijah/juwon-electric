@@ -1,25 +1,11 @@
 :root {
-  --primary_color: #fdfaec;
   --diamond: #ff6961;
-  --secondary_diamond: #edbe71;
   --gold: #dfc638;
 }
 
 body {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
-  font-style: normal;
-}
-
-.manrope-light {
-  font-family: "Manrope", sans-serif !important;
-  font-weight: 300 !important;
-  font-style: normal;
-}
-
-.manrope-regular {
-  font-family: "Manrope", sans-serif !important;
-  font-weight: 400 !important;
   font-style: normal;
 }
 
@@ -35,33 +21,9 @@ body {
   font-style: normal;
 }
 
-.manrope-bold {
-  font-family: "Manrope", sans-serif !important;
-  font-weight: 700 !important;
-  font-style: normal;
-}
-
-.manrope-extrabold {
-  font-family: "Manrope", sans-serif !important;
-  font-weight: 800 !important;
-  font-style: normal;
-}
-
-.sora-light {
-  font-family: "Sora", sans-serif !important;
-  font-weight: 300 !important;
-  font-style: normal;
-}
-
 .sora-regular {
   font-family: "Sora", sans-serif !important;
   font-weight: 400 !important;
-  font-style: normal;
-}
-
-.sora-medium {
-  font-family: "Sora", sans-serif !important;
-  font-weight: 500 !important;
   font-style: normal;
 }
 
@@ -74,18 +36,6 @@ body {
 .sora-bold {
   font-family: "Sora", sans-serif !important;
   font-weight: 700 !important;
-  font-style: normal;
-}
-
-.sora-extrabold {
-  font-family: "Sora", sans-serif !important;
-  font-weight: 800 !important;
-  font-style: normal;
-}
-
-.inter-light {
-  font-family: "Inter", sans-serif !important;
-  font-weight: 300 !important;
   font-style: normal;
 }
 
@@ -134,33 +84,18 @@ header .rotate-infinite {
 }
 
 *::-webkit-scrollbar,
-body::-webkit-scrollbar,
-.App::-webkit-scrollbar,
-.scroll::-webkit-scrollbar {
+body::-webkit-scrollbar {
   width: 7px;
   height: 5px;
 }
 
-.tab-component-bs::-webkit-scrollbar {
-  width: 7px;
-  height: 3px;
-}
-
 body::-webkit-scrollbar-thumb,
-.App::-webkit-scrollbar-thumb,
-.scroll::-webkit-scrollbar-thumb,
 *::-webkit-scrollbar-thumb {
   background: repeating-linear-gradient(#db464c, #333, #db464c);
 }
 
-body::-webkit-scrollbar-track,
-.App::-webkit-scrollbar-track,
-.scroll::-webkit-scrollbar-track {
+body::-webkit-scrollbar-track {
   width: 8px;
-}
-
-.energyBackground {
-  background-image: url("/homeBackground.svg");
 }
 
 .energyBackground {
@@ -187,13 +122,6 @@ body::-webkit-scrollbar-track,
   transform: rotate(318deg);
 }
 
-.services {
-  background-image: url("/headerImage.webp");
-  width: 100%;
-  background-size: cover;
-  background-position: center;
-}
-
 .header-video {
   position: absolute;
   z-index: -1;
@@ -201,16 +129,22 @@ body::-webkit-scrollbar-track,
   right: 0;
   left: 0;
   top: 0;
-  /* background-color: rgba(0, 0, 0, .5); */
 }
 
 .header-content {
-  /* z-index: 10; */
-
-  /* width: calc(100vw) */
   background-color: rgba(0, 0, 0, 0.5);
 }
 
 img {
   pointer-events: none;
+}
+
+/* Validation toasts (SweetAlert2, z-index 1060) must stay visible above open Joy modals (z-index 1300). */
+div.swal2-container {
+  z-index: 1400;
+}
+
+/* Hover-only overlays (portfolio tiles) also appear while a link inside them has keyboard focus. */
+.overlay:focus-within {
+  opacity: 1;
 }
