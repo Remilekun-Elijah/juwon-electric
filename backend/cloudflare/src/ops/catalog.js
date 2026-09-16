@@ -12,6 +12,7 @@ import {
 } from "../store.js";
 import { changedFields, providedFields } from "../audit.js";
 import { requireCapability } from "../capabilities.shim.js";
+import { recordInitialStock } from "./inventory.js";
 import {
   assertCategoryDeletable,
   assertCategoryExists,
@@ -89,7 +90,8 @@ const updateSlug = async (env, collection, payload, existing) => {
   });
 };
 
-export const handleCatalogAdmin = async ({ request, env, path, body, admin, audit }) => {
+export const handleCatalogAdmin = async (context) => {
+  const { request, env, path, body, admin, audit } = context;
   const { method } = request;
 
   // Categories
@@ -153,7 +155,9 @@ export const handleCatalogAdmin = async ({ request, env, path, body, admin, audi
     const payload = productPayload(body);
     assertCategoryExists(await all(env, "categories"), payload.categoryId);
     await assertSkuUnique(env, payload.sku);
-    const item = await createCollectionItem(env, "products", payload, { slugFallback: payload.name });
+    // Stock only changes through movements: the initial quantity is an "initial" movement.
+    const newProduct = await createCollectionItem(env, "products", { ...payload, stockQuantity: 0 }, { slugFallback: payload.name });
+    const item = payload.stockQuantity > 0 ? await recordInitialStock(context, newProduct, payload.stockQuantity) : newProduct;
     audit({
       action: "product.create",
       entity: "product",

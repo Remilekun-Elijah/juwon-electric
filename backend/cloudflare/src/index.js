@@ -85,7 +85,7 @@ import {
   verifyPassword,
 } from "./auth.js";
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
-import { handleOpsAdmin, handleOpsPublic } from "./ops/index.js";
+import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
 import { assertComponentsExist, componentsField } from "../../shared/catalog.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
@@ -1621,5 +1621,14 @@ export default {
       response = errorResponse(error, requestId);
     }
     return finalizeResponse(response, request, env, path, requestId);
+  },
+
+  // Cron triggers (wrangler.toml): daily low-stock digest.
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(
+      handleOpsScheduled(env, (message) => sendNotification(env, message)).catch((error) =>
+        console.error("Scheduled low-stock digest failed:", describeError(error))
+      )
+    );
   },
 };

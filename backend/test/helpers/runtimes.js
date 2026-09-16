@@ -149,7 +149,27 @@ const startWorker = async (envOverrides = {}) => {
   };
 };
 
-export const startRuntimes = async () => [await startExpress(), await startWorker()];
+export const startRuntimes = async ({ workerEnv = {} } = {}) => [await startExpress(), await startWorker(workerEnv)];
+
+/**
+ * Captures emails the Worker sends through Resend (globalThis.fetch to api.resend.com);
+ * every other request goes to the real fetch. Pass RESEND_EMAIL_ENV as workerEnv.
+ */
+export const RESEND_EMAIL_ENV = { RESEND_API_KEY: "re_test_key", MAIL_FROM: "Juwon Electric <noreply@example.com>", ADMIN_NOTIFY_EMAIL: "owner@example.com" };
+
+export const captureWorkerEmails = () => {
+  const sent = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    const target = typeof input === "string" ? input : input.url;
+    if (String(target).startsWith("https://api.resend.com/emails")) {
+      sent.push(JSON.parse(init.body));
+      return new Response(JSON.stringify({ id: crypto.randomUUID() }), { status: 200 });
+    }
+    return realFetch(input, init);
+  };
+  return { sent, restore: () => (globalThis.fetch = realFetch) };
+};
 
 /**
  * Structural shape of a JSON value: object keys (sorted) and value types, arrays by

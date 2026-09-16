@@ -16,6 +16,13 @@ import {
   listPublicCategories,
   listPublicProducts,
 } from "../controllers/catalog.js";
+import {
+  adminAdjustStock,
+  adminListMovements,
+  adminListProductMovements,
+  adminLowStock,
+  adminNotifyLowStock,
+} from "../controllers/inventory.js";
 import { requireCapability as can } from "../middleware/capabilities.shim.js";
 
 export const opsPublicRouter = Router();
@@ -37,3 +44,9 @@ opsAdminRouter.post("/products", can("catalog:write"), adminCreateProduct);
 opsAdminRouter.get("/products/:id", can("catalog:read"), adminGetProduct);
 opsAdminRouter.put("/products/:id", can("catalog:write"), adminUpdateProduct);
 opsAdminRouter.delete("/products/:id", can("catalog:write"), adminDeleteProduct);
+
+opsAdminRouter.post("/products/:id/stock-adjustments", can("inventory:write"), adminAdjustStock);
+opsAdminRouter.get("/products/:id/stock-movements", can("inventory:read"), adminListProductMovements);
+opsAdminRouter.get("/inventory/movements", can("inventory:read"), adminListMovements);
+opsAdminRouter.get("/inventory/low-stock", can("inventory:read"), adminLowStock);
+opsAdminRouter.post("/inventory/low-stock/notify", can("inventory:write"), adminNotifyLowStock);

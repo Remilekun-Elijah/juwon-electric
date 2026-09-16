@@ -6,8 +6,8 @@ Branch cut from `v3-agents-base` @ d48b482. No `API_CONTRACT_V3.md` or BE-1 `req
 
 | Item | Status | Commit |
 | --- | --- | --- |
-| 1. Categories and products, package components | Done | see `git log` |
-| 2. Inventory, movements, low-stock email | Not started | |
+| 1. Categories and products, package components | Done | a8da77f |
+| 2. Inventory, movements, low-stock email | Done | (this commit) |
 | 3. Order fulfilment | Not started | |
 | 4. Installation jobs and staff profiles | Not started | |
 | 5. Settings and notifications | Not started | |
@@ -53,7 +53,7 @@ Public product: `{ id, sku, name, slug, categoryId, category: { id, name, slug }
 
 Admin lists return the stored records.
 
-**Category body**
+#### Category body
 
 - `name` (required, ≤100)
 - `slug`: optional. It is normalised and made unique with `-2`, `-3`, ...
@@ -62,7 +62,7 @@ Admin lists return the stored records.
 - `imageUrl`: https URL or a `/path`
 - `isActive`, `sortOrder`
 
-**Product body**
+#### Product body
 
 - `sku` (required): stored upper-case, `[A-Z0-9._-]`, ≤64, unique (409).
 - `name` (required, ≤150), `slug`
@@ -83,3 +83,41 @@ On update, absent optional fields are kept, and `null` clears them.
 **Packages** accept `components: [{ productId, quantity }]` on admin create and update (quantity 1–1000, duplicates merged, products must exist). Public `/packages` responses are unchanged.
 
 **D1:** migration `0010_catalog.sql` adds a unique index on product SKU and on category/product slugs.
+
+## Endpoints (item 2: inventory)
+
+Stock only changes through movements, including the initial quantity on product create (reason `initial`). Each product update and its movement record are written atomically:
+
+- **JSON store:** one locked read-modify-write.
+- **D1:** one batch. The UPDATE on each product only applies if the row is unchanged (compare-and-set). A `batch_guard` CHECK row then aborts and rolls back the whole batch when an UPDATE matched nothing, and the batch retries on fresh rows (up to 5 attempts).
+- **Mongo:** a conditional `$inc` per product, with the opposite `$inc` applied if a later step fails.
+
+Stock never goes below 0 (409).
+
+| Method | Path | Capability | Notes |
+| --- | --- | --- | --- |
+| POST | `/admin/products/:id/stock-adjustments` | `inventory:write` | Body below. 201 returns `{ product, movement }` |
+| GET | `/admin/products/:id/stock-movements?reason&page&limit` | `inventory:read` | Returns `{ items, page, limit, total }`, newest first |
+| GET | `/admin/inventory/movements?productId&reason&page&limit` | `inventory:read` | Same shape |
+| GET | `/admin/inventory/low-stock` | `inventory:read` | `[{ id, sku, name, status, stockQuantity, reorderLevel }]` |
+| POST | `/admin/inventory/low-stock/notify` | `inventory:write` | Sends the digest now. Returns `{ items, emailed }` |
+
+**Adjustment body:** `{ quantity, reason, note? }`
+
+- `quantity`: a non-zero whole number (a delta) from -1,000,000 to 1,000,000.
+- `reason`: `restock`, `correction`, `damage`, `return` or `other`.
+- 409 `Not enough stock for <name> (<sku>): N available, M needed.`, with `details: { productId, available, requested }`.
+
+**Movement:** `{ id, productId, sku, productName, change, quantityBefore, quantityAfter, reason, note, referenceType, referenceId, createdById, createdByEmail, createdAt, updatedAt, isActive }`. The system writes the reasons `initial`, `order_fulfilment` and `order_cancellation`.
+
+**Low stock.** A product is low when `stockQuantity <= reorderLevel`. The reorder level falls back to `settings.inventory.defaultReorderLevel` (default 5). Archived products are never reported.
+
+#### Email
+
+- When a change moves a product from above its level to at or below it, one email goes out right away.
+- A daily digest also goes out when `settings.inventory.lowStockDigestEnabled` is on.
+  - Worker: cron `0 7 * * *` in `wrangler.toml`, sent through the existing Resend `sendNotification`.
+  - Express: a 24-hour timer started in `start()`, sent through nodemailer.
+- Recipients: `settings.notificationEmails.lowStock`. When that list is empty, the Worker sends to `ADMIN_NOTIFY_EMAIL` and Express to the `SMTP_FROM` mailbox.
+
+**D1:** migration `0011_inventory.sql` adds the `batch_guard` table and a movement index per product.

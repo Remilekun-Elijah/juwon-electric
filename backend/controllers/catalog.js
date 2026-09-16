@@ -1,6 +1,7 @@
 // Categories and products (PRD §6.1). Validation and serializers are shared with the
 // Worker (backend/shared/catalog.js).
 import { uniqueSlug } from "./_catalog.js";
+import { recordInitialStock } from "./inventory.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 import { auditCreate, auditDelete, auditUpdate } from "../services/audit.js";
 import { created, ok } from "../services/http.js";
@@ -130,9 +131,10 @@ export const adminCreateProduct = asyncHandler(async (req, res) => {
   const payload = productPayload(req.body || {});
   assertCategoryExists(await all("categories"), payload.categoryId);
   await assertSkuUnique(payload.sku);
+  // Stock only changes through movements: the initial quantity is an "initial" movement.
   const item = await createCollectionItem(
     "products",
-    { ...payload, slug: payload.slug || normalizeSlug(payload.name) || undefined },
+    { ...payload, stockQuantity: 0, slug: payload.slug || normalizeSlug(payload.name) || undefined },
     {
       prepare: (items, draft) => {
         // JSON store: items are the full, fresh records (authoritative inside the lock).
@@ -141,8 +143,9 @@ export const adminCreateProduct = asyncHandler(async (req, res) => {
       },
     }
   ).catch(onDuplicate(`Another product already uses SKU ${payload.sku} or this slug.`));
-  auditCreate(req, "product", item, definedKeys(payload));
-  created(res, "Product created.", item);
+  const product = payload.stockQuantity > 0 ? await recordInitialStock(req, item, payload.stockQuantity) : item;
+  auditCreate(req, "product", product, definedKeys(payload));
+  created(res, "Product created.", product);
 });
 
 export const adminUpdateProduct = asyncHandler(async (req, res) => {

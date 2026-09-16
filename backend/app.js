@@ -18,6 +18,7 @@ import { isMongoMode, waitForPending } from "./services/runtime.js";
 import { backupJsonStore, ensureSecurityIndexes } from "./services/store.js";
 import mongoose from "mongoose";
 import userRouter from "./routes/user.js";
+import { runLowStockDigest } from "./controllers/inventory.js";
 import vacanciesRouter from "./routes/vacancies.js";
 
 const app = express();
@@ -161,11 +162,18 @@ const start = async () => {
 
   const server = app.listen(config.port, () => console.log("App started on port", config.port));
 
+  // Daily low-stock digest (the Worker uses a cron trigger instead; see wrangler.toml).
+  const digestTimer = setInterval(() => {
+    runLowStockDigest().catch((error) => console.error("Low-stock digest failed:", describeError(error)));
+  }, 24 * 60 * 60 * 1000);
+  digestTimer.unref();
+
   // Graceful shutdown: stop accepting connections, let in-flight requests and
   // tracked background writes (audit, store, email) finish, up to 10 s.
   const shutdown = async (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
+    clearInterval(digestTimer);
     console.log(`${signal} received: shutting down.`);
     const deadline = Date.now() + SHUTDOWN_TIMEOUT_MS;
     const forceExit = setTimeout(() => {

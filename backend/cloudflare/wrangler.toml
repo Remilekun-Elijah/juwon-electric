@@ -10,3 +10,7 @@ enabled = true
 binding = "DB"
 database_name = "juwon-electric"
 database_id = "cb59a683-d80a-4b77-9929-2485f99f09cd"
+
+# Daily low-stock digest at 07:00 UTC (08:00 in Lagos). See src/ops/inventory.js.
+[triggers]
+crons = ["0 7 * * *"]

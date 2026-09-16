@@ -74,7 +74,8 @@ const assertField = (field) => {
   if (!FIELD_NAME.test(field)) throw new Error(`Invalid field name: ${field}`);
 };
 
-const rowValues = (item) => [
+// [slug, is_active, sort_order] column values for a record document.
+export const rowValues = (item) => [
   item.slug || null,
   item.isActive === false ? 0 : 1,
   Number(item.sortOrder) || 0,
