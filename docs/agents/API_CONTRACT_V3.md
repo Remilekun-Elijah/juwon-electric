@@ -605,3 +605,17 @@ Every migration is idempotent (`IF NOT EXISTS`, guarded `UPDATE ... WHERE`), has
 - Settings for the public site (payment toggle, business info): `GET /settings/public`.
 - All new admin list endpoints are paged `{ items, page, limit, total }`. Existing lists (`/admin/orders`, `/admin/packages`, …) stay arrays.
 - Until endpoints land, mock with exactly these shapes.
+
+---
+
+## 13. Clarifications log
+
+### 2026-09-16: BE-1 roles milestone (confirmed by SUP-BE, binding)
+1. **Read status.** `GET /admin/reads` and `POST /admin/reads/all` need no capability. They return only read timestamps and record keys, never record contents. `POST /admin/reads` requires `leads:read` for `contacts` and `orders:read` for `orders`.
+2. **Check order for user changes:** capability (403) → body validation (400) → lookup (404) → escalation (403) → self (409) → last superadmin (409). A 403 is returned before either 409.
+3. **Self-edit.** `PUT /admin/users/:id` on your own account is allowed, subject to the escalation rule. In practice only a superadmin can edit an admin or superadmin account, including their own. The self rule blocks only role changes and (de)activation.
+4. **Invites** (`POST /admin/users`) are not rate limited. `users:manage` is trusted, and the store keeps at most 3 live reset tokens per email. An invite token has the normal 30-minute reset TTL. An invitee whose token expired uses `POST /admin/auth/request-password-reset` (FE-2: show this hint on the users page).
+5. **Worker `ok`/`created` always include `data`** (`null` when there is no payload), matching Express. FE must not rely on `data` being absent.
+6. **Last-superadmin guard** may be check-then-write this round. This is a known race that needs two superadmins demoting each other concurrently. Recovery is a temporary `ADMIN_TOKEN` plus `POST /admin/users/:id/reactivate` or `/role`. Document this in `docs/DEPLOYMENT.md`. A post-write recount-and-revert is recommended, not required.
+7. **Parity exclusions.** Existing routes whose bodies depend on runtime-specific seed data (`/admin/orders`, `/admin/carts`, `/admin/packages`, `/admin/audit-logs`) may compare status and message only. **New modules (vacancies, catalog, inventory, orders fulfilment, jobs, staff, settings, notifications) must compare full masked bodies**, with identical fixtures created through the API in both runtimes.
+8. **NotFound label** for `admins` is `"User"` (`"User not found."`) in both runtimes.

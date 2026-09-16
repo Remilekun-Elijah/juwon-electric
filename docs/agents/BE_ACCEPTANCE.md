@@ -3,6 +3,35 @@
 Owner: SUP-BE. Sources: PRD §6–7, ledger §4 (D1–D6, D4a) and §5 (BE-1, BE-2), and `docs/agents/API_CONTRACT_V3.md` (below, "contract").
 Grading: each item is **PASS**, **PARTIAL**, **FAIL** or **N/A** in `docs/agents/review-be.md`. Items marked **[gate]** block integration: a branch with any gate item below PASS is not merged into `agents/be-integration`.
 
+## Current status (round 2, 2026-09-16)
+
+`–` = not started. Evidence and findings are in `review-be.md`.
+
+| Item | BE-1 `agents/be-platform` @ 391a979 | BE-2 `agents/be-ops` (no commits) |
+|---|---|---|
+| G1 | PASS | – |
+| G2 | PASS | – |
+| G3 | PASS (users module plus every existing route, probed in both runtimes) | – |
+| G4 | PARTIAL: roles are clean, but `middleware/auth.js` (`X-User-Role`) still exists until V1 | – |
+| G5 | PASS (users) | – |
+| G6 | PASS (users full-body parity; existing routes compare status and message only, accepted) | – |
+| G7 | PASS (`npm test` 18/18 re-run by SUP-BE; about 14 real tests plus helper modules) | – |
+| G8 | PASS (0007 re-verified: seeded DB at 0006, idempotent, fails loudly on duplicates) | – |
+| G9 | PASS | – |
+| G10 | PASS | – |
+| G11 | PASS | – |
+| G12 | PASS | – |
+| G13 | PASS | – |
+| G14 | PASS | – |
+| G15 | PASS (32 changed files, 0 hits) | – |
+| P1–P7 | PASS | n/a |
+| P8 | PASS (Mongo index failure is only warned; see L5) | n/a |
+| V1–V9 | – | n/a |
+| C1, C2, C5, C6 | – | n/a |
+| C3 | PASS | n/a |
+| C4 | PARTIAL (`test` and `engines` done; `lint` missing) | n/a |
+| K*, I*, O*, J*, S*, D1 | n/a | – |
+
 ## G — General (both implementers)
 
 - [ ] G1 [gate] Branch cut from `v3-agents-base`. It has no commits to `v3`/`v2`, no `Co-Authored-By` trailers, and small focused commits.
@@ -19,6 +48,7 @@ Grading: each item is **PASS**, **PARTIAL**, **FAIL** or **N/A** in `docs/agents
 - [ ] G12 Shared logic (capability map, enums/transitions, sanitiser, order normalisation) lives in `backend/shared/` and is not duplicated per runtime.
 - [ ] G13 Status file `docs/agents/<agent-id>.md` is kept up to date, with deviations from the contract recorded.
 - [ ] G14 Pagination endpoints follow contract §0.3 (validation messages, cap 100, `{items,page,limit,total}`).
+- [ ] G15 [gate] **Cc/Cf scan is clean.** No file changed on the branch contains raw control characters (Cc other than TAB/LF/CR, C1 controls) or format characters (Cf: zero-width, bidi overrides, BOM, soft hyphen), or raw U+2028/U+2029. Such characters must be written as escapes (`\u200B`) in source, never as raw bytes. **The Edit and Write tools turn `\uXXXX` escapes into raw characters.** Write these regexes and strings with a shell heredoc, or build them from `String.fromCharCode`/`new RegExp(...)`, and re-run the scan after every edit to a validator or sanitiser. Reviewer command: `git diff --name-only v3-agents-base..<branch>` piped to a code-point scanner that flags `cp<32 && ![9,10,13]`, `127..159`, `\p{Cf}`, `0x2028`, `0x2029`.
 
 ## BE-1 — Platform, security & infrastructure (`agents/be-platform`)
 
