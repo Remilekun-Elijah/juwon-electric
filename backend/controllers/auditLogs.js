@@ -1,28 +1,8 @@
 import { asyncHandler } from "../services/asyncHandler.js";
 import { badRequest } from "../services/errors.js";
 import { ok } from "../services/http.js";
+import { pageQuery } from "../services/pagination.js";
 import { pageRecords } from "../services/store.js";
-
-const MAX_LIMIT = 100;
-
-const MAX_PAGE = 100_000;
-
-const pageParam = (value) => {
-  if (value === undefined || value === "") return 1;
-  const page = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : Number.NaN;
-  if (!Number.isSafeInteger(page) || page < 1 || page > MAX_PAGE) {
-    throw badRequest("page must be a whole number from 1 to 100000.");
-  }
-  return page;
-};
-
-const limitParam = (value) => {
-  if (value === undefined || value === "") return 50;
-  if (typeof value !== "string" || !/^\d+$/.test(value) || !(Number(value) >= 1)) {
-    throw badRequest("limit must be a positive whole number.");
-  }
-  return Math.min(Number(value), MAX_LIMIT);
-};
 
 const filterValue = (value, label) => {
   if (value === undefined || value === "") return undefined;
@@ -33,8 +13,7 @@ const filterValue = (value, label) => {
 
 // GET /admin/audit-logs?page=1&limit=50&action=&entity=&adminId=
 export const adminListAuditLogs = asyncHandler(async (req, res) => {
-  const page = pageParam(req.query.page);
-  const limit = limitParam(req.query.limit);
+  const { page, limit } = pageQuery(req.query);
   const filter = {};
   for (const field of ["action", "entity", "adminId"]) {
     const value = filterValue(req.query[field], field);

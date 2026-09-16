@@ -83,6 +83,10 @@ import {
   verifyPassword,
 } from "./auth.js";
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
+import { handleAdminUsers } from "./adminUsers.js";
+import { handleAdminVacancies, handlePublicVacancies } from "./vacancies.js";
+import { requireCapability } from "./capabilities.js";
+import { adminSelf } from "../../shared/capabilities.js";
 import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
 import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../../shared/catalog.js";
 import { NEW_ORDER_FIELDS } from "../../shared/orders.js";
@@ -826,6 +830,9 @@ const pruneCarts = (env, ctx) => {
 };
 
 const handlePublic = async (request, env, ctx, path, body, url) => {
+  const vacancyResponse = await handlePublicVacancies(request, env, path, url);
+  if (vacancyResponse) return vacancyResponse;
+
   if (request.method === "GET" && path === "/packages") {
     const packages = await listCollection(env, "packages");
     const products = await productsForPackages(env, packages);
@@ -1041,7 +1048,9 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     await seedSuperAdmin(env);
     const admin = await findByField(env, "admins", "email", email);
     const valid =
-      admin && admin.isActive !== false ? await verifyPassword(password, admin.passwordHash) : await burnPasswordCheck(password);
+      admin && admin.isActive !== false && typeof admin.passwordHash === "string" && admin.passwordHash
+        ? await verifyPassword(password, admin.passwordHash)
+        : await burnPasswordCheck(password);
     if (!valid) {
       ctx.waitUntil(
         (async () => {
@@ -1073,7 +1082,7 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     });
     return ok("Login successful.", {
       token: await createAdminToken(env, admin, session),
-      admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role },
+      admin: adminSelf(admin),
     });
   }
 
@@ -1128,6 +1137,11 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     return ok("Password reset successful.");
   }
 
+  if (request.method === "GET" && path === "/admin/auth/me") {
+    const { admin, isStatic } = await requireAdmin(request, env, ctx);
+    return ok("Session retrieved.", { admin: adminSelf(admin, { isStatic }) });
+  }
+
   if (request.method === "POST" && path === "/admin/auth/logout") {
     const { admin, sessionId, isStatic } = await requireAdmin(request, env, ctx);
     if (isStatic) {
@@ -1172,6 +1186,7 @@ const forgetRecordReads = async (env, type, id) => {
 };
 
 const MAX_READ_ID_LENGTH = 64;
+const READ_TYPE_CAPABILITY = { contacts: "leads:read", orders: "orders:read" };
 
 const handleReads = async (env, method, path, body, admin) => {
   if (method === "GET" && path === "/admin/reads") {
@@ -1179,6 +1194,9 @@ const handleReads = async (env, method, path, body, admin) => {
   }
   if (method === "POST" && path === "/admin/reads") {
     const { type, id } = body;
+    if (typeof type === "string" && Object.hasOwn(READ_TYPE_CAPABILITY, type)) {
+      requireCapability(admin, READ_TYPE_CAPABILITY[type]);
+    }
     if (typeof type !== "string" || !READ_TYPES.includes(type)) badRequest("Type must be contacts or orders.");
     if (typeof id !== "string" || !id.trim() || id.length > MAX_READ_ID_LENGTH) badRequest("Id is required.");
     const record = await getCollectionItem(env, type, id);
@@ -1201,8 +1219,11 @@ const handleReads = async (env, method, path, body, admin) => {
 const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   const audit = (entry) => recordAudit(env, ctx, request, admin, entry);
   const { method } = request;
+  // Capability guard (API_CONTRACT_V3 §1.2); mirrors backend/routes/admin.js.
+  const can = (...capabilities) => requireCapability(admin, ...capabilities);
 
   const crud = async ({ entity, collection, id, payloadFor, messages }) => {
+    if (method === "PUT" || method === "DELETE") can("content:write");
     if (method === "PUT") {
       const existing = await getCollectionItem(env, collection, id);
       const payload = await payloadFor(body, existing);
@@ -1231,6 +1252,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   };
 
   const create = async ({ entity, collection, payload, message, slugFallback }) => {
+    can("content:write");
     const item = await createCollectionItem(env, collection, payload, { slugFallback });
     audit({
       action: `${entity}.create`,
@@ -1246,11 +1268,19 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   const readsResponse = await handleReads(env, method, path, body, admin);
   if (readsResponse) return readsResponse;
 
+  const usersResponse = await handleAdminUsers(request, env, ctx, path, body, admin, url, { sendNotification });
+  if (usersResponse) return usersResponse;
+
+  const vacanciesResponse = await handleAdminVacancies(request, env, ctx, path, body, admin, url);
+  if (vacanciesResponse) return vacanciesResponse;
+
   if (method === "GET" && path === "/admin/audit-logs") {
+    can("audit:read");
     return ok("Audit logs retrieved.", await listAuditLogs(env, url.searchParams));
   }
 
   if (method === "GET" && path === "/admin/dashboard") {
+    can("dashboard:read");
     const [orders, contacts, newsletter] = await Promise.all([
       listCollection(env, "orders", { includeInactive: true }),
       listCollection(env, "contacts", { includeInactive: true }),
@@ -1291,9 +1321,11 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Packages
   if (method === "GET" && path === "/admin/packages") {
+    can("content:read");
     return ok("Packages retrieved.", await listCollection(env, "packages", { includeInactive: true }));
   }
   if (method === "POST" && path === "/admin/packages") {
+    can("content:write");
     const payload = await packagePayload(env, body);
     return create({ entity: "package", collection: "packages", payload, message: "Package created." });
   }
@@ -1311,6 +1343,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Services and customer segments
   if (method === "GET" && path === "/admin/services") {
+    can("content:read");
     const [offerings, customerSegments] = await Promise.all([
       listCollection(env, "services", { includeInactive: true }),
       listCollection(env, "customerSegments", { includeInactive: true }),
@@ -1318,6 +1351,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Services retrieved.", { offerings, customerSegments });
   }
   if (method === "POST" && path === "/admin/services") {
+    can("content:write");
     const payload = await contentPayload(env, body, null, "services");
     return create({ entity: "service", collection: "services", payload, message: "Service created." });
   }
@@ -1333,6 +1367,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     if (response) return response;
   }
   if (method === "POST" && path === "/admin/services/customer-segments") {
+    can("content:write");
     const payload = await segmentPayload(env, body);
     return create({
       entity: "customerSegment",
@@ -1355,9 +1390,11 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Portfolio
   if (method === "GET" && path === "/admin/portfolio") {
+    can("content:read");
     return ok("Portfolio retrieved.", await listCollection(env, "portfolio", { includeInactive: true }));
   }
   if (method === "POST" && path === "/admin/portfolio") {
+    can("content:write");
     const payload = await contentPayload(env, body, null, "portfolio");
     return create({ entity: "portfolio", collection: "portfolio", payload, message: "Portfolio item created." });
   }
@@ -1375,10 +1412,12 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Contacts
   if (method === "GET" && path === "/admin/contacts") {
+    can("leads:read");
     return ok("Messages retrieved.", await listCollection(env, "contacts", { includeInactive: true }));
   }
   const replyMatch = /^\/admin\/contacts\/([^/]+)\/reply$/.exec(path);
   if (replyMatch && method === "POST") {
+    can("leads:write");
     const rawSubject = stringField(body, "subject", { label: "Subject", max: LIMITS.replySubject });
     const reply = stringField(body, "message", {
       label: "Reply message",
@@ -1420,6 +1459,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   }
   const contactId = idAfter(path, "/admin/contacts");
   if (contactId && method === "PUT") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "contacts", contactId);
     const status = enumField(body, "status", CONTACT_STATUSES, { label: "Status", existing: existing.status });
     const payload = { status, note: optionalNote(body), isActive: optionalIsActive(body) };
@@ -1434,6 +1474,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Message updated.", message);
   }
   if (contactId && method === "DELETE") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "contacts", contactId);
     await deleteCollectionItem(env, "contacts", existing);
     await forgetRecordReads(env, "contacts", existing.id);
@@ -1448,10 +1489,12 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Newsletter
   if (method === "GET" && path === "/admin/newsletter") {
+    can("leads:read");
     return ok("Subscribers retrieved.", await listCollection(env, "newsletters", { includeInactive: true }));
   }
   const subscriberId = idAfter(path, "/admin/newsletter");
   if (subscriberId && method === "PUT") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "newsletters", subscriberId);
     const status = enumField(body, "status", NEWSLETTER_STATUSES, { label: "Status", existing: existing.status });
     const payload = { status, isActive: optionalIsActive(body) };
@@ -1466,6 +1509,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Subscriber updated.", subscriber);
   }
   if (subscriberId && method === "DELETE") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "newsletters", subscriberId);
     await deleteCollectionItem(env, "newsletters", existing);
     audit({
@@ -1479,6 +1523,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Carts and orders
   if (method === "GET" && path === "/admin/carts") {
+    can("orders:read");
     return ok("Carts retrieved.", await listCollection(env, "carts", { includeInactive: true }));
   }
 

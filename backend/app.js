@@ -17,11 +17,9 @@ import { announceCounterStore, ensureCounterIndexes } from "./services/counterSt
 import { connectDatabase } from "./services/database.js";
 import { ApiError, SERVICE_UNAVAILABLE_MESSAGE } from "./services/errors.js";
 import { isMongoMode, waitForPending } from "./services/runtime.js";
-import { backupJsonStore, ensureSecurityIndexes } from "./services/store.js";
+import { backupJsonStore, ensureSecurityIndexes, ensureUniqueIndexes } from "./services/store.js";
 import mongoose from "mongoose";
-import userRouter from "./routes/user.js";
 import { runLowStockCheck } from "./controllers/inventory.js";
-import vacanciesRouter from "./routes/vacancies.js";
 
 const app = express();
 if (app.get("env") === "development") env.config();
@@ -82,12 +80,6 @@ app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
 
-// Mount user routes (e.g. order, contact)
-app.use(userRouter);
-
-// Vacancies endpoints
-app.use('/vacancies', vacanciesRouter);
-
 app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -100,6 +92,7 @@ app.get("/", (_req, res) => {
       "contact",
       "cart",
       "orders",
+      "vacancies",
     ],
   });
 });
@@ -155,6 +148,15 @@ const start = async () => {
     await Promise.all([ensureSecurityIndexes(), ensureCounterIndexes()]);
   } catch (error) {
     console.warn("Failed to create security indexes:", error.message);
+  }
+  try {
+    await ensureUniqueIndexes();
+  } catch (error) {
+    // Admin email and vacancy slug uniqueness depend on these indexes in MongoDB.
+    // Production refuses to start without them; fix the listed duplicates and restart.
+    console.error(`MongoDB unique indexes are missing. ${error.message}`);
+    if (process.env.NODE_ENV === "production") throw error;
+    console.error("Continuing because NODE_ENV is not production: uniqueness is only pre-checked.");
   }
   announceCounterStore();
   warnIfCorsOpen();

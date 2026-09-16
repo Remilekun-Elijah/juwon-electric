@@ -26,12 +26,13 @@ Commits:
 
 - **Capabilities.** `backend/shared/capabilities.js`, `backend/middleware/capabilities.js` and `backend/cloudflare/src/capabilities.js` are BE-1's files (checked out from `agents/be-platform` 391a979), unchanged. There are no shims.
 - **Test harness.** Also taken unchanged from BE-1: `backend/test/helpers/express.js`, `backend/cloudflare/test/helpers/{d1,worker}.js`, and BE-1's `backend/cloudflare/src/http.js` (`data: null`). `app.js` uses BE-1's `isEntryPoint` block, and `package.json`/`package-lock.json` are BE-1's (explicit test globs, `lint`, `engines`).
-- **Rich text.** `backend/shared/richText.js`, its fixtures and `backend/test/richText.test.js` are BE-1's files (01b22f3), unchanged. BE-2 no longer has a sanitiser of its own: the earlier `sanitizeHtml.js` was removed in 05498dd and BE-2's first `richText.js` was replaced in bd75e45. Products call `sanitizeRichText` with the same rules as vacancies. BE-1's `cloudflare/test/richText.test.js` needs the vacancies module, so it is not on this branch; `cloudflare/test/catalog.test.js` instead stores every fixture through `POST /admin/products`.
-- **Lint.** `npm run lint` (BE-1's ESLint config and `check-chars`) passes. BE-1's fixes for pre-existing lint findings are applied line for line, so they merge cleanly.
-- **Base `controllers/vacancies.js`.** It imports the shared sanitiser, because `sanitize-html` was removed from `package.json`. BE-1's rewrite replaces this file at integration.
+- **Merged `agents/be-platform`** into this branch. BE-1's side won for its owned files (capabilities, `richText.js`, admin users, vacancies, CI, cleanup deletions); BE-2's side won for catalog, inventory, orders and jobs. Conflicts were mechanical: collection lists, label maps, public routes, Worker imports, Mongo models and indexes. The Worker's legacy order branches stay removed, because `src/ops/orders.js` owns them with capability checks.
+- **Unique index errors.** The Worker store converts UNIQUE violations into a generic `409` only for `categories` and `products`. Vacancies and admins keep the raw error, which BE-1's handlers catch for their slug retry and email `409`.
+- **Rich text.** `backend/shared/richText.js`, its fixtures and both `richText.test.js` files are BE-1's, unchanged. BE-2 has no sanitiser of its own. Products call `sanitizeRichText` with the same rules as vacancies, and `cloudflare/test/catalog.test.js` also stores every fixture through `POST /admin/products`.
+- **Lint.** `npm run lint` (BE-1's ESLint config and `check-chars`) passes.
 - **Routing.**
   - Express admin routes are on `backend/routes/ops.js` (`opsAdminRouter`), mounted inside `routes/admin.js` after `adminAuth`, and public routes on `opsPublicRouter`, mounted in `routes/public.js`.
-  - Express `GET/PUT/DELETE /admin/orders[/:id]` stay on `routes/admin.js` with changed controllers (`controllers/orders.js`). Their capability gating comes from BE-1's `routes/admin.js`.
+  - Express `GET/PUT/DELETE /admin/orders[/:id]` stay on `routes/admin.js` (gated by BE-1) with BE-2's controllers (`controllers/orders.js`).
   - The Worker dispatches to `backend/cloudflare/src/ops/*` **before** the legacy `handleAdmin`. The legacy order branches were removed from `handleAdmin`, and `src/ops/orders.js` owns `/admin/orders*` with capability checks.
 - **Expected conflicts** (small, mechanical):
   - `routes/admin.js` and `routes/public.js`: one import line and one `router.use` line each.
@@ -78,7 +79,7 @@ Commits:
 12. **Orders: removed `sortOrder`.** Admin order responses no longer include `sortOrder`. Only the Worker stored it, so this was a parity difference in existing endpoints.
 13. **Orders: validation messages.** `400` `"Fulfilment status is not valid."`, `"Payment status is not valid."` and `"requiresInstallation must be true or false."` (filter). A missing `engineerId` answers `"Assignee must be an active engineer."`.
 14. **Orders: repeated transitions.** `mark-paid` on a paid order and cancelling a cancelled order are `200` no-ops, as §6.2 says for the same value.
-15. **Express order routes on this branch** are not capability-gated until BE-1's `routes/admin.js` merges in. The Worker gates them already. The parity scenarios therefore only exercise non-superadmin roles on the new order routes.
+15. **Express order routes** are gated by BE-1's `routes/admin.js` (merged). The Worker gates them in `src/ops/orders.js`.
 16. **Jobs: assignment of started jobs.** Assigning or reassigning is limited to `unassigned` and `assigned` jobs. Other statuses answer the transition `409` with `to` = `assigned` (or `unassigned` for `null`).
 17. **Jobs: `note` on `POST /admin/jobs/:id/status`** is not stored on the job (the job shape has no field for it). It goes into the audit summary.
 18. **Jobs: admins can complete a job** whose checklist is unfinished. The checklist rule applies to `/admin/me/jobs` only, as §7.3 says.

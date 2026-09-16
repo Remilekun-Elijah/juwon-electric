@@ -63,7 +63,7 @@ export const hasCapability = (roleOrAdmin, capability) => {
   const role = roleOf(roleOrAdmin);
   if (role === "superadmin") return true;
   if (!isValidRole(role)) return false;
-  return Boolean(CAPABILITIES[capability]?.includes(role));
+  return Object.hasOwn(CAPABILITIES, capability) && CAPABILITIES[capability].includes(role);
 };
 
 /** True when the actor may create or modify an account whose current or target role is `role`. */

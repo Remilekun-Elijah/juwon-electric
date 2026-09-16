@@ -19,6 +19,7 @@ const COLLECTIONS = [
   "orders",
   "admins",
   "passwordResets",
+  "vacancies",
   // v3 commerce and operations modules
   "categories",
   "products",
@@ -28,8 +29,10 @@ const COLLECTIONS = [
   "notifications",
 ];
 
-// Only catalog collections carry slugs.
+// Catalog collections (public catalog records with admin-controlled sortOrder).
 export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments", "categories", "products"];
+// Collections whose records carry a unique slug (catalog plus vacancies, migrations/0008).
+const SLUGGED_COLLECTIONS = [...CATALOG_COLLECTIONS, "vacancies"];
 
 const NOT_FOUND_LABELS = {
   packages: "Package",
@@ -39,8 +42,9 @@ const NOT_FOUND_LABELS = {
   orders: "Order",
   contacts: "Contact",
   newsletters: "Subscriber",
-  admins: "Admin",
+  admins: "User",
   carts: "Cart",
+  vacancies: "Vacancy",
   ...OPS_NOT_FOUND_LABELS,
 };
 
@@ -197,9 +201,11 @@ export const resolveSlug = async (env, collection, { input, fallback, excludeId 
 export const isUniqueViolation = (error) => /UNIQUE constraint failed/i.test(String(error?.message || error));
 
 // Unique indexes (migrations/0010): product SKU, category/product slug. The handlers
-// check first; the index only catches concurrent writes.
-const rethrowUnique = (error) => {
-  if (isUniqueViolation(error)) {
+// check first; the index only catches concurrent writes. Other collections keep the raw
+// constraint error, which their handlers catch (vacancy slug retry, admin email 409).
+const OPS_UNIQUE_COLLECTIONS = ["categories", "products"];
+const rethrowUnique = (collection) => (error) => {
+  if (OPS_UNIQUE_COLLECTIONS.includes(collection) && isUniqueViolation(error)) {
     throw new ApiError(409, "Another record was saved with the same value. Please try again.");
   }
   throw error;
@@ -222,7 +228,7 @@ export const createCollectionItem = async (env, collection, payload, { slugFallb
     id: id || crypto.randomUUID(),
   };
   delete item.slug;
-  if (CATALOG_COLLECTIONS.includes(collection)) {
+  if (SLUGGED_COLLECTIONS.includes(collection)) {
     item.slug = await resolveSlug(env, collection, { input: input.slug, fallback: slugFallback });
   }
   if (item.sortOrder === undefined || item.sortOrder === null) item.sortOrder = await nextSortOrder(env, collection);
@@ -234,7 +240,7 @@ export const createCollectionItem = async (env, collection, payload, { slugFallb
   )
     .bind(item.id, collection, slug, JSON.stringify(item), isActive, sortOrder, item.createdAt, item.updatedAt)
     .run()
-    .catch(rethrowUnique);
+    .catch(rethrowUnique(collection));
   return item;
 };
 
@@ -259,7 +265,7 @@ export const updateCollectionItem = async (env, collection, id, patch) => {
     )
       .bind(JSON.stringify(item), slug, isActive, sortOrder, item.updatedAt, collection, fresh.id, row.data)
       .run()
-      .catch(rethrowUnique);
+      .catch(rethrowUnique(collection));
     if (changesOf(result) === 1) return item;
   }
   throw new ApiError(409, "This record was changed by another request. Please try again.");
