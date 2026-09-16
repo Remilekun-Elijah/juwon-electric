@@ -51,3 +51,15 @@ Notes
 - Add the secrets to Vercel (for production/preview) and to GitHub Actions repository secrets for CI builds.
 - For local development, create a .env.local in frontend-next with NEXT_PUBLIC_BACKEND_URL pointing to your running backend (e.g. http://localhost:3000).
 
+Role-based admin testing
+
+- The admin pages in this scaffold perform a small client-side role check using the browser localStorage key `je-user-role`. To simulate an HR/admin user locally, open the browser console and run:
+
+  localStorage.setItem('je-user-role','hr')
+
+  or to remove the role:
+
+  localStorage.removeItem('je-user-role')
+
+- This is only a development convenience. In production, the backend must gate admin endpoints and the frontend should use secure auth.
+
