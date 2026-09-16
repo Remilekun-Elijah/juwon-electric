@@ -26,6 +26,7 @@ export const LIMITS = {
   passwordMin: 12,
   passwordMax: 128,
   resetToken: 256,
+  orderNote: 2000,
   // API_CONTRACT_V3
   vacancyTitle: 150,
   vacancySlug: 120,
