@@ -22,7 +22,10 @@ Admin authentication:
 
 Auth endpoints:
 
-- `POST /admin/auth/login` (body `{ "username", "password" }`)
+- `POST /admin/auth/login` (body `{ "username", "password" }`): `200` `"Login successful."` with `data: { token, admin: AdminSelf }`.
+- `GET /admin/auth/me` (auth required, no capability): `200` `"Session retrieved."` with `data: { admin: AdminSelf }`. The frontend calls it on load and after any `403`.
+
+`AdminSelf` is `{ id, name, email, role, capabilities, isStatic? }`. `role` is normalised (never `super_admin`), `capabilities` is sorted (every capability for `superadmin`), and `isStatic: true` appears only for the static `ADMIN_TOKEN`. Hide navigation by `capabilities`, never by `role`; the server enforces access either way.
 - `POST /admin/auth/logout` (auth required) revokes the current session and returns `200 { "success": true, "message": "Signed out." }`. With the static `ADMIN_TOKEN` it returns `200` `"Static admin tokens cannot be signed out; remove ADMIN_TOKEN to revoke access."`.
 - `POST /admin/auth/request-password-reset` (body `{ "username" }`)
 - `POST /admin/auth/reset-password` (body `{ "username", "token", "password" }`)
@@ -150,7 +153,7 @@ Response headers (every response, including errors, `404` and `OPTIONS`):
 - `/admin/*` and `/api/admin/*` responses (any letter case) also send `Cache-Control: no-store`.
 - `X-Powered-By` is not sent.
 
-Error status summary: `400` validation, `401` auth/webhook signature, `403` origin not allowed, `404` not found (`"<Label> not found."`: Package, Service, Portfolio item, Customer segment, Order, Contact, Subscriber, Admin), `409` duplicate package id or webhook still being processed, `413` body too large, `415` not JSON, `429` rate limit or login lockout (with `Retry-After`), `500` admin auth or webhook secret misconfigured, `502` reply email not delivered or inbound email not fetchable, `503` Turnstile unavailable or database unavailable (`"Service temporarily unavailable."`).
+Error status summary: `400` validation, `401` auth/webhook signature, `403` origin not allowed or missing capability, `404` not found (`"<Label> not found."`: Package, Service, Portfolio item, Customer segment, Order, Contact, Subscriber, User), `409` duplicate package id, duplicate admin email, own role or status change, last active superadmin, or webhook still being processed, `413` body too large, `415` not JSON, `429` rate limit or login lockout (with `Retry-After`), `500` admin auth or webhook secret misconfigured, `502` reply email not delivered or inbound email not fetchable, `503` Turnstile unavailable or database unavailable (`"Service temporarily unavailable."`).
 
 Email:
 
@@ -380,6 +383,58 @@ The order is persisted in `orders` with `status: "pending"` and `paymentStatus: 
 
 ## Admin Endpoints
 
+Roles and capabilities (contract `docs/agents/API_CONTRACT_V3.md` §1):
+
+Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `engineer`, `hr` or `support` (`customer` is not an admin role). Each admin route requires the capabilities listed below. The map lives in `backend/shared/capabilities.js`, which both Express (`middleware/capabilities.js`) and the Worker (`cloudflare/src/capabilities.js`) import. `superadmin` holds every capability, including ones added later.
+
+- The role is read from the **stored admin record** on every request. The role in the token payload, headers and body fields are never used for authorisation. A role change applies on the account's next request.
+- The legacy stored value `super_admin` reads as `superadmin` and is returned as `superadmin`. D1 migration `0007_admin_roles.sql` rewrites existing rows, and Express rewrites the record on its next write (for example, the next sign-in). The seeders write `superadmin`.
+- A missing or unknown role has no capabilities: the account can sign in and call `GET /admin/auth/me`, and gets `403` everywhere else.
+- The static `ADMIN_TOKEN` acts as `superadmin`.
+- A missing capability returns `403` `"You do not have permission to perform this action."` (the same body for every capability, not audited). Auth (`401`) and capability (`403`) checks run before body validation and record lookups.
+
+| Capability | Roles besides `superadmin` | Routes |
+| --- | --- | --- |
+| `dashboard:read` | admin, inventory, sales, hr, support | `GET /admin/dashboard` |
+| `audit:read` | admin | `GET /admin/audit-logs` |
+| `users:read` | admin | `GET /admin/users`, `GET /admin/users/:id` |
+| `users:manage` | admin | `POST /admin/users`, `PUT /admin/users/:id`, `POST /admin/users/:id/role`, `/deactivate`, `/reactivate` |
+| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio` |
+| `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio |
+| `orders:read` | admin, inventory, sales, support | `GET /admin/orders`, `GET /admin/orders/:id`, `GET /admin/carts` |
+| `orders:update` | admin, sales | `PUT /admin/orders/:id` |
+| `orders:delete` | admin | `DELETE /admin/orders/:id` |
+| `leads:read` | admin, sales, support | `GET /admin/contacts`, `GET /admin/newsletter` |
+| `leads:write` | admin, sales, support | `PUT`/`DELETE /admin/contacts/:id`, `POST /admin/contacts/:id/reply`, `PUT`/`DELETE /admin/newsletter/:id` |
+| `settings:read` / `settings:write` | admin, inventory, sales, hr, support / admin | upcoming settings module |
+| `products:read` / `products:write` | admin, inventory, sales, support / admin, inventory | upcoming catalog module |
+| `inventory:read` / `inventory:adjust` | admin, inventory, sales / admin, inventory | upcoming inventory module |
+| `jobs:read` / `jobs:assign` | admin, sales, support / admin, sales | upcoming installation jobs |
+| `jobs:update-own` | engineer (not admin) | upcoming `/admin/me/jobs*` |
+| `staff:read` / `staff:write` | admin, sales, hr / admin, hr | upcoming `/admin/staff*` |
+| `vacancies:read` / `vacancies:write` | admin, hr | upcoming `/admin/vacancies*` |
+| `notifications:read` | admin, inventory, sales, engineer, hr, support | upcoming `/admin/notifications*` |
+
+No capability (any signed-in admin): `POST /admin/auth/logout`, `GET /admin/auth/me`, `GET /admin/reads`, `POST /admin/reads/all`. `POST /admin/reads` checks the record type: `contacts` needs `leads:read`, `orders` needs `orders:read`.
+
+Admin users (contract §2):
+
+`AdminUser` is `{ id, name, email, role, isActive, phone, profile: { areaCoverage, certifications, bio, avatarUrl }, lastLoginAt, createdAt, updatedAt }`. It never includes the password hash, reset tokens or sessions. `phone` is `null` when unset. `profile` defaults to empty arrays and nulls and is preserved by every users write.
+
+- `GET /admin/users?page&limit&role&isActive&q` **(paged)**: `200` `"Users retrieved."` with `{ items, page, limit, total }`, newest `createdAt` first, including inactive accounts. `role` must be a valid role (`400` `"Role is not valid."`). `isActive` is `true` or `false` (`400` `"isActive must be true or false."`). `q` is a case-insensitive substring of name or email, up to 100 characters (`400` `"q must be 100 characters or fewer."`). Paging errors are the audit-log messages.
+- `GET /admin/users/:id`: `200` `"User retrieved."`, or `404` `"User not found."`.
+- `POST /admin/users` (body `{ "name", "email", "role", "phone"? }`): `201` `"User created."`. `name` 1-100, `email` is lowercased, `phone` uses the phone rule or is `null`, `role` must be valid (`400` `"Role is not valid."`). The account has no usable password: a password reset token is emailed as an invite, and the user sets a password with `POST /admin/auth/reset-password`. `409` `"An account with this email already exists."` (case-insensitive; D1 unique index `idx_records_admins_email`, a Mongo unique index on `email`, and a check under the JSON store lock). Audit `user.create`.
+- `PUT /admin/users/:id` (body `{ "name"?, "phone"? }`): `200` `"User updated."`. Only sent fields are written, and other fields (including `role` and `isActive`) are ignored. Audit `user.update` when something changed.
+- `POST /admin/users/:id/role` (body `{ "role" }`): `200` `"Role updated."` (the same when unchanged). Audit `user.role_change` with a `from → to` summary.
+- `POST /admin/users/:id/deactivate`: `200` `"User deactivated."`. Sets `isActive: false` and revokes every session, so the account's token gets `401` on its next request and it can no longer sign in or reset its password. Idempotent. Audit `user.deactivate`.
+- `POST /admin/users/:id/reactivate`: `200` `"User reactivated."`. Idempotent. Audit `user.reactivate`.
+
+Escalation rules (checked after the lookup, in this order):
+
+1. Only a `superadmin` may create, update, change the role of, deactivate or reactivate an account whose current **or** target role is `superadmin` or `admin`. Otherwise `403` `"You do not have permission to perform this action."`.
+2. No one may change their own role or status: `409` `"You cannot change your own role or status."`.
+3. Demoting or deactivating the last active `superadmin`: `409` `"At least one active superadmin is required."`.
+
 Audit log:
 
 - `GET /admin/audit-logs?page=1&limit=50&action=&entity=&adminId=`
@@ -388,7 +443,7 @@ Returns `{ "success": true, "message", "data": { "items", "page", "limit", "tota
 
 Each entry: `id`, `createdAt`, `adminId`, `adminEmail`, `action`, `entity`, `entityId`, `summary`, `changes` (changed field names only, never values), `ip`, `userAgent`.
 
-Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`.
+Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`.
 
 Audit writes are best-effort and never fail the admin action. Entries older than 180 days are deleted opportunistically. Requests made with the static `ADMIN_TOKEN` are logged with `adminId` and `adminEmail` `"static-token"`.
 
