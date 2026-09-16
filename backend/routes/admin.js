@@ -93,7 +93,9 @@ router.get("/audit-logs", can("audit:read"), adminListAuditLogs);
 // marking a record read needs read access to its type.
 const READ_TYPE_CAPABILITY = { contacts: "leads:read", orders: "orders:read" };
 const canReadType = (req, res, next) => {
-  const capability = READ_TYPE_CAPABILITY[req.body?.type];
+  const type = req.body?.type;
+  const capability =
+    typeof type === "string" && Object.hasOwn(READ_TYPE_CAPABILITY, type) ? READ_TYPE_CAPABILITY[type] : null;
   return capability ? can(capability)(req, res, next) : next();
 };
 router.get("/reads", adminGetReads);

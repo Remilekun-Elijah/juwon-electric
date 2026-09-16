@@ -47,6 +47,7 @@ export const sendMail = async function (message, template) {
       replyTo: message.replyTo || deliveryAddress,
       subject: message.subject,
       html: template(message.data),
+      ...(message.text ? { text: message.text } : {}),
     };
 
     for (let attempt = 1; attempt <= 2; attempt += 1) {

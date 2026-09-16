@@ -791,21 +791,54 @@ export const pageRecords = async (collection, { filter = {}, page = 1, limit = 5
 // for webhook replay protection).
 export const ensureSecurityIndexes = async () => {
   if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
-  await Promise.all([
-    ...[...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
+  await Promise.all(
+    [...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
       model.createIndexes()
-    ),
-    // Vacancy slugs are unique (hard delete frees them).
-    models.vacancies.collection.createIndex(
-      { slug: 1 },
-      { unique: true, name: "vacancies_slug_unique", partialFilterExpression: { slug: { $type: "string" } } }
-    ),
-    // Admin emails are unique (stored lowercase). Fails loudly on existing duplicates.
-    models.admins.collection.createIndex(
-      { email: 1 },
-      { unique: true, name: "admins_email_unique", partialFilterExpression: { email: { $type: "string" } } }
-    ),
-  ]);
+    )
+  );
+};
+
+// Unique indexes that the Mongo store relies on for correctness: without them,
+// uniqueness falls back to a non-atomic pre-check (review L5).
+const UNIQUE_INDEXES = [
+  { collection: "admins", field: "email", name: "admins_email_unique", label: "admin email" },
+  { collection: "vacancies", field: "slug", name: "vacancies_slug_unique", label: "vacancy slug" },
+];
+
+export class UniqueIndexError extends Error {}
+
+/**
+ * Creates the unique indexes. When one cannot be built (usually existing duplicates),
+ * throws a UniqueIndexError naming the duplicate values so they can be fixed by hand.
+ * app.js exits on it in production and logs it loudly elsewhere.
+ */
+export const ensureUniqueIndexes = async () => {
+  if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
+  const failures = [];
+  for (const { collection, field, name, label } of UNIQUE_INDEXES) {
+    const target = models[collection].collection;
+    try {
+      await target.createIndex(
+        { [field]: 1 },
+        { unique: true, name, partialFilterExpression: { [field]: { $type: "string" } } }
+      );
+    } catch (error) {
+      const duplicates = await target
+        .aggregate([
+          { $match: { [field]: { $type: "string" } } },
+          { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+          { $match: { count: { $gt: 1 } } },
+          { $limit: 20 },
+        ])
+        .toArray()
+        .catch(() => []);
+      const values = duplicates.map((row) => `${row._id} (${row.count})`).join(", ");
+      failures.push(
+        `${label} unique index (${collection}.${name}) not created: ${values ? `duplicates: ${values}` : error.message}`
+      );
+    }
+  }
+  if (failures.length) throw new UniqueIndexError(failures.join("; "));
 };
 
 // ---------------------------------------------------------------------------

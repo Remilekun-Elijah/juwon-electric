@@ -47,6 +47,18 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` �
 13. Slugs never change on a title edit. A sent slug that is taken gets the `-2` suffix (the same as on create), rather than a 409.
 14. Rows in a manually created standalone D1 `vacancies` table (from `backend/d1-schemas/vacancies.sql`) are not migrated. That table was never part of the numbered migrations.
 
+## Review round 2 fixes (review-be.md, 3b295ed)
+
+| Finding | Fix |
+| --- | --- |
+| M1 | Closed by milestone 2 (V1): `middleware/auth.js` and the `/vacancies` mount are gone. |
+| L1 | After a write that removes an active superadmin (role change or deactivation), both runtimes recount. If none remain, they restore the account's previous value and return the same 409, and deactivation revokes sessions only after the recount passes. Tested with 10 rounds of concurrent cross-demotions per runtime (`runLastSuperadminRace`). `ADMIN_TOKEN` recovery is documented in `docs/DEPLOYMENT.md` (C6). |
+| L2 | Repeated query parameters return the Express 400 in the Worker too (`cloudflare/src/query.js` passes arrays to the shared parsers; `pageQuery` rejects a repeated page or limit). This covers `/admin/users`, `/admin/vacancies` and public `/vacancies`, and the cases are in both parity scenarios. The users filter parsing moved to shared `parseUserFilters`. |
+| L3 | `Object.hasOwn` is used in `hasCapability` and in the read-type lookup in both runtimes. `__proto__`, `constructor` and `toString` now return `400 "Type must be contacts or orders."` (in the parity scenario). |
+| L4 | `npm test` uses explicit globs: `test/**/*.test.js` and `cloudflare/test/**/*.test.js`. |
+| L5 | The Mongo unique indexes (admin email, vacancy slug) moved to `ensureUniqueIndexes()`. If one cannot be built, startup logs an error naming the duplicate values, and **exits when `NODE_ENV=production`**; other environments continue with a loud error. This path was not exercised against a live MongoDB here, because no Mongo instance is available locally. |
+| L6 | A shared `backend/shared/adminInviteEmail.js` produces the subject, HTML and text, including the `ADMIN_APP_URL` link. Express uses it through nodemailer (`sendMail` now also sends `text`), and the Worker through Resend (`env.ADMIN_APP_URL`). A Worker test captures the Resend payload. |
+
 ## Interpretations and deviations (SUP-BE please confirm)
 
 1. **`/admin/reads*` checks.** `POST /admin/reads` checks the record type (`contacts` → `leads:read`, `orders` → `orders:read`). `GET /admin/reads` and `POST /admin/reads/all` need no capability, because they return only read timestamps and never record contents.

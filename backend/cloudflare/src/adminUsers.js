@@ -1,11 +1,14 @@
 // Admin user management (API_CONTRACT_V3 §2). Parity: backend/controllers/adminUsers.js.
+import { adminInviteEmail } from "../../shared/adminInviteEmail.js";
 import {
-  Q_MAX,
   USER_MESSAGES,
   checkUserChange,
   filterAdmins,
+  hasActiveSuperadmin,
   paginate,
   parseRole,
+  parseUserFilters,
+  removesActiveSuperadmin,
   roleChangeSummary,
 } from "../../shared/adminUsers.js";
 import {
@@ -20,7 +23,8 @@ import { createResetToken, revokeAdminSessions } from "./auth.js";
 import { requireCapability } from "./capabilities.js";
 import { ApiError, badRequest, created, describeError, ok } from "./http.js";
 import { createCollectionItem, findByField, getById, listCollection, updateCollectionItem } from "./store.js";
-import { LIMITS, pageParams, phoneField, stringField, validateEmail } from "./validation.js";
+import { pageQuery, queryValue } from "./query.js";
+import { LIMITS, phoneField, stringField, validateEmail } from "./validation.js";
 
 const USER_ACTION = /^\/admin\/users\/([^/]+)\/(role|deactivate|reactivate)$/;
 const USER_ID = /^\/admin\/users\/([^/]+)$/;
@@ -47,23 +51,22 @@ const fail = (result) => {
 };
 
 const queryFilters = (params) => {
-  const filters = {};
-  const role = params.get("role");
-  if (role !== null && role !== "") {
-    filters.role = parseRole(role);
-    if (!filters.role) badRequest(USER_MESSAGES.roleInvalid);
-  }
-  const isActive = params.get("isActive");
-  if (isActive !== null && isActive !== "") {
-    if (isActive !== "true" && isActive !== "false") badRequest(USER_MESSAGES.isActiveInvalid);
-    filters.isActive = isActive === "true";
-  }
-  const q = params.get("q");
-  if (q !== null && q !== "") {
-    if (q.length > Q_MAX) badRequest(USER_MESSAGES.qTooLong);
-    filters.q = q.trim();
-  }
+  const { filters, error } = parseUserFilters({
+    role: queryValue(params, "role"),
+    isActive: queryValue(params, "isActive"),
+    q: queryValue(params, "q"),
+  });
+  if (error) badRequest(error);
   return filters;
+};
+
+// Post-write recount (review L1): if a concurrent change left no active superadmin,
+// restore this account's previous values and answer the same 409.
+const ensureSuperadminRemains = async (env, existing, restore) => {
+  const admins = await listCollection(env, "admins", { includeInactive: true });
+  if (hasActiveSuperadmin(admins)) return;
+  await updateCollectionItem(env, "admins", existing.id, restore);
+  throw new ApiError(409, USER_MESSAGES.lastSuperadmin);
 };
 
 const isUniqueViolation = (error) => /UNIQUE constraint failed|SQLITE_CONSTRAINT/i.test(String(error?.message));
@@ -80,7 +83,7 @@ export const handleAdminUsers = async (request, env, ctx, path, body, admin, url
 
   if (method === "GET" && path === "/admin/users") {
     requireCapability(admin, "users:read");
-    const { page, limit } = pageParams(url.searchParams);
+    const { page, limit } = pageQuery(url.searchParams);
     const filters = queryFilters(url.searchParams);
     const admins = await listCollection(env, "admins", { includeInactive: true });
     const { items, total } = paginate(filterAdmins(admins, filters), page, limit);
@@ -122,11 +125,9 @@ export const handleAdminUsers = async (request, env, ctx, path, body, admin, url
       (async () => {
         const { token, expiresAt } = await createResetToken(env, email);
         if (!token) return;
-        await sendNotification(env, {
-          to: email,
-          subject: "Set up your Juwon Electric admin account",
-          text: `An admin account was created for you.\n\nYour password setup token is: ${token}\n\nUse it on the password reset page with this email address. It expires at ${expiresAt}.`,
-        });
+        // Shared template, identical to the Express invite (review L6).
+        const invite = adminInviteEmail({ name, email, role, token, expiresAt, adminUrl: env.ADMIN_APP_URL });
+        await sendNotification(env, { to: email, subject: invite.subject, text: invite.text, html: invite.html });
       })().catch((error) => console.error("Admin invite failed:", describeError(error)))
     );
     audit("user.create", user, `Created ${role} account ${email}`, ["name", "email", "role", "phone"]);
@@ -171,6 +172,9 @@ export const handleAdminUsers = async (request, env, ctx, path, body, admin, url
     // The role is read from the stored record on every request, so this applies
     // to the account's next request.
     const user = await updateCollectionItem(env, "admins", existing.id, { role });
+    if (removesActiveSuperadmin(existing, { nextRole: role })) {
+      await ensureSuperadminRemains(env, existing, { role: existing.role });
+    }
     if (previous !== role) audit("user.role_change", user, roleChangeSummary(user, previous, role), ["role"]);
     return ok(USER_MESSAGES.role, adminUser(user));
   }
@@ -190,6 +194,9 @@ export const handleAdminUsers = async (request, env, ctx, path, body, admin, url
     const patch = { isActive };
     if (existing.role !== normalizeRole(existing.role)) patch.role = normalizeRole(existing.role);
     const user = await updateCollectionItem(env, "admins", existing.id, patch);
+    if (removesActiveSuperadmin(existing, { nextActive: isActive })) {
+      await ensureSuperadminRemains(env, existing, { isActive: true });
+    }
     if (!isActive) await revokeAdminSessions(env, user.id);
     audit(
       isActive ? "user.reactivate" : "user.deactivate",

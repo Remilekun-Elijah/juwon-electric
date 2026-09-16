@@ -32,7 +32,8 @@ import {
   resolveSlug,
   updateCollectionItem,
 } from "./store.js";
-import { pageParams, stringField } from "./validation.js";
+import { pageQuery, queryValue } from "./query.js";
+import { stringField } from "./validation.js";
 
 const COLLECTION = "vacancies";
 const ADMIN_ID = /^\/admin\/vacancies\/([^/]+)$/;
@@ -105,8 +106,8 @@ export const handlePublicVacancies = async (request, env, path, url) => {
 
   if (path === "/vacancies") {
     const { filters, error } = parsePublicFilters(
-      url.searchParams.get("department") ?? undefined,
-      url.searchParams.get("employmentType") ?? undefined
+      queryValue(url.searchParams, "department"),
+      queryValue(url.searchParams, "employmentType")
     );
     if (error) badRequest(error);
     const records = await listCollection(env, COLLECTION, { includeInactive: true });
@@ -135,11 +136,8 @@ export const handleAdminVacancies = async (request, env, ctx, path, body, admin,
 
   if (method === "GET" && path === "/admin/vacancies") {
     requireCapability(admin, "vacancies:read");
-    const { page, limit } = pageParams(url.searchParams);
-    const { filters, error } = parseAdminFilters(
-      url.searchParams.get("status") ?? undefined,
-      url.searchParams.get("q") ?? undefined
-    );
+    const { page, limit } = pageQuery(url.searchParams);
+    const { filters, error } = parseAdminFilters(queryValue(url.searchParams, "status"), queryValue(url.searchParams, "q"));
     if (error) badRequest(error);
     const records = await listCollection(env, COLLECTION, { includeInactive: true });
     const { items, total } = paginate(adminVacancies(records, filters), page, limit);

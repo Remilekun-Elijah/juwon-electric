@@ -1,15 +1,17 @@
 // Admin user management (API_CONTRACT_V3 §2). Parity: backend/cloudflare/src/adminUsers.js.
 import config from "../config.js";
-import passwordResetTemplate from "../mail/_passwordReset.js";
 import { sendMail } from "../mail/mail.js";
+import { adminInviteEmail } from "../shared/adminInviteEmail.js";
 import { actingAdmin } from "../middleware/capabilities.js";
 import {
-  Q_MAX,
   USER_MESSAGES,
   checkUserChange,
   filterAdmins,
+  hasActiveSuperadmin,
   paginate,
   parseRole,
+  parseUserFilters,
+  removesActiveSuperadmin,
   roleChangeSummary,
 } from "../shared/adminUsers.js";
 import {
@@ -71,37 +73,34 @@ const withRoleRewrite = (existing, patch) =>
 const auditUser = (req, action, user, summary, changes) =>
   audit(req, { action, entity: "user", entityId: user.id, summary, changes });
 
-const sendInvite = (req, email) =>
+// Invite: a reset token by email (shared template, identical in the Worker).
+const sendInvite = (user) =>
   runInBackground("Admin invite", async () => {
-    const reset = await createPasswordReset(email);
+    const reset = await createPasswordReset(user.email);
     if (!reset) return;
-    await sendMail(
-      {
-        to: reset.email,
-        subject: `Set up your ${config.application_name} admin account`,
-        data: { ...reset, adminUrl: config.admin_app_url },
-      },
-      passwordResetTemplate
-    );
+    const email = adminInviteEmail({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: reset.resetToken,
+      expiresAt: reset.expiresAt,
+      adminUrl: config.admin_app_url,
+    });
+    await sendMail({ to: user.email, subject: email.subject, text: email.text, data: email }, (data) => data.html);
   });
 
+// Post-write recount (review L1): if a concurrent change left no active superadmin,
+// restore this account's previous values and answer the same 409.
+const ensureSuperadminRemains = async (existing, restore) => {
+  const admins = await listCollection("admins", { includeInactive: true });
+  if (hasActiveSuperadmin(admins)) return;
+  await updateCollectionItem("admins", existing.id, restore);
+  throw new ApiError(409, USER_MESSAGES.lastSuperadmin);
+};
+
 const queryFilters = (query = {}) => {
-  const filters = {};
-  if (query.role !== undefined && query.role !== "") {
-    filters.role = parseRole(query.role);
-    if (!filters.role) throw badRequest(USER_MESSAGES.roleInvalid);
-  }
-  if (query.isActive !== undefined && query.isActive !== "") {
-    if (query.isActive !== "true" && query.isActive !== "false") {
-      throw badRequest(USER_MESSAGES.isActiveInvalid);
-    }
-    filters.isActive = query.isActive === "true";
-  }
-  if (query.q !== undefined && query.q !== "") {
-    if (typeof query.q !== "string") throw badRequest("q must be text.");
-    if (query.q.length > Q_MAX) throw badRequest(USER_MESSAGES.qTooLong);
-    filters.q = query.q.trim();
-  }
+  const { filters, error } = parseUserFilters(query);
+  if (error) throw badRequest(error);
   return filters;
 };
 
@@ -161,7 +160,7 @@ export const adminCreateUser = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  sendInvite(req, email);
+  sendInvite(user);
   auditUser(req, "user.create", user, `Created ${role} account ${email}`, ["name", "email", "role", "phone"]);
   created(res, USER_MESSAGES.create, adminUser(user));
 });
@@ -209,6 +208,9 @@ export const adminChangeUserRole = asyncHandler(async (req, res) => {
   // The role is read from the stored record on every request, so this applies
   // to the account's next request.
   const user = await updateCollectionItem("admins", existing.id, { role });
+  if (removesActiveSuperadmin(existing, { nextRole: role })) {
+    await ensureSuperadminRemains(existing, { role: existing.role });
+  }
   if (previous !== role) {
     auditUser(req, "user.role_change", user, roleChangeSummary(user, previous, role), ["role"]);
   }
@@ -236,6 +238,9 @@ const setActive = (isActive) =>
       return;
     }
     const user = await updateCollectionItem("admins", existing.id, withRoleRewrite(existing, { isActive }));
+    if (removesActiveSuperadmin(existing, { nextActive: isActive })) {
+      await ensureSuperadminRemains(existing, { isActive: true });
+    }
     if (!isActive) await revokeAdminSessions(user.id);
     auditUser(
       req,

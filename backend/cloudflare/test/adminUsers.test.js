@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { OWNER, PASSWORD, TEST_ENV, runAdminUsersScenario } from "../../test/scenarios/adminUsers.js";
+import { OWNER, PASSWORD, TEST_ENV, runAdminUsersScenario, runLastSuperadminRace } from "../../test/scenarios/adminUsers.js";
 import { hashPassword } from "../src/auth.js";
 import { D1Stub, applyMigrations } from "./helpers/d1.js";
 import { createWorkerClient } from "./helpers/worker.js";
@@ -67,4 +67,45 @@ test("migration 0007 fails loudly on duplicate admin emails and keeps the data",
   insertAdmin(d1, "b", { email: "Same@juwon.test", role: "support" });
   assert.throws(() => d1.db.exec(MIGRATION_0007), /UNIQUE/);
   assert.equal(d1.db.prepare("SELECT COUNT(*) AS n FROM records WHERE collection = 'admins'").get().n, 2);
+});
+
+test("Worker: concurrent superadmin demotions never leave no active superadmin", async () => {
+  await runLastSuperadminRace(createWorkerClient(TEST_ENV).request);
+});
+
+test("Worker: invite email uses the shared template with the admin link", async (t) => {
+  const sent = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    if (String(url) === "https://api.resend.com/emails") {
+      sent.push(JSON.parse(init.body));
+      return new Response(JSON.stringify({ id: "00000000-0000-0000-0000-000000000000" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    return realFetch(url, init);
+  };
+  t.after(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  const client = createWorkerClient({
+    ...TEST_ENV,
+    RESEND_API_KEY: "re_test_key_not_real",
+    MAIL_FROM: "Juwon Electric <no-reply@juwon.test>",
+    ADMIN_APP_URL: "https://admin.juwon.test",
+  });
+  const created = await client.request("POST", "/admin/users", {
+    token: TEST_ENV.ADMIN_TOKEN,
+    body: { name: "Ivy Invite", email: "ivy@juwon.test", role: "support" },
+  });
+  assert.equal(created.status, 201);
+  assert.equal(sent.length, 1);
+  const [email] = sent;
+  assert.equal(email.subject, "Set up your Juwon Electric admin account");
+  assert.deepEqual([email.to].flat(), ["ivy@juwon.test"]);
+  assert.ok(email.html.includes('<a href="https://admin.juwon.test"'));
+  assert.ok(email.text.includes("https://admin.juwon.test"));
+  assert.match(email.text, /Setup token: [0-9a-f]{64}/);
 });

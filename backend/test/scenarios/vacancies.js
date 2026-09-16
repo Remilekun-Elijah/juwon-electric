@@ -176,6 +176,11 @@ export const runVacanciesScenario = async (request) => {
   const searched = await expect("admin search", "GET", "/admin/vacancies?q=SALES&limit=1&page=1", { token }, 200);
   assert.deepEqual({ total: searched.body.data.total, count: searched.body.data.items.length }, { total: 1, count: 1 });
   await expect("admin bad status filter", "GET", "/admin/vacancies?status=gone", { token }, 400, "Status is not valid.");
+  await expect("admin repeated status", "GET", "/admin/vacancies?status=draft&status=open", { token }, 400, "Status is not valid.");
+  await expect("admin repeated q", "GET", "/admin/vacancies?q=a&q=b", { token }, 400, "q must be text.");
+  await expect("admin repeated page", "GET", "/admin/vacancies?page=1&page=1", { token }, 400, "page must be a whole number from 1 to 100000.");
+  await expect("public repeated department", "GET", "/vacancies?department=a&department=b", {}, 400, "department must be text.");
+  await expect("public repeated employmentType", "GET", "/vacancies?employmentType=contract&employmentType=contract", {}, 400, "Employment type is not valid.");
   await expect("admin get by slug", "GET", `/admin/vacancies/${same.slug}`, { token }, 200, "Vacancy retrieved.");
 
   // ---- delete frees the slug ---------------------------------------------------------------------

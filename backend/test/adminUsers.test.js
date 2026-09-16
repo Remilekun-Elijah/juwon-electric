@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { startExpress } from "./helpers/express.js";
-import { OWNER, PASSWORD, TEST_ENV, runAdminUsersScenario } from "./scenarios/adminUsers.js";
+import { OWNER, PASSWORD, TEST_ENV, runAdminUsersScenario, runLastSuperadminRace } from "./scenarios/adminUsers.js";
 
 let server;
 
@@ -56,4 +56,8 @@ test("Express: unknown role signs in but holds no capabilities", async () => {
   assert.deepEqual(login.body.data.admin.capabilities, []);
   assert.equal((await server.request("GET", "/admin/auth/me", { token: login.body.data.token })).status, 200);
   assert.equal((await server.request("GET", "/admin/orders", { token: login.body.data.token })).status, 403);
+});
+
+test("Express: concurrent superadmin demotions never leave no active superadmin", async () => {
+  await runLastSuperadminRace(server.request);
 });

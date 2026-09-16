@@ -116,6 +116,12 @@ export const runAdminUsersScenario = async (request) => {
   await expect("bad role filter", "GET", "/admin/users?role=root", { token: owner.token }, 400, "Role is not valid.");
   await expect("bad isActive", "GET", "/admin/users?isActive=yes", { token: owner.token }, 400);
   await expect("bad page", "GET", "/admin/users?page=0", { token: owner.token }, 400, "page must be a whole number from 1 to 100000.");
+  // Repeated parameters are rejected the same way in both runtimes (review L2).
+  await expect("repeated role", "GET", "/admin/users?role=sales&role=admin", { token: owner.token }, 400, "Role is not valid.");
+  await expect("repeated isActive", "GET", "/admin/users?isActive=true&isActive=false", { token: owner.token }, 400, "isActive must be true or false.");
+  await expect("repeated q", "GET", "/admin/users?q=a&q=b", { token: owner.token }, 400, "q must be text.");
+  await expect("repeated page", "GET", "/admin/users?page=1&page=2", { token: owner.token }, 400, "page must be a whole number from 1 to 100000.");
+  await expect("repeated limit", "GET", "/admin/users?limit=1&limit=2", { token: owner.token }, 400, "limit must be a positive whole number.");
   await expect("get user", "GET", `/admin/users/${sales.id}`, { token: owner.token }, 200, "User retrieved.");
   await expect("unknown user", "GET", "/admin/users/nope", { token: owner.token }, 404, "User not found.");
 
@@ -131,6 +137,13 @@ export const runAdminUsersScenario = async (request) => {
   await expect("sales audit", "GET", "/admin/audit-logs", { token: salesSession.token }, 403, FORBIDDEN);
   await expect("sales order delete", "DELETE", "/admin/orders/nope", { token: salesSession.token }, 403, FORBIDDEN);
   await expect("sales order update", "PUT", "/admin/orders/nope", { token: salesSession.token, body: {} }, 404, "Order not found.");
+  // Prototype keys are ordinary invalid input (review L3).
+  for (const type of ["__proto__", "constructor", "toString"]) {
+    await expect(`reads type ${type}`, "POST", "/admin/reads", {
+      token: salesSession.token,
+      body: { type, id: "nope" },
+    }, 400, "Type must be contacts or orders.");
+  }
   await expect("sales read orders", "POST", "/admin/reads", {
     token: salesSession.token,
     body: { type: "orders", id: "nope" },
@@ -239,4 +252,45 @@ export const runAdminUsersScenario = async (request) => {
   transcript.push({ label: "audit actions", status: 200, body: actions });
 
   return transcript;
+};
+
+/**
+ * Two superadmins demote each other concurrently (review L1). Whatever the interleaving,
+ * at least one active superadmin must remain, and every rejected request is the 409.
+ */
+export const runLastSuperadminRace = async (request) => {
+  const owner = (await request("POST", "/admin/auth/login", { body: { username: OWNER.email, password: OWNER.password } })).body.data;
+  const second = (
+    await request("POST", "/admin/users", {
+      token: STATIC_TOKEN,
+      body: { name: "Second Super", email: "second@juwon.test", role: "superadmin" },
+    })
+  ).body.data;
+  // Owner and second must be the only active superadmins.
+  const supers = await request("GET", "/admin/users?role=superadmin&isActive=true&limit=100", { token: STATIC_TOKEN });
+  for (const other of supers.body.data.items.filter((item) => ![owner.admin.id, second.id].includes(item.id))) {
+    await request("POST", `/admin/users/${other.id}/role`, { token: STATIC_TOKEN, body: { role: "admin" } });
+  }
+  let conflicts = 0;
+
+  for (let round = 0; round < 10; round += 1) {
+    const results = await Promise.all([
+      request("POST", `/admin/users/${second.id}/role`, { token: STATIC_TOKEN, body: { role: "admin" } }),
+      request("POST", `/admin/users/${owner.admin.id}/deactivate`, { token: STATIC_TOKEN }),
+    ]);
+    for (const result of results) {
+      if (result.status === 200) continue;
+      conflicts += 1;
+      assert.equal(result.status, 409, JSON.stringify(result.body));
+      assert.equal(result.body.message, "At least one active superadmin is required.");
+    }
+    const list = await request("GET", "/admin/users?role=superadmin&isActive=true", { token: STATIC_TOKEN });
+    assert.ok(list.body.data.total >= 1, `round ${round}: no active superadmin left`);
+
+    await request("POST", `/admin/users/${owner.admin.id}/reactivate`, { token: STATIC_TOKEN });
+    await request("POST", `/admin/users/${second.id}/role`, { token: STATIC_TOKEN, body: { role: "superadmin" } });
+  }
+  // At least one request of each pair must lose (both succeeding leaves no superadmin);
+  // under a true interleaving both may be rolled back.
+  assert.ok(conflicts >= 10, `conflicts: ${conflicts}`);
 };

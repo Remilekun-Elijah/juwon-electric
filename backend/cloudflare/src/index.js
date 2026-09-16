@@ -1181,7 +1181,9 @@ const handleReads = async (env, method, path, body, admin) => {
   }
   if (method === "POST" && path === "/admin/reads") {
     const { type, id } = body;
-    if (READ_TYPE_CAPABILITY[type]) requireCapability(admin, READ_TYPE_CAPABILITY[type]);
+    if (typeof type === "string" && Object.hasOwn(READ_TYPE_CAPABILITY, type)) {
+      requireCapability(admin, READ_TYPE_CAPABILITY[type]);
+    }
     if (typeof type !== "string" || !READ_TYPES.includes(type)) badRequest("Type must be contacts or orders.");
     if (typeof id !== "string" || !id.trim() || id.length > MAX_READ_ID_LENGTH) badRequest("Id is required.");
     const record = await getCollectionItem(env, type, id);
