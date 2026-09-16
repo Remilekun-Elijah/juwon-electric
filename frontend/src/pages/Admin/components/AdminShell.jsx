@@ -145,7 +145,7 @@ const UserMenu = ({ onSignOut }) => {
   );
 };
 
-const AdminShell = ({ active, setActive, counts = {}, onRefresh, onSignOut, loading, children }) => {
+const AdminShell = ({ active, setActive, counts = {}, onRefresh, onSignOut, loading, banner, children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const touchStart = useRef(null);
 
@@ -254,6 +254,7 @@ const AdminShell = ({ active, setActive, counts = {}, onRefresh, onSignOut, load
 
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           <div key={active} className="mx-auto w-full max-w-[1320px] motion-safe:animate-fade-up">
+            {banner}
             {children}
           </div>
         </main>
