@@ -1,4 +1,4 @@
- {
+{
   "name": "juwon-electric-worker",
   "version": "1.0.0",
   "private": true,
@@ -11,6 +11,6 @@
     "d1:seed": "node scripts/export-seed-sql.mjs"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.132.0"
   }
 }
