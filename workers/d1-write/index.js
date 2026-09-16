@@ -78,7 +78,7 @@ export default {
             const signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
             // Fire-and-forget POST to sync-service
-            await fetch(env.SYNC_SERVICE_URL + '/sync/vacancies', {
+            const notifyResp = await fetch(env.SYNC_SERVICE_URL + '/sync/vacancies', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -86,14 +86,39 @@ export default {
               },
               body: JSON.stringify(payload),
             });
+
+            if (!notifyResp.ok) {
+              // If sync-service rejected the notification, store in DLQ table for later inspection/retry
+              try {
+                const dlqSql = `INSERT OR REPLACE INTO d1_dlq (id, payload_json, error_message, attempts, first_failed_at, last_failed_at) VALUES (?, ?, ?, COALESCE((SELECT attempts FROM d1_dlq WHERE id = ?), 0) + 1, COALESCE((SELECT first_failed_at FROM d1_dlq WHERE id = ?), ?), ?)`;
+                const now = new Date().toISOString();
+                await env.D1.prepare(dlqSql).bind(body.id, JSON.stringify(payload), `notify_failed:${notifyResp.status}`, body.id, body.id, now, now).run();
+              } catch (dlqErr) {
+                console.error('Failed to write DLQ after notify failure:', dlqErr);
+              }
+            }
           }
         } catch (notifErr) {
-          // Do not fail the D1 write if notification fails; log for diagnostics.
-          console.error('D1 write: failed to notify sync-service:', notifErr);
+          // If notification fails entirely, store in DLQ
+          try {
+            const dlqSql = `INSERT OR REPLACE INTO d1_dlq (id, payload_json, error_message, attempts, first_failed_at, last_failed_at) VALUES (?, ?, ?, COALESCE((SELECT attempts FROM d1_dlq WHERE id = ?), 0) + 1, COALESCE((SELECT first_failed_at FROM d1_dlq WHERE id = ?), ?), ?)`;
+            const now = new Date().toISOString();
+            await env.D1.prepare(dlqSql).bind(body.id, JSON.stringify(body), `notif_err:${notifErr.message}`, body.id, body.id, now, now).run();
+          } catch (dlqErr) {
+            console.error('Failed to write DLQ after notification exception:', dlqErr);
+          }
         }
 
         return new Response(JSON.stringify({ success: true, result: result }), { status: 200 });
       } catch (err) {
+        // On D1 write failure, persist the payload into d1_dlq for later replay
+        try {
+          const dlqSql = `INSERT OR REPLACE INTO d1_dlq (id, payload_json, error_message, attempts, first_failed_at, last_failed_at) VALUES (?, ?, ?, COALESCE((SELECT attempts FROM d1_dlq WHERE id = ?), 0) + 1, COALESCE((SELECT first_failed_at FROM d1_dlq WHERE id = ?), ?), ?)`;
+          const now = new Date().toISOString();
+          await env.D1.prepare(dlqSql).bind(body.id, JSON.stringify(body), `d1_err:${err.message}`, body.id, body.id, now, now).run();
+        } catch (dlqErr) {
+          console.error('Failed to write DLQ after D1 error:', dlqErr);
+        }
         return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 });
       }
     }
