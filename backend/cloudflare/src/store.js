@@ -6,6 +6,7 @@
 // - deletes and updates target the resolved record id, and an update of a row that
 //   has gone away is a 404 (never an insert).
 import { ApiError, badRequest, notFound } from "./http.js";
+import { OPS_NOT_FOUND_LABELS } from "../../shared/errors.js";
 
 const COLLECTIONS = [
   "packages",
@@ -18,10 +19,17 @@ const COLLECTIONS = [
   "orders",
   "admins",
   "passwordResets",
+  // v3 commerce and operations modules
+  "categories",
+  "products",
+  "inventoryMovements",
+  "installationJobs",
+  "settings",
+  "notifications",
 ];
 
 // Only catalog collections carry slugs.
-export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments"];
+export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments", "categories", "products"];
 
 const NOT_FOUND_LABELS = {
   packages: "Package",
@@ -33,6 +41,7 @@ const NOT_FOUND_LABELS = {
   newsletters: "Subscriber",
   admins: "Admin",
   carts: "Cart",
+  ...OPS_NOT_FOUND_LABELS,
 };
 
 const CAS_ATTEMPTS = 5;
@@ -184,6 +193,17 @@ export const resolveSlug = async (env, collection, { input, fallback, excludeId 
 // Writes
 // ---------------------------------------------------------------------------
 
+export const isUniqueViolation = (error) => /UNIQUE constraint failed/i.test(String(error?.message || error));
+
+// Unique indexes (migrations/0010): product SKU, category/product slug. The handlers
+// check first; the index only catches concurrent writes.
+const rethrowUnique = (error) => {
+  if (isUniqueViolation(error)) {
+    throw new ApiError(409, "Another record was saved with the same value. Please try again.");
+  }
+  throw error;
+};
+
 const withoutUndefined = (payload) =>
   Object.fromEntries(Object.entries(payload || {}).filter(([, value]) => value !== undefined));
 
@@ -212,7 +232,8 @@ export const createCollectionItem = async (env, collection, payload, { slugFallb
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(item.id, collection, slug, JSON.stringify(item), isActive, sortOrder, item.createdAt, item.updatedAt)
-    .run();
+    .run()
+    .catch(rethrowUnique);
   return item;
 };
 
@@ -236,7 +257,8 @@ export const updateCollectionItem = async (env, collection, id, patch) => {
         WHERE collection = ? AND id = ? AND data = ?`
     )
       .bind(JSON.stringify(item), slug, isActive, sortOrder, item.updatedAt, collection, fresh.id, row.data)
-      .run();
+      .run()
+      .catch(rethrowUnique);
     if (changesOf(result) === 1) return item;
   }
   throw new ApiError(409, "This record was changed by another request. Please try again.");

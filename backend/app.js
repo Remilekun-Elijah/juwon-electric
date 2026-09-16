@@ -189,7 +189,12 @@ const start = async () => {
   process.once("SIGINT", () => shutdown("SIGINT"));
 };
 
-start().catch((error) => {
-  console.error("Failed to start application:", error.message);
-  process.exit(1);
-});
+// Tests import the app without listening (BACKEND_NO_LISTEN=true).
+export default app;
+
+if (process.env.BACKEND_NO_LISTEN !== "true") {
+  start().catch((error) => {
+    console.error("Failed to start application:", error.message);
+    process.exit(1);
+  });
+}

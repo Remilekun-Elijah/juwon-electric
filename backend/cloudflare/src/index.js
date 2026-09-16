@@ -85,6 +85,8 @@ import {
   verifyPassword,
 } from "./auth.js";
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
+import { handleOpsAdmin, handleOpsPublic } from "./ops/index.js";
+import { assertComponentsExist, componentsField } from "../../shared/catalog.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
 const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
@@ -190,6 +192,11 @@ const packagePayload = async (env, body, existing = null) => {
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   slugField(body);
+  // Products this package is made of (stock is committed per component).
+  const components = componentsField(body);
+  if (components?.length) {
+    assertComponentsExist(components, await listCollection(env, "products", { includeInactive: true }));
+  }
 
   await assertLegacyIdUnique(env, legacyId, existing?.id);
   return {
@@ -206,6 +213,7 @@ const packagePayload = async (env, body, existing = null) => {
     options,
     isActive,
     sortOrder,
+    components,
   };
 };
 
@@ -1558,7 +1566,22 @@ const route = async (incoming, env, ctx, path) => {
     const { admin } = await requireAdmin(request, env, ctx);
     const response = await handleAdmin(request, env, ctx, path, body, admin, url);
     if (response) return response;
+    const opsResponse = await handleOpsAdmin({
+      request,
+      env,
+      ctx,
+      path,
+      body,
+      url,
+      admin,
+      audit: (entry) => recordAudit(env, ctx, request, admin, entry),
+      sendNotification: (message) => sendNotification(env, message),
+    });
+    if (opsResponse) return opsResponse;
   }
+
+  const opsPublicResponse = await handleOpsPublic({ request, env, ctx, path, body, url });
+  if (opsPublicResponse) return opsPublicResponse;
 
   const publicResponse = await handlePublic(request, env, ctx, path, body, url);
   if (publicResponse) return publicResponse;
@@ -1567,7 +1590,8 @@ const route = async (incoming, env, ctx, path) => {
 };
 
 const errorResponse = (error, requestId) => {
-  if (!(error instanceof ApiError)) {
+  // Errors from backend/shared carry expose === true and a statusCode.
+  if (!(error instanceof ApiError) && !(error?.expose === true && Number.isInteger(error?.statusCode))) {
     console.error(`[${requestId}] Unhandled worker error:`, describeError(error));
     return json({ success: false, message: "Something went wrong." }, 500);
   }

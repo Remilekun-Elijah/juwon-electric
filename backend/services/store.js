@@ -16,7 +16,14 @@ export const dbPath = process.env.JSON_STORE_PATH
 const plansPath = resolve(__dirname, "../../frontend/src/utils/plans.json");
 
 // Only the public catalog collections have slugs (and admin-controlled sortOrder).
-export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments"];
+export const CATALOG_COLLECTIONS = [
+  "packages",
+  "services",
+  "portfolio",
+  "customerSegments",
+  "categories",
+  "products",
+];
 const isCatalog = (collection) => CATALOG_COLLECTIONS.includes(collection);
 
 let dbLock = Promise.resolve();
@@ -70,6 +77,21 @@ const models = {
   passwordResets:
     mongoose.models.PasswordReset ||
     mongoose.model("PasswordReset", flexibleSchema, "passwordResets"),
+  // v3 commerce/operations modules. Model names are prefixed so they never clash with the
+  // typed (unused) models in backend/models.
+  categories:
+    mongoose.models.OpsCategory || mongoose.model("OpsCategory", flexibleSchema, "categories"),
+  products: mongoose.models.OpsProduct || mongoose.model("OpsProduct", flexibleSchema, "products"),
+  inventoryMovements:
+    mongoose.models.OpsInventoryMovement ||
+    mongoose.model("OpsInventoryMovement", flexibleSchema, "inventoryMovements"),
+  installationJobs:
+    mongoose.models.OpsInstallationJob ||
+    mongoose.model("OpsInstallationJob", flexibleSchema, "installationJobs"),
+  settings: mongoose.models.OpsSettings || mongoose.model("OpsSettings", flexibleSchema, "settings"),
+  notifications:
+    mongoose.models.OpsNotification ||
+    mongoose.model("OpsNotification", flexibleSchema, "notifications"),
 };
 
 // Security records (admin sessions, audit log, processed webhook ids). They use
@@ -249,6 +271,12 @@ const defaultDb = async () => {
     webhookEvents: [],
     adminReadState: [],
     adminReads: [],
+    categories: [],
+    products: [],
+    inventoryMovements: [],
+    installationJobs: [],
+    settings: [],
+    notifications: [],
   };
 };
 
@@ -781,12 +809,35 @@ export const pageRecords = async (collection, { filter = {}, page = 1, limit = 5
 // for webhook replay protection).
 export const ensureSecurityIndexes = async () => {
   if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
-  await Promise.all(
-    [...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
+  await Promise.all([
+    ...[...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
       model.createIndexes()
-    )
-  );
+    ),
+    ensureOpsIndexes(),
+  ]);
 };
+
+// Uniqueness the v3 modules rely on (the JSON store checks inside its lock instead).
+const ensureOpsIndexes = () =>
+  Promise.all([
+    models.products.collection.createIndex(
+      { sku: 1 },
+      { unique: true, partialFilterExpression: { sku: { $type: "string" } } }
+    ),
+    models.products.collection.createIndex(
+      { slug: 1 },
+      { unique: true, partialFilterExpression: { slug: { $type: "string" } } }
+    ),
+    models.categories.collection.createIndex(
+      { slug: 1 },
+      { unique: true, partialFilterExpression: { slug: { $type: "string" } } }
+    ),
+    models.inventoryMovements.collection.createIndex({ productId: 1, createdAt: -1 }),
+    models.installationJobs.collection.createIndex({ engineerId: 1, scheduledAt: 1 }),
+    models.notifications.collection.createIndex({ createdAt: -1 }),
+  ]);
+
+export const isDuplicateKeyError = isDuplicateKey;
 
 // ---------------------------------------------------------------------------
 // Admin read status: adminReadState { adminId, since, updatedAt } and

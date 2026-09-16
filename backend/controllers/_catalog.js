@@ -37,10 +37,14 @@ const assertLegacyIdFree = (items, legacyId, selfId) => {
 
 const definedKeys = (payload) => Object.keys(payload).filter((key) => payload[key] !== undefined);
 
-/** Express handlers for one catalog collection. `buildPayload(body, { isUpdate })`. */
-export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource }) => ({
+/**
+ * Express handlers for one catalog collection. `buildPayload(body, { isUpdate })`;
+ * optional async `validate(payload)` runs before any write (e.g. reference checks).
+ */
+export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource, validate }) => ({
   create: async (req, res) => {
     const payload = buildPayload(req.body || {}, { isUpdate: false });
+    if (validate) await validate(payload);
     const item = await createCollectionItem(collection, payload, {
       prepare: (items, draft) => {
         if (collection === "packages") assertLegacyIdFree(items, draft.legacyId);
@@ -54,6 +58,7 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
   update: async (req, res) => {
     const existing = await getCollectionItem(collection, req.params.id);
     const payload = buildPayload(req.body || {}, { isUpdate: true });
+    if (validate) await validate(payload);
     // Written strictly by the resolved id, with only the sent fields, against
     // the fresh stored record.
     const item = await updateCollectionItem(collection, existing.id, payload, {

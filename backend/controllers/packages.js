@@ -2,6 +2,7 @@ import { catalogHandlers } from "./_catalog.js";
 import { badRequest, notFound } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { getCollectionItem, listCollection } from "../services/store.js";
+import { assertComponentsExist, componentsField } from "../shared/catalog.js";
 import {
   LIMITS,
   deriveSlug,
@@ -57,6 +58,8 @@ const packagePayload = (body, { isUpdate }) => {
   const options = validateOptions(body.options);
   const isActive = optionalBoolean(body, "isActive", undefined);
   const sortOrder = sortOrderField(body);
+  // Products this package is made of (stock is committed per component, see docs/agents/be-ops.md).
+  const components = componentsField(body);
 
   return {
     legacyId,
@@ -70,6 +73,7 @@ const packagePayload = (body, { isUpdate }) => {
     options,
     isActive: isUpdate ? isActive : isActive ?? true,
     sortOrder,
+    components,
   };
 };
 
@@ -78,6 +82,11 @@ const handlers = catalogHandlers({
   entity: "package",
   buildPayload: packagePayload,
   slugSource: (item) => `${item.name}-${item.type}-${item.kva}`,
+  validate: async (payload) => {
+    if (payload.components?.length) {
+      assertComponentsExist(payload.components, await listCollection("products", { includeInactive: true }));
+    }
+  },
   messages: { create: "Package created.", update: "Package updated.", delete: "Package deleted." },
 });
 

@@ -49,6 +49,7 @@ import {
   adminUpdateService,
 } from "../controllers/services.js";
 import { asyncHandler } from "../services/asyncHandler.js";
+import { opsAdminRouter } from "./ops.js";
 
 const router = Router();
 
@@ -102,5 +103,8 @@ router.get("/orders", adminListOrders);
 router.get("/orders/:id", adminGetOrder);
 router.put("/orders/:id", adminUpdateOrder);
 router.delete("/orders/:id", adminDeleteOrder);
+
+// v3 commerce and operations modules (capability-gated).
+router.use(opsAdminRouter);
 
 export default router;
