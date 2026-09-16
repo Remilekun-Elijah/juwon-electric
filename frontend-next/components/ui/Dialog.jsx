@@ -15,8 +15,10 @@ import { Button } from "./Button";
 
 const sizes = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
 
+// The button draws at 24px; the transparent ::after extends the touch target to 44px (WCAG 2.5.5) without changing the
+// visual. The button must be positioned (Dialog's is absolute; Drawer adds `relative`).
 export const closeButtonClasses =
-  "rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500";
+  "rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 after:absolute after:-inset-2.5 after:content-['']";
 
 /**
  * Dialog (Headless UI; Escape and overlay click call onClose). Props: open, onClose(), title, description, children (body),

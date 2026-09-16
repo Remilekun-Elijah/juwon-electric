@@ -6,9 +6,6 @@ export const config = {
   turnstileSiteKey: (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "").trim(),
   /** Canonical public origin for metadataBase, sitemap, robots and OG URLs. No trailing slash. */
   siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || "https://juwonelectric.com").replace(/\/+$/, ""),
-  /**
-   * Admin preview mode (FE-2, review FE2-1): lets the admin fall back to contract mocks when the API answers
-   * `404 "Route not found."`. Dev only, never in production. Off unless the variable is exactly "true".
-   */
+  /** Admin preview: contract mock fallback for backend routes that don't exist yet. Never enable in production. */
   adminPreview: process.env.NEXT_PUBLIC_ADMIN_PREVIEW === "true",
 };

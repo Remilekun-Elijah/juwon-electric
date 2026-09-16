@@ -65,7 +65,7 @@ export function Drawer({
                   {title && <DialogTitle className="text-lg font-semibold text-slate-900">{title}</DialogTitle>}
                   {description && <Description className="text-sm text-slate-500">{description}</Description>}
                 </div>
-                <button type="button" onClick={() => onClose?.()} aria-label="Close" className={cn("-mr-1 mt-0.5", closeButtonClasses)}>
+                <button type="button" onClick={() => onClose?.()} aria-label="Close" className={cn("relative -mr-1 mt-0.5 shrink-0", closeButtonClasses)}>
                   <X aria-hidden="true" className="h-4 w-4" />
                 </button>
               </div>
