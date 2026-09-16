@@ -1,6 +1,9 @@
 // Shared, colour-free class names for the public site (port of frontend/src/lib/publicStyles.js).
 // Colours stay on each element so the palette is untouched.
 
+/** Replaces MUI `<Container maxWidth="lg">` (1200px, 16px gutters, 24px from 600px). */
+export const siteContainer = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
+
 /** Page/section heading (e.g. "Our latest projects"). Add the colour and margins at the call site. */
 export const sectionTitle = "sora-bold text-2xl md:text-4xl lg:text-[40px] leading-tight";
 
