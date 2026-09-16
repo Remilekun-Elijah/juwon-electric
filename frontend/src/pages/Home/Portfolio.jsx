@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Container } from "@mui/material";
 import config from "../../utils/config";
 import { getPublicData } from "../../utils/api";
+import { showAllOnMobile } from "../../utils/helper";
+import { sectionTitle } from "../../lib/publicStyles";
 
 const defaultRecentWork = [
   {
@@ -68,42 +70,39 @@ const Portfolio = () => {
       .catch(() => setRecentWork(defaultRecentWork));
   }, []);
 
-  function handleMobileExpand(e, state, setState) {
+  function handleMobileExpand(e) {
     e.preventDefault();
-    const newState = state.map((data) => {
-      data.mobile = true;
-      return data;
-    });
-    setState(newState);
+    setRecentWork(showAllOnMobile(recentWork));
   }
 
   return (
     <div className="mt-20">
       <CustomChip text="Portfolio" className="flex justify-center" />
 
-      <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:my-16 my-10 text-center">
+      <h2 className={`text-deep_red ${sectionTitle} lg:mt-10 lg:mb-14 mt-8 mb-10 text-center`}>
         Our latest projects
       </h2>
 
-      <Container maxWidth={config.padding.x} className="">
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-center item-center gap-10">
+      <Container maxWidth={config.padding.x}>
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-center justify-items-center gap-10">
           {recentWork.map((work, i) => (
             <div
-              key={i}
+              key={work.id ?? work.image ?? i}
               className={`relative  ${
                 !work.mobile && "md:block hidden"
               } md:w-[285px] md:h-[285px] sm:w-[350px] sm:h-[350px]  h-[350px]`}
             >
               <div
-                className={`overlay rounded-2xl flex flex-col justify-center items-center animate__animated animate__bounceOutLeft hover:animate__bounceInLeft opacity-0 hover:opacity-100 transition-opacity`}
+                className="overlay rounded-2xl flex flex-col justify-center items-center opacity-0 hover:opacity-100 transition-opacity"
               >
                 <p className="sora-bold text-xl text-white text-center">
                   {work.name}
                 </p>
                 <Link
                   target="_blank"
+                  rel="noopener noreferrer"
                   to={work.link}
-                  className="flex items-center text-center gap-1 text-white mt-1"
+                  className="flex items-center text-center gap-1 text-white mt-1 hover:underline"
                 >
                   <InstagramIcon />
                   <p className="manrope-semibold text-xl">Follow Us</p>
@@ -113,22 +112,20 @@ const Portfolio = () => {
               <img
                 className="object-cover h-full w-full rounded-2xl"
                 src={work.image || work.img}
-                alt={`work ${i + 1}`}
+                alt={work.name || `work ${i + 1}`}
               />
             </div>
           ))}
         </div>
 
         <div
-          className={`md:hidden ${
-            recentWork.filter((a) => a.mobile).length > 4 && "hidden"
+          className={`md:hidden mt-12 ${
+            recentWork.every((a) => a.mobile) && "hidden"
           }`}
         >
-          <br />
-          <br />
           <Link
-            onClick={(e) => handleMobileExpand(e, recentWork, setRecentWork)}
-            className={`text-deep_red underline pb-1 inter-medium text-xl text-center block mt-`}
+            onClick={handleMobileExpand}
+            className="text-deep_red underline underline-offset-4 py-2 inter-medium text-xl text-center block"
           >
             See All
           </Link>

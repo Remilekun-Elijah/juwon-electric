@@ -1,6 +1,3 @@
-// eslint-disable-next-line no-unused-vars
-
-import { useEffect } from "react";
 import {
   Disclosure,
   DisclosureButton,
@@ -17,34 +14,31 @@ import { getCartData } from "../features/cart";
 import { ILogoImg } from "../utils/icon";
 const { routes } = config;
 
-let navigation = [
-  { name: "Home", href: routes.home, current: true },
-  { name: "Services", href: routes.services, current: false },
-  { name: "Portfolio", href: routes.portfolio, current: false },
-  { name: "Packages", href: routes.packages, current: false },
-  { name: "Contact", href: routes.contact, current: false },
-  { name: "Cart", href: routes.cart, current: false },
+const navigation = [
+  { name: "Home", href: routes.home },
+  { name: "Services", href: routes.services },
+  { name: "Portfolio", href: routes.portfolio },
+  { name: "Packages", href: routes.packages },
+  { name: "Contact", href: routes.contact },
+  { name: "Cart", href: routes.cart },
 ];
+
+// Count bubble on the cart icon: fixed size so 1- and 2-digit counts stay round and centred.
+const cartBadge =
+  "absolute min-w-[18px] h-[18px] px-[5px] rounded-full text-[11px] leading-[18px] font-semibold text-center";
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
 export default function Navbar() {
   const { pathname } = useLocation();
   const { cart } = useSelector(getCartData);
 
-  const handleNavigate = (newPage) => {
-    const newNav = navigation.map((page) => {
-      if (page.href === newPage) page.current = true;
-      else page.current = false;
-      return page;
-    });
-    navigation = newNav;
-  };
-
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(" ");
-  }
-  useEffect(() => {
-    handleNavigate(pathname);
-  }, []);
+  const navItems = navigation.map((page) => ({
+    ...page,
+    current: page.href === pathname,
+  }));
 
   return (
     <Disclosure
@@ -75,20 +69,19 @@ export default function Navbar() {
 
               <div className="flex flex-1 items-center justify-start md:items-center md:justify-center lg:justify-between">
                 <div className="flex flex-shrink-0 items-center sm:ml-0 ml-9">
-                  <img className="" src={ILogoImg} alt="Your Company" />
+                  <img src={ILogoImg} alt="Juwon Electric" width={88} height={62} />
                 </div>
                 <div className="hidden md:ml-10 lg:ml-20 md:block mt-1">
-                  <div className="flex">
-                    {navigation.map((item) => (
+                  <div className="flex items-center">
+                    {navItems.map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
-                        onClick={() => handleNavigate(item.href)}
                         className={classNames(
                           item.current
                             ? "border-b-black_color border-b-2 text-white"
                             : "hover:text-gray-200",
-                          "capitalize text-sm font-medium mx-5 pb- text-white"
+                          "capitalize text-sm font-medium mx-5 text-white inline-flex items-center transition-colors duration-150"
                         )}
                         aria-current={item.current ? "page" : undefined}
                       >
@@ -97,7 +90,7 @@ export default function Navbar() {
                         ) : item.name === "Cart" ? (
                           <div className="relative">
                             <ShoppingCartIcon />
-                            <span className="md:block hidden absolute py-[0px] px-[5px] rounded-full left-4 bottom-3 !bg-red !text-white">
+                            <span className={`md:block hidden ${cartBadge} left-4 bottom-3 !bg-brand-500 !text-white`}>
                               {cart?.length || 0}
                             </span>
                           </div>
@@ -111,9 +104,9 @@ export default function Navbar() {
               </div>
 
               <div className="absolute md:hidden inset-y-0 right-0 flex items-center pr-2 md:static md:inset-auto sm:ml-6 sm:pr-0">
-                <Link className="relative" to={config.routes.cart}>
+                <Link className="relative inline-flex p-2 -m-2" to={routes.cart} aria-label="Cart">
                   <ShoppingCartIcon />
-                  <span className=" absolute py-[0px] px-[5px] rounded-full left-4 bottom-3 !bg-red !text-white">
+                  <span className={`${cartBadge} left-6 bottom-5 !bg-brand-500 !text-white`}>
                     {cart?.length || 0}
                   </span>
                 </Link>
@@ -123,8 +116,8 @@ export default function Navbar() {
 
           <DisclosurePanel className="md:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
-              {navigation
-                .filter((a) => a.name.toLowerCase() != "cart")
+              {navItems
+                .filter((a) => a.name.toLowerCase() !== "cart")
                 .map((item) => (
                   <DisclosureButton
                     key={item.name}

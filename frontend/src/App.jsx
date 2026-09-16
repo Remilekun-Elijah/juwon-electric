@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import LandingPage from "./pages/Home/LandingPage";
@@ -9,17 +9,19 @@ import Packages from "./pages/Packages/Packages";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart/Cart";
 import AdminApp from "./pages/Admin/AdminApp";
+import { Toaster } from "./components/ui";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
-  function ScrollToTop() {
-    const { pathname } = useLocation();
-
-    React.useEffect(() => {
-      window.scrollTo(0, 0);
-    }, [pathname]);
-
-    return null;
-  }
   return (
     <BrowserRouter>
       <Routes>
@@ -32,6 +34,7 @@ function App() {
         <Route path="/admin/*" element={<AdminApp />} />
       </Routes>
       <ScrollToTop />
+      <Toaster />
     </BrowserRouter>
   );
 }

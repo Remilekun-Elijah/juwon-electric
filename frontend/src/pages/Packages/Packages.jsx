@@ -9,6 +9,7 @@ import { getCartData } from "../../features/cart";
 import { getPublicData } from "../../utils/api";
 import config from "../../utils/config";
 import fallbackPlans from "../../utils/plans.json";
+import { sectionTitle } from "../../lib/publicStyles";
 
 import AddToCartModal from "./AddToCartModal";
 import DisplayProduct from "./DisplayProduct";
@@ -24,7 +25,7 @@ const Packages = () => {
   const categoryTypes = ["Tubular", "Lithium", "Hybrid Lithium"];
   const fallbackProducts = fallbackPlans.flatMap((group) => group.plan || []);
   const packageData = products.length ? products : fallbackProducts;
-  let tubular = [],
+  const tubular = [],
     lithium = [],
     hybrid = [];
 
@@ -34,13 +35,11 @@ const Packages = () => {
       .catch(() => setProducts([]));
   }, []);
 
-  packageData.map((a) =>
-      a.type === "tubular"
-        ? tubular.push(a)
-        : a.type === "lithium"
-        ? lithium.push(a)
-        : hybrid.push(a)
-  );
+  packageData.forEach((a) => {
+    if (a.type === "tubular") tubular.push(a);
+    else if (a.type === "lithium") lithium.push(a);
+    else hybrid.push(a);
+  });
 
   return (
     <div>
@@ -60,17 +59,17 @@ const Packages = () => {
             text="Our Packages"
             className="flex justify-center my-10"
           />
-          <h2 className="text-deep_red sora-bold lg:text-[40px] md:text-4xl text-2xl lg:mt-12 mt-10 mb-7 text-center">
-            <p className="mb-1">Select the package</p>
-            <p>that suits you best</p>
+          <h2 className={`text-deep_red ${sectionTitle} lg:mt-10 mt-8 mb-6 text-center`}>
+            <span className="block mb-1">Select the package</span>
+            <span className="block">that suits you best</span>
           </h2>
 
-          <p className="inter-medium text-base text-center text-faint">
+          <p className="inter-medium text-base leading-relaxed text-center text-faint">
             Select the plan that fits your needs best, and don&apos;t hesitate
             to reach out to us.
           </p>
 
-          <div className="flex justify-center my-10 ">
+          <div className="flex justify-center my-10">
             <MiniTab
               {...{
                 active,

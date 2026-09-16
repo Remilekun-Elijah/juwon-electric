@@ -1,33 +1,51 @@
 /* eslint-disable react/prop-types */
 import { useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Alert from "../../utils/Alert";
 import CustomModal from "../../components/Modal";
-import {} from "react-redux";
-import { addToCart } from "../../features/cart";
+import {
+  MAX_CART_ITEMS,
+  addToCart,
+  getCartData,
+  isCartFull,
+} from "../../features/cart";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Radio } from "@mui/material";
+import { buttonBase, buttonHover } from "../../lib/publicStyles";
 
-// eslint-disable-next-line react/prop-types
 const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
   const dispatch = useDispatch();
+  const { cart } = useSelector(getCartData);
   const [withSolar, setWithSolar] = useState(null);
   const solarRef = useRef();
 
   function addProductToCart() {
+    if (!product) return;
+    if (isCartFull(cart)) {
+      Alert({
+        message: `Your cart can hold up to ${MAX_CART_ITEMS} items. Place your order or remove an item to add more.`,
+        type: "error",
+      });
+      return;
+    }
     Alert({ message: "Package added to cart" });
 
-    product.withSolarPrice = product?.options[1].price;
-    product.withoutSolarPrice = product?.options[0].price;
+    const withSolarPrice = product?.options?.[1]?.price;
+    const withoutSolarPrice = product?.options?.[0]?.price;
 
-    product.price =
-      withSolar == "true" ? product.withSolarPrice : product.withoutSolarPrice;
-    product.package =
-      withSolar == "true"
-        ? product?.options?.[1]?.kits
-        : product?.options?.[0]?.kits;
-
-    dispatch(addToCart({ ...product, withSolar }));
+    dispatch(
+      addToCart({
+        ...product,
+        withSolarPrice,
+        withoutSolarPrice,
+        price: withSolar === "true" ? withSolarPrice : withoutSolarPrice,
+        package:
+          withSolar === "true"
+            ? product?.options?.[1]?.kits
+            : product?.options?.[0]?.kits,
+        withSolar,
+      })
+    );
     setWithSolar(null);
     setProduct(null);
     solarRef.current?.reset?.();
@@ -44,7 +62,6 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
     };
   };
   const handleChange = (event) => {
-    // alert(event.target.value);
     setWithSolar(event.target.value);
   };
 
@@ -71,18 +88,18 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
           Packages Options
         </p>
 
-        <div className="mt-5 border-2 rounded-lg border-dashed py-5">
+        <div className="mt-4 border-2 rounded-lg border-dashed py-3">
           <form ref={solarRef} className="mx-3">
-            <div className="flex justify-between md:mb-7 mb-5">
+            <div className="flex items-center justify-between min-h-[48px] md:mb-3 mb-2">
               <label
                 htmlFor="withSolar"
-                className="cursor-pointer inter-regular text-base"
+                className="cursor-pointer inter-regular text-base flex-1 py-2"
               >
                 With Solar
               </label>
 
-                <Radio
-                  id="withSolar"
+              <Radio
+                id="withSolar"
                 {...controlProps(true)}
                 sx={{
                   color: "#DB464C",
@@ -92,16 +109,16 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
                 }}
               />
             </div>
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between min-h-[48px]">
               <label
                 htmlFor="withoutSolar"
-                className="cursor-pointer inter-regular text-base"
+                className="cursor-pointer inter-regular text-base flex-1 py-2"
               >
                 Without Solar
               </label>
 
-                <Radio
-                  id="withoutSolar"
+              <Radio
+                id="withoutSolar"
                 {...controlProps(false)}
                 sx={{
                   color: "#DB464C",
@@ -117,7 +134,7 @@ const AddToCartModal = ({ open, setOpen, product, setProduct }) => {
         <button
           disabled={withSolar === null}
           onClick={addProductToCart}
-          className="w-full py-2 bg-red text-white my-5 rounded-lg"
+          className={`${buttonBase} ${buttonHover} w-full bg-brand-500 text-white mt-5`}
         >
           Continue
         </button>

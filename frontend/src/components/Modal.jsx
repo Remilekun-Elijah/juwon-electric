@@ -48,7 +48,7 @@ export default function CustomModal({ open, setOpen, children, width, title }) {
               className="!py-5 !bg-[#fff]"
             >
               <div className="flex items-center justify-between">
-                <DialogTitle className="text-left inter-extrabold text-lg px-5 inline-block">
+                <DialogTitle className="text-left inter-extrabold text-lg leading-snug px-6 inline-block">
                   {title}
                 </DialogTitle>
                 <ModalClose color="light" />

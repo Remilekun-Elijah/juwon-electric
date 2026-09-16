@@ -1,73 +1,56 @@
 import { createSlice } from "@reduxjs/toolkit";
-// import BACKEND from "../../utils/backend";
+import { LIMITS } from "../utils/validation";
 
-// export const getGrades = createAsyncThunk(
-//   "/user/getGrade",
-//   (search, thunkApi) => {
-//     try {
-//       const { pagination } = thunkApi.getState().grade;
-//       return new BACKEND().send({
-//         type: "get",
-//         to: `/grades/?pageNumber=${pagination.page}&pageSize=${
-//           pagination.pageSize
-//         }&search=${search || pagination.search}`,
-//         useAlert: false,
-//       });
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   }
-// );
+// Package ids (legacy ids) are not unique across package types/names,
+// so cart items are identified by a composite key.
+export const getCartItemKey = (item) =>
+  [item?.type, item?.name, item?.kva, item?.volt ?? "", item?.id].join("|");
 
-// export const createGrade = createAsyncThunk(
-//   "/user/createGrade",
-//   (payload, _thunkApi) => {
-//     try {
-//       return new BACKEND().send({
-//         type: "post",
-//         to: "/grades/create",
-//         payload,
-//         useAlert: true,
-//       });
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   }
-// );
+export const MAX_CART_ITEMS = LIMITS.cartItems;
+export const MIN_QUANTITY = LIMITS.quantityMin;
+export const MAX_QUANTITY = LIMITS.quantityMax;
+
+const clampQuantity = (value) => {
+  const quantity = Math.trunc(Number(value));
+  if (!Number.isFinite(quantity) || quantity < MIN_QUANTITY) return MIN_QUANTITY;
+  return Math.min(quantity, MAX_QUANTITY);
+};
+
+export const isCartFull = (cart) =>
+  Array.isArray(cart) && cart.length >= MAX_CART_ITEMS;
+
+const loadCart = () => {
+  try {
+    const cart = JSON.parse(localStorage.getItem("je/cart"));
+    return Array.isArray(cart)
+      ? cart
+          .filter((item) => item && typeof item === "object")
+          .map((item) => ({ ...item, quantity: clampQuantity(item.quantity) }))
+      : [];
+  } catch {
+    return [];
+  }
+};
 
 const initialState = {
-  loading: false,
-  cart: localStorage.getItem("je/cart")
-    ? JSON.parse(localStorage.getItem("je/cart"))
-    : [],
+  cart: loadCart(),
   total: 0,
-  pagination: {
-    page: 1,
-    pageSize: 10,
-    total: 0,
-    length: 0,
-    search: "",
-  },
-  model: {
-    name: "",
-    gradeNumber: "",
-    description: "",
-  },
 };
 
 export const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    setPagination: (state, { payload }) => {
-      state.pagination = { ...state.pagination, ...payload };
-    },
     addToCart: (state, { payload }) => {
+      // The UI checks isCartFull() first and explains the limit; this is a safety net.
+      if (state.cart.length >= MAX_CART_ITEMS) return;
       state.cart = [...state.cart, { ...payload, quantity: 1 }];
       localStorage.setItem("je/cart", JSON.stringify(state.cart));
     },
     removeFromCart: (state, { payload }) => {
-      let newCart = state.cart.filter((a) => payload.id !== a.id);
+      const newCart = state.cart.filter(
+        (a) => payload.cartKey !== getCartItemKey(a)
+      );
       state.cart = newCart;
       localStorage.setItem("je/cart", JSON.stringify(newCart));
     },
@@ -75,22 +58,28 @@ export const cartSlice = createSlice({
       let newCart;
       if (payload.action === "increase") {
         newCart = state.cart.map((a) => {
-          if (payload.id === a.id) {
+          if (
+            payload.cartKey === getCartItemKey(a) &&
+            a.quantity < MAX_QUANTITY
+          ) {
             a.quantity++;
           }
           return a;
         });
       } else if (payload.action === "decrease") {
         newCart = state.cart.map((a) => {
-          if (payload.id === a.id) {
+          if (
+            payload.cartKey === getCartItemKey(a) &&
+            a.quantity > MIN_QUANTITY
+          ) {
             a.quantity--;
           }
           return a;
         });
       } else if (payload.action === "panel") {
         newCart = state.cart.map((a) => {
-          if (payload.id === a.id) {
-            if (a.withSolar == "true") {
+          if (payload.cartKey === getCartItemKey(a)) {
+            if (a.withSolar === "true") {
               a.price = a.withoutSolarPrice;
               a.withSolar = "false";
             } else {
@@ -100,10 +89,31 @@ export const cartSlice = createSlice({
           }
           return a;
         });
-      } else alert("invalid action");
+      } else return;
 
       state.cart = newCart;
       localStorage.setItem("je/cart", JSON.stringify(newCart));
+    },
+    // Replaces stored prices with the server's quote: payload [{ cartKey, price }].
+    applyQuotePrices: (state, { payload }) => {
+      const prices = new Map(
+        (Array.isArray(payload) ? payload : [])
+          .filter((line) => Number.isFinite(line?.price) && line.price > 0)
+          .map((line) => [line.cartKey, line.price])
+      );
+      let changed = false;
+      state.cart.forEach((item) => {
+        const price = prices.get(getCartItemKey(item));
+        if (price === undefined || Number(item.price) === price) return;
+        item.price = price;
+        if (item.withSolar === "true" || item.withSolar === true) {
+          item.withSolarPrice = price;
+        } else {
+          item.withoutSolarPrice = price;
+        }
+        changed = true;
+      });
+      if (changed) localStorage.setItem("je/cart", JSON.stringify(state.cart));
     },
     clearCart: (state) => {
       state.cart = [];
@@ -116,41 +126,13 @@ export const cartSlice = createSlice({
       state.total = total;
     },
   },
-  extraReducers: () => {
-    /** GET GRADE **/
-    // builder.
-    // addCase(getGrades.pending, (state) => {
-    //  state.loading = true;
-    // })
-    // .addCase(getGrades.fulfilled, (state, {payload}) => {
-    //  state.loading = false;
-    //  if(payload?.success) {
-    //   state.grades = payload?.data?.grades
-    //   state.pagination.total = payload?.data?.count;
-    //   state.pagination.length = state.pagination.pageSize * state.pagination.page
-    //  }
-    // })
-    // .addCase(getGrades.rejected, state => {
-    //   state.loading = false
-    // })
-    /***CREATE GRADE ***/
-    // .addCase(createGrade.pending, (state) => {
-    //  state.loading = true;
-    // })
-    // .addCase(createGrade.fulfilled, (state, {payload}) => {
-    //  state.loading = false;
-    // })
-    // .addCase(createGrade.rejected, state => {
-    //   state.loading = false
-    // })
-  },
 });
 
 export const {
-  setPagination,
   addToCart,
   updateCart,
   removeFromCart,
+  applyQuotePrices,
   clearCart,
   getTotal,
 } = cartSlice.actions;

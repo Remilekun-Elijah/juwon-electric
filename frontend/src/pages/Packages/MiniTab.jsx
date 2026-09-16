@@ -1,17 +1,20 @@
 // eslint-disable-next-line react/prop-types
 const MiniTab = ({ active, setActive, data = [] }) => {
   return (
-    <div className="inline-flex gap-2 bg-white rounded-md p-2">
+    <div role="tablist" className="inline-flex gap-2 bg-white rounded-md p-2">
       {data.map((a, i) => (
-        <p
+        <button
+          type="button"
+          role="tab"
+          aria-selected={active === i}
           onClick={() => setActive(i)}
-          key={i}
-          className={`py-2 rounded-md uppercase cursor-pointer inter-medium px-3 ${
-            active === i ? "bg-red text-white shadow-lg" : "bg-white text-black"
+          key={a}
+          className={`py-2 min-h-[40px] rounded-md uppercase cursor-pointer inter-medium leading-6 px-3 transition-shadow duration-150 ${
+            active === i ? "bg-brand-500 text-white shadow-lg" : "bg-white text-black"
           }`}
         >
           {a}
-        </p>
+        </button>
       ))}
     </div>
   );

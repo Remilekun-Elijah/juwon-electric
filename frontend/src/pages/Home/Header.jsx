@@ -9,18 +9,18 @@ const Header = () => {
     <Box
       component={"header"}
       maxWidth={config.padding.x}
-      className="lg:mt-30 px-5 mx-auto"
+      className="px-5 mx-auto"
     >
-      <div className="flex gap-16 md:flex-nowrap flex-wrap mt:pt-10 overflow-x-visible">
+      <div className="flex gap-16 md:flex-nowrap flex-wrap overflow-x-visible">
         <div className="order-1">
           <h1 className="inter-bold md:text-4xl lg:text-5xl xl:text-[64px] text-2xl md:text-left text-center mb-8 text-header_color xl:leading-[90px]">
             We are committed to providing excellent service
           </h1>
 
           {/* CURVE IMAGE */}
-          <img src="/curve_line.svg" alt="curve_line" />
+          <img src="/curve_line.svg" alt="" width={487} height={34} />
 
-          <p className="inter-medium md:text-lg text-base md:my-8 my-5 md:text-left text-center">
+          <p className="inter-medium md:text-lg text-base leading-relaxed md:my-8 my-5 md:text-left text-center">
             {" "}
             Let us brighten your daily life. We&apos;re dedicated to making a
             positive impact on our world, starting right here on Earth.
@@ -41,6 +41,7 @@ const Header = () => {
               className="!text-black md:!text-sm !text-xs"
               LinkComponent={Link}
               target="_blank"
+              rel="noopener noreferrer"
               to={config.socials.tt}
               startIcon={<PlayCircleOutlineIcon />}
             >
@@ -52,13 +53,13 @@ const Header = () => {
 
         <div className="flex items-start w-full md:order-1 gap-0 justify-center">
           {/* HEADER IMAGE */}
-          <img src={IHeaderImg} alt="" className="w-[80%] md:w-max -mt-5" />
+          <img src={IHeaderImg} alt="Juwon Electric technician installing solar panels" width={609} height={589} className="w-[80%] md:w-max -mt-5" />
           {/* ROTATING IMAGE */}
           <Link
             className="lg:-ml-28 -ml-12 -mb-12 rotate-infinite lg:w-fit w-[50px]"
             to={config.routes.contact}
           >
-            <img src="circular.svg" alt="get in touch" />
+            <img src="/circular.svg" alt="get in touch" width={134} height={134} />
           </Link>
         </div>
       </div>

@@ -1,5 +1,3 @@
-const environment = {};
-
 const routes = {
   home: "/",
   services: "/services",
@@ -9,9 +7,7 @@ const routes = {
   cart: "/cart",
 };
 
-environment.development = {
-  authProps: ["je/token", "je/user"],
-  backendUrl: import.meta.env.VITE_BACKEND_URL || "http://localhost:9000",
+const shared = {
   routes,
   padding: { x: "lg", y: "10rem" },
   socials: {
@@ -22,30 +18,19 @@ environment.development = {
   },
 };
 
-environment.staging = {
-  authProps: ["je/token", "je/user"],
-  backendUrl:
-    import.meta.env.VITE_BACKEND_URL || "https://juwon-electric.onrender.com",
-  routes,
-  padding: { x: "lg", y: "10rem" },
-  socials: {
-    fb: "https://www.facebook.com/juwonelectric?mibextid=LQQJ4d",
-    insta: "https://www.instagram.com/juwon__electric",
-    tt: "https://www.tiktok.com/@juwon_electric",
-    x: "https://x.com/juwon_electric?s=21&t=V5eLolxJSbC7bJ7s6X0dVQ",
+const environment = {
+  development: {
+    ...shared,
+    backendUrl: import.meta.env.VITE_BACKEND_URL || "http://localhost:9000",
   },
-};
-
-environment.production = {
-  authProps: ["je/token", "je/user"],
-  backendUrl: import.meta.env.VITE_BACKEND_URL,
-  routes,
-  padding: { x: "lg", y: "10rem" },
-  socials: {
-    fb: "https://www.facebook.com/juwonelectric?mibextid=LQQJ4d",
-    insta: "https://www.instagram.com/juwon__electric",
-    tt: "https://www.tiktok.com/@juwon_electric",
-    x: "https://x.com/juwon_electric?s=21&t=V5eLolxJSbC7bJ7s6X0dVQ",
+  staging: {
+    ...shared,
+    backendUrl:
+      import.meta.env.VITE_BACKEND_URL || "https://juwon-electric.onrender.com",
+  },
+  production: {
+    ...shared,
+    backendUrl: import.meta.env.VITE_BACKEND_URL,
   },
 };
 

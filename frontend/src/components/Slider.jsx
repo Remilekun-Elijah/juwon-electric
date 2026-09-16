@@ -7,17 +7,18 @@ const Slider = ({ data = [] }) => {
   return (
     <div>
       <div className="flex flex-wrap gap-10 justify-center my-10">
-        {data.map((a, i) => (
-          <div key={i} className="xl:max-w-[550px] md:max-w-[500px] w-full">
-            <div className="relative">
-              <div className="!bg-offWhite px-5 carousel shadow z-20">
+        {data.map((a) => (
+          <div key={a.name} className="xl:max-w-[550px] md:max-w-[500px] w-full flex flex-col">
+            {/* flex-1/h-full: cards in the same slide share one height. */}
+            <div className="relative flex-1">
+              <div className="!bg-offWhite px-5 carousel shadow z-20 h-full">
                 <div
-                  className="p-5 !mb-0 flex flex-col"
+                  className="p-5 !mb-0 flex flex-col h-full"
                   style={{ borderLeft: "5px solid #811418" }}
                 >
-                  <img src="/quote.svg" alt="" className="mb-5 !w-12" />
+                  <img src="/quote.svg" alt="" width={48} height={48} className="mb-5 !w-12" />
 
-                  <p className="inter-medium text-left text-base text-faint">
+                  <p className="inter-medium text-left text-base leading-relaxed text-faint">
                     {a.message}
                   </p>
                 </div>
@@ -30,7 +31,7 @@ const Slider = ({ data = [] }) => {
                 <p>{a.name}</p>
                 {Array(5)
                   .fill("")
-                  .map((b, i) => {
+                  .map((_, i) => {
                     if (a.rating === 4.5 && i + 1 === 5) {
                       return (
                         <StarHalfIcon key={i} className="text-[#EAC157]" />
