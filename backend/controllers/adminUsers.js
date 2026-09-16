@@ -1,175 +1,252 @@
-// Admin user management (AGENT_WORKLOAD_SPLIT D4). Kept at parity with the
-// Worker (backend/cloudflare/src/index.js, handleAdminUsers).
-import { actorRole } from "../middleware/capability.js";
-import { hashPassword, normalizeEmail, revokeAdminSessions } from "../services/adminAuthService.js";
+// Admin user management (API_CONTRACT_V3 §2). Parity: backend/cloudflare/src/adminUsers.js.
+import config from "../config.js";
+import passwordResetTemplate from "../mail/_passwordReset.js";
+import { sendMail } from "../mail/mail.js";
+import { actingAdmin } from "../middleware/capabilities.js";
+import {
+  Q_MAX,
+  USER_MESSAGES,
+  checkUserChange,
+  filterAdmins,
+  paginate,
+  parseRole,
+  roleChangeSummary,
+} from "../shared/adminUsers.js";
+import {
+  FORBIDDEN_MESSAGE,
+  adminUser,
+  canManageRole,
+  emptyStaffProfile,
+  normalizeRole,
+} from "../shared/capabilities.js";
+import {
+  createPasswordReset,
+  normalizeEmail,
+  revokeAdminSessions,
+} from "../services/adminAuthService.js";
 import { asyncHandler } from "../services/asyncHandler.js";
-import { audit } from "../services/audit.js";
+import { audit, changedFields } from "../services/audit.js";
 import { ApiError, badRequest } from "../services/errors.js";
 import { created, ok } from "../services/http.js";
-import {
-  LAST_SUPERADMIN_MESSAGE,
-  PRIVILEGED_ROLE_MESSAGE,
-  ROLES,
-  adminView,
-  canManageRole,
-  normalizeRole,
-} from "../services/roles.js";
+import { pageQuery } from "../services/pagination.js";
+import { runInBackground } from "../services/runtime.js";
 import {
   createCollectionItem,
   findCollectionItem,
-  getCollectionItem,
   listCollection,
   updateCollectionItem,
 } from "../services/store.js";
 import {
   LIMITS,
-  conflict,
+  optionalPhone,
   requiredString,
   validateEmail,
-  validatePassword,
 } from "../services/validators.js";
 
-const EMAIL_TAKEN_MESSAGE = "An admin with this email already exists.";
-
 const roleField = (body) => {
-  const raw = body?.role;
-  if (typeof raw !== "string" || !raw.trim()) throw badRequest("Role is required.");
-  const role = raw.trim().toLowerCase();
-  if (!ROLES.includes(role)) throw badRequest(`Role must be one of: ${ROLES.join(", ")}.`);
+  const role = parseRole(body?.role);
+  if (!role) throw badRequest(USER_MESSAGES.roleInvalid);
   return role;
 };
 
-const assertCanManage = (req, role) => {
-  if (!canManageRole(actorRole(req), role)) throw new ApiError(403, PRIVILEGED_ROLE_MESSAGE);
+// phone: the existing phone rule, or null (absent/blank/null -> null).
+const phoneField = (body) => optionalPhone(body, "phone", "Phone number") || null;
+
+const findUser = async (id) => {
+  const user = await findCollectionItem("admins", { id: String(id) });
+  if (!user) throw new ApiError(404, USER_MESSAGES.notFound);
+  return user;
 };
 
-const assertNotSelf = (req, target, message) => {
-  if (req.admin && req.admin.id === target.id) throw new ApiError(403, message);
+const fail = (result) => {
+  if (result) throw new ApiError(result.status, result.message);
 };
 
-// Blocks removing the last active super admin (demotion or deactivation).
-const assertOtherActiveSuperadmin = async (target) => {
-  if (normalizeRole(target.role) !== "superadmin" || target.isActive === false) return;
-  const admins = await listCollection("admins", { includeInactive: true });
-  const others = admins.filter(
-    (admin) =>
-      admin.id !== target.id && admin.isActive !== false && normalizeRole(admin.role) === "superadmin"
-  );
-  if (others.length === 0) throw conflict(LAST_SUPERADMIN_MESSAGE);
-};
+// Legacy "super_admin" is rewritten on the next write of the record (§1.1).
+const withRoleRewrite = (existing, patch) =>
+  existing.role !== normalizeRole(existing.role) && patch.role === undefined
+    ? { ...patch, role: normalizeRole(existing.role) }
+    : patch;
 
-const auditUser = (req, action, user, summary, changes = []) =>
+const auditUser = (req, action, user, summary, changes) =>
   audit(req, { action, entity: "user", entityId: user.id, summary, changes });
 
-// GET /admin/users
-export const adminListUsers = asyncHandler(async (_req, res) => {
+const sendInvite = (req, email) =>
+  runInBackground("Admin invite", async () => {
+    const reset = await createPasswordReset(email);
+    if (!reset) return;
+    await sendMail(
+      {
+        to: reset.email,
+        subject: `Set up your ${config.application_name} admin account`,
+        data: { ...reset, adminUrl: config.admin_app_url },
+      },
+      passwordResetTemplate
+    );
+  });
+
+const queryFilters = (query = {}) => {
+  const filters = {};
+  if (query.role !== undefined && query.role !== "") {
+    filters.role = parseRole(query.role);
+    if (!filters.role) throw badRequest(USER_MESSAGES.roleInvalid);
+  }
+  if (query.isActive !== undefined && query.isActive !== "") {
+    if (query.isActive !== "true" && query.isActive !== "false") {
+      throw badRequest(USER_MESSAGES.isActiveInvalid);
+    }
+    filters.isActive = query.isActive === "true";
+  }
+  if (query.q !== undefined && query.q !== "") {
+    if (typeof query.q !== "string") throw badRequest("q must be text.");
+    if (query.q.length > Q_MAX) throw badRequest(USER_MESSAGES.qTooLong);
+    filters.q = query.q.trim();
+  }
+  return filters;
+};
+
+// GET /admin/users?page&limit&role&isActive&q (paged)
+export const adminListUsers = asyncHandler(async (req, res) => {
+  const { page, limit } = pageQuery(req.query);
+  const filters = queryFilters(req.query);
   const admins = await listCollection("admins", { includeInactive: true });
-  const users = admins
-    .map(adminView)
-    .sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
-  ok(res, "Users retrieved.", users);
+  const { items, total } = paginate(filterAdmins(admins, filters), page, limit);
+  ok(res, USER_MESSAGES.list, { items: items.map(adminUser), page, limit, total });
 });
 
 // GET /admin/users/:id
 export const adminGetUser = asyncHandler(async (req, res) => {
-  ok(res, "User retrieved.", adminView(await getCollectionItem("admins", req.params.id)));
+  ok(res, USER_MESSAGES.get, adminUser(await findUser(req.params.id)));
 });
 
-// POST /admin/users { name, email, role, password }
+// POST /admin/users { name, email, role, phone? } -> invite email, no usable password until reset.
 export const adminCreateUser = asyncHandler(async (req, res) => {
   const body = req.body || {};
   const name = requiredString(body, "name", "Name", { max: LIMITS.adminName });
-  const email = normalizeEmail(
-    validateEmail(requiredString(body, "email", "Email address", { max: LIMITS.email }), true)
+  const email = validateEmail(
+    requiredString(body, "email", "Email address", { max: LIMITS.email }),
+    true
   );
   const role = roleField(body);
-  const password = validatePassword(
-    requiredString(body, "password", "Password", { max: LIMITS.passwordMax }),
-    email
-  );
-  assertCanManage(req, role);
+  const phone = phoneField(body);
+  if (!canManageRole(actingAdmin(req), role)) throw new ApiError(403, FORBIDDEN_MESSAGE);
 
-  if (await findCollectionItem("admins", { email })) throw conflict(EMAIL_TAKEN_MESSAGE);
-  const passwordHash = await hashPassword(password);
-  const user = await createCollectionItem(
-    "admins",
-    {
-      name,
-      email,
-      role,
-      passwordHash,
-      isActive: true,
-      passwordChangedAt: new Date().toISOString(),
-    },
-    {
-      // JSON store: re-checked inside the write lock.
-      prepare: (items, item) => {
-        if (items.some((existing) => normalizeEmail(existing.email) === email)) {
-          throw conflict(EMAIL_TAKEN_MESSAGE);
-        }
-        return item;
+  const emailTaken = () => new ApiError(409, USER_MESSAGES.emailTaken);
+  if (await findCollectionItem("admins", { email })) throw emailTaken();
+
+  let user;
+  try {
+    user = await createCollectionItem(
+      "admins",
+      {
+        name,
+        email,
+        role,
+        phone,
+        profile: emptyStaffProfile(),
+        passwordHash: null,
+        isActive: true,
+        lastLoginAt: null,
       },
-    }
-  );
+      {
+        // JSON store: re-checked inside the write lock.
+        prepare: (items, item) => {
+          if (items.some((existing) => normalizeEmail(existing.email) === email)) throw emailTaken();
+          return item;
+        },
+      }
+    );
+  } catch (error) {
+    if (error?.code === 11000) throw emailTaken();
+    throw error;
+  }
 
-  auditUser(req, "user.create", user, `Created ${role} account ${email}`, ["name", "email", "role"]);
-  created(res, "User created.", adminView(user));
+  sendInvite(req, email);
+  auditUser(req, "user.create", user, `Created ${role} account ${email}`, ["name", "email", "role", "phone"]);
+  created(res, USER_MESSAGES.create, adminUser(user));
 });
 
-// PUT /admin/users/:id/role { role }
+// PUT /admin/users/:id { name?, phone? }
+export const adminUpdateUser = asyncHandler(async (req, res) => {
+  const body = req.body || {};
+  const patch = {};
+  if (body.name !== undefined) {
+    patch.name = requiredString(body, "name", "Name", { max: LIMITS.adminName });
+  }
+  if (body.phone !== undefined) patch.phone = phoneField(body);
+
+  const existing = await findUser(req.params.id);
+  if (!canManageRole(actingAdmin(req), existing.role)) throw new ApiError(403, FORBIDDEN_MESSAGE);
+
+  const changes = changedFields(existing, patch, Object.keys(patch));
+  const user = changes.length
+    ? await updateCollectionItem("admins", existing.id, withRoleRewrite(existing, patch))
+    : existing;
+  if (changes.length) auditUser(req, "user.update", user, `Updated account ${user.email}`, changes);
+  ok(res, USER_MESSAGES.update, adminUser(user));
+});
+
+// POST /admin/users/:id/role { role }
 export const adminChangeUserRole = asyncHandler(async (req, res) => {
   const role = roleField(req.body);
-  const existing = await getCollectionItem("admins", req.params.id);
-  assertNotSelf(req, existing, "You cannot change your own role.");
-  assertCanManage(req, existing.role);
-  assertCanManage(req, role);
+  const existing = await findUser(req.params.id);
+  const admins = await listCollection("admins", { includeInactive: true });
+  fail(
+    checkUserChange({
+      actor: actingAdmin(req),
+      target: existing,
+      nextRole: role,
+      admins,
+      forbiddenMessage: FORBIDDEN_MESSAGE,
+    })
+  );
 
   const previous = normalizeRole(existing.role);
-  if (previous === role) {
-    ok(res, "User role unchanged.", adminView(existing));
+  if (previous === role && existing.role === role) {
+    ok(res, USER_MESSAGES.role, adminUser(existing));
     return;
   }
-  if (role !== "superadmin") await assertOtherActiveSuperadmin(existing);
-
-  // Capabilities are resolved from the stored role on every request, so the
-  // change applies to existing sessions immediately.
+  // The role is read from the stored record on every request, so this applies
+  // to the account's next request.
   const user = await updateCollectionItem("admins", existing.id, { role });
-  auditUser(
-    req,
-    "user.role_change",
-    user,
-    `Changed role of ${user.email} from ${previous || existing.role || "none"} to ${role}`,
-    ["role"]
-  );
-  ok(res, "User role updated.", adminView(user));
+  if (previous !== role) {
+    auditUser(req, "user.role_change", user, roleChangeSummary(user, previous, role), ["role"]);
+  }
+  ok(res, USER_MESSAGES.role, adminUser(user));
 });
 
 const setActive = (isActive) =>
   asyncHandler(async (req, res) => {
-    const existing = await getCollectionItem("admins", req.params.id);
-    assertCanManage(req, existing.role);
+    const existing = await findUser(req.params.id);
+    const admins = await listCollection("admins", { includeInactive: true });
+    fail(
+      checkUserChange({
+        actor: actingAdmin(req),
+        target: existing,
+        nextActive: isActive,
+        admins,
+        forbiddenMessage: FORBIDDEN_MESSAGE,
+      })
+    );
 
-    if (!isActive) {
-      assertNotSelf(req, existing, "You cannot deactivate your own account.");
-      await assertOtherActiveSuperadmin(existing);
-    }
+    const message = isActive ? USER_MESSAGES.reactivate : USER_MESSAGES.deactivate;
     if ((existing.isActive !== false) === isActive) {
-      ok(res, isActive ? "User is already active." : "User is already inactive.", adminView(existing));
+      if (!isActive) await revokeAdminSessions(existing.id);
+      ok(res, message, adminUser(existing));
       return;
     }
-
-    const user = await updateCollectionItem("admins", existing.id, { isActive });
+    const user = await updateCollectionItem("admins", existing.id, withRoleRewrite(existing, { isActive }));
     if (!isActive) await revokeAdminSessions(user.id);
     auditUser(
       req,
       isActive ? "user.reactivate" : "user.deactivate",
       user,
-      `${isActive ? "Reactivated" : "Deactivated"} ${user.email}${isActive ? "" : "; sessions revoked"}`,
+      `${isActive ? "Reactivated" : "Deactivated"} account ${user.email}`,
       ["isActive"]
     );
-    ok(res, isActive ? "User reactivated." : "User deactivated.", adminView(user));
+    ok(res, message, adminUser(user));
   });
 
-// POST /admin/users/:id/deactivate and /reactivate
+// POST /admin/users/:id/deactivate and /reactivate (idempotent)
 export const adminDeactivateUser = setActive(false);
 export const adminReactivateUser = setActive(true);

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminAuth } from "../middleware/adminAuth.js";
-import { requireCapability } from "../middleware/capability.js";
+import { requireCapability } from "../middleware/capabilities.js";
 import {
   login,
   logout,
@@ -57,6 +57,7 @@ import {
   adminGetUser,
   adminListUsers,
   adminReactivateUser,
+  adminUpdateUser,
 } from "../controllers/adminUsers.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 
@@ -69,9 +70,8 @@ router.post("/auth/reset-password", resetPassword);
 
 router.use(adminAuth);
 
-// Every route below needs a signed-in admin; capabilities come from
-// services/roles.js (mirrored by the Worker). /auth/logout, /auth/me and the
-// read-status list need no capability.
+// Every route below needs a session. Capabilities: API_CONTRACT_V3 §1.2
+// (backend/shared/capabilities.js), mirrored by the Worker's handleAdmin.
 const can = requireCapability;
 
 router.post("/auth/logout", logout);
@@ -80,58 +80,60 @@ router.get("/auth/me", me);
 router.get("/dashboard", can("dashboard:read"), adminDashboard);
 router.get("/audit-logs", can("audit:read"), adminListAuditLogs);
 
-// Per-admin read status (not audited, not rate limited). Marking a record read
-// needs read access to that record type.
-const canReadType = (req, res, next) =>
-  ["contacts", "orders"].includes(req.body?.type)
-    ? can(`${req.body.type}:read`)(req, res, next)
-    : next();
+// Per-admin read status (not audited, not rate limited). No capability, but
+// marking a record read needs read access to its type.
+const READ_TYPE_CAPABILITY = { contacts: "leads:read", orders: "orders:read" };
+const canReadType = (req, res, next) => {
+  const capability = READ_TYPE_CAPABILITY[req.body?.type];
+  return capability ? can(capability)(req, res, next) : next();
+};
 router.get("/reads", adminGetReads);
 router.post("/reads", canReadType, adminMarkRead);
 router.post("/reads/all", adminMarkAllRead);
 
 router.get("/users", can("users:read"), adminListUsers);
-router.post("/users", can("users:write"), adminCreateUser);
+router.post("/users", can("users:manage"), adminCreateUser);
 router.get("/users/:id", can("users:read"), adminGetUser);
-router.put("/users/:id/role", can("users:write"), adminChangeUserRole);
-router.post("/users/:id/deactivate", can("users:write"), adminDeactivateUser);
-router.post("/users/:id/reactivate", can("users:write"), adminReactivateUser);
+router.put("/users/:id", can("users:manage"), adminUpdateUser);
+router.post("/users/:id/role", can("users:manage"), adminChangeUserRole);
+router.post("/users/:id/deactivate", can("users:manage"), adminDeactivateUser);
+router.post("/users/:id/reactivate", can("users:manage"), adminReactivateUser);
 
-const catalogRead = can("catalog:read");
-const catalogWrite = can("catalog:write");
+const contentRead = can("content:read");
+const contentWrite = can("content:write");
 
-router.get("/packages", catalogRead, asyncHandler(adminListPackages));
-router.post("/packages", catalogWrite, asyncHandler(adminCreatePackage));
-router.put("/packages/:id", catalogWrite, asyncHandler(adminUpdatePackage));
-router.delete("/packages/:id", catalogWrite, asyncHandler(adminDeletePackage));
+router.get("/packages", contentRead, asyncHandler(adminListPackages));
+router.post("/packages", contentWrite, asyncHandler(adminCreatePackage));
+router.put("/packages/:id", contentWrite, asyncHandler(adminUpdatePackage));
+router.delete("/packages/:id", contentWrite, asyncHandler(adminDeletePackage));
 
-router.get("/services", catalogRead, asyncHandler(adminListServices));
-router.post("/services", catalogWrite, asyncHandler(adminCreateService));
-router.put("/services/:id", catalogWrite, asyncHandler(adminUpdateService));
-router.delete("/services/:id", catalogWrite, asyncHandler(adminDeleteService));
-router.post("/services/customer-segments", catalogWrite, asyncHandler(adminCreateCustomerSegment));
-router.put("/services/customer-segments/:id", catalogWrite, asyncHandler(adminUpdateCustomerSegment));
-router.delete("/services/customer-segments/:id", catalogWrite, asyncHandler(adminDeleteCustomerSegment));
+router.get("/services", contentRead, asyncHandler(adminListServices));
+router.post("/services", contentWrite, asyncHandler(adminCreateService));
+router.put("/services/:id", contentWrite, asyncHandler(adminUpdateService));
+router.delete("/services/:id", contentWrite, asyncHandler(adminDeleteService));
+router.post("/services/customer-segments", contentWrite, asyncHandler(adminCreateCustomerSegment));
+router.put("/services/customer-segments/:id", contentWrite, asyncHandler(adminUpdateCustomerSegment));
+router.delete("/services/customer-segments/:id", contentWrite, asyncHandler(adminDeleteCustomerSegment));
 
-router.get("/portfolio", catalogRead, asyncHandler(adminListPortfolio));
-router.post("/portfolio", catalogWrite, asyncHandler(adminCreatePortfolioItem));
-router.put("/portfolio/:id", catalogWrite, asyncHandler(adminUpdatePortfolioItem));
-router.delete("/portfolio/:id", catalogWrite, asyncHandler(adminDeletePortfolioItem));
+router.get("/portfolio", contentRead, asyncHandler(adminListPortfolio));
+router.post("/portfolio", contentWrite, asyncHandler(adminCreatePortfolioItem));
+router.put("/portfolio/:id", contentWrite, asyncHandler(adminUpdatePortfolioItem));
+router.delete("/portfolio/:id", contentWrite, asyncHandler(adminDeletePortfolioItem));
 
-router.get("/contacts", can("contacts:read"), adminListMessages);
-router.put("/contacts/:id", can("contacts:write"), adminUpdateMessage);
-router.delete("/contacts/:id", can("contacts:write"), adminDeleteMessage);
-router.post("/contacts/:id/reply", can("contacts:write"), adminReplyMessage);
+router.get("/contacts", can("leads:read"), adminListMessages);
+router.put("/contacts/:id", can("leads:write"), adminUpdateMessage);
+router.delete("/contacts/:id", can("leads:write"), adminDeleteMessage);
+router.post("/contacts/:id/reply", can("leads:write"), adminReplyMessage);
 
-router.get("/newsletter", can("newsletter:read"), adminListSubscribers);
-router.put("/newsletter/:id", can("newsletter:write"), adminUpdateSubscriber);
-router.delete("/newsletter/:id", can("newsletter:write"), adminDeleteSubscriber);
+router.get("/newsletter", can("leads:read"), adminListSubscribers);
+router.put("/newsletter/:id", can("leads:write"), adminUpdateSubscriber);
+router.delete("/newsletter/:id", can("leads:write"), adminDeleteSubscriber);
 
-router.get("/carts", can("carts:read"), adminListCarts);
+router.get("/carts", can("orders:read"), adminListCarts);
 
 router.get("/orders", can("orders:read"), adminListOrders);
 router.get("/orders/:id", can("orders:read"), adminGetOrder);
-router.put("/orders/:id", can("orders:write"), adminUpdateOrder);
-router.delete("/orders/:id", can("orders:write"), adminDeleteOrder);
+router.put("/orders/:id", can("orders:update"), adminUpdateOrder);
+router.delete("/orders/:id", can("orders:delete"), adminDeleteOrder);
 
 export default router;

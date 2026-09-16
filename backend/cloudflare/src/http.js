@@ -27,8 +27,8 @@ export const json = (data, status = 200, extraHeaders = {}) =>
     headers: { ...extraHeaders, "Content-Type": "application/json" },
   });
 
-export const ok = (message, data) => json({ success: true, message, data });
-export const created = (message, data) => json({ success: true, message, data }, 201);
+export const ok = (message, data = null) => json({ success: true, message, data });
+export const created = (message, data = null) => json({ success: true, message, data }, 201);
 
 const warned = new Set();
 export const warnOnce = (key, message) => {

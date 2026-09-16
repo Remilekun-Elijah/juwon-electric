@@ -781,11 +781,16 @@ export const pageRecords = async (collection, { filter = {}, page = 1, limit = 5
 // for webhook replay protection).
 export const ensureSecurityIndexes = async () => {
   if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
-  await Promise.all(
-    [...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
+  await Promise.all([
+    ...[...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
       model.createIndexes()
-    )
-  );
+    ),
+    // Admin emails are unique (stored lowercase). Fails loudly on existing duplicates.
+    models.admins.collection.createIndex(
+      { email: 1 },
+      { unique: true, name: "admins_email_unique", partialFilterExpression: { email: { $type: "string" } } }
+    ),
+  ]);
 };
 
 // ---------------------------------------------------------------------------
