@@ -9,7 +9,7 @@ Base: `v3-agents-base` @ `d48b482`. Contract: `docs/agents/API_CONTRACT_V3.md` o
 | §4 Catalog: categories, products, package `items` | Done (aligned with the contract) |
 | §5 Inventory: stock view, adjustments, movements, low-stock alerts and check | Done (aligned; `low_stock` notification lands with §8) |
 | §6 Orders and fulfilment (D4a) | Done (`new_order` notification lands with §8) |
-| §7 Installation jobs, engineer endpoints, staff | Not started |
+| §7 Installation jobs, engineer endpoints, staff | Done (`job_assigned` notification lands with §8) |
 | §8 Settings and notifications | Not started |
 | §9 Dashboard KPIs | Not started |
 
@@ -19,7 +19,8 @@ Commits:
 - 68e2c5c: inventory (pre-contract)
 - 05498dd: catalog and inventory aligned with the contract
 - bd75e45: adopted BE-1's sanitiser, lint tooling and test globs
-- orders (§6): the commit that adds this file version
+- faa51c4: orders (§6)
+- jobs, engineer endpoints and staff (§7): the commit that adds this file version
 
 ## Integration with BE-1
 
@@ -47,13 +48,14 @@ Commits:
   - JSON store: the lock.
   - Mongo: conditional `$inc` plus compensation.
   - D1: a single batch with a compare-and-set update per product and `batch_guard` CHECK rows that roll the whole batch back when a row changed, then retry. `cloudflare/test/inventory.test.js` tests the rollback and retry. The concurrent case (12 parallel decrements of 5 in stock) is tested in both runtimes.
+  - **Integration check (real D1):** the guard relies on `changes()` inside `env.DB.batch()` reporting the previous statement's row count, as SQLite does. The local tests run on `node:sqlite`. Before the first production deploy, run a `batch` of a non-matching `UPDATE` followed by the guard insert against a real D1 database (`wrangler d1 execute --remote` or a preview Worker) and confirm it fails and rolls back.
 - **Migrations.**
   - `0010_catalog.sql`: slug and SKU unique indexes.
   - `0012_inventory_jobs.sql`: `batch_guard`, plus movement and job indexes.
   - `0011_orders_fulfilment.sql`: order backfill (§6.1). Tested on a seeded database at `0010`: the migrated rows equal the read-time normalisation and are idempotent.
   - `0013` comes with §8.
 - **Tests** (`cd backend && npm test`):
-  - Scenarios: `backend/test/scenarios/{catalog,inventory,orders}.js`, plus `opsKit.js` for admin and record seeding, email capture (nodemailer and Resend) and masking.
+  - Scenarios: `backend/test/scenarios/{catalog,inventory,orders,jobs}.js`, plus `opsKit.js` for admin and record seeding, email capture (nodemailer and Resend) and masking.
   - Runners: `backend/test/*.test.js` (Express), `backend/cloudflare/test/*.test.js` (Worker) and `backend/test/parity/*.parity.test.js`.
   - Mongo mode is not covered by tests.
 
@@ -68,7 +70,7 @@ Commits:
    - Admin package create bodies are compared on `message` and `items` only, because Express seeds a package catalog and the Worker does not.
    - Two admin product lists are compared as sets, because records written in the same millisecond can tie on `updatedAt`.
    - The concurrent-adjustment step is compared as sorted statuses.
-7. **Express low-stock digest timer** (24 hours, in `start()`) is the Express counterpart of the optional Worker cron.
+7. **Express low-stock digest timer** (24 hours, in `start()`) is the Express counterpart of the optional Worker cron. It runs once per Express instance, so N instances send N digests. This is documented in API.md.
 8. **Unknown fields** in request bodies are ignored.
 9. **Orders: `stockCommittedAt`** is set only when the `pending → processing` move actually changed stock, meaning at least one line maps to package items.
 10. **Orders: the write guard** is the stored `fulfillmentStatus` and `paymentStatus` (`assignedEngineerId` for assignment), not the whole record. Concurrent note edits are last-write-wins; concurrent status changes answer `409`, so stock is never committed twice (tested with three racing transitions).
@@ -77,3 +79,8 @@ Commits:
 13. **Orders: validation messages.** `400` `"Fulfilment status is not valid."`, `"Payment status is not valid."` and `"requiresInstallation must be true or false."` (filter). A missing `engineerId` answers `"Assignee must be an active engineer."`.
 14. **Orders: repeated transitions.** `mark-paid` on a paid order and cancelling a cancelled order are `200` no-ops, as §6.2 says for the same value.
 15. **Express order routes on this branch** are not capability-gated until BE-1's `routes/admin.js` merges in. The Worker gates them already. The parity scenarios therefore only exercise non-superadmin roles on the new order routes.
+16. **Jobs: assignment of started jobs.** Assigning or reassigning is limited to `unassigned` and `assigned` jobs. Other statuses answer the transition `409` with `to` = `assigned` (or `unassigned` for `null`).
+17. **Jobs: `note` on `POST /admin/jobs/:id/status`** is not stored on the job (the job shape has no field for it). It goes into the audit summary.
+18. **Jobs: admins can complete a job** whose checklist is unfinished. The checklist rule applies to `/admin/me/jobs` only, as §7.3 says.
+19. **Jobs: order checks for creation** run `requiresInstallation` (`409` "Order does not require installation.") before the cancelled check.
+20. **Staff:** the list is ordered by name. `GET /admin/staff/:id` counts `openJobs` as the engineer's jobs that are not completed or cancelled. `PUT` ignores `role` and `isActive`, and is audited as `user.update` (§7 lists no staff action).

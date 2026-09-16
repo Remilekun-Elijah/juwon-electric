@@ -143,7 +143,7 @@ export const recorder = (client) => {
 };
 
 // Values that differ between runtimes by construction: ids, timestamps and tokens.
-const MASKED = (key) => key === "id" || key === "_id" || key === "token" || /Id$/.test(key) || /At$/.test(key);
+const MASKED = (key) => key === "id" || key === "_id" || key === "doneBy" || key === "token" || /Id$/.test(key) || /At$/.test(key);
 
 export const maskOps = (value, key = "") => {
   if (Array.isArray(value)) return value.map((entry) => maskOps(entry));

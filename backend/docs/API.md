@@ -504,7 +504,7 @@ Audit actions: `category.create|update|delete`, `product.create|update|delete`.
   - `reason` is `restock`, `adjustment`, `damage`, `return` or `correction` (`400` `"Reason is not valid."`). `note` is at most 500 characters.
   - `409` `"Stock cannot go below zero."`.
 - `GET /admin/inventory/movements?productId&reason&from&to&page&limit` (`inventory:read`, paged): `200` `"Movements retrieved."`. Newest first; movements written together are ordered by SKU. Invalid dates answer `400` `"from must be a valid date."` or `"to must be a valid date."`.
-- `POST /admin/inventory/low-stock-check` (`inventory:adjust`): `200` `"Low-stock check complete."` with `data: { lowStock, emailed }`. It emails a digest of all active low-stock products. The Worker also runs it daily from a cron trigger (`wrangler.toml`), and Express from a 24-hour timer started in `start()`.
+- `POST /admin/inventory/low-stock-check` (`inventory:adjust`): `200` `"Low-stock check complete."` with `data: { lowStock, emailed }`. It emails a digest of all active low-stock products. The Worker also runs it once a day from a cron trigger (`wrangler.toml`). Express runs it from a 24-hour timer started in `start()`, and that timer runs **once per Express instance**: with several instances behind a load balancer, each one sends its own digest.
 
 Movement: `{ id, productId, sku, productName, change, stockBefore, stockAfter, reason, referenceType, referenceId, note, createdBy: { id, email } | null, createdAt }`. Reasons written by the system are `initial`, `sale` and `sale_reversal`.
 
@@ -557,3 +557,45 @@ Audit actions:
 - `order.fulfillment_change`: the summary shows `from → to`.
 - `order.status_change`: written in addition when the derived `status` changes.
 - `order.payment_change`, `order.assign_engineer`, `order.delete`.
+
+### Installation jobs, engineer endpoints and staff
+
+Job shape and transitions: contract §7.1. `order` and `engineer` (including `engineer.phone`) are joined at read time. `address` defaults to the order's `deliveryAddress`.
+
+Admin jobs:
+
+- `GET /admin/jobs?status&engineerId&orderId&from&to&page&limit` (`jobs:read`, paged): `"Jobs retrieved."`. Ordered by `scheduledAt` ascending with unscheduled jobs last, then `createdAt` descending. `from` and `to` filter `scheduledAt`.
+- `GET /admin/jobs/:id` (`jobs:read`): `"Job retrieved."`, or `404` `"Job not found."`.
+- `POST /admin/jobs` (`jobs:assign`), body `{ orderId, engineerId?, scheduledAt?, durationEstimateMinutes?, address?, checklist?: string[], notes? }`: `201` `"Job created."`.
+  - Checks run in this order: body validation (`"Order is required."`, `"Scheduled time must be a valid date."`, duration 15–10,080), then `404` `"Order not found."`, then `400` `"Assignee must be an active engineer."`, then `409` `"Order does not require installation."` or `"Order is cancelled."`.
+  - The job starts `assigned` when an engineer is given, otherwise `unassigned`.
+  - Assigning an engineer also sets the order's `assignedEngineerId` when it is empty.
+- `PUT /admin/jobs/:id` (`jobs:assign`), body `{ scheduledAt?, durationEstimateMinutes?, address?, checklist?, notes? }`: `"Job updated."`. Only the sent fields change.
+  - The checklist is replaced. String entries become new items; `{ id, label }` entries with a known id keep `done`, `doneAt` and `doneBy`.
+  - A closed job answers `409` `"Job is closed."`.
+- `POST /admin/jobs/:id/assign` (`jobs:assign`), body `{ engineerId | null }`: `"Job assigned."` (status `assigned`) or `"Job unassigned."` (status `unassigned`). Only unassigned or assigned jobs can be assigned; any other status answers `409` `"Cannot change job status from <from> to <to>."`.
+- `POST /admin/jobs/:id/status` (`jobs:assign`), body `{ status, note? }`: `"Job status updated."`. The allowed moves are `unassigned → cancelled`, `assigned → in_progress | cancelled` and `in_progress → completed | cancelled`. `assigned` and `unassigned` only come from assign. The same status is a no-op. The status sets `startedAt`, `completedAt` or `cancelledAt`, and the note goes into the audit summary.
+- `DELETE /admin/jobs/:id` (`jobs:assign`): `"Job deleted."`. Only for `unassigned`, `assigned` or `cancelled` jobs; otherwise `409` `"Job cannot be deleted once started."`.
+
+Engineer endpoints (`jobs:update-own`). Every lookup is scoped to the signed-in admin's id, and another engineer's job answers `404` `"Job not found."`:
+
+- `GET /admin/me/jobs?status&page&limit`: open jobs only, unless `status` is given.
+- `GET /admin/me/jobs/:id`.
+- `POST /admin/me/jobs/:id/status`, body `{ status: "in_progress" | "completed" }`.
+  - Any other value answers `400` `"Status is not valid."`.
+  - Invalid moves answer `409` `"Cannot change job status from <from> to <to>."`.
+  - Completing with unfinished checklist items answers `409` `"Complete the checklist first."`.
+- `PUT /admin/me/jobs/:id`, body `{ checklist?: [{ id, done }], photos?: string[] (≤20 URLs), completionNotes? (≤5000) }`.
+  - Checking an item sets `doneAt` and `doneBy`; unchecking clears them.
+  - An unknown item id answers `400` `"Checklist item not found."`.
+  - Jobs that are not `assigned` or `in_progress` answer `409` `"Job is closed."`.
+
+When a job becomes `completed` and its order is `delivered`, and every non-cancelled job of that order is completed, the order moves to `installed`. The move is audited as `order.fulfillment_change` by the acting admin.
+
+Staff:
+
+- `GET /admin/staff?role&area&isActive&q&page&limit` (`staff:read`, paged `AdminUser`, ordered by name). `area` matches an `areaCoverage` entry regardless of case. An invalid role answers `400` `"Role is not valid."`.
+- `GET /admin/staff/:id` (`staff:read`): `"Staff member retrieved."`, with `AdminUser` plus `openJobs` (the engineer's jobs that are not completed or cancelled). `404` `"User not found."`.
+- `PUT /admin/staff/:id` (`staff:write`), body `{ phone?, profile?: { areaCoverage?, certifications?, bio?, avatarUrl? } }`: `"Staff member updated."`. Sent profile keys replace the stored ones, and the other keys are kept. Role and activation are ignored here. Audited as `user.update`.
+
+Audit actions: `job.create`, `job.update`, `job.assign`, `job.status_change`, `job.delete` (entity `job`).

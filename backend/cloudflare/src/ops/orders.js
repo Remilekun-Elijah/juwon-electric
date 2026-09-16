@@ -36,7 +36,7 @@ const recordsWhere = async (env, collection, field, value) => {
 export const jobsOfOrder = (env, orderId) => recordsWhere(env, "installationJobs", "orderId", orderId);
 
 /** Writes a planned order change atomically (see applyOrderPlan in backend/controllers/orders.js). */
-const applyOrderPlan = async (context, stored, plan) => {
+export const applyOrderPlan = async (context, stored, plan) => {
   const { env, admin, audit } = context;
   let lines = [];
   let reason = null;

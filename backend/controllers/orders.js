@@ -122,14 +122,14 @@ export const placeOrder = asyncHandler(async (req, res) => {
   created(res, "Order placed successfully.", order);
 });
 
-const jobsOf = (orderId) => findCollectionItems("installationJobs", { orderId });
+export const jobsOf = (orderId) => findCollectionItems("installationJobs", { orderId });
 
 /**
  * Writes a planned order change (shared/orders.js planOrderChanges): stock commit on
  * pending -> processing, stock reversal on cancel, and the order patch, in one atomic step
  * guarded by the order's current fulfilment and payment status. Audits every change.
  */
-const applyOrderPlan = async (req, stored, plan) => {
+export const applyOrderPlan = async (req, stored, plan) => {
   let lines = [];
   let reason = null;
   let onShortfall;

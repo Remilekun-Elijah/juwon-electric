@@ -23,6 +23,22 @@ import {
   adminListMovements,
   adminLowStockCheck,
 } from "../controllers/inventory.js";
+import {
+  adminAssignJob,
+  adminCreateJob,
+  adminDeleteJob,
+  adminGetJob,
+  adminGetStaff,
+  adminJobStatus,
+  adminListJobs,
+  adminListStaff,
+  adminUpdateJob,
+  adminUpdateStaff,
+  myGetJob,
+  myJobStatus,
+  myListJobs,
+  myUpdateJob,
+} from "../controllers/jobs.js";
 import { adminAssignOrderEngineer, adminMarkOrderPaid, adminOrderFulfillment } from "../controllers/orders.js";
 import { requireCapability as can } from "../middleware/capabilities.js";
 
@@ -55,3 +71,21 @@ opsAdminRouter.post("/inventory/low-stock-check", can("inventory:adjust"), admin
 opsAdminRouter.post("/orders/:id/fulfillment", can("orders:update"), adminOrderFulfillment);
 opsAdminRouter.post("/orders/:id/mark-paid", can("orders:update"), adminMarkOrderPaid);
 opsAdminRouter.post("/orders/:id/assign-engineer", can("orders:update"), adminAssignOrderEngineer);
+
+// Installation jobs (§7.2), engineer-scoped jobs (§7.3) and staff (§7.4).
+opsAdminRouter.get("/jobs", can("jobs:read"), adminListJobs);
+opsAdminRouter.post("/jobs", can("jobs:assign"), adminCreateJob);
+opsAdminRouter.get("/jobs/:id", can("jobs:read"), adminGetJob);
+opsAdminRouter.put("/jobs/:id", can("jobs:assign"), adminUpdateJob);
+opsAdminRouter.delete("/jobs/:id", can("jobs:assign"), adminDeleteJob);
+opsAdminRouter.post("/jobs/:id/assign", can("jobs:assign"), adminAssignJob);
+opsAdminRouter.post("/jobs/:id/status", can("jobs:assign"), adminJobStatus);
+
+opsAdminRouter.get("/me/jobs", can("jobs:update-own"), myListJobs);
+opsAdminRouter.get("/me/jobs/:id", can("jobs:update-own"), myGetJob);
+opsAdminRouter.put("/me/jobs/:id", can("jobs:update-own"), myUpdateJob);
+opsAdminRouter.post("/me/jobs/:id/status", can("jobs:update-own"), myJobStatus);
+
+opsAdminRouter.get("/staff", can("staff:read"), adminListStaff);
+opsAdminRouter.get("/staff/:id", can("staff:read"), adminGetStaff);
+opsAdminRouter.put("/staff/:id", can("staff:write"), adminUpdateStaff);
