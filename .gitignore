@@ -129,3 +129,16 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .vite
+# Local JSON datastore (admin password hashes + customer data) - never commit
+backend/data/db.json
+backend/data/*.tmp
+# Startup backups of the JSON store (keeps the newest 5)
+backend/data/backups/
+
+# Cloudflare Worker local secrets and state
+backend/cloudflare/.dev.vars*
+backend/cloudflare/.wrangler/
+
+# OS / tool artefacts
+.DS_Store
+.kilo/
