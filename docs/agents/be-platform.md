@@ -84,6 +84,21 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` â†
   - An unused `next` argument on `GET /`.
 - `engines.node` is `>=22.5` (needed for `node:sqlite` in the Worker tests).
 
+## Milestone 5: CI (C5): done
+
+`.github/workflows/ci.yml` was rewritten. The old file was invalid: it used an `exists()` expression, which is not a GitHub Actions function; ran `npm run build` in the backend, which has no build script; used Node 18; and published `workers/d1-write` from every branch.
+
+| Job | When | Steps |
+| --- | --- | --- |
+| `backend` | every push and PR | Node 22, `npm ci`, `npm run lint`, `npm test` (Express, Worker and parity) |
+| `worker` | every push and PR | Node 22, `npm ci` in `backend/cloudflare`, `wrangler deploy --dry-run` (bundles `src/` plus `backend/shared`, no credentials) |
+| `frontend` | every push and PR | Node 22, `npm ci`, `npm run lint`, `npm run build` in `frontend-next` |
+| `deploy-worker` | **push to `v3` or `main` only**, after `backend` and `worker` pass | `production` environment, no parallel deploys, fails fast without secrets, then `wrangler d1 migrations apply juwon-electric --remote`, then `wrangler deploy`. Uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` |
+
+- The workflow validates with `@action-validator/cli`. It has not run on GitHub from this branch, because nothing is pushed.
+- The `frontend` job was not run locally (no `frontend-next` install here, to save disk). Whether `frontend-next` lint and build pass is FE's responsibility, and SUP-FE should check the first run.
+- The deploy does not wait for the `frontend` job, so an FE lint failure cannot block a backend hotfix. Vercel deploys the frontend separately.
+
 ## Interpretations and deviations (SUP-BE please confirm)
 
 1. **`/admin/reads*` checks.** `POST /admin/reads` checks the record type (`contacts` â†’ `leads:read`, `orders` â†’ `orders:read`). `GET /admin/reads` and `POST /admin/reads/all` need no capability, because they return only read timestamps and never record contents.
@@ -98,4 +113,4 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` â†
 
 ## Remaining BE-1 work (not started)
 
-- C5 CI (Node 22, wrangler deploy on `v3`/main with migrations first), C6 `docs/DEPLOYMENT.md` env matrix.
+- C6 `docs/DEPLOYMENT.md` env matrix.

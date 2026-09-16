@@ -1,82 +1,137 @@
 name: CI
 
+# Checks run on every push and pull request. The Worker deploy runs only on pushes
+# to v3 or main, after the backend and Worker checks pass (docs/DEPLOYMENT.md).
 on:
   push:
     branches:
-      - '**'
+      - "**"
   pull_request:
-    branches:
-      - '**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  lint:
-    name: Lint (frontend and backend)
+  backend:
+    name: Backend lint and test (Express, Worker, parity)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '18'
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Install and lint frontend-next
-        if: "exists('frontend-next')"
-        run: |
-          cd frontend-next
-          npm ci
-          npm run lint
+      - name: Install
+        run: npm ci
 
-      - name: Install and lint backend
-        if: "exists('backend')"
-        run: |
-          cd backend
-          npm ci
-          npm run lint
+      - name: Lint (ESLint and control/format character check)
+        run: npm run lint
 
-  build-backend:
-    name: Build backend
+      - name: Test
+        run: npm test
+
+  worker:
+    name: Worker bundle
     runs-on: ubuntu-latest
-    needs: lint
+    defaults:
+      run:
+        working-directory: backend/cloudflare
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '18'
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/cloudflare/package-lock.json
 
-      - name: Install backend dependencies
-        run: |
-          cd backend
-          npm ci
+      - name: Install
+        run: npm ci
 
-      - name: Build backend
-        run: |
-          cd backend
-          npm run build
+      # Bundles src/ plus backend/shared without deploying (no credentials needed).
+      - name: Build (wrangler dry run)
+        run: npx wrangler deploy --dry-run --outdir dist
 
-  build-frontend:
-    name: Build frontend-next
+  frontend:
+    name: Frontend-next lint and build
     runs-on: ubuntu-latest
-    needs: lint
+    defaults:
+      run:
+        working-directory: frontend-next
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '18'
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend-next/package-lock.json
 
-      - name: Install frontend dependencies
-        run: |
-          cd frontend-next
-          npm ci
+      - name: Install
+        run: npm ci
 
-      - name: Build frontend
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  deploy-worker:
+    name: Deploy Worker (D1 migrations, then wrangler deploy)
+    runs-on: ubuntu-latest
+    needs: [backend, worker]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/v3' || github.ref == 'refs/heads/main')
+    environment: production
+    concurrency:
+      group: deploy-worker-production
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: backend/cloudflare
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/cloudflare/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Check Cloudflare credentials
         run: |
-          cd frontend-next
-          npm run build
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets are required to deploy." >&2
+            exit 1
+          fi
+
+      # Migrations first: new code may depend on new indexes. Migrations are idempotent and
+      # additive, so the previous Worker keeps working against the migrated database.
+      - name: Apply D1 migrations (remote)
+        run: npx wrangler d1 migrations apply juwon-electric --remote
+
+      - name: Deploy Worker
+        run: npx wrangler deploy
