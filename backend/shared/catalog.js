@@ -18,7 +18,7 @@ import {
   url,
   urlList,
 } from "./fields.js";
-import { sanitizeRichText } from "./richText.js";
+import { RICH_TEXT_MAX_LENGTH, RICH_TEXT_TOO_LONG_MESSAGE, sanitizeRichText } from "./richText.js";
 
 export const PRODUCT_STATUSES = ["active", "hidden", "archived"];
 export const ATTRIBUTE_TYPES = ["text", "number", "boolean"];
@@ -26,7 +26,6 @@ export const CURRENCY = "NGN";
 
 const KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
 const SKU_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
-const DESCRIPTION_HTML_MAX = 50000;
 
 const sent = (body, key) => body !== null && typeof body === "object" && body[key] !== undefined;
 const byName = (a, b) => String(a.name).localeCompare(String(b.name)) || String(a.id).localeCompare(String(b.id));
@@ -161,10 +160,15 @@ const skuField = (body) => {
   return value;
 };
 
+// Same rules as vacancy descriptions (shared/vacancies.js on BE-1): null or absent is "",
+// anything else must be text; the sanitiser is the boundary, so control characters are
+// dropped by it rather than rejected.
 const descriptionHtmlField = (body) => {
-  const raw = text(body, "descriptionHtml", { label: "Description", multiline: true });
-  const clean = sanitizeRichText(raw);
-  if (clean.length > DESCRIPTION_HTML_MAX) throw badRequest(`Description must be ${DESCRIPTION_HTML_MAX} characters or fewer.`);
+  const raw = body.descriptionHtml;
+  if (raw === undefined || raw === null) return "";
+  if (typeof raw !== "string") throw badRequest("Description must be text.");
+  const clean = sanitizeRichText(raw).trim();
+  if (clean.length > RICH_TEXT_MAX_LENGTH) throw badRequest(RICH_TEXT_TOO_LONG_MESSAGE);
   return clean;
 };
 
@@ -271,7 +275,7 @@ export const serializeProduct = (product) => ({
 });
 
 export const serializePublicProduct = (product, categoriesById = new Map()) => {
-  const { costPrice, stockQuantity, reorderLevel, lowStock, ...rest } = serializeProduct(product);
+  const { costPrice: _costPrice, stockQuantity, reorderLevel: _reorderLevel, lowStock: _lowStock, ...rest } = serializeProduct(product);
   const category = rest.categoryId ? categoriesById.get(rest.categoryId) : null;
   return {
     ...rest,

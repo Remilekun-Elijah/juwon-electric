@@ -1,5 +1,5 @@
 import Vacancy from '../models/Vacancy.js';
-import sanitizeHtml from 'sanitize-html';
+import { sanitizeRichText } from '../shared/richText.js';
 import { isMongoMode } from '../services/runtime.js';
 import {
   listCollection,
@@ -9,8 +9,6 @@ import {
   updateCollectionItem,
   // deleteSupport via updateCollectionItem with isActive=false or remove directly below
   // but store.js does not export a delete helper; we'll implement a simple remove via update to isActive=false
-  readDb,
-  saveDb,
 } from '../services/store.js';
 
 function slugify(text) {
@@ -69,7 +67,7 @@ export const createVacancy = async (req, res) => {
     if (!title) return res.status(400).json({ success: false, message: 'Title is required' });
 
     const finalSlug = slug || slugify(title);
-    const safeHtml = sanitizeHtml(descriptionHtml || '', { allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']) });
+    const safeHtml = sanitizeRichText(descriptionHtml || '');
 
     if (isMongoMode()) {
       const existing = await Vacancy.findOne({ slug: finalSlug });
@@ -102,7 +100,7 @@ export const updateVacancy = async (req, res) => {
     const { id } = req.params;
     const updates = { ...req.body };
     if (updates.descriptionHtml) {
-      updates.descriptionHtml = sanitizeHtml(updates.descriptionHtml, { allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']) });
+      updates.descriptionHtml = sanitizeRichText(updates.descriptionHtml);
     }
     if (updates.title && !updates.slug) {
       updates.slug = slugify(updates.title);

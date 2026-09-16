@@ -1,113 +1,123 @@
 [
   {
-    "name": "allowed formatting is kept",
-    "input": "<p>Hello <strong>world</strong> and <em>you</em></p>",
-    "output": "<p>Hello <strong>world</strong> and <em>you</em></p>"
+    "name": "plain text is kept",
+    "input": "Hello world",
+    "output": "Hello world"
   },
   {
-    "name": "script tag removed with content",
-    "input": "<p>a</p><script>alert(1)</script><p>b</p>",
-    "output": "<p>a</p><p>b</p>"
+    "name": "allowed tags are kept",
+    "input": "<p>One <strong>two</strong> <b>b</b> <em>three</em> <i>i</i> <u>u</u> <s>s</s></p><h2>H2</h2><h3>H3</h3><h4>H4</h4><blockquote>Quote</blockquote><ul><li>a</li></ul><ol><li>b</li></ol>line<br>break",
+    "output": "<p>One <strong>two</strong> <b>b</b> <em>three</em> <i>i</i> <u>u</u> <s>s</s></p><h2>H2</h2><h3>H3</h3><h4>H4</h4><blockquote>Quote</blockquote><ul><li>a</li></ul><ol><li>b</li></ol>line<br>break"
   },
   {
-    "name": "style tag removed with content",
-    "input": "<style>p{color:red}</style><p>ok</p>",
-    "output": "<p>ok</p>"
+    "name": "script tag is removed with its content",
+    "input": "<p>Hi</p><script>alert(1)</script><p>there</p>",
+    "output": "<p>Hi</p><p>there</p>"
   },
   {
-    "name": "iframe, object and embed removed",
-    "input": "<iframe src=\"https://evil.example\"></iframe><object data=x>inner</object><embed src=x>after",
-    "output": "after"
+    "name": "style, iframe, object, embed, noscript, template, svg and math are removed with content",
+    "input": "a<style>p{}</style>b<iframe src=x>i</iframe>c<object>o</object>d<embed src=x>e<noscript>n</noscript>f<template>t</template>g<svg><script>alert(1)</script></svg>h<math>m</math>i",
+    "output": "abcd"
   },
   {
-    "name": "onerror attribute removed with the img",
-    "input": "<img src=x onerror=\"alert(1)\">caption",
-    "output": "caption"
+    "name": "unclosed script drops the rest",
+    "input": "<p>safe</p><script>alert(1)",
+    "output": "<p>safe</p>"
   },
   {
-    "name": "event handler on an allowed tag removed",
-    "input": "<p onclick=\"alert(1)\">text</p>",
-    "output": "<p>text</p>"
+    "name": "onerror attribute is removed",
+    "input": "<p onclick=\"steal()\">x</p><img src=x onerror=alert(1)>",
+    "output": "<p>x</p>"
   },
   {
-    "name": "javascript href dropped",
+    "name": "style and class attributes are removed",
+    "input": "<p style=\"color:red\" class=\"big\" id=\"i\">styled</p>",
+    "output": "<p>styled</p>"
+  },
+  {
+    "name": "javascript: href is dropped",
     "input": "<a href=\"javascript:alert(1)\">x</a>",
     "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
   },
   {
-    "name": "data href dropped",
-    "input": "<a href=\"data:text/html,<script>alert(1)</script>\">x</a>",
+    "name": "data: href is dropped",
+    "input": "<a href=\"data:text/html;base64,PHNjcmlwdD4=\">x</a>",
     "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
   },
   {
-    "name": "entity-encoded javascript href dropped",
-    "input": "<a href=\"jav&#x61;script:alert(1)\">x</a>",
-    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "entity-encoded javascript: href is dropped",
+    "input": "<a href=\"&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;alert(1)\">x</a><a href=\"javascript&colon;alert(1)\">y</a><a href=\"&#x6A;avascript:alert(1)\">z</a>",
+    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">y</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">z</a>"
   },
   {
-    "name": "decimal entity without semicolon in href dropped",
-    "input": "<a href=\"&#106avascript:alert(1)\">x</a>",
-    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "whitespace and control characters inside a scheme are dropped",
+    "input": "<a href=\"java\tscript:alert(1)\">x</a><a href=\" javascript:alert(1)\">y</a><a href=\"java\u0000script:alert(1)\">z</a><a href=\"java\u200bscript:x\">w</a>",
+    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">y</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">z</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">w</a>"
   },
   {
-    "name": "tab inside the scheme dropped",
-    "input": "<a href=\"java\tscript:alert(1)\">x</a>",
-    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "relative and protocol-relative hrefs are dropped",
+    "input": "<a href=\"/careers\">a</a><a href=\"//evil.test\">b</a><a href=\"page.html\">c</a>",
+    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">a</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">b</a><a rel=\"noopener noreferrer nofollow\" target=\"_blank\">c</a>"
   },
   {
-    "name": "relative href dropped",
-    "input": "<a href=\"/products\">x</a>",
-    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "https, http and mailto hrefs are kept",
+    "input": "<a href=\"https://juwon.test/jobs?a=1&amp;b=2\">a</a> <a href='http://juwon.test'>b</a> <a href=mailto:hr@juwon.test>c</a>",
+    "output": "<a href=\"https://juwon.test/jobs?a=1&amp;b=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">a</a> <a href=\"http://juwon.test\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">b</a> <a href=\"mailto:hr@juwon.test\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">c</a>"
   },
   {
-    "name": "https href kept with forced rel and target",
-    "input": "<a href=\"https://example.com/a?b=1&amp;c=2\">x</a>",
-    "output": "<a href=\"https://example.com/a?b=1&amp;c=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "uppercase tags, attributes and schemes are normalised",
+    "input": "<P><STRONG>Bold</STRONG> <A HREF=\"HTTPS://JUWON.TEST\" TITLE=\"t\">Link</A></P>",
+    "output": "<p><strong>Bold</strong> <a href=\"HTTPS://JUWON.TEST\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">Link</a></p>"
   },
   {
-    "name": "mailto href kept",
-    "input": "<a href=\"mailto:sales@juwon.example\">mail</a>",
-    "output": "<a href=\"mailto:sales@juwon.example\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">mail</a>"
+    "name": "existing rel and target are replaced",
+    "input": "<a href=\"https://juwon.test\" rel=\"opener\" target=\"_self\">x</a>",
+    "output": "<a href=\"https://juwon.test\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
   },
   {
-    "name": "existing rel and target replaced",
-    "input": "<a href=\"http://example.com\" rel=\"opener\" target=\"_self\" title=\"t\">x</a>",
-    "output": "<a href=\"http://example.com\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "link without a usable href keeps text and forced attributes",
+    "input": "<a name=\"x\">anchor</a>",
+    "output": "<a rel=\"noopener noreferrer nofollow\" target=\"_blank\">anchor</a>"
   },
   {
-    "name": "nested disallowed tags unwrapped",
-    "input": "<div><section><font color=red>text <span>here</span></font></section></div>",
-    "output": "text here"
+    "name": "nested disallowed tags are unwrapped",
+    "input": "<div><section><span>Kept <font color=red>text</font></span></section></div>",
+    "output": "Kept text"
   },
   {
-    "name": "unclosed tags closed",
-    "input": "<ul><li>one<li>two",
-    "output": "<ul><li>one<li>two</li></li></ul>"
+    "name": "unclosed tags are closed",
+    "input": "<p><strong>open <em>tags",
+    "output": "<p><strong>open <em>tags</em></strong></p>"
   },
   {
-    "name": "unmatched closing tags ignored",
-    "input": "</p>text</strong>",
+    "name": "stray closing tags are ignored",
+    "input": "</p>text</strong></li>",
     "output": "text"
   },
   {
-    "name": "uppercase tags and attributes normalised",
-    "input": "<P CLASS=\"x\">Hi<BR><A HREF=\"HTTPS://EXAMPLE.COM\">L</A></P>",
-    "output": "<p>Hi<br><a href=\"HTTPS://EXAMPLE.COM\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">L</a></p>"
+    "name": "implied end tags follow HTML parsing",
+    "input": "<p>para<ul><li>one<li>two</ul><p>next<h2>head<h3>sub",
+    "output": "<p>para</p><ul><li>one</li><li>two</li></ul><p>next</p><h2>head</h2><h3>sub</h3>"
   },
   {
-    "name": "style and class attributes removed",
-    "input": "<p style=\"color:red\" class=\"lead\">styled</p>",
-    "output": "<p>styled</p>"
+    "name": "nested links do not nest",
+    "input": "<a href=\"https://a.test\">1<a href=\"https://b.test\">2</a></a>",
+    "output": "<a href=\"https://a.test\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">1</a><a href=\"https://b.test\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">2</a>"
   },
   {
-    "name": "comments removed",
-    "input": "a<!-- <script>alert(1)</script> -->b",
-    "output": "ab"
+    "name": "comments, doctype and CDATA are removed",
+    "input": "<!DOCTYPE html><!-- secret --><p>x</p><![CDATA[y]]><?php echo 1; ?>z",
+    "output": "<p>x</p>z"
   },
   {
-    "name": "entities preserved and bare ampersands escaped",
-    "input": "<p>Tom &amp; Jerry &copy; 2026 &nbsp; R&D 5 < 6 > 4</p>",
-    "output": "<p>Tom &amp; Jerry &copy; 2026 &nbsp; R&amp;D 5 &lt; 6 &gt; 4</p>"
+    "name": "unterminated comment drops the rest",
+    "input": "<p>a</p><!-- open",
+    "output": "<p>a</p>"
+  },
+  {
+    "name": "entities are preserved and stray ampersands escaped",
+    "input": "<p>Tom &amp; Jerry &copy; 2026 &#8358;5,000 &nbsp; AT&T &lt;b&gt; &bogus 5 > 3 < 4</p>",
+    "output": "<p>Tom &amp; Jerry &copy; 2026 &#8358;5,000 &nbsp; AT&amp;T &lt;b&gt; &amp;bogus 5 &gt; 3 &lt; 4</p>"
   },
   {
     "name": "encoded markup stays text",
@@ -115,38 +125,28 @@
     "output": "&lt;script&gt;alert(1)&lt;/script&gt;"
   },
   {
-    "name": "svg and math removed with content",
-    "input": "<svg><script>alert(1)</script></svg><math><mi>x</mi></math>after",
-    "output": "after"
+    "name": "attribute values containing > are parsed as one tag",
+    "input": "<a href=\"https://juwon.test/?q=a>b\" title=\"x>y\">ok</a>",
+    "output": "<a href=\"https://juwon.test/?q=a&gt;b\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">ok</a>"
   },
   {
-    "name": "unterminated script drops the rest",
-    "input": "safe<script>alert(1)",
-    "output": "safe"
+    "name": "img is not allowed",
+    "input": "<p>before<img src=\"https://juwon.test/a.png\" alt=\"a\">after</p>",
+    "output": "<p>beforeafter</p>"
   },
   {
-    "name": "headings h2-h4 kept, h1 and h5 unwrapped",
-    "input": "<h1>A</h1><h2>B</h2><h3>C</h3><h4>D</h4><h5>E</h5>",
-    "output": "A<h2>B</h2><h3>C</h3><h4>D</h4>E"
+    "name": "self-closing br",
+    "input": "a<br/>b<BR />c",
+    "output": "a<br>b<br>c"
   },
   {
-    "name": "quoted greater-than inside an attribute",
-    "input": "<a href=\"https://example.com/?q=a>b\" title=\"x>y\">x</a>",
-    "output": "<a href=\"https://example.com/?q=a&gt;b\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">x</a>"
+    "name": "broken tag-like text is escaped",
+    "input": "<p>1 <2 and 3> 2 <<script>alert(1)</script></p><scr<script>ipt>alert(1)</script>",
+    "output": "<p>1 &lt;2 and 3&gt; 2 &lt;</p>ipt&gt;alert(1)"
   },
   {
-    "name": "broken tag soup",
-    "input": "<<script>script>alert(1)<</script>/script>",
-    "output": "&lt;/script&gt;"
-  },
-  {
-    "name": "blockquote, lists and inline tags",
-    "input": "<blockquote><ol><li><b>B</b> <i>I</i> <u>U</u> <s>S</s></li></ol></blockquote>",
-    "output": "<blockquote><ol><li><b>B</b> <i>I</i> <u>U</u> <s>S</s></li></ol></blockquote>"
-  },
-  {
-    "name": "noscript and template removed with content",
-    "input": "<noscript><p>x</p></noscript><template><p>y</p></template>z",
-    "output": "z"
+    "name": "non-string input becomes empty",
+    "input": 42,
+    "output": ""
   }
 ]

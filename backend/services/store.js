@@ -184,8 +184,8 @@ const definedOnly = (object = {}) =>
   Object.fromEntries(Object.entries(object).filter(([, value]) => value !== undefined));
 
 const withMeta = (item, index = 0, collection = "packages") => {
-  const data = definedOnly(item);
-  const id = data.id ? String(data.id) : randomUUID();
+  const { id: requestedId, ...data } = definedOnly(item);
+  const id = requestedId ? String(requestedId) : randomUUID();
   const timestamp = now();
 
   return {
@@ -200,7 +200,6 @@ const withMeta = (item, index = 0, collection = "packages") => {
     createdAt: timestamp,
     updatedAt: timestamp,
     ...data,
-    id,
   };
 };
 
@@ -227,7 +226,7 @@ const flattenPlans = (groups) =>
 // need stable ids (e.g. the Cloudflare seed export) override them.
 // With strict=true a missing/invalid plans.json throws instead of yielding [].
 export const buildDefaultCatalog = async ({ strict = false } = {}) => {
-  let packages = [];
+  let packages;
 
   try {
     const rawPlans = await readFile(plansPath, "utf8");

@@ -88,7 +88,7 @@ app.use(userRouter);
 // Vacancies endpoints
 app.use('/vacancies', vacanciesRouter);
 
-app.get("/", (req, res, next) => {
+app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
     message: "Juwon Electric API",

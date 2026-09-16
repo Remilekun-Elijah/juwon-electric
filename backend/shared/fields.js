@@ -137,7 +137,8 @@ export const isSafeUrl = (value) => {
   if (value.startsWith("/")) return !value.startsWith("//") && !UNSAFE_PATH_CHARS.test(value);
   if (!/^https:\/\//i.test(value) || UNSAFE_PATH_CHARS.test(value)) return false;
   try {
-    return new URL(value).protocol === "https:";
+    // URL is a web platform global in both Node and workerd (not in the shared ESLint globals).
+    return new globalThis.URL(value).protocol === "https:";
   } catch {
     return false;
   }
