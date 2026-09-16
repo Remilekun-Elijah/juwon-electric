@@ -1,12 +1,10 @@
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-type SpinnerProps = { variant?: "inline" | "ring"; label?: string; className?: string };
-
 /**
  * Spinner. Props: variant ("inline" = 16px Loader2 | "ring" = 32px block ring), label (sr-only text), className.
  */
-export function Spinner({ variant = "inline", label, className }: SpinnerProps) {
+export function Spinner({ variant = "inline", label, className }) {
   const srLabel = label ? <span className="sr-only">{label}</span> : null;
 
   if (variant === "ring") {

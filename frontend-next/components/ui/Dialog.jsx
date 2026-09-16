@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ComponentType, type MutableRefObject, type ReactNode } from "react";
+import { useRef } from "react";
 import {
   Description,
   Dialog as HeadlessDialog,
@@ -16,22 +16,7 @@ import { Button } from "./Button";
 const sizes = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
 
 export const closeButtonClasses =
-  "rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
-
-type DialogProps = {
-  open: boolean;
-  onClose?: () => void;
-  title?: ReactNode;
-  description?: ReactNode;
-  children?: ReactNode;
-  footer?: ReactNode;
-  size?: keyof typeof sizes;
-  hideClose?: boolean;
-  initialFocus?: MutableRefObject<HTMLElement | null>;
-  role?: "dialog" | "alertdialog";
-  className?: string;
-  bodyClassName?: string;
-};
+  "rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500";
 
 /**
  * Dialog (Headless UI; Escape and overlay click call onClose). Props: open, onClose(), title, description, children (body),
@@ -51,7 +36,7 @@ export function Dialog({
   role,
   className,
   bodyClassName,
-}: DialogProps) {
+}) {
   return (
     <Transition show={Boolean(open)}>
       <HeadlessDialog onClose={() => onClose?.()} initialFocus={initialFocus} role={role} className="relative z-50">
@@ -63,7 +48,7 @@ export function Dialog({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div aria-hidden="true" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" />
+          <div aria-hidden="true" className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" />
         </TransitionChild>
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-4 sm:items-center">
@@ -116,24 +101,8 @@ export function Dialog({
 }
 
 const confirmTones = {
-  danger: { tile: "bg-red-100 text-red-600", button: "destructive" as const },
-  warning: { tile: "bg-amber-100 text-amber-600", button: "primary" as const },
-};
-
-type ConfirmDialogProps = {
-  open: boolean;
-  onClose?: () => void;
-  onConfirm?: () => void;
-  title?: ReactNode;
-  description?: ReactNode;
-  confirmLabel?: ReactNode;
-  cancelLabel?: ReactNode;
-  loading?: boolean;
-  loadingText?: ReactNode;
-  tone?: keyof typeof confirmTones;
-  icon?: ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" }>;
-  confirmIcon?: ReactNode;
-  children?: ReactNode;
+  danger: { tile: "bg-red-100 text-red-600", button: "destructive" },
+  warning: { tile: "bg-amber-100 text-amber-600", button: "primary" },
 };
 
 /**
@@ -157,8 +126,8 @@ export function ConfirmDialog({
   icon: Icon = TriangleAlert,
   confirmIcon,
   children,
-}: ConfirmDialogProps) {
-  const cancelRef = useRef<HTMLElement | null>(null);
+}) {
+  const cancelRef = useRef(null);
   const toneConfig = confirmTones[tone] ?? confirmTones.danger;
   const handleClose = () => {
     if (!loading) onClose?.();

@@ -194,5 +194,13 @@ export type ContactPayload = TurnstileFields & {
 
 export type SubscribePayload = TurnstileFields & { emailAddress: string };
 
+export type SaveCartPayload = TurnstileFields & {
+  sessionId: string;
+  items: OrderItem[];
+  name?: string;
+  phoneNumber?: string;
+  emailAddress?: string;
+};
+
 /* ===================== FE-2 (admin) ===================== */
 // FE-2 adds its types below this line.

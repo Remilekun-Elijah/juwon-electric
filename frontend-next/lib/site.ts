@@ -1,11 +1,9 @@
 // Static site facts for the public site (port of frontend/src/utils/config.js routes and socials).
 // Environment variables live only in lib/config.ts.
+import { config } from "./config";
 
-/**
- * Canonical origin for metadata, sitemap and robots. A constant because lib/config.ts is a verbatim shared file
- * without a site URL; see docs/agents/fe-public.md (suggestion to add NEXT_PUBLIC_SITE_URL there).
- */
-export const SITE_URL = "https://juwonelectric.com";
+/** Canonical origin for metadata, sitemap and robots (NEXT_PUBLIC_SITE_URL). */
+export const SITE_URL = config.siteUrl;
 
 export const SITE_NAME = "Juwon Electric";
 

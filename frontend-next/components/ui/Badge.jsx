@@ -1,4 +1,3 @@
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { getStatusMeta } from "./statusMaps";
 
@@ -11,24 +10,12 @@ const tones = {
   info: "border-blue-200 bg-blue-50 text-blue-700",
 };
 
-export type BadgeTone = keyof typeof tones;
-
-type BadgeProps = Omit<ComponentPropsWithoutRef<"span">, "children"> & {
-  tone?: BadgeTone | string;
-  variant?: BadgeTone | string;
-  dot?: boolean;
-  children?: ReactNode;
-};
-
-const isTone = (value: string | undefined): value is BadgeTone => Boolean(value && value in tones);
-
 /**
  * Badge / pill. Props: tone (neutral|brand|success|warning|danger|info; `variant` is accepted as an alias),
  * dot (leading current-color dot), className, children.
  */
-export function Badge({ tone, variant, dot = false, className, children, ...props }: BadgeProps) {
-  const requested = tone ?? variant;
-  const resolved: BadgeTone = isTone(requested) ? requested : "neutral";
+export function Badge({ tone, variant, dot = false, className, children, ...props }) {
+  const resolved = tones[tone ?? variant] ? tone ?? variant : "neutral";
   return (
     <span
       className={cn(
@@ -44,17 +31,11 @@ export function Badge({ tone, variant, dot = false, className, children, ...prop
   );
 }
 
-type StatusBadgeProps = Omit<BadgeProps, "tone" | "variant" | "children"> & {
-  type: string;
-  status?: string | boolean | null;
-  label?: ReactNode;
-};
-
 /**
  * StatusBadge. Props: type ("order"|"payment"|"contact"|"newsletter"|"catalog"), status (string or boolean for
  * newsletter/catalog isActive; empty uses the type's default), label (override), dot, className.
  */
-export function StatusBadge({ type, status, label, dot = false, className, ...props }: StatusBadgeProps) {
+export function StatusBadge({ type, status, label, dot = false, className, ...props }) {
   const meta = getStatusMeta(type, status);
   return (
     <Badge tone={meta.tone} dot={dot} className={className} {...props}>

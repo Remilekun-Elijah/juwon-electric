@@ -1,8 +1,9 @@
 /**
- * Public endpoint helpers (FE-1). Built on the shared client in ./client.
- * Server components pass `{ next: { revalidate } }`; mutations run client-side.
+ * Public endpoint helpers (FE-1), built on the shared client (FE_CONVENTIONS §3.4).
+ * Server components pass `{ next: { revalidate } }`; mutations run client-side and carry the Turnstile token.
+ * Types follow agents/be-supervisor:docs/agents/API_CONTRACT_V3.md (see ./types).
  */
-import { apiRequest, toQuery, type ApiInit } from "./client";
+import { apiRequest, getPublicData, type ApiRequestInit } from "./client";
 import type {
   CartQuote,
   Category,
@@ -16,62 +17,75 @@ import type {
   PublicProduct,
   PublicSettings,
   PublicVacancy,
+  SaveCartPayload,
   ServicesData,
   SubscribePayload,
 } from "./types";
 
 const seg = (value: string | number) => encodeURIComponent(String(value));
 
-const post = <T>(path: string, body: unknown, init: ApiInit = {}) =>
-  apiRequest<T>(path, { ...init, method: "POST", body: JSON.stringify(body) });
+const post = <T>(path: string, body: unknown, init: ApiRequestInit = {}) =>
+  apiRequest<T>(path, { ...init, method: "POST", body });
 
-/* ---------- Catalog content ---------- */
+/* ---------- Packages, services, portfolio ---------- */
 
-export const getPackages = (init?: ApiInit) => apiRequest<Package[]>("/packages", init);
+export const getPackages = (init?: ApiRequestInit) => getPublicData<Package[]>("/packages", undefined, init);
 
-/** Resolves by id, then slug, then legacy id (backend `getCollectionItem`). */
-export const getPackage = (id: string | number, init?: ApiInit) => apiRequest<Package>(`/packages/${seg(id)}`, init);
+/** `GET /packages/:id` (the backend also resolves slug and legacy id, but slugs repeat, so use `id`). */
+export const getPackage = (id: string | number, init?: ApiRequestInit) =>
+  getPublicData<Package>(`/packages/${seg(id)}`, undefined, init);
 
-export const getServices = (init?: ApiInit) => apiRequest<ServicesData>("/services", init);
+export const getServices = (init?: ApiRequestInit) => getPublicData<ServicesData>("/services", undefined, init);
 
-export const getPortfolio = (params: { featured?: boolean } = {}, init?: ApiInit) =>
-  apiRequest<PortfolioItem[]>(`/portfolio${toQuery(params)}`, init);
+export const getPortfolio = (params: { featured?: boolean } = {}, init?: ApiRequestInit) =>
+  getPublicData<PortfolioItem[]>("/portfolio", params, init);
+
+export const getPortfolioItem = (id: string, init?: ApiRequestInit) =>
+  getPublicData<PortfolioItem>(`/portfolio/${seg(id)}`, undefined, init);
 
 /* ---------- Products & categories (contract §4) ---------- */
 
-export const getCategories = (init?: ApiInit) => apiRequest<Category[]>("/categories", init);
+/** Active categories as a flat array; build the tree from `parentId`. */
+export const getCategories = (init?: ApiRequestInit) => getPublicData<Category[]>("/categories", undefined, init);
 
-export const getCategory = (idOrSlug: string, init?: ApiInit) =>
-  apiRequest<Category>(`/categories/${seg(idOrSlug)}`, init);
+export const getCategory = (idOrSlug: string, init?: ApiRequestInit) =>
+  getPublicData<Category>(`/categories/${seg(idOrSlug)}`, undefined, init);
 
 export type ProductQuery = { category?: string; q?: string; page?: number; limit?: number };
 
-export const getProducts = (params: ProductQuery = {}, init?: ApiInit) =>
-  apiRequest<Paged<PublicProduct>>(`/products${toQuery(params)}`, init);
+/** Paged `{ items, page, limit, total }`, active products only. `category` is an id or slug (includes descendants). */
+export const getProducts = (params: ProductQuery = {}, init?: ApiRequestInit) =>
+  getPublicData<Paged<PublicProduct>>("/products", params, init);
 
-export const getProduct = (idOrSlug: string, init?: ApiInit) =>
-  apiRequest<PublicProduct>(`/products/${seg(idOrSlug)}`, init);
+export const getProduct = (idOrSlug: string, init?: ApiRequestInit) =>
+  getPublicData<PublicProduct>(`/products/${seg(idOrSlug)}`, undefined, init);
 
 /* ---------- Vacancies (contract §3: open only) ---------- */
 
 export type VacancyQuery = { department?: string; employmentType?: string };
 
-export const getVacancies = (params: VacancyQuery = {}, init?: ApiInit) =>
-  apiRequest<PublicVacancy[]>(`/vacancies${toQuery(params)}`, init);
+export const getVacancies = (params: VacancyQuery = {}, init?: ApiRequestInit) =>
+  getPublicData<PublicVacancy[]>("/vacancies", params, init);
 
-/** 404 unless the vacancy is open. */
-export const getVacancy = (slug: string, init?: ApiInit) => apiRequest<PublicVacancy>(`/vacancies/${seg(slug)}`, init);
+/** 404 unless the vacancy is open. Resolves by slug, then id. */
+export const getVacancy = (slug: string, init?: ApiRequestInit) =>
+  getPublicData<PublicVacancy>(`/vacancies/${seg(slug)}`, undefined, init);
 
 /* ---------- Settings (contract §8.1) ---------- */
 
-export const getPublicSettings = (init?: ApiInit) => apiRequest<PublicSettings>("/settings/public", init);
+export const getPublicSettings = (init?: ApiRequestInit) =>
+  getPublicData<PublicSettings>("/settings/public", undefined, init);
 
-/* ---------- Mutations (client-side, Turnstile token in the body) ---------- */
+/* ---------- Mutations (client-side) ---------- */
 
-export const quoteCart = (items: OrderItem[], init?: ApiInit) => post<CartQuote>("/cart/quote", { items }, init);
+/** `POST /cart/quote` with the same item fields as `placeOrder`. */
+export const quoteCart = (items: OrderItem[], init?: ApiRequestInit) => post<CartQuote>("/cart/quote", { items }, init);
 
-export const placeOrder = (payload: OrderPayload, init?: ApiInit) => post<PlacedOrder>("/order", payload, init);
+/** `POST /cart` (abandoned-cart capture; unused by the Vite site). Turnstile action "cart". */
+export const saveCart = (payload: SaveCartPayload, init?: ApiRequestInit) => post<unknown>("/cart", payload, init);
 
-export const sendContact = (payload: ContactPayload, init?: ApiInit) => post<unknown>("/contact", payload, init);
+export const placeOrder = (payload: OrderPayload, init?: ApiRequestInit) => post<PlacedOrder>("/order", payload, init);
 
-export const subscribe = (payload: SubscribePayload, init?: ApiInit) => post<unknown>("/subscribe", payload, init);
+export const submitContact = (payload: ContactPayload, init?: ApiRequestInit) => post<unknown>("/contact", payload, init);
+
+export const subscribe = (payload: SubscribePayload, init?: ApiRequestInit) => post<unknown>("/subscribe", payload, init);

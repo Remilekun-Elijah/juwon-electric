@@ -1,25 +1,16 @@
 "use client";
 
-import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { forwardRef } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useFieldControl } from "./fieldContext";
-
-export const fieldClasses =
-  "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-brand-300 focus:ring-4 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60";
-
-const invalidClasses = "border-red-300 hover:border-red-300 focus:border-red-400 focus:ring-red-500/10";
-
-type InputProps = Omit<ComponentPropsWithoutRef<"input">, "size"> & { size?: "md" | "lg"; invalid?: boolean };
+import { fieldClasses, invalidFieldClasses as invalidClasses } from "./fieldStyles";
 
 /**
  * Input. Props: size ("md" = h-10 | "lg" = h-11 for login/public forms), invalid, className, ...native input props.
  * Picks up id/aria wiring from a parent <Field>.
  */
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { size = "md", className, type = "text", ...rest },
-  ref
-) {
+export const Input = forwardRef(function Input({ size = "md", className, type = "text", ...rest }, ref) {
   const { invalid, ...props } = useFieldControl(rest);
   return (
     <input
@@ -31,16 +22,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   );
 });
 
-type SearchInputProps = InputProps & { wrapperClassName?: string };
-
 /**
  * SearchInput. Input with a leading Search icon. Props: wrapperClassName, plus all Input props.
  * Pass an aria-label when there is no visible label.
  */
-export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(function SearchInput(
-  { wrapperClassName, className, ...props },
-  ref
-) {
+export const SearchInput = forwardRef(function SearchInput({ wrapperClassName, className, ...props }, ref) {
   return (
     <div className={cn("relative w-full", wrapperClassName)}>
       <Search
@@ -52,12 +38,10 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(functi
   );
 });
 
-type TextareaProps = ComponentPropsWithoutRef<"textarea"> & { invalid?: boolean };
-
 /**
  * Textarea. Props: invalid, rows, className, ...native textarea props. Min height 110px, vertical resize.
  */
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea({ className, ...rest }, ref) {
+export const Textarea = forwardRef(function Textarea({ className, ...rest }, ref) {
   const { invalid, ...props } = useFieldControl(rest);
   return (
     <textarea
@@ -68,22 +52,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   );
 });
 
-export type SelectOption = string | { value: string; label: ReactNode; disabled?: boolean };
-
-type SelectProps = Omit<ComponentPropsWithoutRef<"select">, "size"> & {
-  options?: SelectOption[];
-  placeholder?: string;
-  size?: "md" | "lg";
-  invalid?: boolean;
-  selectClassName?: string;
-};
-
 /**
  * Select (native). Props: options ([{ value, label, disabled? }] or strings), placeholder (disabled empty first option),
  * size ("md" | "lg"), invalid, className (applies to the wrapper, e.g. widths), selectClassName, children (extra <option>s),
  * ...native select props (value, onChange, name…).
  */
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+export const Select = forwardRef(function Select(
   { options, placeholder, size = "md", className, selectClassName, children, ...rest },
   ref
 ) {
@@ -107,7 +81,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           </option>
         )}
         {options?.map((option) => {
-          const item = typeof option === "object" ? option : { value: option, label: option, disabled: false };
+          const item = typeof option === "object" ? option : { value: option, label: option };
           return (
             <option key={item.value} value={item.value} disabled={item.disabled}>
               {item.label}
