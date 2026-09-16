@@ -1,6 +1,3 @@
-export const jsonValue = (value) =>
-  typeof value === "string" ? value : JSON.stringify(value || [], null, 2);
-
 export const parseMoney = (value) => {
   if (typeof value === "number") return value;
   if (!value) return 0;
@@ -24,24 +21,36 @@ export const getOrderRevenue = (order) => {
   }, 0);
 };
 
-export const getStatusCounts = (orders = []) =>
-  orders.reduce((counts, order) => {
-    const status = order.status || "pending";
-    return { ...counts, [status]: (counts[status] || 0) + 1 };
-  }, {});
+const toDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
 
-export const getRevenueSeries = (orders = []) => {
-  const buckets = orders.reduce((series, order) => {
-    const date = new Date(order.receivedAt || order.createdAt || Date.now());
-    const key = date.toLocaleDateString("en-NG", {
-      month: "short",
-      day: "numeric",
-    });
-    return {
-      ...series,
-      [key]: (series[key] || 0) + getOrderRevenue(order),
-    };
-  }, {});
+export const formatDate = (value) => {
+  const date = toDate(value);
+  return date
+    ? date.toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })
+    : "—";
+};
 
-  return Object.entries(buckets).slice(-6);
+export const formatDateTime = (value) => {
+  const date = toDate(value);
+  return date
+    ? date.toLocaleString("en-NG", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "—";
+};
+
+export const getRecordDate = (item) => item?.receivedAt || item?.createdAt;
+
+export const matchesQuery = (query, ...values) => {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return values.some((value) => String(value ?? "").toLowerCase().includes(needle));
 };

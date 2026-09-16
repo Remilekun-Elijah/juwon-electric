@@ -1,72 +1,151 @@
 /* eslint-disable react/prop-types */
-import { Save } from "@mui/icons-material";
+import { Field, Input, Select, Switch, Textarea } from "../../../components/ui";
+import { LIMITS } from "../../../utils/validation";
 import { packageTypeOptions } from "../constants/adminConstants";
-import { jsonValue } from "../utils/adminFormatters";
-import { Field, SelectField, Toggle } from "./FormControls";
 
-export const PackageForm = ({ model, setModel, onSubmit, saving }) => (
-  <form onSubmit={onSubmit} className="admin-form">
-    <div className="admin-form-grid">
-      <Field label="Name" value={model.name} onChange={(value) => setModel({ ...model, name: value })} />
-      <SelectField
-        label="Type"
-        value={model.type}
-        options={packageTypeOptions}
-        onChange={(value) => setModel({ ...model, type: value })}
+const grid = "grid gap-4 sm:grid-cols-2";
+
+export const PackageForm = ({ model, setModel, optionsText, setOptionsText, optionsError, validateOptions, errors = {} }) => {
+  const set = (key) => (event) => setModel({ ...model, [key]: event.target.value });
+  return (
+    <div className="space-y-5">
+      <div className={grid}>
+        <Field label="Name" required className="sm:col-span-2" error={errors.name}>
+          <Input value={model.name ?? ""} onChange={set("name")} placeholder="Basic" maxLength={LIMITS.packageName} />
+        </Field>
+        <Field label="Battery type" required>
+          <Select value={model.type ?? ""} onChange={set("type")} options={packageTypeOptions} />
+        </Field>
+        <Field label="Inverter size (kVA)" required error={errors.kva}>
+          <Input type="number" inputMode="decimal" step="any" min="0" value={model.kva ?? ""} onChange={set("kva")} />
+        </Field>
+        <Field label="Voltage (V)" helper="Leave empty if not applicable." error={errors.volt}>
+          <Input type="number" inputMode="decimal" step="any" min="0" value={model.volt ?? ""} onChange={set("volt")} />
+        </Field>
+        <Field
+          label="Shop id"
+          helper="Whole number used to match cart items. Leave empty to keep the current one."
+          error={errors.legacyId}
+        >
+          <Input type="number" inputMode="numeric" step="1" min="0" value={model.legacyId ?? ""} onChange={set("legacyId")} />
+        </Field>
+      </div>
+      <Field
+        label="What it can power"
+        helper="Appliances this package can run, e.g. 2 fans, 1 TV, 6 lighting points."
+        error={errors.load}
+        required
+      >
+        <Textarea rows={3} value={model.load ?? ""} onChange={set("load")} maxLength={LIMITS.packageLoad} />
+      </Field>
+      <Field
+        label="Price options (JSON)"
+        helper={`A list of 1 to ${LIMITS.packageOptions} options, each with a "name", a "price" above 0 and "kits" (required).`}
+        error={optionsError}
+        required
+      >
+        <Textarea
+          rows={10}
+          spellCheck={false}
+          className="font-mono text-xs leading-relaxed"
+          value={optionsText}
+          onChange={(event) => setOptionsText(event.target.value)}
+          onBlur={validateOptions}
+        />
+      </Field>
+      <Switch
+        label="Show on the shop"
+        description="Hidden packages stay here but aren’t listed for customers."
+        checked={Boolean(model.isActive)}
+        onChange={(value) => setModel({ ...model, isActive: value })}
       />
-      <Field label="KVA" type="number" value={model.kva} onChange={(value) => setModel({ ...model, kva: value })} />
-      <Field label="Volt" type="number" value={model.volt || ""} onChange={(value) => setModel({ ...model, volt: value })} />
     </div>
-    <Field label="Load" textarea value={model.load} onChange={(value) => setModel({ ...model, load: value })} />
-    <Field
-      label="Options JSON"
-      textarea
-      value={jsonValue(model.options)}
-      onChange={(value) => {
-        try {
-          setModel({ ...model, options: JSON.parse(value) });
-        } catch {
-          setModel({ ...model, options: value });
-        }
-      }}
-    />
-    <Toggle label="Active" checked={model.isActive} onChange={(value) => setModel({ ...model, isActive: value })} />
-    <button className="admin-primary" disabled={saving}>
-      <Save /> {saving ? "Saving" : "Save Package"}
-    </button>
-  </form>
-);
+  );
+};
 
-export const ServiceForm = ({ model, setModel, onSubmit, saving }) => (
-  <form onSubmit={onSubmit} className="admin-form">
-    <div className="admin-form-grid">
-      <Field label="Title" value={model.title} onChange={(value) => setModel({ ...model, title: value })} />
-      <Field label="Image path" value={model.image} onChange={(value) => setModel({ ...model, image: value })} />
-      <Field label="CTA label" value={model.ctaLabel} onChange={(value) => setModel({ ...model, ctaLabel: value })} />
-      <Field label="CTA URL" value={model.ctaUrl} onChange={(value) => setModel({ ...model, ctaUrl: value })} />
+export const ServiceForm = ({ model, setModel, errors = {} }) => {
+  const set = (key) => (event) => setModel({ ...model, [key]: event.target.value });
+  return (
+    <div className="space-y-5">
+      <Field label="Title" required error={errors.title}>
+        <Input value={model.title ?? ""} onChange={set("title")} placeholder="Energy audit" maxLength={LIMITS.serviceTitle} />
+      </Field>
+      <Field label="Description" required error={errors.subtitle}>
+        <Textarea rows={4} value={model.subtitle ?? ""} onChange={set("subtitle")} maxLength={LIMITS.serviceSubtitle} />
+      </Field>
+      <Field
+        label="Image path"
+        helper="A photo in the site’s public folder, e.g. /panel-4.webp, or a full https:// URL."
+        error={errors.image}
+        required
+      >
+        <Input value={model.image ?? ""} onChange={set("image")} placeholder="/panel-4.webp" maxLength={LIMITS.url} />
+      </Field>
+      <div className={grid}>
+        <Field label="Button label" error={errors.ctaLabel}>
+          <Input value={model.ctaLabel ?? ""} onChange={set("ctaLabel")} maxLength={LIMITS.serviceCtaLabel} />
+        </Field>
+        <Field label="Button link" error={errors.ctaUrl}>
+          <Input value={model.ctaUrl ?? ""} onChange={set("ctaUrl")} placeholder="/packages" maxLength={LIMITS.url} />
+        </Field>
+      </div>
+      <Switch
+        label="Show on the Services page"
+        checked={Boolean(model.isActive)}
+        onChange={(value) => setModel({ ...model, isActive: value })}
+      />
     </div>
-    <Field label="Subtitle" textarea value={model.subtitle} onChange={(value) => setModel({ ...model, subtitle: value })} />
-    <Toggle label="Active" checked={model.isActive} onChange={(value) => setModel({ ...model, isActive: value })} />
-    <button className="admin-primary" disabled={saving}>
-      <Save /> {saving ? "Saving" : "Save Service"}
-    </button>
-  </form>
-);
+  );
+};
 
-export const PortfolioForm = ({ model, setModel, onSubmit, saving }) => (
-  <form onSubmit={onSubmit} className="admin-form">
-    <div className="admin-form-grid">
-      <Field label="Name" value={model.name} onChange={(value) => setModel({ ...model, name: value })} />
-      <Field label="Image path" value={model.image} onChange={(value) => setModel({ ...model, image: value })} />
-      <Field label="External link" value={model.link} onChange={(value) => setModel({ ...model, link: value })} />
+export const PortfolioForm = ({ model, setModel, errors = {} }) => {
+  const set = (key) => (event) => setModel({ ...model, [key]: event.target.value });
+  return (
+    <div className="space-y-5">
+      <Field label="Name" required error={errors.name}>
+        <Input
+          value={model.name ?? ""}
+          onChange={set("name")}
+          placeholder="5kVA hybrid system, Lekki"
+          maxLength={LIMITS.portfolioName}
+        />
+      </Field>
+      <Field
+        label="Image path"
+        helper="A photo in the site’s public folder, e.g. /image-1.svg, or a full https:// URL."
+        error={errors.image}
+        required
+      >
+        <Input value={model.image ?? ""} onChange={set("image")} maxLength={LIMITS.url} />
+      </Field>
+      <Field label="External link" helper="Optional, e.g. the Instagram post for this project." error={errors.link}>
+        <Input
+          type="text"
+          inputMode="url"
+          value={model.link ?? ""}
+          onChange={set("link")}
+          placeholder="https://"
+          maxLength={LIMITS.url}
+        />
+      </Field>
+      <fieldset className="space-y-4 rounded-lg border border-slate-200 p-4">
+        <legend className="px-1 text-sm font-medium text-slate-700">Visibility</legend>
+        <Switch
+          label="Featured on the home page"
+          checked={Boolean(model.featured)}
+          onChange={(value) => setModel({ ...model, featured: value })}
+        />
+        <Switch
+          label="Show on mobile"
+          checked={Boolean(model.mobile)}
+          onChange={(value) => setModel({ ...model, mobile: value })}
+        />
+        <Switch
+          label="Show on the Portfolio page"
+          checked={Boolean(model.isActive)}
+          onChange={(value) => setModel({ ...model, isActive: value })}
+        />
+      </fieldset>
     </div>
-    <div className="admin-toggle-row">
-      <Toggle label="Featured on home" checked={model.featured} onChange={(value) => setModel({ ...model, featured: value })} />
-      <Toggle label="Mobile visible" checked={model.mobile} onChange={(value) => setModel({ ...model, mobile: value })} />
-      <Toggle label="Active" checked={model.isActive} onChange={(value) => setModel({ ...model, isActive: value })} />
-    </div>
-    <button className="admin-primary" disabled={saving}>
-      <Save /> {saving ? "Saving" : "Save Portfolio Item"}
-    </button>
-  </form>
-);
+  );
+};
