@@ -48,7 +48,7 @@ export type ServiceOffering = {
   ctaUrl?: string;
 };
 
-export type CustomerSegment = {
+export type PublicCustomerSegment = {
   id?: string;
   slug?: string;
   title: string;
@@ -57,7 +57,7 @@ export type CustomerSegment = {
 };
 
 /** `GET /services` */
-export type ServicesData = { offerings: ServiceOffering[]; customerSegments: CustomerSegment[] };
+export type ServicesData = { offerings: ServiceOffering[]; customerSegments: PublicCustomerSegment[] };
 
 /** `GET /portfolio` row. */
 export type PortfolioItem = {

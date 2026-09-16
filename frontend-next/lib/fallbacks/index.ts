@@ -1,6 +1,6 @@
 // Local fallbacks the Vite site renders when the API is unavailable (FE_CONVENTIONS §3.4).
 // Copied from frontend/src/pages/** and frontend/src/utils/{plans.json,helper.js}.
-import type { CustomerSegment, Package, PortfolioItem, ServiceOffering } from "@/lib/api/types";
+import type { PublicCustomerSegment, Package, PortfolioItem, ServiceOffering } from "@/lib/api/types";
 import plans from "./plans.json";
 
 /** frontend/src/utils/plans.json flattened, as Packages.jsx does. */
@@ -80,7 +80,7 @@ We offer this After Sales Services.
 ];
 
 /** Services "Our Customers" (frontend/src/pages/Services/Services.jsx). */
-export const fallbackCustomers: CustomerSegment[] = [
+export const fallbackCustomers: PublicCustomerSegment[] = [
   {
     title: "Banking Sectors",
     subtitle: `Information technology must be reliable and available 24
