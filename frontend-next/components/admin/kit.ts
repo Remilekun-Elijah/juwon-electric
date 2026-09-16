@@ -66,6 +66,8 @@ export type ButtonProps = Omit<ComponentPropsWithoutRef<"button">, "type"> & {
   size?: ButtonSize;
   as?: ElementType;
   href?: string;
+  target?: string;
+  rel?: string;
   icon?: ReactNode;
   loading?: boolean;
   loadingText?: ReactNode;

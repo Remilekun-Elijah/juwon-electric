@@ -557,9 +557,11 @@ export const markAllNotificationsRead = () =>
 
 /* ---------- Dashboard KPIs (contract §9) ---------- */
 
-/** Uses `kpis` from the dashboard when present; otherwise computes a preview from orders and mock modules. */
-export const resolveKpis = (dashboard: Dashboard, orders: Order[] = []) => {
-  if (dashboard.kpis) return dashboard.kpis;
-  mock.markMocked("dashboard");
-  return mock.mockKpis(orders);
-};
+/**
+ * Uses `kpis` from the dashboard when present; otherwise computes a preview from orders and mock modules.
+ * Pure (safe during render); call `markDashboardPreview()` from an effect when `preview` is true.
+ */
+export const resolveKpis = (dashboard: Dashboard, orders: Order[] = []) =>
+  dashboard.kpis ? { kpis: dashboard.kpis, preview: false } : { kpis: mock.mockKpis(orders), preview: true };
+
+export const markDashboardPreview = () => mock.markMocked("dashboard");
