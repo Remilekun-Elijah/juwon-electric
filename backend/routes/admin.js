@@ -1,14 +1,27 @@
 import { Router } from "express";
 import { adminAuth } from "../middleware/adminAuth.js";
-import { login, requestPasswordReset, resetPassword } from "../controllers/adminAuth.js";
+import {
+  login,
+  logout,
+  requestPasswordReset,
+  resetPassword,
+} from "../controllers/adminAuth.js";
+import { adminListAuditLogs } from "../controllers/auditLogs.js";
 import { adminListCarts } from "../controllers/cart.js";
-import { adminListMessages, adminReplyMessage, adminUpdateMessage } from "../controllers/contact.js";
+import {
+  adminDeleteMessage,
+  adminListMessages,
+  adminReplyMessage,
+  adminUpdateMessage,
+} from "../controllers/contact.js";
 import { adminDashboard } from "../controllers/dashboard.js";
 import {
+  adminDeleteSubscriber,
   adminListSubscribers,
   adminUpdateSubscriber,
 } from "../controllers/newsletter.js";
 import {
+  adminDeleteOrder,
   adminGetOrder,
   adminListOrders,
   adminUpdateOrder,
@@ -38,13 +51,17 @@ import { asyncHandler } from "../services/asyncHandler.js";
 
 const router = Router();
 
+// Limits for these routes are applied inside the handlers, after validation.
 router.post("/auth/login", login);
 router.post("/auth/request-password-reset", requestPasswordReset);
 router.post("/auth/reset-password", resetPassword);
 
 router.use(adminAuth);
 
+router.post("/auth/logout", logout);
+
 router.get("/dashboard", adminDashboard);
+router.get("/audit-logs", adminListAuditLogs);
 
 router.get("/packages", asyncHandler(adminListPackages));
 router.post("/packages", asyncHandler(adminCreatePackage));
@@ -66,15 +83,18 @@ router.delete("/portfolio/:id", asyncHandler(adminDeletePortfolioItem));
 
 router.get("/contacts", adminListMessages);
 router.put("/contacts/:id", adminUpdateMessage);
+router.delete("/contacts/:id", adminDeleteMessage);
 router.post("/contacts/:id/reply", adminReplyMessage);
 
 router.get("/newsletter", adminListSubscribers);
 router.put("/newsletter/:id", adminUpdateSubscriber);
+router.delete("/newsletter/:id", adminDeleteSubscriber);
 
 router.get("/carts", adminListCarts);
 
 router.get("/orders", adminListOrders);
 router.get("/orders/:id", adminGetOrder);
 router.put("/orders/:id", adminUpdateOrder);
+router.delete("/orders/:id", adminDeleteOrder);
 
 export default router;

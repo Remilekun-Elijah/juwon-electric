@@ -24,10 +24,8 @@ const normalizeOrderStatus = (status) =>
 const getRevenueSeries = (orders) => {
   const buckets = orders.reduce((series, order) => {
     const date = new Date(order.receivedAt || order.createdAt || Date.now());
-    const key = date.toLocaleDateString("en-NG", {
-      month: "short",
-      day: "numeric",
-    });
+    if (Number.isNaN(date.getTime())) return series;
+    const key = date.toISOString().slice(0, 10);
     return {
       ...series,
       [key]: (series[key] || 0) + getOrderRevenue(order),
@@ -35,8 +33,16 @@ const getRevenueSeries = (orders) => {
   }, {});
 
   return Object.entries(buckets)
+    .sort(([a], [b]) => a.localeCompare(b))
     .slice(-6)
-    .map(([label, value]) => ({ label, value }));
+    .map(([key, value]) => ({
+      label: new Date(key).toLocaleDateString("en-NG", {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      }),
+      value,
+    }));
 };
 
 const getStatusCounts = (orders) =>
