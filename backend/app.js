@@ -79,6 +79,9 @@ app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
 
+// Mount user routes (e.g. order, contact)
+app.use(userRouter);
+
 // Vacancies endpoints
 app.use('/vacancies', vacanciesRouter);
 
