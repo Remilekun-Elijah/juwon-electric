@@ -153,7 +153,7 @@ Response headers (every response, including errors, `404` and `OPTIONS`):
 - `/admin/*` and `/api/admin/*` responses (any letter case) also send `Cache-Control: no-store`.
 - `X-Powered-By` is not sent.
 
-Error status summary: `400` validation, `401` auth/webhook signature, `403` origin not allowed or missing capability, `404` not found (`"<Label> not found."`: Package, Service, Portfolio item, Customer segment, Order, Contact, Subscriber, User), `409` duplicate package id, duplicate admin email, own role or status change, last active superadmin, or webhook still being processed, `413` body too large, `415` not JSON, `429` rate limit or login lockout (with `Retry-After`), `500` admin auth or webhook secret misconfigured, `502` reply email not delivered or inbound email not fetchable, `503` Turnstile unavailable or database unavailable (`"Service temporarily unavailable."`).
+Error status summary: `400` validation, `401` auth/webhook signature, `403` origin not allowed or missing capability, `404` not found (`"<Label> not found."`: Package, Service, Portfolio item, Customer segment, Order, Contact, Subscriber, User, Vacancy), `409` duplicate package id, duplicate admin email, vacancy status transition not allowed, own role or status change, last active superadmin, or webhook still being processed, `413` body too large, `415` not JSON, `429` rate limit or login lockout (with `Retry-After`), `500` admin auth or webhook secret misconfigured, `502` reply email not delivered or inbound email not fetchable, `503` Turnstile unavailable or database unavailable (`"Service temporarily unavailable."`).
 
 Email:
 
@@ -381,6 +381,15 @@ Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With
 
 The order is persisted in `orders` with `status: "pending"` and `paymentStatus: "unpaid"`, then sent through the existing email template using the server-computed values.
 
+### Vacancies
+
+Contract `docs/agents/API_CONTRACT_V3.md` §3. Only `open` vacancies are public. Writes exist only under `/admin/vacancies`: `POST`/`PUT`/`DELETE /vacancies*` return `404` `"Route not found."`, and headers such as `X-User-Role` are never used.
+
+- `GET /vacancies?department=&employmentType=`: `200` `"Vacancies retrieved."` with an **array** of `PublicVacancy`, newest `postedAt` first. `department` matches case-insensitively (up to 100 characters). `employmentType` must be valid (`400` `"Employment type is not valid."`).
+- `GET /vacancies/:slug`: `200` `"Vacancy retrieved."`. It resolves by slug, then id. A draft, closed or unknown vacancy returns `404` `"Vacancy not found."`.
+
+`PublicVacancy` is `{ id, slug, title, department, location, employmentType, salaryRange, descriptionHtml, requirements, responsibilities, status, postedAt, createdAt, updatedAt }`. `descriptionHtml` is already sanitised; render it inside a scoped prose container.
+
 ## Admin Endpoints
 
 Roles and capabilities (contract `docs/agents/API_CONTRACT_V3.md` §1):
@@ -412,7 +421,7 @@ Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `
 | `jobs:read` / `jobs:assign` | admin, sales, support / admin, sales | upcoming installation jobs |
 | `jobs:update-own` | engineer (not admin) | upcoming `/admin/me/jobs*` |
 | `staff:read` / `staff:write` | admin, sales, hr / admin, hr | upcoming `/admin/staff*` |
-| `vacancies:read` / `vacancies:write` | admin, hr | upcoming `/admin/vacancies*` |
+| `vacancies:read` / `vacancies:write` | admin, hr | `GET /admin/vacancies*` / create, update, publish, unpublish, delete |
 | `notifications:read` | admin, inventory, sales, engineer, hr, support | upcoming `/admin/notifications*` |
 
 No capability (any signed-in admin): `POST /admin/auth/logout`, `GET /admin/auth/me`, `GET /admin/reads`, `POST /admin/reads/all`. `POST /admin/reads` checks the record type: `contacts` needs `leads:read`, `orders` needs `orders:read`.
@@ -443,7 +452,7 @@ Returns `{ "success": true, "message", "data": { "items", "page", "limit", "tota
 
 Each entry: `id`, `createdAt`, `adminId`, `adminEmail`, `action`, `entity`, `entityId`, `summary`, `changes` (changed field names only, never values), `ip`, `userAgent`.
 
-Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`.
+Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`, `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`, `vacancy`.
 
 Audit writes are best-effort and never fail the admin action. Entries older than 180 days are deleted opportunistically. Requests made with the static `ADMIN_TOKEN` are logged with `adminId` and `adminEmail` `"static-token"`.
 
@@ -464,6 +473,40 @@ Dashboard:
 - `GET /admin/dashboard`
 
 Returns dashboard stats, order status counts, revenue trend points, and recent orders for the admin dashboard.
+
+Vacancies:
+
+`Vacancy` is `PublicVacancy` plus `closedAt` and `createdBy: { id, email } | null`. `createdBy` is taken from the session (the static `ADMIN_TOKEN` records `"static-token"`) and never from the request. Records are built from validated fields only: `id`, `postedAt`, `closedAt`, `createdBy` and any unknown fields in a body are ignored.
+
+- `GET /admin/vacancies?status=&q=&page=&limit=` (`vacancies:read`) **(paged)**: `200` `"Vacancies retrieved."`. Includes every status, newest `updatedAt` first. `status` must be `draft`, `open` or `closed` (`400` `"Status is not valid."`). `q` matches title, department or location case-insensitively (up to 100 characters).
+- `GET /admin/vacancies/:id` (`vacancies:read`): `200` `"Vacancy retrieved."`. It resolves by id, then slug.
+- `POST /admin/vacancies` (`vacancies:write`): `201` `"Vacancy created."`. `status` defaults to `draft`. Creating with `status: "open"` sets `postedAt`, and `"closed"` sets `closedAt`.
+- `PUT /admin/vacancies/:id` (`vacancies:write`): `200` `"Vacancy updated."`. A partial update: only sent fields are written, and `null` clears an optional field. A `status` change follows the transitions below.
+- `POST /admin/vacancies/:id/publish` (`vacancies:write`): `200` `"Vacancy published."` (sets status to `open`).
+- `POST /admin/vacancies/:id/unpublish` (`vacancies:write`): `200` `"Vacancy unpublished."` (sets status to `draft`).
+- `DELETE /admin/vacancies/:id` (`vacancies:write`): `200` `"Vacancy deleted."` with the deleted record. This is a hard delete, so the slug can be used again.
+
+Unknown ids return `404` `"Vacancy not found."`.
+
+Fields and limits:
+
+| Field | Rule |
+| --- | --- |
+| `title` | required on create, 1-150 characters (`"Title is required."`, `"Title must be 150 characters or fewer."`) |
+| `slug` | optional, up to 120 characters. It is normalised, derived from `title` when blank, made unique with `-2`, `-3`..., and never changed by a title edit. A UUID-shaped slug returns `400` `"Slug must not look like an id."` |
+| `department`, `location`, `salaryRange` | optional, up to 100 characters, `null` when empty |
+| `employmentType` | `full-time`, `part-time`, `contract`, `internship`, `temporary` or `null` (`"Employment type is not valid."`) |
+| `descriptionHtml` | sanitised by `backend/shared/richText.js` (both runtimes), at most 50000 characters after sanitisation (`"Description must be 50000 characters or fewer."`), `""` allowed |
+| `requirements`, `responsibilities` | arrays of up to 30 single-line strings of 1-300 characters. Items are trimmed and blank items dropped (`"Requirements must be a list."`, `"Each requirement must be text."`, `"Each requirement must be 300 characters or fewer."`, `"Requirements can have at most 30 items."`) |
+| `status` | `draft`, `open` or `closed` (`"Status is not valid."`) |
+
+Status transitions: `draft→open`, `open→draft`, `open→closed`, `closed→open`, `closed→draft`. `draft→closed` returns `409` `"Cannot change vacancy status from draft to closed."`. Setting the current status again is a no-op (`200`). The first move to `open` sets `postedAt`, which is never cleared or reset. Closing sets `closedAt`, and leaving `closed` clears it.
+
+Rich text allowlist: `p br strong b em i u s blockquote ul ol li h2 h3 h4 a`. Links keep only an `http:`, `https:` or `mailto:` `href` and always get `rel="noopener noreferrer nofollow"` and `target="_blank"`. `script style iframe object embed noscript template svg math` are removed with their content. Other tags are unwrapped, and every other attribute and all comments are removed. The fixtures are in `backend/shared/__fixtures__/richText.json`.
+
+Audit actions: `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete` (entity `vacancy`). A `PUT` that changes `status` is logged with the status action. The first publish will emit a `vacancy_posted` notification once the notifications module lands.
+
+Storage: the Worker uses `records` collection `vacancies` with migration `0008_vacancies.sql` (a unique slug index, and a status index). Express uses the `vacancies` collection in the JSON store (slug uniqueness checked under the store lock) or MongoDB (a unique `slug` index).
 
 Packages:
 

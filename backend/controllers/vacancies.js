@@ -1,142 +1,239 @@
-import Vacancy from '../models/Vacancy.js';
-import sanitizeHtml from 'sanitize-html';
-import { isMongoMode } from '../services/runtime.js';
+// Vacancies (API_CONTRACT_V3 §3). Parity: backend/cloudflare/src/vacancies.js.
+import { actingAdmin } from "../middleware/capabilities.js";
 import {
-  listCollection,
-  getCollectionItem,
+  VACANCY_LIMITS,
+  VACANCY_MESSAGES,
+  adminVacancies,
+  createdByOf,
+  parseAdminFilters,
+  parseDescription,
+  parseEmploymentType,
+  parsePublicFilters,
+  parseStatus,
+  parseTextList,
+  publicVacancies,
+  publicVacancyView,
+  statusAction,
+  statusChange,
+  vacancyView,
+} from "../shared/vacancies.js";
+import { uniqueSlug } from "./_catalog.js";
+import { paginate } from "../shared/adminUsers.js";
+import { asyncHandler } from "../services/asyncHandler.js";
+import { audit, changedFields } from "../services/audit.js";
+import { ApiError, badRequest } from "../services/errors.js";
+import { created, ok } from "../services/http.js";
+import { pageQuery } from "../services/pagination.js";
+import {
   createCollectionItem,
+  deleteCollectionItem,
   findCollectionItem,
+  getCollectionItem,
+  listCollection,
   updateCollectionItem,
-  // deleteSupport via updateCollectionItem with isActive=false or remove directly below
-  // but store.js does not export a delete helper; we'll implement a simple remove via update to isActive=false
-  readDb,
-  saveDb,
-} from '../services/store.js';
+} from "../services/store.js";
+import { deriveSlug, optionalSlug, optionalString, requiredString } from "../services/validators.js";
 
-function slugify(text) {
-  return (
-    (text || '')
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') ||
-    ''
+const COLLECTION = "vacancies";
+
+const unwrap = (result) => {
+  if (result.error) throw badRequest(result.error);
+  return result.value;
+};
+
+// Nullable single-line text: absent -> undefined, null/blank -> null.
+const nullableText = (body, field, label, max) => {
+  if (body[field] === undefined) return undefined;
+  if (body[field] === null) return null;
+  return optionalString(body, field, { label, max }) || null;
+};
+
+/** Validated fields from the body, in contract order. `isUpdate` makes every field optional. */
+const vacancyFields = (body, { isUpdate }) => {
+  const fields = {
+    title:
+      isUpdate && body.title === undefined
+        ? undefined
+        : requiredString(body, "title", "Title", { max: VACANCY_LIMITS.title }),
+    slug: optionalSlug(body),
+    department: nullableText(body, "department", "Department", VACANCY_LIMITS.department),
+    location: nullableText(body, "location", "Location", VACANCY_LIMITS.location),
+    employmentType: unwrap(parseEmploymentType(body)),
+    salaryRange: nullableText(body, "salaryRange", "Salary range", VACANCY_LIMITS.salaryRange),
+    descriptionHtml: unwrap(parseDescription(body)),
+    requirements: unwrap(parseTextList(body, "requirements")),
+    responsibilities: unwrap(parseTextList(body, "responsibilities")),
+  };
+  const status = unwrap(parseStatus(body.status));
+  return { fields, status };
+};
+
+const notFound = () => new ApiError(404, VACANCY_MESSAGES.notFound);
+
+// Admin :id resolves by id, then slug.
+const findForAdmin = async (key) => {
+  try {
+    return await getCollectionItem(COLLECTION, key);
+  } catch (error) {
+    if (error?.statusCode === 404) throw notFound();
+    throw error;
+  }
+};
+
+const withUniqueSlug = (draftSlug, selfId) => (items) => uniqueSlug(items, draftSlug, selfId);
+
+// Mongo: a concurrent writer can take the slug between the check and the write
+// (unique index). Retry once with a fresh check.
+const retryOnDuplicate = async (task) => {
+  try {
+    return await task();
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    return task();
+  }
+};
+
+const auditVacancy = (req, action, vacancy, summary, changes = []) =>
+  audit(req, { action, entity: "vacancy", entityId: vacancy.id, summary, changes });
+
+const notifyVacancyPosted = (_vacancy) => {
+  // TODO(integration): notify vacancy_posted
+};
+
+// ---- public -------------------------------------------------------------------
+
+// GET /vacancies?department&employmentType
+export const listVacancies = asyncHandler(async (req, res) => {
+  const { filters, error } = parsePublicFilters(req.query.department, req.query.employmentType);
+  if (error) throw badRequest(error);
+  const records = await listCollection(COLLECTION, { includeInactive: true });
+  ok(res, VACANCY_MESSAGES.list, publicVacancies(records, filters));
+});
+
+// GET /vacancies/:slug (slug, then id; open only)
+export const getVacancy = asyncHandler(async (req, res) => {
+  const key = String(req.params.slug);
+  const vacancy =
+    (await findCollectionItem(COLLECTION, { slug: key })) || (await findCollectionItem(COLLECTION, { id: key }));
+  if (!vacancy || vacancy.status !== "open") throw notFound();
+  ok(res, VACANCY_MESSAGES.get, publicVacancyView(vacancy));
+});
+
+// ---- admin --------------------------------------------------------------------
+
+// GET /admin/vacancies?status&q&page&limit (paged, every status)
+export const adminListVacancies = asyncHandler(async (req, res) => {
+  const { page, limit } = pageQuery(req.query);
+  const { filters, error } = parseAdminFilters(req.query.status, req.query.q);
+  if (error) throw badRequest(error);
+  const records = await listCollection(COLLECTION, { includeInactive: true });
+  const { items, total } = paginate(adminVacancies(records, filters), page, limit);
+  ok(res, VACANCY_MESSAGES.list, { items: items.map(vacancyView), page, limit, total });
+});
+
+// GET /admin/vacancies/:id
+export const adminGetVacancy = asyncHandler(async (req, res) => {
+  ok(res, VACANCY_MESSAGES.get, vacancyView(await findForAdmin(req.params.id)));
+});
+
+// POST /admin/vacancies
+export const adminCreateVacancy = asyncHandler(async (req, res) => {
+  const { fields, status = "draft" } = vacancyFields(req.body || {}, { isUpdate: false });
+  const timestamp = new Date().toISOString();
+  const record = {
+    title: fields.title,
+    department: fields.department ?? null,
+    location: fields.location ?? null,
+    employmentType: fields.employmentType ?? null,
+    salaryRange: fields.salaryRange ?? null,
+    descriptionHtml: fields.descriptionHtml ?? "",
+    requirements: fields.requirements ?? [],
+    responsibilities: fields.responsibilities ?? [],
+    status,
+    postedAt: status === "open" ? timestamp : null,
+    closedAt: status === "closed" ? timestamp : null,
+    createdBy: createdByOf(actingAdmin(req)),
+  };
+  const slug = fields.slug || deriveSlug(fields.title);
+
+  const vacancy = await retryOnDuplicate(() =>
+    createCollectionItem(COLLECTION, record, {
+      prepare: (items, draft) => ({ ...draft, slug: withUniqueSlug(slug)(items) }),
+    })
   );
-}
 
-export const listVacancies = async (req, res) => {
-  try {
-    if (isMongoMode()) {
-      const vacancies = await Vacancy.find({ status: 'open' }).sort({ postedAt: -1 }).lean();
-      return res.json({ success: true, data: vacancies });
-    }
+  auditVacancy(req, "vacancy.create", vacancy, `Created vacancy "${vacancy.title}"`, [
+    ...Object.keys(fields).filter((key) => fields[key] !== undefined),
+    "status",
+  ]);
+  if (status === "open") notifyVacancyPosted(vacancy);
+  created(res, VACANCY_MESSAGES.create, vacancyView(vacancy));
+});
 
-    const items = await listCollection('vacancies');
-    const open = (items || []).filter((v) => v.status === 'open');
-    open.sort((a, b) => new Date(b.postedAt || b.createdAt || 0) - new Date(a.postedAt || a.createdAt || 0));
-    return res.json({ success: true, data: open });
-  } catch (err) {
-    console.error('listVacancies error', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
+// PUT /admin/vacancies/:id (partial; status follows the transitions)
+export const adminUpdateVacancy = asyncHandler(async (req, res) => {
+  const { fields, status } = vacancyFields(req.body || {}, { isUpdate: true });
+  const existing = await findForAdmin(req.params.id);
+
+  let patch = Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined));
+  let firstPublish = false;
+  if (status !== undefined) {
+    const change = statusChange(existing, status, new Date().toISOString());
+    if (change.error) throw new ApiError(409, change.error);
+    if (change.patch) patch = { ...patch, ...change.patch };
+    firstPublish = change.firstPublish;
   }
-};
 
-export const getVacancy = async (req, res) => {
-  try {
-    const { slug } = req.params;
-    if (isMongoMode()) {
-      const vacancy = await Vacancy.findOne({ slug }).lean();
-      if (!vacancy) return res.status(404).json({ success: false, message: 'Not found' });
-      return res.json({ success: true, data: vacancy });
-    }
-
-    try {
-      const vacancy = await getCollectionItem('vacancies', slug);
-      return res.json({ success: true, data: vacancy });
-    } catch (e) {
-      return res.status(404).json({ success: false, message: 'Not found' });
-    }
-  } catch (err) {
-    console.error('getVacancy error', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
+  const keys = Object.keys(patch);
+  const changes = changedFields(existing, patch, keys);
+  if (changes.length === 0) {
+    ok(res, VACANCY_MESSAGES.update, vacancyView(existing));
+    return;
   }
-};
 
-export const createVacancy = async (req, res) => {
-  try {
-    const { title, slug, descriptionHtml } = req.body;
-    if (!title) return res.status(400).json({ success: false, message: 'Title is required' });
+  const vacancy = await retryOnDuplicate(() =>
+    updateCollectionItem(COLLECTION, existing.id, patch, {
+      prepare: (items, fresh, draft) =>
+        draft.slug && draft.slug !== fresh.slug ? { ...draft, slug: withUniqueSlug(draft.slug, fresh.id)(items) } : draft,
+    })
+  );
 
-    const finalSlug = slug || slugify(title);
-    const safeHtml = sanitizeHtml(descriptionHtml || '', { allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']) });
+  const previousStatus = vacancyView(existing).status;
+  const action = changes.includes("status") ? statusAction(previousStatus, vacancy.status) : "vacancy.update";
+  auditVacancy(req, action, vacancy, `Updated vacancy "${vacancy.title}"`, changes);
+  if (firstPublish) notifyVacancyPosted(vacancy);
+  ok(res, VACANCY_MESSAGES.update, vacancyView(vacancy));
+});
 
-    if (isMongoMode()) {
-      const existing = await Vacancy.findOne({ slug: finalSlug });
-      if (existing) return res.status(400).json({ success: false, message: 'Slug already exists' });
-
-      const payload = { ...req.body, slug: finalSlug, descriptionHtml: safeHtml };
-      if (req.header('X-User-Id')) payload.postedBy = req.header('X-User-Id');
-
-      const created = await Vacancy.create(payload);
-      return res.status(201).json({ success: true, data: created });
+const moveTo = (next, message) =>
+  asyncHandler(async (req, res) => {
+    const existing = await findForAdmin(req.params.id);
+    const change = statusChange(existing, next, new Date().toISOString());
+    if (change.error) throw new ApiError(409, change.error);
+    if (!change.patch) {
+      ok(res, message, vacancyView(existing));
+      return;
     }
+    const vacancy = await updateCollectionItem(COLLECTION, existing.id, change.patch);
+    auditVacancy(
+      req,
+      statusAction(vacancyView(existing).status, next),
+      vacancy,
+      `${next === "open" ? "Published" : "Unpublished"} vacancy "${vacancy.title}"`,
+      Object.keys(change.patch)
+    );
+    if (change.firstPublish) notifyVacancyPosted(vacancy);
+    ok(res, message, vacancyView(vacancy));
+  });
 
-    // JSON store path
-    const existing = await findCollectionItem('vacancies', { slug: finalSlug }).catch(() => null);
-    if (existing) return res.status(400).json({ success: false, message: 'Slug already exists' });
+// POST /admin/vacancies/:id/publish and /unpublish
+export const adminPublishVacancy = moveTo("open", VACANCY_MESSAGES.publish);
+export const adminUnpublishVacancy = moveTo("draft", VACANCY_MESSAGES.unpublish);
 
-    const payload = { ...req.body, slug: finalSlug, descriptionHtml: safeHtml, status: req.body.status || 'open', postedAt: new Date().toISOString() };
-    if (req.header('X-User-Id')) payload.postedBy = req.header('X-User-Id');
-
-    const created = await createCollectionItem('vacancies', payload);
-    return res.status(201).json({ success: true, data: created });
-  } catch (err) {
-    console.error('createVacancy error', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const updateVacancy = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updates = { ...req.body };
-    if (updates.descriptionHtml) {
-      updates.descriptionHtml = sanitizeHtml(updates.descriptionHtml, { allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']) });
-    }
-    if (updates.title && !updates.slug) {
-      updates.slug = slugify(updates.title);
-    }
-
-    if (isMongoMode()) {
-      const updated = await Vacancy.findByIdAndUpdate(id, updates, { new: true });
-      if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
-      return res.json({ success: true, data: updated });
-    }
-
-    const updated = await updateCollectionItem('vacancies', id, updates);
-    return res.json({ success: true, data: updated });
-  } catch (err) {
-    console.error('updateVacancy error', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const deleteVacancy = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (isMongoMode()) {
-      const removed = await Vacancy.findByIdAndDelete(id);
-      if (!removed) return res.status(404).json({ success: false, message: 'Not found' });
-      return res.json({ success: true, message: 'Deleted' });
-    }
-
-    // In JSON store, mark as inactive to preserve history
-    const removed = await updateCollectionItem('vacancies', id, { isActive: false });
-    if (!removed) return res.status(404).json({ success: false, message: 'Not found' });
-    return res.json({ success: true, message: 'Deleted' });
-  } catch (err) {
-    console.error('deleteVacancy error', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
+// DELETE /admin/vacancies/:id (hard delete: the slug is freed)
+export const adminDeleteVacancy = asyncHandler(async (req, res) => {
+  const existing = await findForAdmin(req.params.id);
+  const vacancy = await deleteCollectionItem(COLLECTION, existing.id);
+  auditVacancy(req, "vacancy.delete", vacancy, `Deleted vacancy "${vacancy.title}"`);
+  ok(res, VACANCY_MESSAGES.delete, vacancyView(vacancy));
+});

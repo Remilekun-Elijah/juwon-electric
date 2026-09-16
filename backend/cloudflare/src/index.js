@@ -86,6 +86,7 @@ import {
 } from "./auth.js";
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
 import { handleAdminUsers } from "./adminUsers.js";
+import { handleAdminVacancies, handlePublicVacancies } from "./vacancies.js";
 import { requireCapability } from "./capabilities.js";
 import { adminSelf } from "../../shared/capabilities.js";
 
@@ -816,6 +817,9 @@ const pruneCarts = (env, ctx) => {
 };
 
 const handlePublic = async (request, env, ctx, path, body, url) => {
+  const vacancyResponse = await handlePublicVacancies(request, env, path, url);
+  if (vacancyResponse) return vacancyResponse;
+
   if (request.method === "GET" && path === "/packages") {
     const packages = await listCollection(env, "packages");
     return ok("Packages retrieved.", packages.map(serializePackage));
@@ -1251,6 +1255,9 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   const usersResponse = await handleAdminUsers(request, env, ctx, path, body, admin, url, { sendNotification });
   if (usersResponse) return usersResponse;
+
+  const vacanciesResponse = await handleAdminVacancies(request, env, ctx, path, body, admin, url);
+  if (vacanciesResponse) return vacanciesResponse;
 
   if (method === "GET" && path === "/admin/audit-logs") {
     can("audit:read");

@@ -70,7 +70,13 @@ const models = {
   passwordResets:
     mongoose.models.PasswordReset ||
     mongoose.model("PasswordReset", flexibleSchema, "passwordResets"),
+  vacancies: mongoose.models.Vacancy || mongoose.model("Vacancy", flexibleSchema, "vacancies"),
 };
+
+// Non-catalog collections whose writers keep slugs unique through `prepare`.
+const SLUGGED_COLLECTIONS = ["vacancies"];
+const slugItems = async (model) =>
+  (await model.find({}, { id: 1, slug: 1 }).lean()).map(normalizeMongoRecord);
 
 // Security records (admin sessions, audit log, processed webhook ids). They use
 // application-level string ids and ISO-8601 string timestamps in both the JSON
@@ -244,6 +250,7 @@ const defaultDb = async () => {
     orders: [],
     admins: [],
     passwordResets: [],
+    vacancies: [],
     sessions: [],
     auditLogs: [],
     webhookEvents: [],
@@ -406,7 +413,8 @@ export const createCollectionItem = async (collection, payload, { prepare } = {}
       if (needsSort) item.sortOrder = nextSortOrder(items);
       if (prepare) item = (await prepare(items, item)) || item;
     } else if (prepare) {
-      item = (await prepare([], item)) || item;
+      const items = SLUGGED_COLLECTIONS.includes(collection) ? await slugItems(model) : [];
+      item = (await prepare(items, item)) || item;
     }
     const doc = await model.create(item);
     return normalizeMongoRecord(doc.toObject({ transform: false, virtuals: false }));
@@ -443,7 +451,9 @@ export const updateCollectionItem = async (collection, id, payload, { prepare } 
         ? (await model.find({}, { id: 1, slug: 1, sortOrder: 1, legacyId: 1 }).lean()).map(
             normalizeMongoRecord
           )
-        : [];
+        : SLUGGED_COLLECTIONS.includes(collection)
+          ? await slugItems(model)
+          : [];
       patch = (await prepare(items, existing, patch)) || patch;
     }
     const item = await model
@@ -784,6 +794,11 @@ export const ensureSecurityIndexes = async () => {
   await Promise.all([
     ...[...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
       model.createIndexes()
+    ),
+    // Vacancy slugs are unique (hard delete frees them).
+    models.vacancies.collection.createIndex(
+      { slug: 1 },
+      { unique: true, name: "vacancies_slug_unique", partialFilterExpression: { slug: { $type: "string" } } }
     ),
     // Admin emails are unique (stored lowercase). Fails loudly on existing duplicates.
     models.admins.collection.createIndex(

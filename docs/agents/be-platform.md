@@ -18,9 +18,34 @@ For BE-2: the files at the contract's paths are real, not shims. Import them as 
 | Admin email uniqueness in Express | Mongo unique index at startup (`ensureSecurityIndexes`), and a check under the JSON store lock |
 | Paging parser moved into a shared helper (§0.3) | `backend/services/pagination.js` (the Worker keeps `validation.js` `pageParams`) |
 | `app.js` exports `app` and starts only when run directly | `backend/app.js` |
-| Tests (`npm test` = `node --test` in `backend/`, 18 passing) | `backend/test/capabilities.test.js`, `backend/test/adminUsers.test.js`, `backend/cloudflare/test/adminUsers.test.js` (node:sqlite D1 stand-in), `backend/test/parity/adminUsers.parity.test.js` |
+| Tests (`npm test` in `backend/`) | `backend/test/capabilities.test.js`, `backend/test/adminUsers.test.js`, `backend/cloudflare/test/adminUsers.test.js` (node:sqlite D1 stand-in), `backend/test/parity/adminUsers.parity.test.js` |
 
 Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` → `{ request, close }`), `backend/cloudflare/test/helpers/worker.js` (`createWorkerClient(env)` → `{ env, request }`), `backend/cloudflare/test/helpers/d1.js` (`createD1`, `applyMigrations(d1, { upTo })`). Both `request(method, path, { token, body })` calls resolve `{ status, body }` after background work (audit, email) settles.
+
+## Milestone 2: vacancies consolidation (D1, contract §3, V1-V9): done
+
+| Item | Where |
+| --- | --- |
+| V1: `middleware/auth.js` (X-User-Role), `routes/vacancies.js`, the `/vacancies` mount and `models/Vacancy.js` removed. Writes exist only under `/admin/vacancies` with `vacancies:write` | `backend/routes/admin.js`, `backend/routes/public.js` |
+| V2: Worker module plus migration `0008_vacancies.sql` (unique slug partial index, status index) | `backend/cloudflare/src/vacancies.js` |
+| V3: public list and detail are open-only, and a draft or closed slug or id returns 404. Served at `/api` too | both runtimes |
+| V4: `backend/shared/richText.js` (`sanitizeRichText`), with fixtures in `backend/shared/__fixtures__/richText.json` (30 cases) run by `backend/test/richText.test.js` and `backend/cloudflare/test/richText.test.js` (including Worker end to end) | shared |
+| V5: validated fields only, contract limits, default `draft`, `createdBy` from the session | `backend/shared/vacancies.js` plus runtime field readers |
+| V6: publish/unpublish, the transition table, `postedAt`/`closedAt`, audit actions | shared `statusChange` |
+| V7: hard delete frees the slug (tested), and D1 unique index | |
+| V8: paged admin list, every status, `status` and `q` filters | |
+| V9: `// TODO(integration): notify vacancy_posted` at the first-publish call site (BE-2's `notify()` is not on this branch) | |
+| Parity: full masked bodies (contract §13.7) | `backend/test/parity/vacancies.parity.test.js` |
+
+### Sanitiser alignment with BE-2
+`agents/be-ops` has `backend/shared/sanitizeHtml.js` (`sanitizeHtml`) for product `descriptionHtml`. It differs from contract §0.5: it allows `span`, `code`, `pre`, `hr`, `sub`/`sup`/`small`, `h5`/`h6` and tables, accepts `tel:`, `#` and site-relative hrefs, keeps `title`/`colspan`/`start` attributes, keeps `target` only when it is `_blank`, and decodes and re-escapes text entities. `backend/shared/richText.js` follows §0.5 exactly and reuses the same linear, allowlist parsing approach, with implied end tags added so stored markup renders as written. It also exports `sanitizeHtml` as an alias, so BE-2 can switch the import path without renaming call sites. **At integration `richText.js` is canonical: BE-2 should import it and delete `sanitizeHtml.js`, or SUP-BE should widen §0.5 if products need the extra tags.**
+
+### Vacancy interpretations
+10. **Leaving `closed` clears `closedAt`**, for both `closed→open` (contract: reopening clears) and `closed→draft`, which the contract does not specify.
+11. A `PUT` that changes `status` is audited with the status action (`vacancy.publish`/`unpublish`/`close`) and lists every changed field. A `PUT` without a status change is `vacancy.update`. A `PUT` that changes nothing writes nothing and is not audited.
+12. The public `department` filter is a case-insensitive exact match. `employmentType` must be valid (400).
+13. Slugs never change on a title edit. A sent slug that is taken gets the `-2` suffix (the same as on create), rather than a 409.
+14. Rows in a manually created standalone D1 `vacancies` table (from `backend/d1-schemas/vacancies.sql`) are not migrated. That table was never part of the numbered migrations.
 
 ## Interpretations and deviations (SUP-BE please confirm)
 
@@ -36,6 +61,5 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` �
 
 ## Remaining BE-1 work (not started)
 
-- Vacancies consolidation (contract §3, checklist V1-V9), including `backend/shared/richText.js` and fixtures, and migration `0008`.
 - Cleanup C1 (`workers/d1-write`, `backend/d1-sync`, `backend/d1-schemas`, `routes/user.js`, `TODO_SANITIZE.md`) and C2 (the `backend/models/*` clash).
 - C4 `lint` script, C5 CI (Node 22, wrangler deploy on `v3`/main with migrations first), C6 `docs/DEPLOYMENT.md` env matrix.

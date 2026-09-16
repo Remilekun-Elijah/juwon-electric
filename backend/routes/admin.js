@@ -59,6 +59,15 @@ import {
   adminReactivateUser,
   adminUpdateUser,
 } from "../controllers/adminUsers.js";
+import {
+  adminCreateVacancy,
+  adminDeleteVacancy,
+  adminGetVacancy,
+  adminListVacancies,
+  adminPublishVacancy,
+  adminUnpublishVacancy,
+  adminUpdateVacancy,
+} from "../controllers/vacancies.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 
 const router = Router();
@@ -130,6 +139,14 @@ router.put("/newsletter/:id", can("leads:write"), adminUpdateSubscriber);
 router.delete("/newsletter/:id", can("leads:write"), adminDeleteSubscriber);
 
 router.get("/carts", can("orders:read"), adminListCarts);
+
+router.get("/vacancies", can("vacancies:read"), adminListVacancies);
+router.post("/vacancies", can("vacancies:write"), adminCreateVacancy);
+router.get("/vacancies/:id", can("vacancies:read"), adminGetVacancy);
+router.put("/vacancies/:id", can("vacancies:write"), adminUpdateVacancy);
+router.post("/vacancies/:id/publish", can("vacancies:write"), adminPublishVacancy);
+router.post("/vacancies/:id/unpublish", can("vacancies:write"), adminUnpublishVacancy);
+router.delete("/vacancies/:id", can("vacancies:write"), adminDeleteVacancy);
 
 router.get("/orders", can("orders:read"), adminListOrders);
 router.get("/orders/:id", can("orders:read"), adminGetOrder);
