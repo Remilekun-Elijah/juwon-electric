@@ -45,8 +45,6 @@ import {
   CONTACT_STATUSES,
   LIMITS,
   NEWSLETTER_STATUSES,
-  ORDER_STATUSES,
-  PAYMENT_STATUSES,
   emailField,
   enumField,
   numericField,
@@ -87,6 +85,7 @@ import {
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
 import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
 import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../../shared/catalog.js";
+import { NEW_ORDER_FIELDS } from "../../shared/orders.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
 const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
@@ -987,8 +986,7 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
       order: pricing.items,
       total: pricing.total,
       totalAmount: pricing.totalAmount,
-      status: "pending",
-      paymentStatus: "unpaid",
+      ...NEW_ORDER_FIELDS,
       source,
       receivedAt: now(),
     });
@@ -1484,47 +1482,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Carts retrieved.", await listCollection(env, "carts", { includeInactive: true }));
   }
 
-  if (method === "GET" && path === "/admin/orders") {
-    return ok("Orders retrieved.", await listCollection(env, "orders", { includeInactive: true }));
-  }
-  const orderId = idAfter(path, "/admin/orders");
-  if (orderId && method === "GET") {
-    return ok("Order retrieved.", await getCollectionItem(env, "orders", orderId));
-  }
-  if (orderId && method === "PUT") {
-    const existing = await getCollectionItem(env, "orders", orderId);
-    const status = enumField(body, "status", ORDER_STATUSES, { label: "Status", existing: existing.status });
-    const paymentStatus = enumField(body, "paymentStatus", PAYMENT_STATUSES, {
-      label: "Payment status",
-      existing: existing.paymentStatus,
-    });
-    const payload = { status, paymentStatus, note: optionalNote(body), isActive: optionalIsActive(body) };
-    const order = await updateCollectionItem(env, "orders", existing.id, payload);
-    const changes = changedFields(existing, payload);
-    const statusChanged = changes.includes("status");
-    audit({
-      action: statusChanged ? "order.status_change" : "order.update",
-      entity: "order",
-      entityId: existing.id,
-      summary: statusChanged
-        ? `Order from ${existing.name || existing.id} marked ${status}`
-        : `Updated order from ${existing.name || existing.id}`,
-      changes,
-    });
-    return ok("Order updated.", order);
-  }
-  if (orderId && method === "DELETE") {
-    const existing = await getCollectionItem(env, "orders", orderId);
-    await deleteCollectionItem(env, "orders", existing);
-    await forgetRecordReads(env, "orders", existing.id);
-    audit({
-      action: "order.delete",
-      entity: "order",
-      entityId: existing.id,
-      summary: `Deleted order from ${existing.name || existing.id}`,
-    });
-    return ok("Order deleted.", existing);
-  }
+  // Orders (GET, PUT, DELETE and fulfilment actions): src/ops/orders.js.
 
   return null;
 };
@@ -1571,8 +1529,7 @@ const route = async (incoming, env, ctx, path) => {
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     const { admin } = await requireAdmin(request, env, ctx);
-    const response = await handleAdmin(request, env, ctx, path, body, admin, url);
-    if (response) return response;
+    // v3 modules first: they own /admin/orders* (src/ops/orders.js).
     const opsResponse = await handleOpsAdmin({
       request,
       env,
@@ -1585,6 +1542,8 @@ const route = async (incoming, env, ctx, path) => {
       sendNotification: (message) => sendNotification(env, message),
     });
     if (opsResponse) return opsResponse;
+    const response = await handleAdmin(request, env, ctx, path, body, admin, url);
+    if (response) return response;
   }
 
   const opsPublicResponse = await handleOpsPublic({ request, env, ctx, path, body, url });
@@ -1614,7 +1573,7 @@ const errorResponse = (error, requestId) => {
 export default {
   async fetch(request, env, ctx) {
     const requestId = resolveRequestId(request);
-    let path = null;
+    let path;
     try {
       path = normalizePath(new URL(request.url));
     } catch {

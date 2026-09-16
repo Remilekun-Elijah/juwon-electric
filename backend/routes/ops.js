@@ -23,6 +23,7 @@ import {
   adminListMovements,
   adminLowStockCheck,
 } from "../controllers/inventory.js";
+import { adminAssignOrderEngineer, adminMarkOrderPaid, adminOrderFulfillment } from "../controllers/orders.js";
 import { requireCapability as can } from "../middleware/capabilities.js";
 
 export const opsPublicRouter = Router();
@@ -49,3 +50,8 @@ opsAdminRouter.get("/inventory", can("inventory:read"), adminListInventory);
 opsAdminRouter.post("/inventory/adjustments", can("inventory:adjust"), adminAdjustStock);
 opsAdminRouter.get("/inventory/movements", can("inventory:read"), adminListMovements);
 opsAdminRouter.post("/inventory/low-stock-check", can("inventory:adjust"), adminLowStockCheck);
+
+// Orders and fulfilment (§6.4). GET/PUT/DELETE /orders[/:id] stay on routes/admin.js.
+opsAdminRouter.post("/orders/:id/fulfillment", can("orders:update"), adminOrderFulfillment);
+opsAdminRouter.post("/orders/:id/mark-paid", can("orders:update"), adminMarkOrderPaid);
+opsAdminRouter.post("/orders/:id/assign-engineer", can("orders:update"), adminAssignOrderEngineer);

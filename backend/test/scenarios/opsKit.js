@@ -1,6 +1,7 @@
 // Test kit for the BE-2 module scenarios (catalog, inventory, orders, jobs, settings,
 // notifications, dashboard). Scenarios are runtime-agnostic and receive a `client`:
-//   { request(method, path, { token, body }), seedAdmin(role, extra?) -> { id, email, token }, emails }
+//   { request(method, path, { token, body }), seedAdmin(role, extra?) -> { id, email, token },
+//     seedRecord(collection, record) -> stored record (bypasses the API), emails }
 // `emails` collects every email the runtime sends as { to: string[], subject, html }.
 // Runners: backend/test/<module>.test.js (Express), backend/cloudflare/test/<module>.test.js
 // (Worker) and backend/test/parity/<module>.parity.test.js (both, deep-compared after masking).
@@ -54,6 +55,7 @@ export const expressOpsClient = async () => {
     request: server.request,
     emails,
     close: server.close,
+    seedRecord: (collection, record) => store.createCollectionItem(collection, record),
     async seedAdmin(role, extra = {}) {
       const email = seedEmail(role);
       const admin = await store.createCollectionItem("admins", {
@@ -64,7 +66,7 @@ export const expressOpsClient = async () => {
         isActive: true,
         ...extra,
       });
-      return { id: admin.id, email, token: await login(server.request, email) };
+      return { id: admin.id, email, token: admin.isActive === false ? null : await login(server.request, email) };
     },
   };
 };
@@ -102,6 +104,7 @@ export const workerOpsClient = async () => {
     close: async () => {
       globalThis.fetch.sinks = globalThis.fetch.sinks.filter((sink) => sink !== emails);
     },
+    seedRecord: (collection, record) => store.createCollectionItem(client.env, collection, record),
     async seedAdmin(role, extra = {}) {
       const email = seedEmail(role);
       const admin = await store.createCollectionItem(client.env, "admins", {
@@ -112,7 +115,7 @@ export const workerOpsClient = async () => {
         isActive: true,
         ...extra,
       });
-      return { id: admin.id, email, token: await login(client.request, email) };
+      return { id: admin.id, email, token: admin.isActive === false ? null : await login(client.request, email) };
     },
   };
 };

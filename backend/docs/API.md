@@ -125,8 +125,9 @@ Status values (validated on write; stored legacy values remain readable, and a s
 
 | Field | Allowed |
 | --- | --- |
-| order `status` | `pending`, `completed`, `cancelled` |
-| order `paymentStatus` | `unpaid`, `partial`, `paid`, `refunded` |
+| order `status` | derived and read-only: `pending`, `completed`, `cancelled` (see "Orders and fulfilment" below) |
+| order `fulfillmentStatus` | `pending`, `processing`, `out_for_delivery`, `delivered`, `installed`, `cancelled` |
+| order `paymentStatus` | `pending`, `partial`, `paid`, `failed`, `refunded` (`unpaid` is accepted as an input alias for `pending`) |
 | contact `status` | `new`, `contacted`, `completed` |
 | newsletter `status` | `new`, `active`, `inactive` (`isActive` is a boolean) |
 
@@ -376,7 +377,7 @@ Package resolution (identical in the Node backend and the Cloudflare Worker):
 
 Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With solar", otherwise "Without solar") → the kits text at the end of `package`. An explicit option name that doesn't exist falls back to `withSolar` and then the kits text; if neither is given or matches, the item is unavailable. With none of the three given, the first option is used.
 
-The order is persisted in `orders` with `status: "pending"` and `paymentStatus: "unpaid"`, then sent through the existing email template using the server-computed values.
+The order is persisted in `orders` with `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: false` and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
 
 ## Admin Endpoints
 
@@ -516,3 +517,43 @@ Movement: `{ id, productId, sku, productName, change, stockBefore, stockAfter, r
 **Low-stock alert.** It fires when a movement takes stock from above the reorder level to at or below it, provided the level is above 0 or the stock reaches 0. It emails `settings.notifications.lowStockEmails`; when that list is empty it falls back to `SMTP_FROM` (Express) or `ADMIN_NOTIFY_EMAIL` (Worker). Nothing is sent when `settings.inventory.lowStockAlertsEnabled` is false. Email never fails the adjustment.
 
 Audit action: `inventory.adjust` (entity `product`).
+
+### Orders and fulfilment
+
+Enums, transitions and stock rules: contract §6. Every admin order response is normalised at read time, so legacy and new orders look the same:
+
+- **Legacy payment status:** `unpaid` reads as `pending` with `legacyPaymentStatus: "unpaid"`. A missing or unknown value reads as `pending` with `legacyPaymentStatus` set to the original value or `null`.
+- **Legacy status:** `completed` reads as `fulfillmentStatus: "delivered"`, `cancelled` as `cancelled`, and anything else as `pending`.
+- **Defaults:** `requiresInstallation: false`; `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
+- **`status`:** always derived from `fulfillmentStatus`.
+- **Persistence:** D1 migration `0011_orders_fulfilment.sql` writes the same values, and Express writes them on the next change.
+- **Removed field:** the internal `sortOrder` is no longer part of order responses.
+
+Endpoints:
+
+- `GET /admin/orders?fulfillmentStatus&paymentStatus&engineerId&requiresInstallation&from&to` (`orders:read`): array. `from` and `to` filter on `receivedAt`, falling back to `createdAt`.
+- `GET /admin/orders/:id` (`orders:read`): the order plus `jobs: [{ id, status, engineerId, scheduledAt }]`.
+- `PUT /admin/orders/:id` (`orders:update`): `200` `"Order updated."`. Body `{ note?, isActive?, requiresInstallation?, paymentStatus?, fulfillmentStatus?, status? }`.
+  - `status` must equal the current derived value, otherwise `400` `"Use fulfillmentStatus to change the order status."`.
+  - Setting `requiresInstallation: false` while non-cancelled jobs exist answers `409` `"Order has installation jobs."`.
+- `POST /admin/orders/:id/fulfillment` (`orders:update`), body `{ status, note? }`: `200` `"Fulfilment status updated."`. A missing or invalid `status` answers `400` `"Fulfilment status is not valid."`.
+- `POST /admin/orders/:id/mark-paid` (`orders:update`), body `{ note? }`: `200` `"Order marked as paid."`. An already-paid order is a no-op.
+- `POST /admin/orders/:id/assign-engineer` (`orders:update`), body `{ engineerId: string | null }`: `200` `"Engineer assigned."` or `"Engineer unassigned."`.
+  - `400` `"Assignee must be an active engineer."`, checked before `409` `"Order does not require installation."`.
+  - No job is created.
+- `DELETE /admin/orders/:id` (`orders:delete`): `409` `"Order has installation jobs."` when non-cancelled jobs exist.
+
+Transition errors: `409` `"Cannot change fulfilment status from <from> to <to>."`, `409` `"Cannot change payment status from <from> to <to>."` and `409` `"Order does not require installation."` (for `installed`). Sending the current value is a no-op (`200`). Entering `paid` sets `paidAt` when it is null.
+
+Stock:
+
+- **`pending → processing`:** every order line whose `packageId` resolves to a package with `items` decrements `item.quantity × line.quantity` per product. These are `sale` movements with `referenceType: "order"`. It is all-or-nothing: a shortfall answers `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]` ordered by SKU, and nothing is written. `stockCommittedAt` is set only when stock actually moved.
+- **`→ cancelled` with `stockCommittedAt` set:** `sale_reversal` movements restore the net quantity of the order's `sale` movements, and `stockCommittedAt` becomes `null`.
+- **Write safety:** the stock changes and the order update are one atomic write. It is guarded by the order's stored `fulfillmentStatus` and `paymentStatus` (`assignedEngineerId` for assignment). A concurrent status change answers `409` `"This record was changed by another request. Please try again."`, so stock is never committed twice.
+
+Audit actions:
+
+- `order.update`: note, isActive or requiresInstallation changes.
+- `order.fulfillment_change`: the summary shows `from → to`.
+- `order.status_change`: written in addition when the derived `status` changes.
+- `order.payment_change`, `order.assign_engineer`, `order.delete`.

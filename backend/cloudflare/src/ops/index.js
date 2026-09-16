@@ -2,9 +2,10 @@
 // handlers before the legacy public routes, admin handlers after requireAdmin.
 import { handleCatalogAdmin, handleCatalogPublic } from "./catalog.js";
 import { handleInventoryAdmin, runLowStockCheck } from "./inventory.js";
+import { handleOrdersAdmin } from "./orders.js";
 
 const PUBLIC_HANDLERS = [handleCatalogPublic];
-const ADMIN_HANDLERS = [handleCatalogAdmin, handleInventoryAdmin];
+const ADMIN_HANDLERS = [handleCatalogAdmin, handleInventoryAdmin, handleOrdersAdmin];
 
 const firstResponse = async (handlers, context) => {
   for (const handler of handlers) {

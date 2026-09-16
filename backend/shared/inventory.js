@@ -5,7 +5,7 @@
 // (cloudflare/src/ops/stock.js), or conditional Mongo $inc updates with compensation
 // (services/store.js applyStockChanges).
 import { badRequest, conflict, notFound } from "./errors.js";
-import { OPS_LIMITS, dateTime, isPlainObject, oneOf, queryText, text } from "./fields.js";
+import { OPS_LIMITS, dateTime, isPlainObject, queryText, text } from "./fields.js";
 
 export const MOVEMENT_REASONS = ["initial", "restock", "adjustment", "damage", "return", "correction", "sale", "sale_reversal"];
 export const ADJUSTMENT_REASONS = ["restock", "adjustment", "damage", "return", "correction"];
@@ -39,16 +39,18 @@ export const mergeChanges = (lines) => {
 /** Default error when a change would take stock below zero. */
 export const belowZero = () => conflict("Stock cannot go below zero.");
 
-/** Error for committing an order: every short product in `details`. */
+/** Error for committing an order: every short product in `details`, ordered by SKU. */
 export const insufficientStockForOrder = (shortfalls) =>
   conflict(
     "Insufficient stock to process this order.",
-    shortfalls.map(({ product, change }) => ({
-      productId: product.id,
-      sku: product.sku,
-      required: -change,
-      available: Number(product.stockQuantity) || 0,
-    }))
+    shortfalls
+      .map(({ product, change }) => ({
+        productId: product.id,
+        sku: product.sku,
+        required: -change,
+        available: Number(product.stockQuantity) || 0,
+      }))
+      .sort((a, b) => (a.sku < b.sku ? -1 : a.sku > b.sku ? 1 : 0))
   );
 
 /**
