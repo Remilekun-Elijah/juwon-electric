@@ -1,64 +1,99 @@
 # FE-1 status — Public site port (`agents/fe-public`)
 
-Rules: `agents/fe-supervisor:docs/agents/FE_CONVENTIONS.md` (rev 2), `FE_ACCEPTANCE.md`, `review-fe.md`.
+Rules: `agents/fe-supervisor:docs/agents/FE_CONVENTIONS.md` (rev 2), `FE_ACCEPTANCE.md`, `review-fe.md` (reviews 1–2).
 Endpoints: `agents/be-supervisor:docs/agents/API_CONTRACT_V3.md`.
 
 ## Progress
 
 | Ledger item | Status | Commits |
 | --- | --- | --- |
-| 1. Build green on base | Done on base (`d48b482`) | — |
-| 2. Brand system (`@theme`, fonts, metadata, favicon, scaffold removed) | Done | `b4a545f`, review fixes |
-| 3a. UI kit + `lib/api` | Done; review FE1-1…FE1-8 addressed | `b6e901d`, `8e35473` (partly reverted), review fixes |
-| 3b. Layout (Navbar, Header, Footer) | In progress | |
-| 4. Page port | Not started | |
-| 5. Vacancies SSG/ISR | Not started | |
-| 6. Products & categories | Not started | |
-| 7. SEO, a11y, README | README env section done (FE1-7) | |
+| 1. Build green on base | Done on base | `d48b482` |
+| 2. Brand system | Done (review 1 closed) | `b4a545f`, `8d2117b` |
+| 3a. UI kit + `lib/api` | Done (review 1 closed) | `b6e901d`, `8e35473` (partly reverted), `8d2117b` |
+| 3b. Layout (Navbar, Header, Footer) | Done | `0e03b90` |
+| 4. Page port (landing, services, portfolio, packages + `[id]`, contact, cart/checkout) | Done, **awaiting review** | `f88de22` |
+| — `adminPreview` config flag (FE-2 request) | Done, byte-identical to `agents/fe-admin` | `14f0b00`, `a2b053c` |
+| 5. Vacancies SSG/ISR + sanitiser + `.prose-je` | Done, **awaiting review** | `233d036` |
+| — Drawer/Dialog 44 px close target (FE-2 request) | Done | `a2b053c` |
+| — `CustomerSegment` → `PublicCustomerSegment` (merge conflict) | Done | `8fa3773` |
+| 6. Products & categories catalogue | Done, **awaiting review** | `afa1173` |
+| 7. SEO, a11y, responsive, Vercel/README | Done, **awaiting review** | this commit |
 
-## Review 1 fixes (`review-fe.md`)
+## Verification (evidence for FE_ACCEPTANCE)
 
-| Finding | Fix |
-| --- | --- |
-| FE1-1 kit unusable from `.tsx` | Per-file declarations `components/ui/*.d.ts` (+ `types.d.ts`, `index.d.ts`). TypeScript resolves `X.d.ts` before `X.jsx`; the bundler still loads the `.jsx`, so the sources stay diffable against Vite. Proof: `components/ui/kit.typecheck.tsx` renders every barrel export with only required props, then with optional props, and is type-checked by every `next build`. A negative probe (missing `type` on `StatusBadge`, bad `variant`, missing `open` on `Dialog`, …) produced 6/6 expected errors. |
-| FE1-2 public font | Inter (`--font-inter`) is the body font; Sora and Manrope added as variables; all 10 helper classes ported to `@layer components`; `--diamond` / `--gold` ported to `:root`. Plus Jakarta Sans stays the `font-sans` token for the admin root (FE-2). App.css page globals (`.overlay`, `.header-video`, `.header-content`, `.energyBackground`, rotate keyframes, scrollbar, `img`) ported too. |
-| FE1-3 v3 → v4 drift | 19 renames in the kit: `shadow-sm`→`shadow-xs` ×4, `shadow`→`shadow-sm` ×1, `outline-none`→`outline-hidden` ×11, `rounded`→`rounded-sm` ×2, `backdrop-blur-sm`→`backdrop-blur-xs` ×1. Applied to every ported page too. |
-| FE1-4 `fieldClasses` client reference | Moved to `components/ui/fieldStyles.js`; verified `typeof fieldClasses === "string"` in a server component. |
-| FE1-6 / FE1-8 admin client | `lib/api/admin.ts` removed from this branch (coordinator instruction); `lib/api/index.ts` exports client, public helpers and types only. |
-| FE1-7 env access | `lib/config.ts` holds `turnstileSiteKey` and `siteUrl` (`NEXT_PUBLIC_SITE_URL`); `NEXT_PUBLIC_BACKEND_URL` is read only in `lib/api/client.ts`. Documented in `frontend-next/README.md` and `.env.example`. |
-| FE1-9 shared originals | `lib/cn.ts` and `lib/api/client.ts` restored to `b6e901d` byte for byte. The whole 25-file kit is restored as `.jsx` (my `8e35473` TypeScript conversion and FE-2-file removals are reverted). |
+All scripts are throwaway (session scratchpad), run against `next build && next start`. `.next` was deleted after every build.
 
-## Shared originals FE-2 checks out
+- **A. Build/lint:** `npm run build` passes. `npx eslint .` reports only the 5 base errors in `app/admin/vacancies/page.jsx`
+  (FE-2 deletes it); FE-1 files have 0 errors and 0 warnings (the `vacancies/[slug]` warning is gone with the rewrite).
+  `kit.typecheck.tsx` type-checks every kit export from strict `.tsx`.
+- **A. Backend down:** clean build with `NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:9` passes; every read logs
+  `[public] … unavailable (network) … using fallback`, and packages/services/portfolio render the Vite fallbacks.
+- **A. Env/fetch:** `process.env` only in `lib/config.ts`, `lib/api/client.ts`, `next.config.ts`; `fetch(` only in
+  `lib/api/client.ts`.
+- **B. Cart/checkout (headless Chrome, 22/22):** add-to-cart dialog → `je/cart` item has the Vite fields; navbar badge; quantity
+  and solar toggle persist; checkout quote runs; **`POST /cart/quote` and `POST /order` bodies are byte-identical to the
+  Vite `toOrderItem` output** for the same cart (order mocked via CDP, no real order created); confirmation shows the
+  server total; cart clears; a cart saved in the Vite shape (string quantity) renders; no console errors.
+- **C. Rendering:** build output marks `/`, `/services`, `/portfolio`, `/packages`, `/contact`, `/vacancies`, `/products`
+  as static with 5 m revalidate, and `/packages/[id]` (66), `/vacancies/[slug]`, `/products/*` as SSG (●). Unknown
+  package/vacancy/product/category/page → 404.
+- **C. Sanitiser:** `lib/sanitize.ts` passes all 30 fixtures in `agents/be-platform:backend/shared/__fixtures__/richText.json`.
+  Product page with `<script>`, `onerror=` and `javascript:` in `descriptionHtml` renders only `<p>`, `<strong>`, a
+  link without href and the https link.
+- **C. SEO:** `sitemap.xml` (74 URLs locally: pages, packages, open vacancies, categories, products), `robots.txt`
+  (disallow `/admin`, `/cart`), per-page metadata and canonicals, JobPosting and Product JSON-LD.
+- **Catalogue (mock of contract §4, 19/19):** 24 per page + page 2, `/products/page/1` → 308, subcategory products on the
+  parent category page, breadcrumb from `parentId`, specs labelled/unit-formatted from the category attribute schema.
+- **F. A11y + responsive (headless Chrome, 33/33):** 11 pages × 375/768/1280 px: no horizontal overflow, exactly one `h1`
+  in `<main>`, no skipped heading levels, no unnamed visible controls, no `img` without `alt`.
 
-`components/ui/**` (including the new `*.d.ts`, `fieldStyles.js`, `kit.typecheck.tsx`), `lib/cn.ts`, `lib/api/client.ts`,
-`lib/api/index.ts`, `lib/api/public.ts`, `lib/api/types.ts`, `package.json`, `package-lock.json`.
+## Deviations and decisions for SUP-FE
 
-**Not on this branch: `lib/api/admin.ts`.** Conventions rev 2 §1.1 lists it in FE-2's checkout command, but the coordinator
-told FE-1 to remove it (FE-2 owns it). FE-2 can restore the seeded transport with
-`git show b6e901d:frontend-next/lib/api/admin.ts > frontend-next/lib/api/admin.ts`. SUP-FE: please drop it from the §1.1
-command.
+1. **Checkout stays a dialog on `/cart`** (Vite behaviour), not a `/checkout` route.
+2. **Navbar is unchanged from Vite** (no Products or Careers item). Both are linked from the Footer and the sitemap.
+   Adding them to the Navbar is a product decision.
+3. **Packages detail route is `packages/[id]`** (review note); URLs are `/packages/0` etc.
+4. **Sanitiser is a port of BE-1's `richText.js`**, not `isomorphic-dompurify` (no jsdom dependency, byte-identical output
+   to what the API stores). Keep it in sync with `backend/shared/richText.js`.
+5. **No `zustand`:** the cart store is ~150 lines on `useSyncExternalStore`, avoiding a second install.
+6. **Colour contrast (FE_ACCEPTANCE §F vs §B parity) — needs a decision.** Vite palette ratios on white:
+   `#DB464C` (brand-500/600 buttons and links) 4.21:1, `faint #85793E` 4.37:1 (4.18 on offWhite), footer `#E67E82` on
+   `deep_red` 3.75:1, `#878787` checkout labels 3.59:1, package load text `#e26767` 3.30:1 and `#EDA4A6` 2.01:1, white on
+   the `#EDA4A6` "In Cart" button 2.01:1. Nearest AA shades: `#D24349`, `#7F743B`, `#EA9598`, `#767676`, `#BD5656`.
+   Left as Vite until SUP-FE/owner decides; the tokens are fixed by §2.
+7. **On-demand 404s for dynamic params stream** (Next 16): `/vacancies/unknown` returns status 404, `noindex` and the
+   custom not-found in the RSC payload, but the HTML shell is empty until JS runs. Unmatched URLs and build-time 404s
+   render full HTML with the site chrome.
+8. **Services CTA** uses the record's `ctaLabel`/`ctaUrl` when the admin set them (Vite always showed "Let's go" →
+   packages); the fallback is the Vite text and link.
+9. **Icons:** MUI icons replaced by lucide (outline style) and inline SVG brand icons; filled House/Star/Phone where MUI
+   was filled. Small visual difference, no layout change.
+10. **Vite parity bug kept:** toggling "With solar" in the cart changes `price` but not `package` (the kits text sent in
+    `/order`), exactly as Vite. Fixing it changes the order payload, so it needs a product decision.
+11. **Remote images** from the CMS render with `unoptimized` (`components/public/SiteImage.tsx`) instead of an
+    `images.remotePatterns` allowlist, because admins can use any https host.
+12. **Env sample file** is `frontend-next/.env.example` (not `.env.local.sample`); it lists all four variables with the
+    `NEXT_PUBLIC_ADMIN_PREVIEW` "dev only, never in production" note.
+13. **Admin auth header:** FE-1 ships no admin client. `lib/api/admin.ts` is FE-2's (restore the seeded transport with
+    `git show b6e901d:frontend-next/lib/api/admin.ts` if needed). Please drop it from the §1.1 checkout command.
 
-## Kit changes since the review (tell FE-2)
+## Shared files FE-2 re-syncs from this branch
 
-- `fieldClasses` now lives in `components/ui/fieldStyles.js` (still exported from the barrel).
-- Declarations added; no runtime API changes.
+`components/ui/**` (including `*.d.ts`, `fieldStyles.js`, `kit.typecheck.tsx`), `lib/cn.ts`, `lib/api/client.ts`,
+`lib/api/index.ts`, `lib/api/public.ts`, `lib/api/types.ts`, `lib/config.ts`, `lib/sanitize.ts`, `package.json`,
+`package-lock.json`.
 
-## `lib/api` (FE-1)
-
-- `public.ts`: `getPackages`, `getPackage(id)`, `getServices`, `getPortfolio`, `getPortfolioItem`, `getCategories`,
-  `getCategory`, `getProducts` (paged), `getProduct`, `getVacancies`, `getVacancy(slug)`, `getPublicSettings`,
-  `quoteCart`, `saveCart`, `placeOrder`, `submitContact`, `subscribe`. Bodies are passed as objects (the client encodes).
-- `types.ts` FE-1 section follows contract §3 (`PublicVacancy`), §4 (`Category`, `PublicProduct`, `Paged`), §8.1
-  (`PublicSettings`) and the live package/service/portfolio/cart/order shapes. FE-2 section is empty and reserved.
+Kit changes since review 2: Dialog/Drawer close buttons have a 44 px hit area (`a2b053c`). No prop API changes.
 
 ## Dependencies
 
-Approved in rev 2: `lucide-react`, `@headlessui/react`, `sonner`, `clsx`, `tailwind-merge` (committed with the lockfile in
-`b6e901d`). No dependencies added since. The cart uses a `useSyncExternalStore` store instead of `zustand`, so there is
-no second install; the sanitiser decision is recorded with item 5.
+Approved in rev 2 and committed in `b6e901d`: `lucide-react`, `@headlessui/react`, `sonner`, `clsx`, `tailwind-merge`.
+Nothing added since.
 
-## Deviations and notes
+## Not done / follow-ups
 
-1. **Routing:** `packages/[id]` (backend only offers `GET /packages/:id`; package slugs repeat, e.g. `basic`).
-2. **Lint baseline:** base has 5 errors + 1 warning. `app/admin/vacancies/page.jsx` is FE-2's. `app/vacancies/[slug]/page.jsx`
-   is fixed by FE-1 in item 5. Rule until then: no new lint errors.
+- Visual side-by-side against `cd frontend && npm run dev` was not run (no `frontend/` install, per the disk rules);
+  parity was checked by diffing markup against the Vite sources and with the automated checks above.
+- Contact and newsletter submissions were not exercised end to end (they would write to the local backend); the forms
+  use the same payload fields and Turnstile handling as Vite.
+- No Content-Security-Policy yet (needs a policy covering Turnstile, Quill and next/font).
