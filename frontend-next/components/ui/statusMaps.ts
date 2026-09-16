@@ -1,9 +1,9 @@
-/**
- * Status → { tone, label } maps used by <StatusBadge>. Labels are sentence case.
- * Values mirror backend/controllers/orders.js (ORDER_STATUSES, paymentStatus),
- * contact.js / Admin Operations lead options, and newsletter/catalog isActive flags.
- */
-export const statusMaps = {
+// STAND-IN (FE-1): FE-2 owns this file (FE_CONVENTIONS §1.1). It exists only so Badge's StatusBadge builds on
+// agents/fe-public; it copies the Vite file with the same exported API. Integration keeps FE-2's version.
+
+type StatusMeta = { tone: string; label: string };
+
+export const statusMaps: Record<string, Record<string, StatusMeta>> = {
   order: {
     pending: { tone: "warning", label: "Pending" },
     completed: { tone: "success", label: "Completed" },
@@ -32,8 +32,7 @@ export const statusMaps = {
   },
 };
 
-/** Default status when a record has none. */
-export const defaultStatus = {
+export const defaultStatus: Record<string, string> = {
   order: "pending",
   payment: "unpaid",
   contact: "new",
@@ -41,17 +40,13 @@ export const defaultStatus = {
   catalog: "active",
 };
 
-const toSentenceCase = (value) => {
+const toSentenceCase = (value: string) => {
   const text = String(value).replace(/[_-]+/g, " ").trim().toLowerCase();
   return text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
 };
 
-/**
- * Resolve { tone, label } for a status. Booleans map to active/inactive (newsletter) or active/hidden (catalog).
- * Unknown values fall back to a neutral tone with a sentence-cased label.
- */
-export function getStatusMeta(type, status) {
-  let key = status;
+export function getStatusMeta(type: string, status?: string | boolean | null): StatusMeta {
+  let key: string | boolean | null | undefined = status;
   if (typeof status === "boolean") {
     key = status ? "active" : type === "catalog" ? "hidden" : "inactive";
   }

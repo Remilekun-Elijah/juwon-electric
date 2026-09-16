@@ -1,20 +1,31 @@
+import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from "react";
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-const tones = {
+type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" }>;
+
+const tones: Record<"danger" | "warning" | "success" | "info", { classes: string; icon: IconComponent }> = {
   danger: { classes: "border-red-200 bg-red-50 text-red-700", icon: CircleAlert },
   warning: { classes: "border-amber-200 bg-amber-50 text-amber-700", icon: TriangleAlert },
   success: { classes: "border-green-200 bg-green-50 text-green-700", icon: CircleCheck },
   info: { classes: "border-blue-200 bg-blue-50 text-blue-700", icon: Info },
 };
 
+type AlertProps = Omit<ComponentPropsWithoutRef<"div">, "title"> & {
+  tone?: keyof typeof tones | "error";
+  title?: ReactNode;
+  icon?: IconComponent | false;
+  onDismiss?: () => void;
+};
+
 /**
  * Inline alert. Props: tone (danger|warning|success|info; "error" is an alias of danger), title, children (message),
  * icon (lucide component to override, or false to hide), onDismiss (shows a close button), className.
  * danger/warning use role="alert", others role="status".
+ * Server-compatible; pass onDismiss only from a client component.
  */
-export function Alert({ tone = "danger", title, icon, onDismiss, className, children, ...props }) {
-  const key = tone === "error" ? "danger" : tones[tone] ? tone : "info";
+export function Alert({ tone = "danger", title, icon, onDismiss, className, children, ...props }: AlertProps) {
+  const key = tone === "error" ? "danger" : tone in tones ? tone : "info";
   const { classes, icon: DefaultIcon } = tones[key];
   const Icon = icon === false ? null : icon ?? DefaultIcon;
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -14,18 +15,16 @@ const jetBrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-const description =
-  "Let us brighten your daily life. We're dedicated to making a positive impact on our world, starting right here on Earth.";
+const description = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
-  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Juwon Electric",
-    template: "%s | Juwon Electric",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
   description,
-  applicationName: "Juwon Electric",
+  applicationName: SITE_NAME,
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

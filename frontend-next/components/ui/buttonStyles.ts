@@ -1,3 +1,4 @@
+import type { ClassValue } from "clsx";
 import { cn } from "@/lib/cn";
 
 const base =
@@ -22,11 +23,18 @@ export const buttonSizes = {
   "icon-sm": "h-8 w-8",
 };
 
+export type ButtonVariant = keyof typeof buttonVariants;
+export type ButtonSize = keyof typeof buttonSizes;
+
 /**
  * Class string for button-looking elements that can't use <Button>.
  * buttonClasses({ variant?: keyof buttonVariants, size?: keyof buttonSizes, className? })
  */
-export function buttonClasses({ variant = "primary", size = "md", className } = {}) {
+export function buttonClasses({
+  variant = "primary",
+  size = "md",
+  className,
+}: { variant?: ButtonVariant; size?: ButtonSize; className?: ClassValue } = {}) {
   return cn(
     base,
     buttonVariants[variant] ?? buttonVariants.primary,

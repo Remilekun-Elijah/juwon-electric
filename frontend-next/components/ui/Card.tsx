@@ -1,7 +1,11 @@
+import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
+type DivProps = ComponentPropsWithoutRef<"div">;
+type AsProps = { as?: ElementType; className?: string; children?: ReactNode; [prop: string]: unknown };
+
 /** Card. Props: as (default "div"), className, children. White, rounded-xl, 1px slate border, elev-1 shadow. */
-export function Card({ as: Comp = "div", className, ...props }) {
+export function Card({ as: Comp = "div", className, ...props }: AsProps) {
   return (
     <Comp
       className={cn("rounded-xl border border-slate-200 bg-white text-slate-900 shadow-elev-1", className)}
@@ -11,12 +15,12 @@ export function Card({ as: Comp = "div", className, ...props }) {
 }
 
 /** CardHeader. Props: className, children. p-6 column with gap-1.5. */
-export function CardHeader({ className, ...props }) {
+export function CardHeader({ className, ...props }: DivProps) {
   return <div className={cn("flex flex-col gap-1.5 p-6", className)} {...props} />;
 }
 
 /** CardTitle. Props: as (default "h3"), className, children. */
-export function CardTitle({ as: Comp = "h3", className, ...props }) {
+export function CardTitle({ as: Comp = "h3", className, ...props }: AsProps) {
   return (
     <Comp
       className={cn("text-base font-semibold leading-none tracking-tight text-slate-900", className)}
@@ -26,25 +30,43 @@ export function CardTitle({ as: Comp = "h3", className, ...props }) {
 }
 
 /** CardDescription. Props: className, children. */
-export function CardDescription({ className, ...props }) {
+export function CardDescription({ className, ...props }: ComponentPropsWithoutRef<"p">) {
   return <p className={cn("text-sm text-slate-500", className)} {...props} />;
 }
 
 /** CardContent. Props: className, children. p-6 pt-0 (add pt-6 when there is no header). */
-export function CardContent({ className, ...props }) {
+export function CardContent({ className, ...props }: DivProps) {
   return <div className={cn("p-6 pt-0", className)} {...props} />;
 }
 
 /** CardFooter. Props: className, children. */
-export function CardFooter({ className, ...props }) {
+export function CardFooter({ className, ...props }: DivProps) {
   return <div className={cn("flex items-center p-6 pt-0", className)} {...props} />;
 }
+
+type ListCardHeaderProps = {
+  title: ReactNode;
+  count?: number | null;
+  description?: ReactNode;
+  actions?: ReactNode;
+  titleAs?: ElementType;
+  className?: string;
+  children?: ReactNode;
+};
 
 /**
  * ListCardHeader. Divided header for list/table cards. Props: title, count (shown as "(n)"), description,
  * actions (right-side slot), titleAs (default "h2"), className, children (extra content under the title row, e.g. filters).
  */
-export function ListCardHeader({ title, count, description, actions, titleAs: Title = "h2", className, children }) {
+export function ListCardHeader({
+  title,
+  count,
+  description,
+  actions,
+  titleAs: Title = "h2",
+  className,
+  children,
+}: ListCardHeaderProps) {
   return (
     <div className={cn("border-b border-slate-200 px-5 py-4", className)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

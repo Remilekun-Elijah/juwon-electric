@@ -1,13 +1,15 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useId, useMemo, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { FieldContext } from "./fieldContext";
+import { FieldContext, type FieldContextValue } from "./fieldContext";
+
+type LabelProps = ComponentPropsWithoutRef<"label"> & { required?: boolean };
 
 /**
  * Label. Props: htmlFor, required (adds red * marker), className, children.
  */
-export function Label({ required, className, children, ...props }) {
+export function Label({ required, className, children, ...props }: LabelProps) {
   return (
     <label className={cn("block text-sm font-medium leading-none text-slate-700", className)} {...props}>
       {children}
@@ -20,19 +22,30 @@ export function Label({ required, className, children, ...props }) {
   );
 }
 
+type FieldProps = {
+  label?: ReactNode;
+  id?: string;
+  helper?: ReactNode;
+  error?: ReactNode;
+  required?: boolean;
+  className?: string;
+  labelClassName?: string;
+  children?: ReactNode | ((field: FieldContextValue) => ReactNode);
+};
+
 /**
  * Field. Label + control + helper/error block. Props: label, id (defaults to useId), helper, error (string/node; marks the
  * control invalid), required, className, labelClassName, children (an Input/Textarea/Select — wired automatically via
  * context — or a render function ({ id, describedBy, invalid, required }) => node for custom controls).
  */
-export function Field({ label, id, helper, error, required, className, labelClassName, children }) {
+export function Field({ label, id, helper, error, required, className, labelClassName, children }: FieldProps) {
   const autoId = useId();
   const fieldId = id ?? `field-${autoId.replace(/:/g, "")}`;
   const messageId = `${fieldId}-message`;
   const hasMessage = Boolean(error || helper);
   const invalid = Boolean(error);
 
-  const value = useMemo(
+  const value = useMemo<FieldContextValue>(
     () => ({
       id: fieldId,
       describedBy: hasMessage ? messageId : undefined,
