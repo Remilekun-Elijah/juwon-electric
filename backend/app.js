@@ -1,5 +1,7 @@
 import env from "dotenv";
 import express from "express";
+import { realpathSync } from "fs";
+import { pathToFileURL } from "url";
 import config from "./config.js";
 import { requireJsonBody } from "./middleware/contentType.js";
 import { warnIfStaticAdminToken } from "./middleware/adminAuth.js";
@@ -189,7 +191,15 @@ const start = async () => {
   process.once("SIGINT", () => shutdown("SIGINT"));
 };
 
-start().catch((error) => {
-  console.error("Failed to start application:", error.message);
-  process.exit(1);
-});
+export default app;
+
+// Only `node app.js` (or nodemon) starts the server; tests import `app`.
+const isEntryPoint =
+  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+
+if (isEntryPoint) {
+  start().catch((error) => {
+    console.error("Failed to start application:", error.message);
+    process.exit(1);
+  });
+}
