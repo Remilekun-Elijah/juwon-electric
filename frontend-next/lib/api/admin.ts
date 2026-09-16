@@ -6,9 +6,9 @@
  * - New-module functions call the contract endpoint first and fall back to `lib/admin/mocks.ts` only when the
  *   backend answers `404 "Route not found."`. TODO(contract): remove the fallback after backend integration.
  */
-import type { AdminSelf } from "@/lib/admin/capabilities";
+import { CAPABILITIES, type AdminSelf } from "@/lib/admin/capabilities";
 import * as mock from "@/lib/admin/mocks";
-import { ApiError, apiRequest, toQuery, type Envelope, type Query } from "./client";
+import { ApiError, apiRequest, toQuery, type ApiEnvelope, type ApiRequestInit, type QueryParams } from "./client";
 import type {
   AdminNotification,
   AdminUser,
@@ -53,6 +53,13 @@ export const ADMIN_SESSION_KEY = "je/admin-session";
 export const ADMIN_USER_KEY = "je/admin-user";
 const LEGACY_TOKEN_KEY = "je/admin-token";
 
+/** Fired on this window whenever the stored session changes (other tabs get the native `storage` event). */
+export const ADMIN_SESSION_EVENT = "je:admin-session";
+
+const notifySessionChange = () => {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(ADMIN_SESSION_EVENT));
+};
+
 const storage = () => {
   try {
     return typeof window === "undefined" ? null : window.localStorage;
@@ -84,6 +91,7 @@ export const saveAdminUser = (admin: AdminSelf) => {
   } catch {
     // Storage blocked: the session still works for this page load.
   }
+  notifySessionChange();
 };
 
 export const saveAdminSession = (token: string, admin: AdminSelf) => {
@@ -105,6 +113,7 @@ export const clearAdminSession = () => {
   } catch {
     // Nothing stored.
   }
+  notifySessionChange();
 };
 
 /* ---------- Transport ---------- */
@@ -128,33 +137,43 @@ export const setAdminForbiddenHandler = (handler: () => void) => {
   };
 };
 
-const json = (body: unknown): RequestInit => ({ body: JSON.stringify(body) });
-
 /** Calls `/admin${path}` with the session token. A 401 for the token that was sent signs the admin out. */
-export async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<Envelope<T>> {
+export async function adminFetch<T>(path: string, init: ApiRequestInit = {}): Promise<ApiEnvelope<T>> {
   const token = readAdminToken();
-  const headers = new Headers(init.headers);
-  if (token) headers.set("Authorization", `Bearer ${token}`);
   try {
-    return await apiRequest<T>(`/admin${path}`, { ...init, headers, cache: "no-store" });
+    return await apiRequest<T>(`/admin${path}`, {
+      ...init,
+      cache: "no-store",
+      headers: {
+        ...(init.headers as Record<string, string> | undefined),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
   } catch (error) {
     if (error instanceof ApiError) {
       // Only act when the rejected token is still the stored one, so a late 401 from an earlier
       // session can't sign out a newer one.
       if (error.status === 401 && readAdminToken() === token) unauthorizedHandler?.();
       if (error.status === 403 && token && readAdminToken() === token) forbiddenHandler?.();
-    } else if (error instanceof TypeError) {
-      throw new ApiError(0, "Couldn’t reach the server. Check your connection and try again.");
+      if (error.status === 0) {
+        throw new ApiError("Couldn’t reach the server. Check your connection and try again.", 0, error.data);
+      }
     }
     throw error;
   }
 }
 
+/** Contract `details` from an error envelope (for example, insufficient stock), if any. */
+export const errorDetails = <T = unknown>(error: unknown): T | undefined =>
+  error instanceof ApiError && error.data && typeof error.data === "object"
+    ? ((error.data as { details?: T }).details ?? undefined)
+    : undefined;
+
 /** Name used by the screens ported from the Vite admin. */
 export const adminRequest = adminFetch;
 
-const post = <T>(path: string, body: unknown = {}) => adminFetch<T>(path, { method: "POST", ...json(body) });
-const put = <T>(path: string, body: unknown) => adminFetch<T>(path, { method: "PUT", ...json(body) });
+const post = <T>(path: string, body: unknown = {}) => adminFetch<T>(path, { method: "POST", body });
+const put = <T>(path: string, body: unknown) => adminFetch<T>(path, { method: "PUT", body });
 const del = <T>(path: string) => adminFetch<T>(path, { method: "DELETE" });
 const id = (value: string) => encodeURIComponent(value);
 
@@ -166,7 +185,7 @@ export const isMissingRoute = (error: unknown) =>
  * TODO(contract): calls the real endpoint; if the route isn't deployed yet, runs the mock and flags `area`
  * so the portal can show that the screen is using preview data.
  */
-async function withContractFallback<T>(area: string, real: () => Promise<Envelope<T>>, fallback: () => T): Promise<T> {
+async function withContractFallback<T>(area: string, real: () => Promise<ApiEnvelope<T>>, fallback: () => T): Promise<T> {
   try {
     return (await real()).data;
   } catch (error) {
@@ -181,24 +200,31 @@ const selfId = () => readAdminUser()?.id || "";
 /* ---------- Auth (public auth routes; no token) ---------- */
 
 export const login = (username: string, password: string) =>
-  apiRequest<LoginResponse>("/admin/auth/login", { method: "POST", ...json({ username, password }) });
+  apiRequest<LoginResponse>("/admin/auth/login", { method: "POST", body: { username, password } });
 
 export const requestPasswordReset = (username: string) =>
-  apiRequest<{ resetToken?: string } | null>("/admin/auth/request-password-reset", { method: "POST", ...json({ username }) });
+  apiRequest<{ resetToken?: string } | null>("/admin/auth/request-password-reset", { method: "POST", body: { username } });
 
 export const resetPassword = (username: string, token: string, password: string) =>
-  apiRequest<unknown>("/admin/auth/reset-password", { method: "POST", ...json({ username, token, password }) });
+  apiRequest<unknown>("/admin/auth/reset-password", { method: "POST", body: { username, token, password } });
 
 /** Best effort: the session is cleared locally whatever the result. */
 export const logout = () => post<unknown>("/auth/logout");
 
-/** Contract §1.5. Falls back to the stored identity on a backend without `/me`. */
+/**
+ * Contract §1.5: the current admin with `capabilities[]`.
+ * TODO(contract): a pre-contract backend has no `/me` and no roles. Its only accounts are the seeded super admin and
+ * the static token, which the contract defines as having every capability, so the preview grants all of them.
+ */
 export const getSession = async (): Promise<AdminSelf | null> => {
   try {
     return (await adminFetch<SessionResponse>("/auth/me")).data.admin;
   } catch (error) {
-    if (isMissingRoute(error)) return readAdminUser();
-    throw error;
+    if (!isMissingRoute(error)) throw error;
+    const stored = readAdminUser();
+    if (!stored) return null;
+    mock.markMocked("session");
+    return { ...stored, capabilities: Array.isArray(stored.capabilities) ? stored.capabilities : [...CAPABILITIES] };
   }
 };
 
@@ -207,7 +233,7 @@ export const getSession = async (): Promise<AdminSelf | null> => {
 export const getDashboard = (params: { from?: string; to?: string } = {}) =>
   adminFetch<Dashboard>(`/dashboard${toQuery(params)}`);
 
-export const getAuditLogs = (params: Query) =>
+export const getAuditLogs = (params: QueryParams) =>
   adminFetch<Paged<AuditLogEntry>>(`/audit-logs${toQuery(params)}`);
 
 export const getCarts = () => adminFetch<Cart[]>("/carts");
@@ -284,7 +310,7 @@ export const setRequiresInstallation = (order: Order, requiresInstallation: bool
     async () => {
       const response = await put<Order>(`/orders/${id(order.id)}`, { requiresInstallation });
       // A pre-contract backend ignores the field; treat that like a missing route.
-      if (typeof response.data?.requiresInstallation !== "boolean") throw new ApiError(404, "Route not found.");
+      if (typeof response.data?.requiresInstallation !== "boolean") throw new ApiError("Route not found.", 404);
       return response;
     },
     () => mock.mockSetRequiresInstallation(order, requiresInstallation)

@@ -111,9 +111,9 @@ const matches = (q: string | undefined, ...values: (string | null | undefined)[]
   return !needle || values.some((value) => String(value ?? "").toLowerCase().includes(needle));
 };
 
-const notFound = (label: string) => new ApiError(404, `${label} not found.`);
-const conflict = (message: string) => new ApiError(409, message);
-const bad = (message: string) => new ApiError(400, message);
+const notFound = (label: string) => new ApiError(`${label} not found.`, 404);
+const conflict = (message: string) => new ApiError(message, 409);
+const bad = (message: string) => new ApiError(message, 400);
 const actor = { id: "mock-admin", email: "preview@juwonelectric.com" };
 
 /* ---------- Seed data ---------- */
