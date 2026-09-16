@@ -10,7 +10,8 @@ An item passes only with evidence: a command output, a file and line reference, 
 - [ ] `next build` succeeds **with the backend unreachable** (`NEXT_PUBLIC_BACKEND_URL` pointing at a closed port). Public pages fall back, and nothing crashes.
 - [ ] No create-next-app leftovers: template `page.tsx`, "Create Next App" metadata, `public/{next,vercel,file,globe,window}.svg`, Geist font vars, Arial body.
 - [ ] `tailwind.config.js` removed, and all tokens live in `@theme`.
-- [ ] Verbatim shared files (`lib/config.ts`, `lib/cn.ts`, `lib/api/client.ts`) match `FE_CONVENTIONS.md` §3.3 byte for byte.
+- [ ] Shared originals (`lib/cn.ts`, `lib/api/*`, `components/ui/*`, `package.json`, `package-lock.json`) on `agents/fe-admin` are identical to `agents/fe-public` (`git diff agents/fe-public agents/fe-admin -- <paths>` is empty, except `lib/api/admin.ts`).
+- [ ] The UI kit type-checks when consumed from `.tsx` without passing optional props (for example, `<Card>`, `<Button>`, `<Badge>` with only children).
 - [ ] No `fetch(` outside `lib/api/**`. No `process.env` outside `lib/config.ts` and `next.config.ts`.
 - [ ] Ownership respected (§1.1): no duplicate ports of the other agent's files, and stand-ins are flagged in the status file.
 - [ ] New dependencies are justified in the status file, and the lockfile is committed with them.
@@ -33,21 +34,23 @@ Check side by side at 375 px, 768 px, and 1280 px against `cd frontend && npm ru
 ## C. PRD §7 rendering criteria (FE-1)
 
 - [ ] Public marketing pages are server components. `next build` output marks them static (`○`) or ISR, not dynamic (`ƒ`).
-- [ ] `packages/[slug]` and `vacancies/[slug]` use `generateStaticParams` + `revalidate`. An unknown slug returns 404 via `notFound()`.
+- [ ] `packages/[id]` and `vacancies/[slug]` use `generateStaticParams` + `revalidate`. An unknown slug returns 404 via `notFound()`.
 - [ ] Vacancy list and detail pages are SSG/ISR (no `useEffect` fetch). The list shows only `open` roles and is keyed by `id ?? _id ?? slug`. The page shows employment type, requirements, and responsibilities.
 - [ ] View-source of a public page contains the rendered content (not an empty client shell).
 - [ ] Vacancy HTML renders inside `.prose-je` through `lib/sanitize.ts`. A test payload containing `<script>`, `onerror=`, and `javascript:` renders inert.
 - [ ] Per-page `metadata`/`generateMetadata` (title, description, OG), `sitemap.ts` including packages and open vacancies, and `robots.ts` disallowing `/admin`.
 - [ ] Real favicon and brand metadata. Fonts load through `next/font` (no layout shift from font swap).
+- [ ] Font parity: the public body renders in Inter. `inter-*`, `sora-*`, and `manrope-*` helper classes exist. Admin renders in Plus Jakarta Sans (`font-sans`). `--diamond`/`--gold` CSS variables are defined.
 - [ ] `frontend-next/README.md` documents env vars and Vercel setup.
 
 ## D. Admin security and session (FE-2)
 
 - [ ] No client-trusted authorisation: `je-user-role` and `X-User-Role` are removed (`grep -r "je-user-role\|X-User-Role" frontend-next` is empty).
-- [ ] Admin requests send `x-admin-token` from `localStorage["je/admin-session"]`. The user is in `je/admin-user`. No bearer header.
+- [ ] Admin requests send `Authorization: Bearer <token>` from `localStorage["je/admin-session"]` (no `x-admin-token`, `X-User-Role`, or `X-User-Id`). `je/admin-user` holds the latest `AdminSelf`, and 401 and logout clear both keys.
+- [ ] On load, the admin shell calls `GET /admin/auth/me` and gates nav from `data.admin.capabilities`. Any `403` triggers a `/me` refetch and shows the envelope `message`.
 - [ ] A 401 clears the session and redirects to `/admin/login`. A late 401 for an old token does not sign out a newer session.
 - [ ] Expired sessions (8 h absolute, 2 h idle) are detected via 401, and the UI recovers cleanly with no redirect loop.
-- [ ] A 403 shows a permission message. Nav items are hidden by the capability map built from `admin.role`, and every hidden action is still enforced server-side (verify with a lower role and a direct URL).
+- [ ] Gating uses `capabilities` only: `grep -rn "\.role\b" frontend-next/app/admin frontend-next/components/admin frontend-next/lib/admin` shows no authorisation branches, and no role → capability table is copied into the frontend. Every hidden action is still refused server-side (verify with a `support` or `engineer` account and a direct URL). An admin with no capabilities gets an empty-state shell, not a crash.
 - [ ] Logout calls `/admin/auth/logout` and clears storage even if the call fails.
 - [ ] Password reset flow works end to end.
 - [ ] `app/admin/**` does no build-time data fetching. `next build` marks admin routes as client or static shells, with no admin data in the HTML.

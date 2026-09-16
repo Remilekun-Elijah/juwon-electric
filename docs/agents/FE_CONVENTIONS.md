@@ -2,6 +2,7 @@
 
 Owner: SUP-FE (`agents/fe-supervisor`). Binding for FE-1 (`agents/fe-public`) and FE-2 (`agents/fe-admin`).
 Base: `v3-agents-base` @ `d48b482` (`next build` green, `react-quill-new` installed, `npm ci` works).
+Revision 2 (after reviewing FE-1 `b6e901d` and `API_CONTRACT_V3.md`): the admin token moves to `Authorization: Bearer`, nav is gated by `capabilities` from `/admin/auth/me`, FE-1's committed `lib/cn.ts` and `lib/api/client.ts` become the shared originals, the UI kit is frozen at FE-1's port, and the public body font is Inter. See `review-fe.md`.
 If a rule blocks you, note it in your status file (`docs/agents/<agent-id>.md`) and follow the rule until SUP-FE changes this file.
 
 Read `frontend-next/AGENTS.md` first: Next 16.3 has breaking changes. Check `node_modules/next/dist/docs/` before relying on memory.
@@ -14,7 +15,7 @@ Read `frontend-next/AGENTS.md` first: Next 16.3 has breaking changes. Check `nod
 frontend-next/
   app/
     layout.tsx, globals.css, page.tsx, not-found.tsx   FE-1
-    (public)/...  services, portfolio, packages, packages/[slug], contact, cart, checkout, vacancies, vacancies/[slug]   FE-1
+    (public)/...  services, portfolio, packages, packages/[id], contact, cart, checkout, vacancies, vacancies/[slug]   FE-1
     admin/**      layout.tsx (client shell), login, reset-password, and every admin page   FE-2
     sitemap.ts, robots.ts   FE-1
   components/
@@ -22,12 +23,13 @@ frontend-next/
     public/    Navbar, Header, Footer, Home sections, TurnstileWidget, cart widgets   FE-1
     admin/     AdminShell, nav, NewActivityBanner, DetailList, forms, tables   FE-2
   lib/
-    api/client.ts    shared fetch core (verbatim file in §3; both agents may add it)
+    api/client.ts    shared fetch core   FE-1 (shared original, §3.3)
+    api/index.ts     barrel   FE-1 (public code imports `@/lib/api/public`, admin code `@/lib/api/admin`)
     api/public.ts    public endpoint helpers   FE-1
-    api/admin.ts     adminFetch + session helpers   FE-2
+    api/admin.ts     adminRequest transport (seeded by FE-1 in b6e901d; FE-2 owns it from now on)
     api/types.ts     response types; add your own section, do not edit the other agent's section
-    cn.ts            class joiner (verbatim in §3)
-    config.ts        env access (verbatim in §3)
+    cn.ts            class joiner   FE-1 (shared original, §3.3)
+    config.ts        env access (non-API env such as the Turnstile site key and site URL)   FE-1
     cart/            cart store (D3)   FE-1
     turnstile/       useTurnstile hook   FE-1
     admin/           session, capability helpers, notification hook   FE-2
@@ -35,23 +37,26 @@ frontend-next/
 ```
 
 - Use the `@/*` path alias (`@/components/ui/Button`). Do not use deep relative imports across top-level folders.
-- New files are `.tsx`/`.ts`. You can port a Vite file as `.jsx` first, but convert it before your final sign-off. The existing `app/**/vacancies/*.jsx` files get converted when they are rewritten.
+- New files are `.tsx`/`.ts`. The existing `app/**/vacancies/*.jsx` files get converted when they are rewritten.
+- **UI kit exception:** `components/ui/*` stays `.jsx`/`.js`, so it can be diffed line by line against Vite. It **must** be usable from `.tsx` with `strict` on. TypeScript currently infers every destructured prop without a default as required (for example, `<Card>` without `className` fails type-check). FE-1 fixes this by adding JSDoc prop types that mark optional props (`@param {{ className?: string, … }} props`), or by adding a `components/ui/index.d.ts` with prop types. Blocking before any `.tsx` page consumes the kit.
 - Route groups such as `(public)` are optional. If FE-1 uses one, keep `app/admin` outside it.
 - Do not create `pages/` (Pages Router). App Router only (D2).
 
 ### 1.1 UI kit ownership (`frontend/src/components/ui` → `frontend-next/components/ui`)
 
-Only the owner ports a file. The other agent imports it. If you need a file the owner has not ported yet, add a minimal version at the same path with the same exported API, and the integration merge keeps the owner's version. Flag this in your status file.
+FE-1 ported the **whole** kit, all 25 files, in `b6e901d`. SUP-FE reviewed it as faithful to Vite, so the original split (FE-2 porting the admin-leaning files) is withdrawn to avoid duplicate ports.
 
-| Owner | Files |
-| --- | --- |
-| FE-1 | `Button` + `buttonStyles`, `Card`, `Container`, `Badge`, `Input`, `Field` + `fieldContext`, `Checkbox`, `Alert`, `Spinner`, `Skeleton`, `Dialog`, `Toaster`, `index.ts` (barrel) |
-| FE-2 | `Table`, `Pagination` + `paginate`, `Tabs`, `Drawer`, `StatCard`, `PageHeader`, `EmptyState`, `Avatar`, `Switch`, `statusMaps` |
-
-- FE-2 does not edit the barrel `components/ui/index.ts`. Import FE-2 files by path (`@/components/ui/Table`). SUP-FE adds them to the barrel during integration.
+- **FE-2 does not port any kit file.** Bring FE-1's kit and shared lib into your branch without merging, so both branches add identical content:
+  `git checkout agents/fe-public -- frontend-next/components/ui frontend-next/lib/cn.ts frontend-next/lib/api/client.ts frontend-next/lib/api/index.ts frontend-next/lib/api/public.ts frontend-next/lib/api/admin.ts frontend-next/package.json frontend-next/package-lock.json`
+  Then run `npm ci`. Repeat when FE-1 changes those paths. Never edit them on your branch except `lib/api/admin.ts` (§3.5).
+- Tailwind v3 → v4 renames apply to ported markup (Vite is on Tailwind 3.4): `shadow-sm`→`shadow-xs`, `shadow`→`shadow-sm`, `rounded-sm`→`rounded-xs`, `rounded`→`rounded-sm`, `blur`→`blur-sm`, `ring`→`ring-3`, `outline-none`→`outline-hidden`, `flex-shrink-*`→`shrink-*`. Parity means the same **rendered** result, not the same class string.
+- Kit changes needed by admin (new props, variants) are requested in `docs/agents/fe-admin.md`. FE-1 makes them. If FE-1 is blocked, FE-2 wraps the component in `components/admin/*` instead of editing it.
+- The barrel is `components/ui/index.js` (FE-1).
 - Non-kit Vite components: `Navbar`, `Header`, `Footer`, `Slider`, `Tab`, `CustomChip`, `TurnstileWidget` go to FE-1 (`components/public`). `Modal.jsx` is replaced by `ui/Dialog`, so do not port it.
 - Keep each component's props API identical to the Vite version unless the change is needed for Next (for example, `Link` from `next/link`, `Image` from `next/image`). Parity reviews diff against the Vite file.
 - Mark a component `"use client"` only when it uses state, effects, refs, event handlers, or browser APIs. Presentational primitives (`Card`, `Badge`, `Container`, `PageHeader`, `Skeleton`) stay server-compatible.
+- A `"use client"` module must export only components and hooks. Plain values exported from one (for example, `fieldClasses` from `Input.jsx`) become client references in server components. Move shared class strings into a non-client module, as `buttonStyles.js` does.
+- Components that accept callback props but have no `"use client"` (`Alert` `onDismiss`, `EmptyState` `onRetry`, `StatCard` `onClick`) may receive callbacks **only from client components**. Server components pass `href`, or leave the callback out.
 
 ---
 
@@ -63,7 +68,13 @@ Only the owner ports a file. The other agent imports it. If you need a file the 
   - Shadows: `elev-1…5`, `auth`.
   - Animations: `fade-up`, `fade-in`, `slide-in-left`, `slide-in-right`.
   - Do not rename them, and do not add colours as raw hex in components. If a token is missing, add it to `@theme` (FE-1), or ask FE-1 in your status file (FE-2).
-- **Fonts:** load Plus Jakarta Sans (`--font-sans`) and JetBrains Mono (`--font-mono`) with `next/font/google` in `app/layout.tsx` (FE-1). Do not use `<link>` tags to Google Fonts. The Vite site also loads Inter, Manrope, and Sora for the `.sora-*` and `.inter-*` helper classes in `frontend/src/App.css`. FE-1 ports those helpers only where a ported page uses them, backed by `next/font` variables.
+  - Vite also defines the plain CSS variables `:root { --diamond: #ff6961; --gold: #dfc638 }`. They are used as `text-[var(--gold)]`/`bg-[var(--diamond)]` in Cart and Packages. Note that `--diamond` is **not** the same as the Tailwind `diamond` token. Port both variables into `globals.css` as they are.
+  - Page-level global CSS in `App.css` (`.overlay`, `.header-video`, `.header-content`, `.energyBackground`, `rotate` keyframes, scrollbar styling, `.overlay:focus-within`, `img` rule) is ported by FE-1 together with the page that needs it. The `swal2` z-index rule is dropped (sonner replaces SweetAlert2).
+- **Fonts** (all through `next/font/google` in `app/layout.tsx`, FE-1, with no `<link>` tags). This mirrors Vite exactly:
+  - The **public site body is Inter.** Vite `App.css` sets `body { font-family: "Inter" }`. Plus Jakarta Sans applies only where `font-sans` is used, which is the whole admin app (`AdminApp`/`AdminShell`/`AdminLogin` set `font-sans`).
+  - `--font-sans` = Plus Jakarta Sans and `--font-mono` = JetBrains Mono (theme tokens). Add `--font-inter`, `--font-manrope`, `--font-sora` variables. `body` uses Inter. The admin root element (`app/admin/layout.tsx`, FE-2) sets `font-sans`.
+  - Port the helper classes from `frontend/src/App.css` into `globals.css` (`@layer components`), backed by the variables: `inter-regular|medium|semibold|bold|extrabold`, `sora-regular|semibold|bold`, `manrope-medium|semibold`. Vite uses them 73 times, so ship all of them, not just the ones in use. (`inter-events` in the grep results is not a font class.) Load only the weights those helpers use.
+  - JetBrains Mono is not loaded by Vite (the fallback stack is used). Loading it is fine.
 - **Dark mode:** Vite uses `darkMode: "class"`. Keep class-based dark mode (`@custom-variant dark (&:where(.dark, .dark *));`). Remove the create-next-app `prefers-color-scheme` block and Arial `body` font.
 - **Styles:** use `cn()` for conditional classes, and use no CSS-in-JS. Global CSS only in `globals.css`. Scoped third-party overrides (such as `app/admin/vacancies/quill-overrides.css`) are imported by the page that needs them.
 - **Rich HTML** (vacancy descriptions) renders inside one `.prose-je` scoped style defined in `globals.css` (FE-1). The server sanitises the HTML (D6), and the client additionally strips `<script>`, `<style>`, `on*` attributes, and `javascript:` URLs before `dangerouslySetInnerHTML`. Use one shared helper, `lib/sanitize.ts` (FE-1). FE-2 uses the same helper for admin previews.
@@ -78,74 +89,26 @@ Only the owner ports a file. The other agent imports it. If you need a file the 
 | --- | --- | --- |
 | `NEXT_PUBLIC_BACKEND_URL` | both | e.g. `http://localhost:9000`. No trailing slash. Express serves both `/x` and `/api/x`. Use the unprefixed paths. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | both | Turnstile is disabled when it is unset (same as Vite `VITE_TURNSTILE_SITE_KEY`). |
+| `NEXT_PUBLIC_SITE_URL` | FE-1 | `metadataBase`, sitemap, and OG URLs. |
 
-Read these variables only through `lib/config.ts`. Never read `process.env` in components.
+Read `NEXT_PUBLIC_BACKEND_URL` only through `backendUrl` in `lib/api/client.ts`. Read the other variables through `lib/config.ts` (FE-1 creates it when Turnstile lands, and `app/layout.tsx` moves to it). Never read `process.env` in components.
 
 ### 3.2 Response envelope
 
-The backend returns `{ success: boolean, message: string, data: T }` (`backend/services/http.js`). Errors return `{ success: false, message }` with a 4xx or 5xx status. `message` may be an array, so take the first element. The client resolves to the **whole envelope**, so callers read `.data`, the same as Vite's `apiRequest`. Non-2xx responses and `success === false` throw an `ApiError` carrying `status` and `message`.
+The backend returns `{ success: true, message, data }`. Errors return `{ success: false, message, details? }` with a 4xx or 5xx status (`API_CONTRACT_V3.md` §0.2). `message` is a full sentence, and the UI shows it as it is. The client resolves to the **whole envelope**, so callers read `.data`. Non-2xx responses, non-JSON responses, and `success === false` throw `ApiError(message, status, body)`, and `error.data?.details` carries the contract's `details` (for example, insufficient stock). A network failure throws with `status === 0`. New admin list endpoints are paged as `{ items, page, limit, total }`. Existing lists stay arrays.
 
-### 3.3 Verbatim shared files
+### 3.3 Shared originals (`lib/cn.ts`, `lib/api/client.ts`)
 
-Both agents may create these files. They must match **byte for byte**, so that the integration merge sees identical adds. Do not edit them. Ask SUP-FE instead.
+These files are the versions committed by FE-1 in `agents/fe-public` (first in `b6e901d`). **They replace the verbatim snippets in revision 1 of this file.** If FE-1 already rewrote them to match the revision-1 snippets, revert to the `b6e901d` content. The `b6e901d` client is a superset: JSON-encoding of object bodies, a `query` option, `ApiError.data` for `details`, and network errors as status 0.
 
-`lib/config.ts`
-```ts
-export const config = {
-  backendUrl: (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, ""),
-  turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "",
-};
-```
-
-`lib/cn.ts` (same semantics as Vite `frontend/src/lib/cn.js`; ported components rely on `twMerge` overrides)
-```ts
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
-```
-
-`lib/api/client.ts`
-```ts
-import { config } from "@/lib/config";
-
-export type Envelope<T> = { success: boolean; message: string; data: T };
-
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
-
-export type Query = Record<string, string | number | boolean | undefined | null>;
-
-export const toQuery = (params: Query = {}) => {
-  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "");
-  const qs = new URLSearchParams(entries.map(([k, v]) => [k, String(v)])).toString();
-  return qs ? `?${qs}` : "";
-};
-
-export type ApiInit = RequestInit & { next?: { revalidate?: number | false; tags?: string[] } };
-
-export async function apiRequest<T>(path: string, init: ApiInit = {}): Promise<Envelope<T>> {
-  const headers = new Headers(init.headers);
-  if (init.body !== undefined && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-  const response = await fetch(`${config.backendUrl}${path}`, { ...init, headers });
-  const body = (await response.json().catch(() => null)) as Envelope<T> | { success: false; message: string | string[] } | null;
-  if (!response.ok || !body || body.success === false) {
-    const raw = body?.message;
-    throw new ApiError(response.status, (Array.isArray(raw) ? raw[0] : raw) || "Request failed");
-  }
-  return body as Envelope<T>;
-}
-```
+- `cn` = `twMerge(clsx(inputs))`, matching Vite `frontend/src/lib/cn.js`.
+- `apiRequest<T>(path, init)`: `init` extends `RequestInit` with `body?: unknown` (plain objects are JSON-encoded, so do **not** call `JSON.stringify` yourself), `query?`, and `next?: { revalidate, tags }`.
+- `getPublicData<T>(path, params?, init?)` for GETs.
+- Only FE-1 edits these files. FE-2 copies them with the `git checkout agents/fe-public -- …` command in §1.1. Request changes through `docs/agents/fe-admin.md` or SUP-FE.
 
 ### 3.4 Public helpers (`lib/api/public.ts`, FE-1)
 
-- Export named, typed functions per endpoint (`getPackages`, `getPackage(slug)`, `getServices`, `getPortfolio`, `quoteCart`, `placeOrder`, `sendContact`, `subscribe`, `getVacancies`, `getVacancy(slug)`). Do not scatter `fetch` calls in pages.
+- Export named, typed functions per endpoint, using the names already in `lib/api/public.ts` (`getPackages`, `getPackage(id)`, `getServices`, `getPortfolio`, `getPortfolioItem`, `quoteCart`, `saveCart`, `placeOrder`, `submitContact`, `subscribe`, `getVacancies`, `getVacancy(slug)`). The backend route is `GET /packages/:id`, so the detail page segment is `packages/[id]` unless the contract adds slug lookup. Replace the `Row` placeholder types with contract types as endpoints are confirmed. Do not scatter `fetch` calls in pages.
 - Server-component reads pass `{ next: { revalidate: N } }` (§4). Mutations run client-side and send the Turnstile token the same way Vite does.
 - Keep the Vite local fallbacks for packages, services, and portfolio (`frontend/src/utils/plans.json` and the page-level fallbacks). A backend outage at build time must not fail `next build`. Catch the error, render the fallback, and log it.
 
@@ -154,14 +117,16 @@ export async function apiRequest<T>(path: string, init: ApiInit = {}): Promise<E
 These are the facts about the existing admin session (verified against `frontend/src/utils/api.js`, `frontend/src/pages/Admin/*`, `backend/services/adminAuthService.js`):
 
 - **Storage:** token in `localStorage["je/admin-session"]`, admin user JSON in `localStorage["je/admin-user"]`, seen-activity state in `localStorage["je/admin-seen"]`. Keep these exact keys so existing sessions survive the Vite → Next switch.
-- **Transport:** send the header `x-admin-token: <token>`. The session is **not** a `Authorization: Bearer` token (the ledger wording is wrong). Admin paths are `/admin/*`.
-- **Login:** `POST /admin/auth/login` `{ username, password }` (`username` holds the email address) returns the envelope with `data: { token, admin: { id, name, email, role } }`. Store both values.
+- **Transport:** send `Authorization: Bearer <token>` (`API_CONTRACT_V3.md` §12). The backend still accepts `x-admin-token`, but the contract wins, so do not send it. Never send `X-User-Role`/`X-User-Id`. Admin paths are `/admin/*`, and `adminRequest` in `lib/api/admin.ts` adds the prefix, the header, and `cache: "no-store"`.
+- **Login:** `POST /admin/auth/login` `{ username, password }` (`username` holds the email address) returns `data: { token, admin: AdminSelf }`, where `AdminSelf = { id, name, email, role, capabilities: string[], isStatic?: true }`. Store `token` in `je/admin-session` and `admin` in `je/admin-user`.
+- **Current admin:** `GET /admin/auth/me` returns `data: { admin: AdminSelf }`. Call it on admin app load (after a token is found) and after **any** `403`, and replace `je/admin-user` with the result. It is the source of truth for `capabilities`. The cached `je/admin-user` is only for first paint.
 - **Password reset:** `POST /admin/auth/request-password-reset`, then `POST /admin/auth/reset-password`. **Logout:** `POST /admin/auth/logout`, then clear both keys whatever the result.
 - **Lifetime:** sessions last 8 hours (absolute) with a 2-hour idle timeout, and the server enforces both. The client does not run its own timers to decide validity. It reacts to `401`.
-- **401 handling:** `adminFetch` wraps `apiRequest` from §3.3 and adds the header. On `401`, it calls the single registered unauthorised handler **only if the stored token still equals the token that was sent** (Vite's late-401 guard). The handler clears storage and routes to `/admin/login`. Port `setAdminUnauthorizedHandler` semantics as they are.
-- **Roles:** `admin.role` from the login response or `GET` session data drives nav visibility through a capability map in `lib/admin/capabilities.ts`, which mirrors the SUP-BE contract. **Delete the `localStorage['je-user-role']` gate** and never send `X-User-Role`. Hiding UI is cosmetic, because the server enforces access. A 403 renders an "insufficient permission" state, not a crash.
+- **401 handling:** already in FE-1's `adminRequest`, which you keep. On `401`, it calls the single registered handler (`setAdminUnauthorizedHandler`) **only if the stored token still equals the token that was sent**. The handler clears `je/admin-session` and `je/admin-user` and routes to `/admin/login`. FE-2 adds `je/admin-user` read, write, and clear helpers next to the token helpers (`clearAdminToken` currently leaves the user behind).
+- **403 handling:** refetch `/admin/auth/me`, re-gate the nav, and show the envelope `message` inline (an "insufficient permission" state, not a crash and not a redirect).
+- **Capabilities, not roles:** nav items, routes, and action buttons are gated by `admin.capabilities.includes("<cap>")` through a helper in `lib/admin/capabilities.ts` (for example, `can(admin, "vacancies:write")`). **Never branch on `role`.** Capability names come from contract §1.2 (`dashboard:read`, `content:write`, `orders:update`, `jobs:update-own`, `vacancies:write`, …). Do not copy the role → capability table into the frontend. An admin whose `capabilities` are empty still signs in and sees an empty-state shell. **Delete the `localStorage['je-user-role']` gate.** Hiding UI is cosmetic, because the server enforces access.
 - **Routes with no Vite UI:** carts (`GET /admin/carts`) and customer segments (`POST|PUT|DELETE /admin/services/customer-segments[/:id]`) have backend routes but no Vite screens. FE-2 builds them new. Visual parity does not apply, so use the UI kit and existing admin table and form patterns.
-- Existing admin endpoints to port against: `dashboard`, `audit-logs`, `reads` (`GET`, `POST`, `POST /reads/all`), `packages`, `services`, `portfolio`, `contacts` (+ `/:id/reply`), `newsletter`, `carts`, `orders` (+ `/:id`). New module endpoints come only from `agents/be-supervisor:docs/agents/API_CONTRACT_V3.md`. Until an endpoint is in the contract, stub it behind a typed function in `lib/api/admin.ts` returning mock data, with `// TODO(contract): <endpoint>`.
+- Existing admin endpoints to port against (each now needs a capability; see contract §1.2): `dashboard`, `audit-logs`, `reads` (`GET`, `POST`, `POST /reads/all`), `packages`, `services`, `portfolio`, `contacts` (+ `/:id/reply`), `newsletter`, `carts`, `orders` (+ `/:id`). New module endpoints come only from `agents/be-supervisor:docs/agents/API_CONTRACT_V3.md`. Until an endpoint is in the contract, stub it behind a typed function in `lib/api/admin.ts` (or `lib/api/admin/<module>.ts`) returning mock data **in exactly the contract shape**, with `// TODO(contract): <endpoint>`. Stubs for endpoints that are already in the contract must match it field for field.
 
 ---
 
@@ -170,10 +135,10 @@ These are the facts about the existing admin session (verified against `frontend
 | Surface | Rendering | Rules |
 | --- | --- | --- |
 | Public marketing pages (landing, services, portfolio, packages list) | Server components, static + ISR | `revalidate` 300 s. No `useEffect` data fetching. Interactive bits (carousels, add-to-cart) are small client islands receiving data as props. |
-| `packages/[slug]`, `vacancies/[slug]` | Server components + `generateStaticParams` + ISR | `revalidate` 300 s. `dynamicParams = true`. Unknown slug calls `notFound()`. Per-page `generateMetadata`. |
+| `packages/[id]`, `vacancies/[slug]` | Server components + `generateStaticParams` + ISR | `revalidate` 300 s. `dynamicParams = true`. Unknown slug calls `notFound()`. Per-page `generateMetadata`. |
 | `vacancies` list | Server component, ISR | Only `status === "open"` is shown. Key lists by `id ?? _id ?? slug` (JSON store has no `_id`). |
 | Cart, checkout, contact forms | Client components | Cart store per D3, persisted to `localStorage["je/cart"]` with the Vite shape (`frontend/src/features/cart.js`), so `/cart/quote` and `/order` payloads are unchanged. Guard every `localStorage` access for SSR (`typeof window`). |
-| `app/admin/**` | Client-rendered only | `app/admin/layout.tsx` is a client shell that performs the session check. Admin pages never fetch at build time, never use `generateStaticParams`, and never read admin data in server components. Add `robots: { index: false }` metadata for `/admin`. |
+| `app/admin/**` | Client-rendered only | `app/admin/layout.tsx` is a client shell that performs the session check (token present → `GET /admin/auth/me` → render; otherwise `/admin/login`) and applies `font-sans`. Admin pages never fetch at build time, never use `generateStaticParams`, and never read admin data in server components. Add `robots: { index: false }` metadata for `/admin`. |
 
 - `react-quill-new` loads only through `next/dynamic(() => import("react-quill-new"), { ssr: false })` inside a client component (D6).
 - Browser-only libraries (Turnstile, Quill, `localStorage`) never run at module top level.
@@ -185,7 +150,7 @@ These are the facts about the existing admin session (verified against `frontend
 ## 5. Code, commits, and branch hygiene
 
 - `npm run build` and `npm run lint` in `frontend-next` must pass on **every** commit. TypeScript `strict` stays on. Do not add `// @ts-nocheck` or blanket `eslint-disable`.
-- Do not add dependencies without noting the reason in your status file. Pre-approved: `clsx` + `tailwind-merge` (both, for `cn`; match the Vite major versions), `zustand` (FE-1, cart), `isomorphic-dompurify` (FE-1, sanitise helper). If both branches add dependencies, `package-lock.json` will conflict. SUP-FE resolves it at integration by regenerating the lockfile with `npm install`, so do not spend time pre-resolving it. Redux is not approved (D3). Commit `package-lock.json` changes in the same commit as the dependency change.
+- Do not add dependencies without noting the reason in your status file. Pre-approved: `clsx`, `tailwind-merge`, `lucide-react`, `@headlessui/react`, `sonner` (already added by FE-1 for the kit; FE-2 gets them via the §1.1 checkout), `zustand` (FE-1, cart), `isomorphic-dompurify` (FE-1, sanitise helper). If both branches add dependencies, `package-lock.json` will conflict. SUP-FE resolves it at integration by regenerating the lockfile with `npm install`, so do not spend time pre-resolving it. Redux is not approved (D3). Commit `package-lock.json` changes in the same commit as the dependency change.
 - Commit small with conventional messages (`feat(fe-public): …`, `feat(fe-admin): …`). Never push or merge into `v3`.
 - Do not edit another agent's owned files. Shared-file changes go through SUP-FE.
 - `frontend-next/AGENTS.md` is regenerated by `next dev`. Commit it if it changes, and do not fight it.
