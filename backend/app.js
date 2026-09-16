@@ -2,6 +2,7 @@ import express from "express";
 import env from "dotenv";
 import config from "./config.js";
 import userRouter from "./routes/user.js";
+import vacanciesRouter from "./routes/vacancies.js";
 import cors from "cors";
 
 const app = express();
@@ -11,6 +12,9 @@ app.use(cors({ origin: "*", methods: ["POST", "GET", "HEAD", "OPTIONS"] }));
 app.use(express.json());
 
 app.use(userRouter);
+
+// Vacancies endpoints
+app.use('/vacancies', vacanciesRouter);
 
 app.get("/", (req, res, next) => {
   res.status(200).json({
