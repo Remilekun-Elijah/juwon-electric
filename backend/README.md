@@ -2,17 +2,19 @@ Run backend with Docker
 
 Build the image:
 
-  docker build -t pasted-backend ./backend
+  docker build -f backend/Dockerfile -t juwon-backend .
 
 Run the container (example):
 
   docker run --rm -p 3000:3000 \
     -e MONGODB_URI="your_mongodb_uri" \
-    -e SMTP_HOST="smtp.example.com" \
-    -e SMTP_PORT="587" \
+    -e ADMIN_AUTH_SECRET="at-least-32-characters" \
     -e SMTP_USER="user" \
-    -e SMTP_PASS="pass" \
-    pasted-backend
+    -e SMTP_SECRET="app-password" \
+    -e SMTP_FROM="noreply@example.com" \
+    juwon-backend
+
+Every environment variable (Express, Worker and Vercel) is listed in docs/DEPLOYMENT.md.
 
 Notes
 - Do NOT commit secrets. Use environment variables in your CI/CD provider or local .env files for development.
@@ -25,9 +27,8 @@ Quickstart (local development):
    npm install
    npm run dev
 
-Required env vars:
-- MONGODB_URI (mongodb connection string)
-- SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (for email features)
+Environment variables: see backend/.env.example and docs/DEPLOYMENT.md (for example MONGODB_URI, ADMIN_AUTH_SECRET, SUPERADMIN_EMAIL/SUPERADMIN_PASSWORD, SMTP_USER/SMTP_SECRET/SMTP_FROM).
+Tests and lint: npm test, npm run lint (Node 22.5 or newer).
 
 Vacancies API examples (replace localhost:9000 with your host; see docs/API.md "Vacancies"):
 

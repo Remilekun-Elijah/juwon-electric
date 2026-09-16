@@ -99,6 +99,18 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` �
 - The `frontend` job was not run locally (no `frontend-next` install here, to save disk). Whether `frontend-next` lint and build pass is FE's responsibility, and SUP-FE should check the first run.
 - The deploy does not wait for the `frontend` job, so an FE lint failure cannot block a backend hotfix. Vercel deploys the frontend separately.
 
+## Milestone 6: deployment docs (C6): done
+
+- **`docs/DEPLOYMENT.md`** (names only, never values):
+  - An env and secrets matrix for Express, the Worker and Vercel, taken from what the code actually reads (`process.env.*`, `env.*`, `NEXT_PUBLIC_*`), plus the GitHub Actions secrets.
+  - CI/CD and a manual Worker deploy.
+  - How migrations 0007/0008 fail on duplicates, with the queries to find them.
+  - Express self-hosting, including the L5 startup exit.
+  - A first-setup checklist.
+  - **Superadmin break-glass recovery with a temporary `ADMIN_TOKEN`** (review L1, contract §13.6).
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is listed as **planned** for FE-1. It is not read by `frontend-next` yet.
+- `backend/Dockerfile` moved to Node 22 (it was `node:18`, below `engines`). It uses `npm ci --omit=dev`, drops the dead build step and runs as `node`. `backend/README.md` now has the correct Docker build command and env names (`SMTP_SECRET`/`SMTP_FROM`, not `SMTP_PASS`/`SMTP_HOST`).
+
 ## Interpretations and deviations (SUP-BE please confirm)
 
 1. **`/admin/reads*` checks.** `POST /admin/reads` checks the record type (`contacts` → `leads:read`, `orders` → `orders:read`). `GET /admin/reads` and `POST /admin/reads/all` need no capability, because they return only read timestamps and never record contents.
@@ -111,6 +123,9 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` �
 8. **Test harness notes.** `crypto.subtle.timingSafeEqual` (a workerd-only API) is polyfilled in `cloudflare/test/helpers/worker.js`. `node --test` also loads the helper and scenario modules as (empty) test files, which is harmless.
 9. **NotFound label** `admins` changed from `"Admin"` to `"User"` in both runtimes (contract §2 `"User not found."`).
 
-## Remaining BE-1 work (not started)
+## Remaining BE-1 work
 
-- C6 `docs/DEPLOYMENT.md` env matrix.
+None of ledger §5 BE-1 items 1-6 remain open on this branch. Open integration items:
+- `vacancy_posted` notification: replace `// TODO(integration): notify vacancy_posted` (Express `controllers/vacancies.js`, Worker `cloudflare/src/vacancies.js`) with BE-2's `notify()` when the branches merge.
+- Sanitiser: BE-2 should switch product `descriptionHtml` to `backend/shared/richText.js` (see milestone 2).
+- Not verified locally: the MongoDB unique-index startup path (no Mongo instance), the `frontend` CI job (frontend-next not installed here), and a real GitHub Actions run (nothing pushed).
