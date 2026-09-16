@@ -21,6 +21,24 @@ app.post('/sync/vacancies', async (req, res) => {
   const payload = req.body;
   if (!payload || !payload.id) return res.status(400).json({ success: false, message: 'missing id' });
 
+  // Verify signature if SYNC_SECRET is configured
+  try {
+    const syncSecret = process.env.SYNC_SECRET;
+    if (syncSecret) {
+      const signature = req.get('x-sync-signature') || '';
+      const crypto = await import('crypto');
+      const hmac = crypto.createHmac('sha256', syncSecret);
+      hmac.update(JSON.stringify(payload));
+      const expected = hmac.digest('hex');
+      if (!signature || !crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))) {
+        return res.status(401).json({ success: false, message: 'invalid signature' });
+      }
+    }
+  } catch (err) {
+    console.error('signature verify error', err);
+    return res.status(500).json({ success: false, error: 'signature verification failed' });
+  }
+
   try {
     const vac = {
       _id: payload.id,

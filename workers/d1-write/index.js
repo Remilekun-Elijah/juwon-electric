@@ -48,6 +48,50 @@ export default {
 
       try {
         const result = await env.D1.prepare(upsertSql).bind(...params).run();
+
+        // After persisting to D1, notify the sync-service (if configured)
+        try {
+          if (env.SYNC_SERVICE_URL && env.SYNC_SECRET) {
+            const payload = {
+              id: body.id,
+              slug: body.slug || body.id,
+              title: body.title,
+              department: body.department || null,
+              location: body.location || null,
+              employmentType: body.employmentType || null,
+              salaryRange: body.salaryRange || null,
+              descriptionHtml: body.descriptionHtml || null,
+              requirements: body.requirements || [],
+              responsibilities: body.responsibilities || [],
+              status: body.status || 'draft',
+              postedBy: body.postedBy || null,
+              postedAt: body.postedAt || new Date().toISOString(),
+              updatedAt: body.updatedAt || new Date().toISOString(),
+            };
+
+            // Compute HMAC-SHA256 signature using the SYNC_SECRET
+            const encoder = new TextEncoder();
+            const keyData = encoder.encode(env.SYNC_SECRET);
+            const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+            const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(JSON.stringify(payload)));
+            const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+            const signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            // Fire-and-forget POST to sync-service
+            await fetch(env.SYNC_SERVICE_URL + '/sync/vacancies', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-sync-signature': signatureHex,
+              },
+              body: JSON.stringify(payload),
+            });
+          }
+        } catch (notifErr) {
+          // Do not fail the D1 write if notification fails; log for diagnostics.
+          console.error('D1 write: failed to notify sync-service:', notifErr);
+        }
+
         return new Response(JSON.stringify({ success: true, result: result }), { status: 200 });
       } catch (err) {
         return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 });
