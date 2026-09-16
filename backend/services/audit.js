@@ -16,6 +16,7 @@ export const AUDIT_ENTITIES = [
   "order",
   "contact",
   "newsletter",
+  "user",
 ];
 
 const truncate = (value, max) =>

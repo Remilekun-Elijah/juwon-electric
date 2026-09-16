@@ -19,6 +19,7 @@ import {
   updateCollectionItemIf,
   updateRecords,
 } from "./store.js";
+import { sessionAdminView } from "./roles.js";
 import { passwordPolicyError } from "./validators.js";
 
 const MINUTE_MS = 1000 * 60;
@@ -393,7 +394,7 @@ export const seedSuperAdmin = async () => {
     name: process.env.SUPERADMIN_NAME || "Super Admin",
     email,
     passwordHash: await hashPassword(password),
-    role: "super_admin",
+    role: "superadmin",
     isActive: true,
     passwordChangedAt: new Date().toISOString(),
   });
@@ -442,12 +443,7 @@ export const completeAdminLogin = async ({ admin, needsRehash }, { password, ip,
 
   return {
     token,
-    admin: {
-      id: admin.id,
-      name: admin.name,
-      email: admin.email,
-      role: admin.role,
-    },
+    admin: sessionAdminView(admin),
   };
 };
 

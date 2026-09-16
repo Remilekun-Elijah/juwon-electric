@@ -3,10 +3,11 @@ import passwordResetTemplate from "../mail/_passwordReset.js";
 import { sendMail } from "../mail/mail.js";
 import { LIMIT_MESSAGES, LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { asyncHandler } from "../services/asyncHandler.js";
-import { audit, requestIp, requestUserAgent } from "../services/audit.js";
+import { STATIC_TOKEN_ACTOR, audit, requestIp, requestUserAgent } from "../services/audit.js";
 import { ApiError, tooManyRequests } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { requestIpPrefix } from "../services/ip.js";
+import { sessionAdminView } from "../services/roles.js";
 import { runInBackground } from "../services/runtime.js";
 import {
   AUTH_NOT_CONFIGURED_MESSAGE,
@@ -77,6 +78,14 @@ export const login = asyncHandler(async (req, res) => {
   });
 
   ok(res, "Login successful.", { token: result.token, admin: result.admin });
+});
+
+// GET /admin/auth/me - the signed-in admin with role and capabilities.
+export const me = asyncHandler(async (req, res) => {
+  const admin = req.adminStaticToken
+    ? { id: STATIC_TOKEN_ACTOR, name: "Static admin token", email: null, role: "superadmin" }
+    : req.admin;
+  ok(res, "Admin retrieved.", sessionAdminView(admin));
 });
 
 export const logout = asyncHandler(async (req, res) => {
