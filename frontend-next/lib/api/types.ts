@@ -1,0 +1,393 @@
+// ---------------------------------------------------------------------------
+// Admin (FE-2). Shapes follow agents/be-supervisor:docs/agents/API_CONTRACT_V3.md
+// for new modules and backend/docs/API.md for the existing ones.
+// ---------------------------------------------------------------------------
+
+import type { AdminSelf, Role } from "@/lib/admin/capabilities";
+
+export type { AdminSelf, Role };
+
+/** Contract §0.3: every new admin list endpoint. */
+export type Paged<T> = { items: T[]; page: number; limit: number; total: number };
+
+export type ActorRef = { id: string; email: string } | null;
+
+/* ---------- Auth ---------- */
+
+export type LoginResponse = { token: string; admin: AdminSelf };
+export type SessionResponse = { admin: AdminSelf };
+
+/* ---------- Existing modules ---------- */
+
+export type LegacyOrderStatus = "pending" | "completed" | "cancelled";
+export type PaymentStatus = "pending" | "partial" | "paid" | "failed" | "refunded";
+export type FulfillmentStatus = "pending" | "processing" | "out_for_delivery" | "delivered" | "installed" | "cancelled";
+
+export type OrderLine = {
+  packageId?: string;
+  name?: string;
+  optionName?: string;
+  kits?: string;
+  price?: number | string;
+  unitPrice?: number;
+  quantity?: number;
+  lineTotal?: number;
+  [key: string]: unknown;
+};
+
+export type InstallationJobSummary = { id: string; status: JobStatus; engineerId: string | null; scheduledAt: string | null };
+
+export type Order = {
+  id: string;
+  name: string;
+  phoneNumber?: string;
+  emailAddress?: string;
+  deliveryAddress?: string;
+  order?: OrderLine[];
+  total?: number | string;
+  totalAmount?: number;
+  note?: string;
+  isActive?: boolean;
+  receivedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  /** Derived and read-only (contract §6.1). */
+  status: LegacyOrderStatus;
+  paymentStatus: PaymentStatus | "unpaid";
+  fulfillmentStatus: FulfillmentStatus;
+  requiresInstallation: boolean;
+  assignedEngineerId: string | null;
+  paidAt: string | null;
+  stockCommittedAt: string | null;
+  legacyPaymentStatus?: string | null;
+  jobs?: InstallationJobSummary[];
+};
+
+export type InsufficientStockDetail = { productId: string; sku: string; required: number; available: number };
+
+export type CartLine = {
+  packageId: string;
+  name: string;
+  type?: string;
+  kva?: number | string | null;
+  volt?: number | string | null;
+  optionName: string;
+  kits?: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+};
+
+export type Cart = {
+  id: string;
+  sessionId: string;
+  name?: string;
+  phoneNumber?: string;
+  emailAddress?: string;
+  items: CartLine[];
+  total: number;
+  status?: string;
+  isActive?: boolean;
+  receivedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CustomerSegment = {
+  id: string;
+  slug?: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  isActive: boolean;
+  sortOrder?: number;
+};
+
+export type AuditLogEntry = {
+  id: string;
+  action: string;
+  entity?: string;
+  entityId?: string;
+  summary?: string;
+  adminId?: string;
+  adminEmail?: string;
+  createdAt: string;
+  [key: string]: unknown;
+};
+
+/* ---------- Dashboard (contract §9) ---------- */
+
+export type DashboardKpis = {
+  period: { from: string; to: string };
+  revenue: number;
+  openOrders: number;
+  lowStockItems: number;
+  openVacancies: number;
+  upcomingJobs: number;
+};
+
+export type Dashboard = {
+  stats?: Record<string, number>;
+  statusCounts?: Record<string, number>;
+  revenueSeries?: { label: string; value: number }[];
+  recentOrders?: (Order & { revenue?: number })[];
+  kpis?: DashboardKpis;
+};
+
+/* ---------- Users and staff (contract §2, §7.4) ---------- */
+
+export type StaffProfile = {
+  areaCoverage: string[];
+  certifications: string[];
+  bio: string | null;
+  avatarUrl: string | null;
+};
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  phone: string | null;
+  profile: StaffProfile;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StaffMember = AdminUser & { openJobs?: number };
+
+/* ---------- Vacancies (contract §3) ---------- */
+
+export type EmploymentType = "full-time" | "part-time" | "contract" | "internship" | "temporary";
+export type VacancyStatus = "draft" | "open" | "closed";
+
+export type Vacancy = {
+  id: string;
+  slug: string;
+  title: string;
+  department: string | null;
+  location: string | null;
+  employmentType: EmploymentType | null;
+  salaryRange: string | null;
+  descriptionHtml: string;
+  requirements: string[];
+  responsibilities: string[];
+  status: VacancyStatus;
+  postedAt: string | null;
+  closedAt: string | null;
+  createdBy: ActorRef;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type VacancyInput = Partial<
+  Pick<
+    Vacancy,
+    | "title"
+    | "slug"
+    | "department"
+    | "location"
+    | "employmentType"
+    | "salaryRange"
+    | "descriptionHtml"
+    | "requirements"
+    | "responsibilities"
+    | "status"
+  >
+>;
+
+/* ---------- Catalog (contract §4) ---------- */
+
+export type CategoryAttribute = { key: string; label: string; type: "text" | "number" | "boolean"; unit: string | null };
+
+export type Category = {
+  id: string;
+  slug: string;
+  name: string;
+  parentId: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  attributes: CategoryAttribute[];
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CategoryInput = Partial<
+  Pick<Category, "name" | "slug" | "parentId" | "description" | "imageUrl" | "attributes" | "isActive" | "sortOrder">
+>;
+
+export type ProductStatus = "active" | "hidden" | "archived";
+
+export type Product = {
+  id: string;
+  sku: string;
+  slug: string;
+  name: string;
+  categoryId: string | null;
+  brand: string | null;
+  descriptionHtml: string;
+  attributes: Record<string, string | number | boolean>;
+  price: number;
+  costPrice: number | null;
+  currency: "NGN";
+  stockQuantity: number;
+  reorderLevel: number;
+  lowStock: boolean;
+  images: string[];
+  status: ProductStatus;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** `stockQuantity` is only accepted on create (contract §4.2). */
+export type ProductInput = Partial<
+  Pick<
+    Product,
+    | "sku"
+    | "slug"
+    | "name"
+    | "categoryId"
+    | "brand"
+    | "descriptionHtml"
+    | "attributes"
+    | "price"
+    | "costPrice"
+    | "reorderLevel"
+    | "images"
+    | "status"
+    | "tags"
+    | "stockQuantity"
+  >
+>;
+
+/* ---------- Inventory (contract §5) ---------- */
+
+export type MovementReason =
+  | "initial"
+  | "restock"
+  | "adjustment"
+  | "damage"
+  | "return"
+  | "correction"
+  | "sale"
+  | "sale_reversal";
+
+export type ManualMovementReason = "restock" | "adjustment" | "damage" | "return" | "correction";
+
+export type InventoryItem = {
+  productId: string;
+  sku: string;
+  name: string;
+  categoryId: string | null;
+  stockQuantity: number;
+  reorderLevel: number;
+  lowStock: boolean;
+  status: ProductStatus;
+  updatedAt: string;
+};
+
+export type InventoryMovement = {
+  id: string;
+  productId: string;
+  sku: string;
+  productName: string;
+  change: number;
+  stockBefore: number;
+  stockAfter: number;
+  reason: MovementReason;
+  referenceType: "order" | null;
+  referenceId: string | null;
+  note: string | null;
+  createdBy: ActorRef;
+  createdAt: string;
+};
+
+export type StockAdjustmentInput = { productId: string; change: number; reason: ManualMovementReason; note?: string };
+
+/* ---------- Installation jobs (contract §7) ---------- */
+
+export type JobStatus = "unassigned" | "assigned" | "in_progress" | "completed" | "cancelled";
+
+export type ChecklistItem = { id: string; label: string; done: boolean; doneAt: string | null; doneBy: string | null };
+
+export type InstallationJob = {
+  id: string;
+  orderId: string;
+  order: { id: string; name: string; phoneNumber: string; deliveryAddress: string };
+  engineerId: string | null;
+  engineer: { id: string; name: string; email: string; phone: string | null } | null;
+  scheduledAt: string | null;
+  durationEstimateMinutes: number | null;
+  address: string | null;
+  status: JobStatus;
+  checklist: ChecklistItem[];
+  photos: string[];
+  notes: string | null;
+  completionNotes: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type JobCreateInput = {
+  orderId: string;
+  engineerId?: string | null;
+  scheduledAt?: string | null;
+  durationEstimateMinutes?: number | null;
+  address?: string | null;
+  checklist?: string[];
+  notes?: string | null;
+};
+
+export type JobUpdateInput = {
+  scheduledAt?: string | null;
+  durationEstimateMinutes?: number | null;
+  address?: string | null;
+  checklist?: (string | { id: string; label: string })[];
+  notes?: string | null;
+};
+
+export type MyJobUpdateInput = {
+  checklist?: { id: string; done: boolean }[];
+  photos?: string[];
+  completionNotes?: string | null;
+};
+
+/* ---------- Settings and notifications (contract §8) ---------- */
+
+export type Settings = {
+  business: { name: string; email: string | null; phone: string | null; address: string | null; website: string | null };
+  notifications: { orderEmails: string[]; lowStockEmails: string[]; vacancyEmails: string[] };
+  payments: { gatewayEnabled: boolean; provider: "paystack" | "flutterwave" | null };
+  inventory: { defaultReorderLevel: number; lowStockAlertsEnabled: boolean };
+  uploads: { provider: "url" };
+  updatedAt: string | null;
+  updatedBy: ActorRef;
+};
+
+export type SettingsInput = {
+  [K in keyof Pick<Settings, "business" | "notifications" | "payments" | "inventory">]?: Partial<Settings[K]>;
+};
+
+export type NotificationType = "low_stock" | "new_order" | "vacancy_posted" | "job_assigned";
+
+export type AdminNotification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  entity: "product" | "order" | "vacancy" | "job";
+  entityId: string;
+  recipientId: string | null;
+  read: boolean;
+  createdAt: string;
+};
+
+export type NotificationsPage = Paged<AdminNotification> & { unreadCount: number };
