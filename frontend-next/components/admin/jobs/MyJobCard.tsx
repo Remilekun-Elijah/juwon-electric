@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronRight, MapPin, Phone } from "lucide-react";
-import { Card } from "@/components/admin/kit";
+import { Card } from "@/components/ui";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import type { InstallationJob } from "@/lib/api/types";
 import { ChecklistProgress } from "./ChecklistProgress";

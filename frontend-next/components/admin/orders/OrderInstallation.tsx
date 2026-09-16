@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CalendarClock, ClipboardPlus, HardHat } from "lucide-react";
 import { useAdminQuery } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
-import { Button, Field, Select, Switch } from "@/components/admin/kit";
+import { Button, Field, Select, Switch } from "@/components/ui";
 import { formatDateTime } from "@/lib/admin/format";
 import { assignOrderEngineer, getEngineers, setRequiresInstallation } from "@/lib/api/admin";
 import type { AdminUser, Order } from "@/lib/api/types";
@@ -24,7 +24,7 @@ type Props = {
 const linkClasses = "text-brand-600 hover:text-brand-700 hover:underline underline-offset-4";
 
 export function OrderInstallation({ order, canUpdate, canAssignJobs, onChange, onReload }: Props) {
-  const { busy, run } = useOrderAction(onChange);
+  const { busy, run } = useOrderAction(onChange, onReload);
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
   const engineersQuery = useAdminQuery<AdminUser[]>("order-engineers", getEngineers, {
     enabled: order.requiresInstallation,

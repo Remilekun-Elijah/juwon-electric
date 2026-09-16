@@ -20,7 +20,7 @@ import {
   TR,
   Table,
   TableEmpty,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { getInventory, getMovements } from "@/lib/api/admin";
 import type { MovementReason } from "@/lib/api/types";
 import { formatDateTime } from "@/lib/admin/format";

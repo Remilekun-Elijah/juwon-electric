@@ -12,7 +12,7 @@ const tileTones = {
 };
 
 const linkClasses =
-  "mt-4 inline-flex items-center gap-1 rounded text-xs font-semibold text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2";
+  "mt-4 inline-flex items-center gap-1 rounded-sm text-xs font-semibold text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2";
 
 /**
  * StatCard (KPI). Props: label, value, helper, icon (lucide component), tone (brand|success|warning|danger|info),

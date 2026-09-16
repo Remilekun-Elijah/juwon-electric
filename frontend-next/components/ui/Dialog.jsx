@@ -16,7 +16,7 @@ import { Button } from "./Button";
 const sizes = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
 
 export const closeButtonClasses =
-  "rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
+  "rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500";
 
 /**
  * Dialog (Headless UI; Escape and overlay click call onClose). Props: open, onClose(), title, description, children (body),
@@ -48,7 +48,7 @@ export function Dialog({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div aria-hidden="true" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" />
+          <div aria-hidden="true" className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" />
         </TransitionChild>
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-4 sm:items-center">

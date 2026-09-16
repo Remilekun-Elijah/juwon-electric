@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Alert, Button, Dialog, Field, Input, Select, Textarea } from "@/components/admin/kit";
+import { Alert, Button, Dialog, Field, Input, Select, Textarea } from "@/components/ui";
 import { errorMessage, fromDateTimeInput } from "@/lib/admin/format";
 import { ApiError, createJob } from "@/lib/api/admin";
 import type { AdminUser, JobCreateInput, Order } from "@/lib/api/types";

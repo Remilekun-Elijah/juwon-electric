@@ -26,7 +26,7 @@ import {
   TableEmpty,
   Tabs,
   type TabItem,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { normalizeRole, roleLabels, roleOptions } from "@/lib/admin/capabilities";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
 import { getStaff, getUsers, setUserActive } from "@/lib/api/admin";

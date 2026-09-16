@@ -19,7 +19,7 @@ import {
   TR,
   Table,
   TableEmpty,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { auditActionOptions, auditEntityOptions, getAuditActionLabel, getAuditActionTone, getAuditEntityLabel } from "@/lib/admin/audit";
 import { formatDateTime } from "@/lib/admin/format";
 import { getAuditLogs } from "@/lib/api/admin";

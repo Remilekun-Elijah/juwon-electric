@@ -1,7 +1,7 @@
 "use client";
 
 import { BellRing, X } from "lucide-react";
-import { Button } from "@/components/admin/kit";
+import { Button } from "@/components/ui";
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 

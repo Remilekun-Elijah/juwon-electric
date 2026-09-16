@@ -3,10 +3,13 @@
  *
  * - Session keys match the Vite admin (FE_CONVENTIONS §3.5), so a signed-in session carries over.
  * - The token is sent as `Authorization: Bearer` (API_CONTRACT_V3 §12; the contract wins over the conventions doc).
- * - New-module functions call the contract endpoint first and fall back to `lib/admin/mocks.ts` only when the
- *   backend answers `404 "Route not found."`. TODO(contract): remove the fallback after backend integration.
+ * - New-module functions call the contract endpoint. Only when preview is enabled (`NEXT_PUBLIC_ADMIN_PREVIEW=true`,
+ *   never in production) AND the backend answers `404 "Route not found."` do they fall back to `lib/admin/mocks.ts`.
+ *   With preview off, a missing route is a `FeatureUnavailableError`. TODO(contract): remove the fallback after
+ *   backend integration.
  */
-import { CAPABILITIES, type AdminSelf } from "@/lib/admin/capabilities";
+import type { AdminSelf } from "@/lib/admin/capabilities";
+import { config } from "@/lib/config";
 import * as mock from "@/lib/admin/mocks";
 import { ApiError, apiRequest, toQuery, type ApiEnvelope, type ApiRequestInit, type QueryParams } from "./client";
 import type {
@@ -181,15 +184,32 @@ const id = (value: string) => encodeURIComponent(value);
 export const isMissingRoute = (error: unknown) =>
   error instanceof ApiError && error.status === 404 && error.message === "Route not found.";
 
+/** Preview mode (review FE2-1): opt-in at build time, off by default, never set in production. */
+export const adminPreviewEnabled = config.adminPreview;
+
+export const FEATURE_UNAVAILABLE_MESSAGE = "This feature isn’t available on the server yet.";
+
+/** A contract endpoint the connected backend doesn't have yet (and preview is off). */
+export class FeatureUnavailableError extends ApiError {
+  constructor(data: unknown = null) {
+    super(FEATURE_UNAVAILABLE_MESSAGE, 404, data);
+    this.name = "FeatureUnavailableError";
+  }
+}
+
+export const isFeatureUnavailable = (error: unknown) => error instanceof FeatureUnavailableError;
+
 /**
- * TODO(contract): calls the real endpoint; if the route isn't deployed yet, runs the mock and flags `area`
- * so the portal can show that the screen is using preview data.
+ * TODO(contract): calls the real endpoint. If the route isn't deployed yet it runs the mock and flags `area` (so the
+ * screen shows a preview notice) only when preview is enabled; otherwise it throws `FeatureUnavailableError`.
+ * Any other error (400/401/403/409/5xx/network) is always rethrown.
  */
 async function withContractFallback<T>(area: string, real: () => Promise<ApiEnvelope<T>>, fallback: () => T): Promise<T> {
   try {
     return (await real()).data;
   } catch (error) {
     if (!isMissingRoute(error)) throw error;
+    if (!adminPreviewEnabled) throw new FeatureUnavailableError(error instanceof ApiError ? error.data : null);
     mock.markMocked(area);
     return fallback();
   }
@@ -213,8 +233,9 @@ export const logout = () => post<unknown>("/auth/logout");
 
 /**
  * Contract §1.5: the current admin with `capabilities[]`.
- * TODO(contract): a pre-contract backend has no `/me` and no roles. Its only accounts are the seeded super admin and
- * the static token, which the contract defines as having every capability, so the preview grants all of them.
+ * A backend without `/me` keeps the stored identity. Capabilities are never added: without the array the admin gets
+ * an empty shell. TODO(contract): in preview only, a pre-contract backend (whose only accounts are the seeded super
+ * admin and the static token, both "every capability" in the contract) grants every capability.
  */
 export const getSession = async (): Promise<AdminSelf | null> => {
   try {
@@ -223,8 +244,10 @@ export const getSession = async (): Promise<AdminSelf | null> => {
     if (!isMissingRoute(error)) throw error;
     const stored = readAdminUser();
     if (!stored) return null;
+    if (Array.isArray(stored.capabilities)) return stored;
+    if (!adminPreviewEnabled) return { ...stored, capabilities: [] };
     mock.markMocked("session");
-    return { ...stored, capabilities: Array.isArray(stored.capabilities) ? stored.capabilities : [...CAPABILITIES] };
+    return { ...stored, capabilities: [...mock.PREVIEW_CAPABILITIES] };
   }
 };
 
@@ -267,13 +290,17 @@ export type OrderFilters = {
 
 export const getOrders = async (filters: OrderFilters = {}) => {
   const response = await adminFetch<Order[]>(`/orders${toQuery(filters)}`);
+  if (!adminPreviewEnabled) return response;
   return { ...response, data: (response.data || []).map(mock.applyOrderOverlay) };
 };
 
 export const getOrder = async (orderId: string) => {
   const response = await adminFetch<Order>(`/orders/${id(orderId)}`);
+  if (!adminPreviewEnabled || response.data.jobs) return response;
+  // Pre-contract order detail has no `jobs`: preview fills it from mock jobs and says so.
+  mock.markMocked("orders");
   const order = mock.applyOrderOverlay(response.data);
-  return { ...response, data: { ...order, jobs: order.jobs ?? mock.mockOrderJobs(order.id) } };
+  return { ...response, data: { ...order, jobs: mock.mockOrderJobs(order.id) } };
 };
 
 export const setFulfillmentStatus = (order: Order, status: FulfillmentStatus, note?: string) =>
@@ -309,8 +336,11 @@ export const setRequiresInstallation = (order: Order, requiresInstallation: bool
     "orders",
     async () => {
       const response = await put<Order>(`/orders/${id(order.id)}`, { requiresInstallation });
-      // A pre-contract backend ignores the field; treat that like a missing route.
-      if (typeof response.data?.requiresInstallation !== "boolean") throw new ApiError("Route not found.", 404);
+      // A pre-contract backend ignores the field. In preview, treat that like a missing route; otherwise say so.
+      if (typeof response.data?.requiresInstallation !== "boolean") {
+        if (adminPreviewEnabled) throw new ApiError("Route not found.", 404);
+        throw new FeatureUnavailableError();
+      }
       return response;
     },
     () => mock.mockSetRequiresInstallation(order, requiresInstallation)
@@ -561,7 +591,10 @@ export const markAllNotificationsRead = () =>
  * Uses `kpis` from the dashboard when present; otherwise computes a preview from orders and mock modules.
  * Pure (safe during render); call `markDashboardPreview()` from an effect when `preview` is true.
  */
-export const resolveKpis = (dashboard: Dashboard, orders: Order[] = []) =>
-  dashboard.kpis ? { kpis: dashboard.kpis, preview: false } : { kpis: mock.mockKpis(orders), preview: true };
+export const resolveKpis = (dashboard: Dashboard, orders: Order[] = []) => {
+  if (dashboard.kpis) return { kpis: dashboard.kpis, preview: false, available: true };
+  if (!adminPreviewEnabled) return { kpis: undefined, preview: false, available: false };
+  return { kpis: mock.mockKpis(orders), preview: true, available: true };
+};
 
 export const markDashboardPreview = () => mock.markMocked("dashboard");

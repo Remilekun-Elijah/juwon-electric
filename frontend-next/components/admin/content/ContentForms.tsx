@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { Field, Input, Select, Switch, Textarea } from "@/components/admin/kit";
+import { Field, Input, Select, Switch, Textarea } from "@/components/ui";
 import { LIMITS } from "@/lib/validation";
 import { packageTypeOptions, type ContentItem, type FieldErrors } from "./contentConstants";
 

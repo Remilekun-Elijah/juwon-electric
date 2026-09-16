@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
-import { Alert, Button, Field, Input } from "@/components/admin/kit";
+import { Alert, Button, Field, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { AUTH_PATHS } from "@/lib/admin/modules";
 import { ApiError, login, requestPasswordReset, resetPassword, saveAdminSession } from "@/lib/api/admin";

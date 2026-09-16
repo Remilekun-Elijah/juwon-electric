@@ -17,7 +17,7 @@ import {
   Skeleton,
   Switch,
   Textarea,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
 import { ApiError, getSettings, saveSettings } from "@/lib/api/admin";
 import type { Settings, SettingsInput } from "@/lib/api/types";

@@ -1,7 +1,8 @@
 export { Button } from "./Button";
 export { buttonClasses, buttonVariants, buttonSizes } from "./buttonStyles";
 export { Spinner } from "./Spinner";
-export { Input, SearchInput, Textarea, Select, fieldClasses } from "./Input";
+export { Input, SearchInput, Textarea, Select } from "./Input";
+export { fieldClasses } from "./fieldStyles";
 export { Field, Label } from "./Field";
 export { useFieldControl } from "./fieldContext";
 export { Checkbox, Radio } from "./Checkbox";

@@ -28,7 +28,7 @@ import {
   Tabs,
   getStatusMeta,
   paginate,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { formatDate, getRecordDate, matchesQuery } from "@/lib/admin/format";
 import type { Contact } from "@/lib/admin/useAdminNotifications";
 import { ApiError, adminFetch } from "@/lib/api/admin";

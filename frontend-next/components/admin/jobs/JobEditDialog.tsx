@@ -3,7 +3,7 @@
 import { useId, useRef, useState, type FormEvent } from "react";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, Button, Dialog, Field, Input, Textarea } from "@/components/admin/kit";
+import { Alert, Button, Dialog, Field, Input, Textarea } from "@/components/ui";
 import { fromDateTimeInput, toDateTimeInput } from "@/lib/admin/format";
 import { updateJob } from "@/lib/api/admin";
 import type { InstallationJob, JobUpdateInput } from "@/lib/api/types";

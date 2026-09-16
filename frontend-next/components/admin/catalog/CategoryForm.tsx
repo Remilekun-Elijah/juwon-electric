@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, Button, Drawer, Field, Input, Select, Switch, Textarea } from "@/components/admin/kit";
+import { Alert, Button, Drawer, Field, Input, Select, Switch, Textarea } from "@/components/ui";
 import { saveCategory } from "@/lib/api/admin";
 import type { Category, CategoryAttribute, CategoryInput } from "@/lib/api/types";
 import { errorMessage } from "@/lib/admin/format";

@@ -21,7 +21,8 @@ Sources:
 | 3a/5. Orders with fulfilment, payment, engineer assignment, job creation; carts (new UI) | Done | 6d07424, 327670f |
 | 5. Products, categories, inventory | Done | 856a235 |
 | 5. Installation jobs, engineer "My jobs" (mobile), staff and roles, settings | Done | a9e2024 |
-| Tailwind v4 renames in admin, checklist label, this status update | Done | latest `fix(fe-admin)` commit |
+| Tailwind v4 renames in admin, checklist label, status update | Done | baebf03 |
+| SUP-FE review 2 fixes (FE2-1 to FE2-7) | Done | latest `fix(fe-admin)` commit |
 
 **Build and lint.**
 - a7d9e03, 2b0f446 and 6d07424 were committed with `tsc --noEmit` and `eslint` on their own paths only, because the helpers' unfinished screens were uncommitted in the worktree.
@@ -41,11 +42,20 @@ Sources:
 
 **Deep links.** Order links from installation jobs and inventory movements use `/admin/orders?order=<id>`. The orders screen opens that order once the list loads, or shows a toast if the order no longer exists.
 
-**Review follow-up (review-fe.md at 63b3aa7).**
-- There is no FE-2 review yet.
-- For FE1-3 (v3→v4 renames), the admin screens were swept: `outline-none`, bare `rounded-*` sides and `shadow-sm` were fixed in the shell and dashboard.
-- FE1-6 (`lib/api/admin.ts` incomplete) is resolved on this branch: user helpers, `/me`, and refetch on 403.
-- FE1-10: the vacancies admin lint errors are gone with the rewrite.
+**Review follow-up (review-fe.md, review 2 at 426c27c).**
+
+| Finding | Fix |
+| --- | --- |
+| FE2-1 (Major) preview mocks could switch on in production | Preview is opt-in: `NEXT_PUBLIC_ADMIN_PREVIEW=true` (read only as `config.adminPreview` in `lib/config.ts`; FE-1 hadn't added it yet, so this branch adds that one line). With it off: a missing contract route throws `FeatureUnavailableError` ("This feature isn’t available on the server yet."), shown as a "Not available yet" notice or error toast, never a fake success; `getSession` never adds capabilities (`[]` when the array is absent); orders get no overlay and no mock jobs; dashboard period KPIs show "—" with a note. In preview, `getOrder` now flags the preview banner when it fills `jobs`. |
+| FE2-2 (Major) duplicate `<Toaster />` | Both mounts removed from `AdminApp`; the root layout's toaster (taken from FE-1) is the only one. |
+| FE2-3 stale order after a non-stock 409 | `useOrderAction` refetches the order on any 409 without stock `details` (status panel, installation, note). |
+| FE2-4 rich-text field unnamed | `RichTextEditor` sets `aria-labelledby` (the field label), `role="textbox"`, `aria-multiline`, `aria-describedby`, `aria-invalid` and `aria-readonly` on Quill's editable root once it mounts; clicking the label focuses the editor. |
+| FE2-5 `outline-none` in `AdminShell` | Fixed in baebf03 (`outline-hidden`). |
+| FE2-6 vacancy row actions during an action | Edit and delete are disabled while that row is busy. |
+| FE2-7 re-sync shared files, drop adapter | Took `components/ui` (typed `.d.ts`), `app/globals.css`, `app/layout.tsx` (+ `lib/site.ts`, favicon and manifest assets it references), `lib/cn.ts`, `lib/api/client.ts`, `lib/config.ts` from `agents/fe-public` HEAD (0e03b90). `components/admin/kit.ts` is deleted; admin code imports `@/components/ui`. `lib/api/index.ts` was not taken: it re-exports FE-1's `public.ts` and public `types.ts` section, which conflict with this branch's admin `types.ts` (FE2-8, resolved by SUP-FE at merge). |
+
+- Earlier (review 1): FE1-3 renames swept in admin (baebf03); FE1-6 resolved on this branch; FE1-10 vacancies lint errors gone.
+- After these fixes: `tsc --noEmit` clean; `eslint app components lib` 0 errors (1 pre-existing FE-1 warning); `next build` green (24 routes, admin all static); `.next` deleted.
 
 **Known gaps.**
 - There is no category filter on the inventory stock tab (`getInventory` supports `category`).
@@ -55,12 +65,12 @@ Sources:
 
 ## Requests to FE-1 (kit)
 
-- **FE1-1:** kit prop types. Once they land, admin code can drop `components/admin/kit.ts`.
 - **Drawer close button:** at least 44 px on mobile (the engineer view is used on site).
+
+- **`lib/config.ts`:** keep the `adminPreview` line this branch added (conventions §3.1) when resolving the merge.
 
 ## Cleanup items for integration
 
-- `components/admin/kit.ts` (typed kit adapter): delete once FE-1's kit prop types (review finding FE1-1) land, and import from `@/components/ui/*` directly.
 - `lib/admin/mocks.ts` and `withContractFallback` in `lib/api/admin.ts`: delete once the backend endpoints are integrated.
 
 ## Layout
@@ -87,24 +97,19 @@ Sources:
    - Navigation, routes and actions are gated on `admin.capabilities` from login and `/me`.
    - There is no role → capability table in the frontend.
    - `lib/admin/capabilities.ts` holds only capability names, role labels for display and `normalizeRole`, which is also display only.
-3. **Mock fallback (`TODO(contract)`).**
-   - **How it works:** each contract function in `lib/api/admin.ts` calls the real endpoint first. It falls back to `lib/admin/mocks.ts` only on `404 "Route not found."`.
+3. **Mock fallback (`TODO(contract)`), opt-in.**
+   - **Flag:** `NEXT_PUBLIC_ADMIN_PREVIEW=true` enables it (build-time, `config.adminPreview`). Default off. **Never set it in production** (Vercel or any deployed build); use it only for local/demo builds against a backend without the new modules.
+   - **How it works:** each contract function in `lib/api/admin.ts` calls the real endpoint first. Only with the flag on AND a `404 "Route not found."` does it fall back to `lib/admin/mocks.ts`. With the flag off the same response becomes `FeatureUnavailableError`.
    - **What stays real:** missing records, validation errors, 403s and network errors are never mocked.
    - **Visibility:** screens show a "Preview data" notice while an area is mocked, and changes made in preview mode are not saved.
    - **Order changes:** fulfilment, payment and engineer-assignment changes on real orders are laid over the list in memory only.
-   - **Pre-contract session:** a backend without `/admin/auth/me` has no roles. Its only accounts are the seeded super admin and the static token, which the contract gives every capability. The preview session therefore grants all capabilities.
+   - **Pre-contract session:** a backend without `/admin/auth/me` has no roles. With the flag on, a stored user without `capabilities` gets every capability (its only accounts are the seeded super admin and static token). With the flag off, it gets none and sees the empty shell until the backend returns `capabilities`.
    - **Removal:** delete the fallback, `mocks.ts` and `markMocked` after `agents/be-integration` lands.
-4. **Typed kit adapter (`components/admin/kit.ts`).**
-   - FE-1's kit is `.jsx` without prop types, so `.tsx` usage fails `strict`. Conventions revision 2 §1 lists this as FE-1's blocking item.
-   - Admin code imports the kit through `@/components/admin/kit`, which re-exports the same components cast to prop types taken from their JSDoc.
-   - The kit itself is not edited.
-   - **Request to FE-1:** ship prop types. Then this adapter can be deleted and imports switched to `@/components/ui/*`.
-5. **Shared files taken from FE-1 `b6e901d`.**
-   - `lib/api/client.ts`, `lib/cn.ts` and `components/ui/**` are taken as they are, per revision 2 §3.3.
-   - `package.json` and `package-lock.json` come from `agents/fe-public`.
-   - Admin code uses `ApiError(message, status, data)` and plain-object `body`.
-   - `lib/config.ts` is not included (FE-1 owns it). Admin code reads no environment variables.
-   - FE-1's later commit 8e35473 rewrote the client and removed kit files to match revision 1. Revision 2 supersedes that, so those changes were not taken.
+4. **UI kit.** Imported from `@/components/ui` (FE-1's typed kit). The temporary typed adapter `components/admin/kit.ts` was deleted after FE-1 shipped `.d.ts` files (FE1-1).
+5. **Shared files from FE-1 (`agents/fe-public` @ 0e03b90).**
+   - `components/ui/**`, `app/globals.css`, `app/layout.tsx`, `lib/site.ts`, `lib/cn.ts`, `lib/api/client.ts`, `lib/config.ts` and the favicon/manifest assets are FE-1's files, unmodified except the one `adminPreview` line in `lib/config.ts`.
+   - `package.json` and `package-lock.json` are identical to `agents/fe-public`.
+   - Admin code uses `ApiError(message, status, data)` and plain-object `body`, and reads no environment variables directly.
 6. **`lib/api/types.ts`.** This branch adds an admin section only. FE-1 has a public section in the same file, so expect an add/add conflict at integration. The admin section is self-contained.
 7. **Dependencies.** No new ones. `@headlessui/react`, `lucide-react`, `sonner`, `clsx` and `tailwind-merge` are FE-1's pre-approved kit dependencies, taken through the conventions checkout.
 8. **Assets.** `public/logo.svg` and `public/panel-4.webp` are copied from the Vite `frontend/public` and `src/assets`. The sign-in panel and shell use them. They are byte-identical to the Vite files, in case FE-1 adds the same ones.
@@ -114,7 +119,7 @@ Sources:
 
 ## Stubs waiting for backend endpoints
 
-These are mocked through the fallback until `agents/be-platform` / `agents/be-ops` land:
+These show "not available yet" until `agents/be-platform` / `agents/be-ops` land (or preview data with `NEXT_PUBLIC_ADMIN_PREVIEW=true`):
 - `/admin/auth/me`
 - `/admin/vacancies*`
 - `/admin/categories*`, `/admin/products*`

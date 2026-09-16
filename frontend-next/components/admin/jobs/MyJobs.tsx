@@ -4,7 +4,7 @@ import { useState } from "react";
 import { HardHat } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { useAdminQuery } from "@/components/admin/AdminContext";
-import { Button, Drawer, EmptyState, ErrorState, Skeleton } from "@/components/admin/kit";
+import { Button, Drawer, EmptyState, ErrorState, Skeleton } from "@/components/ui";
 import { getMyJobs } from "@/lib/api/admin";
 import { cn } from "@/lib/cn";
 import type { InstallationJob, Paged } from "@/lib/api/types";

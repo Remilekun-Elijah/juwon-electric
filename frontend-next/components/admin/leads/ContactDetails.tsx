@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { CalendarDays, Mail, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
 import { DetailList } from "@/components/admin/DetailList";
-import { Alert, Badge, Button, Field, Input, Select, Textarea } from "@/components/admin/kit";
+import { Alert, Badge, Button, Field, Input, Select, Textarea } from "@/components/ui";
 import { formatDateTime, getRecordDate } from "@/lib/admin/format";
 import { extractLatestReply } from "@/lib/admin/replyText";
 import type { Contact } from "@/lib/admin/useAdminNotifications";

@@ -47,6 +47,9 @@ import {
   normalizePaymentStatus,
 } from "./transitions";
 
+/** Preview session on a pre-contract backend (seeded super admin / static token = every capability). */
+export { CAPABILITIES as PREVIEW_CAPABILITIES } from "./capabilities";
+
 /* ---------- Mock mode signal (drives the "preview data" banner) ---------- */
 
 const mocked = new Set<string>();

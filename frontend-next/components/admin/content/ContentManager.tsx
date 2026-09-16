@@ -24,7 +24,7 @@ import {
   Table,
   TableEmpty,
   paginate,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { ApiError, adminFetch, getServicesAdmin } from "@/lib/api/admin";

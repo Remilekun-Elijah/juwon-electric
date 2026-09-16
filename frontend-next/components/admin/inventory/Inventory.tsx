@@ -22,7 +22,7 @@ import {
   Table,
   TableEmpty,
   Tabs,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { ProductStatusBadge, StockBadge } from "@/components/admin/catalog/productBadges";
 import { getInventory, runLowStockCheck } from "@/lib/api/admin";
 import type { InventoryItem, Product } from "@/lib/api/types";

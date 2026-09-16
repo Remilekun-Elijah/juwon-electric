@@ -4,11 +4,7 @@ import { forwardRef } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useFieldControl } from "./fieldContext";
-
-export const fieldClasses =
-  "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-brand-300 focus:ring-4 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60";
-
-const invalidClasses = "border-red-300 hover:border-red-300 focus:border-red-400 focus:ring-red-500/10";
+import { fieldClasses, invalidFieldClasses as invalidClasses } from "./fieldStyles";
 
 /**
  * Input. Props: size ("md" = h-10 | "lg" = h-11 for login/public forms), invalid, className, ...native input props.

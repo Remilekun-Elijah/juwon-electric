@@ -22,7 +22,7 @@ import {
   TableEmpty,
   Tabs,
   type TabItem,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import { formatDateTime } from "@/lib/admin/format";
 import { jobStatusLabels } from "@/lib/admin/transitions";

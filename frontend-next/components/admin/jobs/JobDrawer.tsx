@@ -6,7 +6,7 @@ import { CheckCircle2, Circle, ExternalLink, Pencil, Trash2, UserMinus, UserPlus
 import { toast } from "sonner";
 import { useAdmin } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
-import { Button, ConfirmDialog, Drawer, Field, Select } from "@/components/admin/kit";
+import { Button, ConfirmDialog, Drawer, Field, Select } from "@/components/ui";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import { formatDateTime } from "@/lib/admin/format";
 import { JOB_TRANSITIONS } from "@/lib/admin/transitions";

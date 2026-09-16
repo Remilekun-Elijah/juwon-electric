@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Alert, Button, Drawer, Field, Input, Select, Textarea } from "@/components/admin/kit";
+import { Alert, Button, Drawer, Field, Input, Select, Textarea } from "@/components/ui";
 import { errorMessage } from "@/lib/admin/format";
 import { saveVacancy } from "@/lib/api/admin";
 import type { EmploymentType, Vacancy, VacancyInput, VacancyStatus } from "@/lib/api/types";

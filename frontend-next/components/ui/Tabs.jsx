@@ -68,7 +68,7 @@ export function Tabs({ value, onChange, items = [], id, withPanels = false, full
             onClick={() => select(index)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             className={cn(
-              "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-white data-[selected]:text-slate-900 data-[selected]:shadow-sm",
+              "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:text-slate-900 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-white data-[selected]:text-slate-900 data-[selected]:shadow-xs",
               fullWidth && "flex-1"
             )}
           >
@@ -103,7 +103,7 @@ export function TabPanel({ id, value, active, className, children }) {
       id={`${id}-panel-${value}`}
       aria-labelledby={`${id}-tab-${value}`}
       tabIndex={0}
-      className={cn("mt-4 focus-visible:outline-none", className)}
+      className={cn("mt-4 focus-visible:outline-hidden", className)}
     >
       {children}
     </div>

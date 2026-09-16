@@ -29,7 +29,7 @@ import {
   TR,
   Table,
   TableEmpty,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { compactCurrency, formatCurrency, formatDate } from "@/lib/admin/format";
 import { getDashboard, markDashboardPreview, resolveKpis } from "@/lib/api/admin";
 import type { Dashboard as DashboardData } from "@/lib/api/types";
@@ -208,6 +208,9 @@ export function Dashboard() {
   const resolved = query.data ? resolveKpis(dashboard, notifications.orders) : null;
   const kpis = resolved?.kpis;
   const preview = Boolean(resolved?.preview);
+  // Without contract KPIs (and preview off) the cards say so instead of showing zeros.
+  const kpisMissing = Boolean(resolved && !resolved.available);
+  const kpiValue = (value: string | number | undefined) => (kpisMissing ? "—" : value ?? 0);
 
   useEffect(() => {
     if (preview) markDashboardPreview();
@@ -251,17 +254,22 @@ export function Dashboard() {
           <h2 id="kpi-heading" className="text-sm font-semibold text-slate-700">
             {PERIODS.find((item) => item.value === period)?.label}
           </h2>
+          {kpisMissing && (
+            <p className="text-sm text-slate-500">
+              Period figures need a server update that isn’t available yet. The totals below are unaffected.
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <StatCard
               label="Revenue"
-              value={formatCurrency(kpis?.revenue)}
+              value={kpiValue(kpis ? formatCurrency(kpis.revenue) : undefined)}
               helper="Paid and part-paid orders in this period"
               icon={Banknote}
               loading={isLoading}
             />
             <StatCard
               label="Open orders"
-              value={kpis?.openOrders ?? 0}
+              value={kpiValue(kpis?.openOrders)}
               helper="Pending, processing or out for delivery"
               icon={ReceiptText}
               href={ordersHref}
@@ -270,7 +278,7 @@ export function Dashboard() {
             />
             <StatCard
               label="Low-stock items"
-              value={kpis?.lowStockItems ?? 0}
+              value={kpiValue(kpis?.lowStockItems)}
               helper="Active products at or below reorder level"
               icon={PackageX}
               tone={kpis?.lowStockItems ? "warning" : "brand"}
@@ -280,7 +288,7 @@ export function Dashboard() {
             />
             <StatCard
               label="Open vacancies"
-              value={kpis?.openVacancies ?? 0}
+              value={kpiValue(kpis?.openVacancies)}
               helper="Live on the careers page"
               icon={BriefcaseBusiness}
               href={can("vacancies:read") ? "/admin/vacancies" : undefined}
@@ -289,7 +297,7 @@ export function Dashboard() {
             />
             <StatCard
               label="Upcoming jobs"
-              value={kpis?.upcomingJobs ?? 0}
+              value={kpiValue(kpis?.upcomingJobs)}
               helper="Installations scheduled in the next 7 days"
               icon={ClipboardList}
               href={can("jobs:read") ? "/admin/installations" : undefined}

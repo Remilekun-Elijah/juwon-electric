@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Spinner, Toaster } from "@/components/admin/kit";
+import { Spinner } from "@/components/ui";
 import { capabilitiesFor, type AdminSelf, type Capability } from "@/lib/admin/capabilities";
 import { AUTH_PATHS, getModuleForPath } from "@/lib/admin/modules";
 import { useAdminNotifications } from "@/lib/admin/useAdminNotifications";
@@ -56,24 +56,15 @@ export function AdminApp({ children }: { children: ReactNode }) {
     document.title = document.title.replace(/^\(\d+\)\s+/, "");
   }, []);
 
-  if (isAuthPage) {
-    return (
-      <>
-        {children}
-        <Toaster />
-      </>
-    );
-  }
+  // The root layout mounts the only <Toaster /> (FE_CONVENTIONS §3.5).
+  if (isAuthPage) return <>{children}</>;
 
   if (!ready || !token) return <FullPageSpinner />;
 
   return (
-    <>
-      <SignedIn key={token} token={token} storedAdmin={admin}>
-        {children}
-      </SignedIn>
-      <Toaster />
-    </>
+    <SignedIn key={token} token={token} storedAdmin={admin}>
+      {children}
+    </SignedIn>
   );
 }
 

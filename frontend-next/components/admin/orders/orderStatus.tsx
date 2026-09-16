@@ -1,4 +1,4 @@
-import { Badge, type Tone } from "@/components/admin/kit";
+import { Badge, type Tone } from "@/components/ui";
 import {
   fulfillmentLabels,
   jobStatusLabels,

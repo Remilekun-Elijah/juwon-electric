@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CalendarDays, Mail, MapPin, Package, Phone, Trash2 } from "lucide-react";
 import { useAdmin } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
-import { Alert, Button, Field, LoadingState, Textarea } from "@/components/admin/kit";
+import { Alert, Button, Field, LoadingState, Textarea } from "@/components/ui";
 import { formatCurrency, formatDateTime, getOrderRevenue, getRecordDate, parseMoney } from "@/lib/admin/format";
 import { updateOrder } from "@/lib/api/admin";
 import type { Order, OrderLine } from "@/lib/api/types";
@@ -54,7 +54,7 @@ export function OrderDetails({ order, loading, error, onChange, onReload, onDele
 
   return (
     <>
-      <OrderStatusPanel key={order.id} order={order} canUpdate={canUpdate} onChange={onChange} />
+      <OrderStatusPanel key={order.id} order={order} canUpdate={canUpdate} onChange={onChange} onReload={onReload} />
 
       <section aria-labelledby="order-customer-heading">
         <h3 id="order-customer-heading" className="text-sm font-semibold text-slate-900">
@@ -139,7 +139,7 @@ export function OrderDetails({ order, loading, error, onChange, onReload, onDele
       />
 
       {canUpdate ? (
-        <OrderNote key={order.id} order={order} onChange={onChange} />
+        <OrderNote key={order.id} order={order} onChange={onChange} onReload={onReload} />
       ) : (
         order.note && (
           <section>
@@ -160,9 +160,17 @@ export function OrderDetails({ order, loading, error, onChange, onReload, onDele
   );
 }
 
-function OrderNote({ order, onChange }: { order: Order; onChange: (order: Order) => void }) {
+function OrderNote({
+  order,
+  onChange,
+  onReload,
+}: {
+  order: Order;
+  onChange: (order: Order) => void;
+  onReload: () => Promise<void>;
+}) {
   const [note, setNote] = useState(order.note || "");
-  const { busy, run } = useOrderAction(onChange);
+  const { busy, run } = useOrderAction(onChange, onReload);
   const changed = note.trim() !== (order.note || "").trim();
 
   const save = () =>

@@ -23,7 +23,7 @@ import {
   TableEmpty,
   paginate,
   type Tone,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { formatCurrency, formatDate, formatDateTime, matchesQuery } from "@/lib/admin/format";
 import { getCarts } from "@/lib/api/admin";
 import type { Cart } from "@/lib/api/types";

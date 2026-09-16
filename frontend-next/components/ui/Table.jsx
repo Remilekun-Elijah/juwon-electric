@@ -51,7 +51,7 @@ export function TR({ selected = false, interactive = false, className, ...props 
       data-selected={selected || undefined}
       className={cn(
         "bg-white transition-colors hover:bg-slate-50 data-[selected]:bg-brand-50/60",
-        interactive && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500",
+        interactive && "cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500",
         className
       )}
       {...props}

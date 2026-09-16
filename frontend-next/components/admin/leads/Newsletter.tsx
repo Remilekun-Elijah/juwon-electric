@@ -25,7 +25,7 @@ import {
   TableEmpty,
   Tabs,
   paginate,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { formatDate, getRecordDate, matchesQuery } from "@/lib/admin/format";
 import { ApiError, adminFetch } from "@/lib/api/admin";
 import { NEWSLETTER_STATUSES, pickAllowed } from "./leadStatus";

@@ -24,7 +24,7 @@ import {
   Table,
   TableEmpty,
   Textarea,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import {
   ApiError,

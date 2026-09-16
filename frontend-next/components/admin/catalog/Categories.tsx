@@ -21,7 +21,7 @@ import {
   TR,
   Table,
   TableEmpty,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { deleteCategory, getCategories } from "@/lib/api/admin";
 import type { Category } from "@/lib/api/types";
 import { errorMessage } from "@/lib/admin/format";

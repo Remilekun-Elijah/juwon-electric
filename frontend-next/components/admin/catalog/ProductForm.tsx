@@ -4,7 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, Button, Drawer, Field, Input, Select } from "@/components/admin/kit";
+import { Alert, Button, Drawer, Field, Input, Select } from "@/components/ui";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { saveProduct } from "@/lib/api/admin";
 import type { Category, Product, ProductInput, ProductStatus } from "@/lib/api/types";

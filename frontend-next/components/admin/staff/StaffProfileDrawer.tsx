@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
-import { Alert, Avatar, Badge, Button, Drawer, ErrorState, Field, Input, Skeleton, Textarea } from "@/components/admin/kit";
+import { Alert, Avatar, Badge, Button, Drawer, ErrorState, Field, Input, Skeleton, Textarea } from "@/components/ui";
 import { normalizeRole, roleLabels } from "@/lib/admin/capabilities";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
 import { ApiError, getStaffMember, updateStaff } from "@/lib/api/admin";

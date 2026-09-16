@@ -26,7 +26,7 @@ import {
   Tabs,
   paginate,
   type TabItem,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { formatCurrency, formatDate, getOrderRevenue, getRecordDate, matchesQuery } from "@/lib/admin/format";
 import { fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
 import { adminFetch, ApiError, getOrder, getOrders } from "@/lib/api/admin";

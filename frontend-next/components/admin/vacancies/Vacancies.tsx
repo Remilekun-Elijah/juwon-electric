@@ -32,7 +32,7 @@ import {
   TableEmpty,
   Tabs,
   type Tone,
-} from "@/components/admin/kit";
+} from "@/components/ui";
 import { errorMessage, formatDate } from "@/lib/admin/format";
 import { vacancyStatusLabels } from "@/lib/admin/transitions";
 import { deleteVacancy, getVacancies, publishVacancy, setVacancyStatus, unpublishVacancy } from "@/lib/api/admin";
@@ -103,6 +103,7 @@ export function Vacancies() {
     );
 
   const openForm = (vacancy: Vacancy | null) => {
+    if (vacancy && busy === vacancy.id) return;
     setEditing(vacancy);
     setFormOpen(true);
   };
@@ -286,6 +287,7 @@ export function Vacancies() {
                           variant="ghost"
                           aria-label={`Edit ${vacancy.title}`}
                           title="Edit"
+                          disabled={rowBusy}
                           onClick={() => openForm(vacancy)}
                         >
                           <Pencil aria-hidden="true" />
@@ -296,6 +298,7 @@ export function Vacancies() {
                           className="text-red-600 hover:bg-red-50 hover:text-red-700"
                           aria-label={`Delete ${vacancy.title}`}
                           title="Delete"
+                          disabled={rowBusy}
                           onClick={() => setPendingDelete(vacancy)}
                         >
                           <Trash2 aria-hidden="true" />

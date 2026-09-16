@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, Button, Dialog, Field, Input, Select, Textarea } from "@/components/admin/kit";
+import { Alert, Button, Dialog, Field, Input, Select, Textarea } from "@/components/ui";
 import { adjustStock } from "@/lib/api/admin";
 import type { InventoryItem, InventoryMovement, ManualMovementReason, Product } from "@/lib/api/types";
 import { errorMessage } from "@/lib/admin/format";

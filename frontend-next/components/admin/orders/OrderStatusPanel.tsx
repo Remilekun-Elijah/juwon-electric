@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BadgeCheck, CircleX } from "lucide-react";
 import { toast } from "sonner";
 import { DetailList } from "@/components/admin/DetailList";
-import { Alert, Button, ConfirmDialog, Field, Select } from "@/components/admin/kit";
+import { Alert, Button, ConfirmDialog, Field, Select } from "@/components/ui";
 import { formatDateTime } from "@/lib/admin/format";
 import { FULFILLMENT_TRANSITIONS, PAYMENT_TRANSITIONS, fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
 import { ApiError, errorDetails, markOrderPaid, setFulfillmentStatus, setOrderPaymentStatus } from "@/lib/api/admin";
@@ -12,7 +12,7 @@ import type { FulfillmentStatus, InsufficientStockDetail, Order, PaymentStatus }
 import { FulfillmentBadge, PaymentBadge, orderFulfillment, orderPayment } from "./orderStatus";
 import { useOrderAction } from "./useOrderAction";
 
-type Props = { order: Order; canUpdate: boolean; onChange: (order: Order) => void };
+type Props = { order: Order; canUpdate: boolean; onChange: (order: Order) => void; onReload: () => Promise<void> };
 
 const stockIssueOf = (error: unknown) => {
   if (!(error instanceof ApiError) || error.status !== 409) return null;
@@ -20,8 +20,8 @@ const stockIssueOf = (error: unknown) => {
   return Array.isArray(details) && details.length ? { message: error.message, details } : null;
 };
 
-export function OrderStatusPanel({ order, canUpdate, onChange }: Props) {
-  const { busy, run } = useOrderAction(onChange);
+export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props) {
+  const { busy, run } = useOrderAction(onChange, onReload);
   const [stockIssue, setStockIssue] = useState<{ message: string; details: InsufficientStockDetail[] } | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
 

@@ -2,7 +2,7 @@
 
 import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { toast } from "sonner";
-import { Alert, Button, Dialog, Field, Input, Select } from "@/components/admin/kit";
+import { Alert, Button, Dialog, Field, Input, Select } from "@/components/ui";
 import { normalizeRole, roleOptions } from "@/lib/admin/capabilities";
 import { errorMessage } from "@/lib/admin/format";
 import { ApiError, createUser, setUserRole, updateUser } from "@/lib/api/admin";

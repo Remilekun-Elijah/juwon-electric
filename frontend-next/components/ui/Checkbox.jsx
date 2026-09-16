@@ -4,7 +4,7 @@ import { forwardRef, useId } from "react";
 import { cn } from "@/lib/cn";
 
 const controlClasses =
-  "mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 text-brand-600 accent-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded-sm border-slate-300 text-brand-600 accent-brand-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 const ChoiceControl = forwardRef(function ChoiceControl(
   { type, label, description, id, className, inputClassName, disabled, ...props },

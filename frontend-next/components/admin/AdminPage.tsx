@@ -2,8 +2,9 @@
 
 import type { ReactNode } from "react";
 import { FlaskConical, Lock } from "lucide-react";
-import { Alert, Button, EmptyState, PageHeader } from "@/components/admin/kit";
+import { Alert, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Capability } from "@/lib/admin/capabilities";
+import { FEATURE_UNAVAILABLE_MESSAGE } from "@/lib/api/admin";
 import { getModule, type ModuleId } from "@/lib/admin/modules";
 import { useAdmin, useMockedAreas } from "./AdminContext";
 
@@ -80,7 +81,14 @@ export function AdminPage({
               </p>
             </Alert>
           )}
-          {error && (
+          {error === FEATURE_UNAVAILABLE_MESSAGE ? (
+            <Alert tone="info" title="Not available yet">
+              <p>
+                {FEATURE_UNAVAILABLE_MESSAGE} This screen will work once the server is updated. Nothing here has been
+                changed.
+              </p>
+            </Alert>
+          ) : error && (
             <Alert tone="danger" title="Couldn’t load the latest data">
               <p>{error}</p>
               {onRetry && (

@@ -14,7 +14,7 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import { ChevronDown, LogOut, Menu as MenuIcon, RefreshCw, X } from "lucide-react";
-import { Avatar, Button } from "@/components/admin/kit";
+import { Avatar, Button } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { normalizeRole, roleLabels } from "@/lib/admin/capabilities";
 import { modules, navGroups, type AdminModule, type ModuleId } from "@/lib/admin/modules";
