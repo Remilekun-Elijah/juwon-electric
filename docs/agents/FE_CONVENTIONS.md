@@ -90,6 +90,7 @@ FE-1 ported the **whole** kit, all 25 files, in `b6e901d`. SUP-FE reviewed it as
 | `NEXT_PUBLIC_BACKEND_URL` | both | e.g. `http://localhost:9000`. No trailing slash. Express serves both `/x` and `/api/x`. Use the unprefixed paths. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | both | Turnstile is disabled when it is unset (same as Vite `VITE_TURNSTILE_SITE_KEY`). |
 | `NEXT_PUBLIC_SITE_URL` | FE-1 | `metadataBase`, sitemap, and OG URLs. |
+| `NEXT_PUBLIC_ADMIN_PREVIEW` | FE-2 | `"true"` enables the contract mock fallback (§3.5). **Never set it in production.** It is read in `lib/admin/preview.ts` until FE-1 adds `adminPreview` to `lib/config.ts`. |
 
 Read `NEXT_PUBLIC_BACKEND_URL` only through `backendUrl` in `lib/api/client.ts`. Read the other variables through `lib/config.ts` (FE-1 creates it when Turnstile lands, and `app/layout.tsx` moves to it). Never read `process.env` in components.
 
@@ -126,6 +127,8 @@ These are the facts about the existing admin session (verified against `frontend
 - **403 handling:** refetch `/admin/auth/me`, re-gate the nav, and show the envelope `message` inline (an "insufficient permission" state, not a crash and not a redirect).
 - **Capabilities, not roles:** nav items, routes, and action buttons are gated by `admin.capabilities.includes("<cap>")` through a helper in `lib/admin/capabilities.ts` (for example, `can(admin, "vacancies:write")`). **Never branch on `role`.** Capability names come from contract §1.2 (`dashboard:read`, `content:write`, `orders:update`, `jobs:update-own`, `vacancies:write`, …). Do not copy the role → capability table into the frontend. An admin whose `capabilities` are empty still signs in and sees an empty-state shell. **Delete the `localStorage['je-user-role']` gate.** Hiding UI is cosmetic, because the server enforces access.
 - **Routes with no Vite UI:** carts (`GET /admin/carts`) and customer segments (`POST|PUT|DELETE /admin/services/customer-segments[/:id]`) have backend routes but no Vite screens. FE-2 builds them new. Visual parity does not apply, so use the UI kit and existing admin table and form patterns.
+- **Mocks are opt-in (review FE2-1).** The fallback to `lib/admin/mocks.ts` runs only when `NEXT_PUBLIC_ADMIN_PREVIEW === "true"` **and** the response is exactly `404 "Route not found."`. With the flag off, a missing route is an error state, `getSession` never adds capabilities, and no mock overlay touches real records.
+- **One toaster.** The root `app/layout.tsx` (FE-1) mounts the only `<Toaster />`. Admin code calls `toast` and never mounts its own.
 - Existing admin endpoints to port against (each now needs a capability; see contract §1.2): `dashboard`, `audit-logs`, `reads` (`GET`, `POST`, `POST /reads/all`), `packages`, `services`, `portfolio`, `contacts` (+ `/:id/reply`), `newsletter`, `carts`, `orders` (+ `/:id`). New module endpoints come only from `agents/be-supervisor:docs/agents/API_CONTRACT_V3.md`. Until an endpoint is in the contract, stub it behind a typed function in `lib/api/admin.ts` (or `lib/api/admin/<module>.ts`) returning mock data **in exactly the contract shape**, with `// TODO(contract): <endpoint>`. Stubs for endpoints that are already in the contract must match it field for field.
 
 ---

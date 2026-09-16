@@ -80,3 +80,128 @@ Until both land, the rule is **no new lint errors**. Compare the counts with the
 
 ### Verdict
 The brand tokens, metadata, favicon, API transport, and kit port are faithful work. **Not yet accepted:** FE1-1, FE1-2, and FE1-3 must be fixed before public pages are ported on top of the kit and fonts. FE1-4, FE1-7, and FE1-8 can wait until those files are next touched.
+
+---
+
+## Review 2 — FE-2 `agents/fe-admin` @ `6d07424`, FE-1 re-check @ `0e03b90` (2026-09-16)
+
+FE-2 commits: `2c5008f` foundation, admin client, and mocks · `63e1588` shell, login, and reset · `a7d9e03` dashboard KPIs and vacancies · `2b0f446` content, leads, and activity · `6d07424` orders fulfilment and carts. Catalog, inventory, jobs, staff, and settings are uncommitted, so they are not reviewed here.
+FE-1 commits since review 1: `8e35473` reconcile · `8d2117b` review-1 fixes · `0e03b90` public layout.
+
+### Method
+- Detached review worktrees for both branches, placed under the supervisor's `frontend-next/` so they reuse its single install, with the same uncommitted `turbopack.root` override as review 1. Full `npm run build` and `npm run lint` on each HEAD.
+- **Trial integration:** on a throwaway branch, merged `agents/fe-public` into `agents/fe-admin`, resolved the conflicts, and ran build and lint. The branch, both worktrees, and `.next` were deleted afterwards.
+- Read the security-critical code: `lib/api/admin.ts`, `components/admin/AdminApp.tsx`, `AdminPage.tsx`, `AdminContext.tsx`, `AdminLogin.tsx` redirect handling, `lib/admin/{capabilities,modules,transitions,useStoredSession}.ts`, the vacancies screens, `RichTextEditor.tsx`, and the order status panel. Compared them with contract §1.2, §1.5, §3, §6, and §12, PRD §6.5, and the 404 handlers in `backend/app.js` and `backend/cloudflare/src/index.js`.
+- `git grep` on both branches for `je-user-role`, `X-User-Role`, `x-admin-token`, `fetch(`, `process.env`, and `.role`.
+
+### Build results
+| Tree | `next build` | `npm run lint` |
+| --- | --- | --- |
+| FE-2 `6d07424` | **Pass.** 16 routes. All `/admin/*` routes are static shells (○); no admin data is fetched at build time. | **0 errors**, 2 warnings (`app/vacancies/[slug]/page.jsx` exhaustive-deps, which is FE-1's; the anonymous default export in `tailwind.config.js`, which FE-1 deleted). FE-2 removed the old `app/admin/vacancies/page.jsx` and its 5 errors. |
+| FE-1 `0e03b90` | **Pass.** `components/ui/kit.typecheck.tsx` is type-checked. | 5 errors, 1 warning, all in the old `app/admin/vacancies/page.jsx` (FE-2 deletes it) and `app/vacancies/[slug]/page.jsx`. No new errors. |
+| Trial merge (FE-1 into FE-2) | **Pass.** 16 routes. FE-2's `components/admin/kit.ts` type-checks against FE-1's `.d.ts` files. | **0 errors**, 1 warning (`app/vacancies/[slug]`). |
+
+### FE-1: review 1 follow-up
+| Finding | Status | Evidence |
+| --- | --- | --- |
+| FE1-1 kit unusable from `.tsx` | **Fixed** | A `.d.ts` beside every kit module plus `index.d.ts` and `types.d.ts`. `kit.typecheck.tsx` renders each export with required props only and compiles under `strict`. |
+| FE1-2 font parity | **Fixed** | `layout.tsx` loads Inter, Sora, Manrope, Plus Jakarta Sans, and JetBrains Mono through `next/font`. The body uses `var(--font-inter)`. All 10 helper classes and `--diamond`/`--gold` are in `globals.css`. |
+| FE1-3 v3 → v4 drift | **Fixed** | No `shadow-sm`, bare `shadow`/`rounded`/`ring`, or `outline-none` left in `components/ui` or `components/public`. The kit uses `outline-hidden`, `rounded-sm`, and `shrink-0`. |
+| FE1-4 `fieldClasses` client reference | **Fixed** | Moved to `components/ui/fieldStyles.js`. |
+| FE1-7 env access | **Fixed** | `lib/config.ts` holds `turnstileSiteKey` and `siteUrl`, and the variables are documented in `.env.example` and the README. |
+| FE1-8 mixed API barrel | **Fixed** | `lib/api/index.ts` exports only client, public, and types. FE-1 deleted its `lib/api/admin.ts`, so FE-2 owns that file. |
+| FE1-9 shared originals | **Holds** | `lib/api/client.ts` and `lib/cn.ts` on FE-1 HEAD are byte-identical to `b6e901d`. All 25 kit files are present. FE-2's status file says `8e35473` rewrote the client and removed kit files. That no longer matches FE-1 HEAD, so FE-2 should re-sync from HEAD (see FE2-7). |
+
+New FE-1 note:
+- **FE1-11 — Note.** `app/vacancies/*` sits outside the `(public)` route group, so it renders without Navbar and Footer until FE-1 moves it during the SSG conversion. `public/background_video*.mp4` adds 14 MB to the repo; these are the Vite assets, so this is accepted.
+
+**FE-1 verdict:** review 1 is closed. Public page porting can continue.
+
+### FE-2: what checked out
+- **Transport and session**
+  - `Authorization: Bearer` only. No `x-admin-token`, `X-User-Role`, or `je-user-role` anywhere in code (the README still mentions `je-user-role`, but FE-1's README replaces it at merge).
+  - Keys are `je/admin-session` and `je/admin-user`. `clearAdminSession` removes both. Logout is best effort and clears storage whatever the result.
+  - Storage is read through `useSyncExternalStore` with a `null` server snapshot, so the portal never renders or redirects before hydration, and sessions stay in sync across tabs.
+- **401 and 403 handling**
+  - The late-401 guard is kept, and the same stale-token guard applies to 403.
+  - On 403, `/admin/auth/me` is refetched through a single in-flight promise. No loop: an unchanged user JSON produces no re-render.
+- **Capabilities**
+  - Navigation (`lib/admin/modules.ts`), page gates (`AdminPage`), and actions (`can("content:write")`, `can("orders:delete")`, …) use `capabilities` only. There are no `.role` branches and no role → capability table (`CAPABILITIES` is just the name list).
+  - Module capabilities match contract §1.2 (carts → `orders:read`, customer segments → `content:*`, messages and newsletter → `leads:*`).
+  - Missing capabilities show a no-access empty state.
+- **Login redirect**
+  - `next` only accepts `/admin` or `/admin/…`, rejects `//…` and auth paths, and otherwise falls back to `/admin`. No open redirect.
+- **Mock trigger is narrow**
+  - `isMissingRoute` requires `status === 404 && message === "Route not found."`.
+  - That is exactly the unmatched-route response of both Express (`backend/app.js`) and the Worker (`backend/cloudflare/src/index.js`). Record-level 404s use `"<Label> not found."`.
+  - 400, 401, 403, 409, 5xx, and network errors (status 0) are always rethrown. **No non-404 error can reach a mock.**
+- **Vacancies (PRD §6.5)**
+  - **List:** status tabs (all, draft, open, closed), debounced search, paging against the contract's paged shape.
+  - **Create and edit:** every PRD field (title, department, location, employment type, salary range, rich-text description, requirements[], responsibilities[], status on create), client limits that mirror contract §3, and server messages mapped onto their fields.
+  - **Status actions:** publish, unpublish, close, and reopen offer only contract transitions (never draft → closed).
+  - **Delete and view:** delete asks for confirmation; open vacancies link to the public page.
+  - **Editor:** `react-quill-new` loads through `next/dynamic` with `ssr: false`, `quill-overrides.css` is imported, and the toolbar is limited to the §0.5 allowlist.
+  - **PRD §6.5 criteria (create, edit, delete, publish):** met in UI, but only exercised against mocks, because BE-1's `/admin/vacancies` hasn't landed.
+- **Orders (contract §6)**
+  - `FULFILLMENT_TRANSITIONS` and `PAYMENT_TRANSITIONS` match §6.2 exactly. `installed` is offered only when `requiresInstallation` is set.
+  - Mark-paid uses `POST /mark-paid`, engineer assignment uses `/assign-engineer`, and cancel asks for confirmation.
+  - **409 stock shortage:** a 409 with `details[]` renders `sku`, `required`, and `available` per product, as in §6.3. Other errors are toasted.
+  - Delete is gated on `orders:delete`.
+- **React 19 / Next 16**
+  - Lint is clean under the React Compiler hook rules (`set-state-in-effect` and similar).
+  - `LayoutProps` is typed. `app/admin/layout.tsx` is a server component carrying `robots: noindex` and `font-sans`, and wraps the client `AdminApp`.
+
+### FE-2 findings
+
+**FE2-1 — Major — Preview mocks can switch on against a production backend.**
+The trigger is narrow (see above), but any deployed backend that lacks a route will answer `404 "Route not found."`. That happens, for example, when the Worker ships before BE-2's modules, or when Express and the Worker differ during rollout. When it happens:
+- **Writes fake success.** Writes such as `saveVacancy`, `publishVacancy`, `setFulfillmentStatus`, `markOrderPaid`, and `assignOrderEngineer` report success from in-memory mocks. A banner says changes aren't saved, but the toast says "Vacancy published." or "Order marked as paid". That misleads staff, and the data is lost on reload.
+- **Missing `/me` grants every capability** when the stored user has no `capabilities`. This is UI only, because the server still enforces access, but a limited account on a half-deployed backend sees and tries every screen.
+- **Mocked order changes persist on real data.** `getOrders` and `getOrder` always apply `applyOrderOverlay`. `getOrder` fills a missing `jobs` field from `mockOrderJobs` without calling `markMocked`, so no banner shows.
+
+**Fix:** make preview opt-in at build time.
+- Add `adminPreview: process.env.NEXT_PUBLIC_ADMIN_PREVIEW === "true"`. FE-1 adds it to `lib/config.ts` on request; until then FE-2 reads it in a single `lib/admin/preview.ts`, which is the only other allowed `process.env` read.
+- Default is off. When it is off:
+  - `withContractFallback` rethrows, and the UI shows "This feature isn't available on the server yet."
+  - `getSession` returns the stored user with `capabilities: []` unless the array is present.
+  - The order overlay and mock jobs are skipped.
+- `setRequiresInstallation`'s synthetic 404 (thrown when the response lacks a boolean) only applies in preview.
+- Document the flag in `.env.example` and the README. It must never be set on Vercel production.
+
+**FE2-2 — Major (integration) — Duplicate `<Toaster />`.**
+FE-1's root `app/layout.tsx` now mounts `<Toaster />`, and `AdminApp` mounts another on both the auth and signed-in paths. After the merge every admin toast renders twice (confirmed in the trial merge: 3 mounts). **Fix:** at integration, remove both `<Toaster />` mounts from `AdminApp.tsx` and rely on the root one. FE-2 may do this after taking FE-1's `app/layout.tsx`, but must not edit that file.
+
+**FE2-3 — Minor — Stale order after a non-stock 409.**
+Conflicts such as `"Cannot change fulfilment status from X to Y."` (another admin moved the order) or `"Order does not require installation."` are toasted, but the old order stays on screen and keeps offering the same invalid step. **Fix:** refetch the order on any 409 in `useOrderAction`.
+
+**FE2-4 — Minor (a11y) — The rich-text field has no accessible name.**
+`RichTextEditor` puts `id` and `aria-describedby` on a wrapper `<div>`. The `<label for>` therefore points at a non-labelable element, and Quill's `contenteditable` (`.ql-editor`) is unnamed. **Fix:** after mount, set `aria-labelledby` (the label id), `aria-describedby`, and `aria-invalid` on `quill.root`, or pass a `ref` and do it in an effect. A click on the label should focus the editor.
+
+**FE2-5 — Minor — Tailwind v4 rename missed.**
+`components/admin/AdminShell.tsx` still has 4 × `focus-visible:outline-none` (lines 46, 125, 142, and 150), ported unchanged from Vite. Use `outline-hidden`, as `AdminLogin.tsx` already does.
+
+**FE2-6 — Minor — Vacancy row actions during delete.**
+The edit and delete icon buttons aren't disabled while `busy === vacancy.id`, so a second delete or edit can start during an in-flight action.
+
+**FE2-7 — Note — Re-sync shared files from FE-1 HEAD, then drop the adapter.**
+FE-2 holds the `b6e901d` kit and `globals.css`. FE-1 HEAD has the typed kit, `fieldStyles.js`, the v4 renames, and the font system.
+- Run `git checkout agents/fe-public -- frontend-next/components/ui frontend-next/app/globals.css frontend-next/app/layout.tsx frontend-next/lib/api/index.ts frontend-next/lib/config.ts frontend-next/package.json frontend-next/package-lock.json`.
+- Then switch imports from `@/components/admin/kit` to `@/components/ui/*`, delete `kit.ts`, and apply FE2-2 on the branch.
+- This removes 12 of the 13 add/add conflicts.
+- It is not blocking: the trial merge compiles with `kit.ts` in place.
+
+**FE2-8 — Note — Shared-file conflicts to expect at integration.**
+The trial merge produced 13 add/add conflicts. The two branches were cut from the same base and copied files independently, so git has no common ancestor for them.
+
+| Path | Resolution |
+| --- | --- |
+| `components/ui/{Alert,Checkbox,Dialog,Input,StatCard,Switch,Table,Tabs}.jsx`, `buttonStyles.js`, `index.js`, `app/globals.css` | Take FE-1. FE-2's copies are unmodified `b6e901d`. |
+| `lib/api/types.ts` | Keep both sections. `Paged`, `Category`, `CategoryAttribute`, and `EmploymentType` are identical, so keep one copy. **`CustomerSegment` differs:** admin has `id` and `isActive` required plus `sortOrder`; public has `id?` and no `isActive`. Rename the public one `PublicCustomerSegment` (used only by `ServicesData`). |
+| `lib/validation.ts` | Take FE-2's (a superset). Add FE-1's `LIMITS.cartItems`, `quantityMin`, `quantityMax`, and the `PHONE_PATTERN` export. `EMAIL_REGEX`, `isValidEmail`, `PHONE_MESSAGE`, and `isValidPhone` are identical. |
+| `lib/api/index.ts`, `package.json`, `package-lock.json`, `lib/cn.ts`, `lib/api/client.ts` | No conflict. FE-2 has no `index.ts`, and the other files are identical. |
+| `app/admin/vacancies/page.jsx` | No conflict. FE-2 deleted it, and FE-1 never modified it. |
+
+To avoid the `types.ts` conflict now, each agent can move its section into `lib/api/types/public.ts` and `lib/api/types/admin.ts` behind a `types.ts` that re-exports both. That is optional, and SUP-FE can resolve it at merge as described above.
+
+### FE-2 verdict
+The auth, session, capability gating, vacancies, and orders work is solid and follows the contract. **Before sign-off:** fix FE2-1. FE2-2 is handled at integration, or by FE-2 after the FE2-7 re-sync. FE2-3 to FE2-6 are due when those files are next touched. The uncommitted modules (catalog, inventory, jobs and the engineer view, staff, settings) and the E-section contract check of their stubs are still pending review.
