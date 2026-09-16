@@ -1,6 +1,6 @@
 # FE-2 — Admin portal (`agents/fe-admin`)
 
-Status: **in progress**. Last updated 2026-09-16.
+Status: **implementation complete, awaiting SUP-FE review**. Last updated 2026-09-16.
 
 Sources:
 - `AGENT_WORKLOAD_SPLIT.md` §5 FE-2.
@@ -9,19 +9,54 @@ Sources:
 
 ## Progress
 
-| Item | State |
-| --- | --- |
-| 1. Build fix | Done on base (d48b482) |
-| Foundation: admin client, contract types, transitions, mocks | Done (2c5008f) |
-| 2. Auth: `/admin` client shell, `/admin/login`, `/admin/reset-password`, session, 401/403 handling | Done (63e1588) |
-| 3. Port of existing screens: content (packages, services, portfolio), messages, newsletter, activity | Done (milestone b) |
-| 3a. Orders with fulfilment | In progress |
-| 3b. New screens with no Vite reference: customer segments (done, milestone b), carts (in progress) | Partial |
-| 4. Vacancies admin (PRD §6.5) | Done (milestone a) |
-| 5. New modules: products, categories, inventory, installation jobs, engineer view, staff and roles, settings | In progress |
-| 6. Dashboard KPI cards (Plan §2, contract §9) | Done (milestone a) |
+| Item | State | Commit |
+| --- | --- | --- |
+| 1. Build fix | Done on base | d48b482 |
+| Foundation: admin client, contract types, transitions, mocks | Done | 2c5008f |
+| 2. Auth: `/admin` client shell, `/admin/login`, `/admin/reset-password`, session, 401/403 handling | Done | 63e1588 |
+| 6. Dashboard KPI cards (Plan §2, contract §9) | Done | a7d9e03 |
+| 4. Vacancies admin (PRD §6.5) | Done | a7d9e03 |
+| 3. Content (packages, services, portfolio), messages with reply, newsletter, activity log | Done | 2b0f446 |
+| 3b. Customer segments (new UI) | Done | 2b0f446 |
+| 3a/5. Orders with fulfilment, payment, engineer assignment, job creation; carts (new UI) | Done | 6d07424, 327670f |
+| 5. Products, categories, inventory | Done | 856a235 |
+| 5. Installation jobs, engineer "My jobs" (mobile), staff and roles, settings | Done | a9e2024 |
+| Tailwind v4 renames in admin, checklist label, this status update | Done | latest `fix(fe-admin)` commit |
 
-**Build note:** milestones (a) and (b) were checked with `tsc --noEmit` (no errors in their paths) and `eslint` (clean) only. `next build` was skipped for those two commits because unfinished screen files for orders, catalog, inventory and jobs were in the worktree (uncommitted). The full `next build` runs before the next milestone.
+**Build and lint.**
+- a7d9e03, 2b0f446 and 6d07424 were committed with `tsc --noEmit` and `eslint` on their own paths only, because the helpers' unfinished screens were uncommitted in the worktree.
+- The full checks ran before 856a235 and again before the final commit: `tsc --noEmit` clean, and `next build` green with 24 routes, every `/admin/**` route static (○) and no admin data at build time. They found nothing to fix in the three earlier commits.
+- `eslint --max-warnings 0 app components lib` has no errors. Its one warning, the exhaustive-deps warning in `app/vacancies/[slug]/page.jsx`, is pre-existing and owned by FE-1 (review FE1-10). All admin paths are clean.
+
+**375 px check (engineer view).**
+- **Setup:** `next start` on the production build, then headless Google Chrome driven over the DevTools protocol:
+  - viewport 375×812, mobile and touch emulation
+  - requests to the backend URL intercepted and answered with `404 "Route not found."`, so the portal used its contract preview data and no real backend was contacted
+  - a stored engineer session with only `jobs:update-own`
+- **Checked:**
+  - `/admin/my-jobs` list: `scrollWidth` 375, no element past the viewport, no button, link or checkbox under 44 px in `main`
+  - job detail drawer: Start/Mark complete, checklist rows, directions/call, photos
+- **Fixed from the screenshots:** a duplicated "Checklist" label in the detail view.
+- **Not changed:** the kit Drawer close button is smaller than 44 px. It is FE-1's kit, so this is listed as a kit request below.
+
+**Deep links.** Order links from installation jobs and inventory movements use `/admin/orders?order=<id>`. The orders screen opens that order once the list loads, or shows a toast if the order no longer exists.
+
+**Review follow-up (review-fe.md at 63b3aa7).**
+- There is no FE-2 review yet.
+- For FE1-3 (v3→v4 renames), the admin screens were swept: `outline-none`, bare `rounded-*` sides and `shadow-sm` were fixed in the shell and dashboard.
+- FE1-6 (`lib/api/admin.ts` incomplete) is resolved on this branch: user helpers, `/me`, and refetch on 403.
+- FE1-10: the vacancies admin lint errors are gone with the rewrite.
+
+**Known gaps.**
+- There is no category filter on the inventory stock tab (`getInventory` supports `category`).
+- Movement filters reset when switching tabs, because the kit's TabPanel unmounts hidden panels.
+- Job creation lives only in the order drawer (contract §7.2 requires an order that needs installation), so there is no standalone "new job" screen.
+- Success toasts for order changes use portal wording, because the contract functions return only the record, not the server message.
+
+## Requests to FE-1 (kit)
+
+- **FE1-1:** kit prop types. Once they land, admin code can drop `components/admin/kit.ts`.
+- **Drawer close button:** at least 44 px on mobile (the engineer view is used on site).
 
 ## Cleanup items for integration
 

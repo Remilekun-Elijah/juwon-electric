@@ -205,7 +205,7 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
         <h3 id="my-job-checklist" className="text-lg font-semibold text-slate-900">
           Checklist
         </h3>
-        <ChecklistProgress job={job} />
+        <ChecklistProgress job={job} showLabel={false} />
         {job.checklist.length > 0 && (
           <ul className="space-y-2">
             {job.checklist.map((item) => {

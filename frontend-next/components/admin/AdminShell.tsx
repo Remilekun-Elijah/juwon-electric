@@ -43,9 +43,9 @@ function NavItem({
         onClick={onSelect}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+          "group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500",
           active
-            ? "bg-brand-50 text-brand-700 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-r before:bg-brand-600"
+            ? "bg-brand-50 text-brand-700 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-r-sm before:bg-brand-600"
             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
         )}
       >
@@ -122,7 +122,7 @@ function SidebarContent({
         <button
           type="button"
           onClick={onSignOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500"
         >
           <LogOut aria-hidden="true" className="h-[18px] w-[18px]" />
           Sign out
@@ -139,7 +139,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <Menu>
-      <MenuButton className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 data-[open]:bg-slate-100">
+      <MenuButton className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-slate-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 data-[open]:bg-slate-100">
         <Avatar name={name} size="sm" decorative className="bg-brand-100 text-brand-700" />
         <span className="hidden max-w-[160px] truncate text-sm font-medium text-slate-700 md:block">{name}</span>
         <ChevronDown aria-hidden="true" className="h-4 w-4 text-slate-400" />
@@ -147,7 +147,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
       </MenuButton>
       <MenuItems
         anchor="bottom end"
-        className="z-40 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-1 font-sans text-slate-900 antialiased shadow-elev-4 focus:outline-none"
+        className="z-40 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-1 font-sans text-slate-900 antialiased shadow-elev-4 focus:outline-hidden"
       >
         <div className="border-b border-slate-100 px-3 py-2.5">
           <p className="truncate text-sm font-medium text-slate-900">{name}</p>

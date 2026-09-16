@@ -89,7 +89,7 @@ function RevenueChart({ series, loading }: { series: Series; loading: boolean })
                         <span className="block font-semibold tabular-nums text-slate-900">{formatCurrency(value)}</span>
                       </span>
                       <span
-                        className="w-full max-w-[48px] rounded-t bg-brand-500 transition-colors group-hover:bg-brand-700"
+                        className="w-full max-w-[48px] rounded-t-sm bg-brand-500 transition-colors group-hover:bg-brand-700"
                         style={{ height: `${Math.max((value / max) * 100, value ? 2 : 0)}%` }}
                       />
                     </div>

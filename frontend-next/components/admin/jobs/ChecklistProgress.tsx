@@ -6,10 +6,13 @@ import { checklistProgress } from "./jobUtils";
 export function ChecklistProgress({
   job,
   compact = false,
+  showLabel = true,
   className,
 }: {
   job: Pick<InstallationJob, "checklist">;
   compact?: boolean;
+  /** Hide the "Checklist" label when a heading already names it. */
+  showLabel?: boolean;
   className?: string;
 }) {
   const { done, total, percent } = checklistProgress(job);
@@ -28,8 +31,8 @@ export function ChecklistProgress({
 
   return (
     <span className={cn("block space-y-1.5", className)}>
-      <span className="flex items-center justify-between text-sm">
-        <span className="font-medium text-slate-600">Checklist</span>
+      <span className={cn("flex items-center text-sm", showLabel ? "justify-between" : "justify-end")}>
+        {showLabel && <span className="font-medium text-slate-600">Checklist</span>}
         <span className="tabular-nums text-slate-500">{label}</span>
       </span>
       <span
