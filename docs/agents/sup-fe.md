@@ -24,6 +24,12 @@ Base: `v3-agents-base` @ `d48b482`.
     - FE2-2: duplicate `<Toaster />` after the merge.
   - FE-2 minors: FE2-3 to FE2-6.
   - Trial merge FE-1 into FE-2: build green, lint 0 errors, 13 add/add conflicts with resolutions recorded (FE2-8).
+- Review 3: FE-2 @ 2cf7074 is **accepted for integration**.
+  - FE2-1 to FE2-7 are fixed.
+  - New modules pass capability, contract-shape, engineer-scope, and self-change checks.
+  - FE2-9 (invite-expiry hint) is a follow-up that doesn't block. FE2-10 and FE2-11 are notes.
+  - Trial merge with FE-1 @ 14f0b00 is green after 3 conflict resolutions (FE2-8 updated), including the `PublicCustomerSegment` rename in `lib/fallbacks/index.ts`.
+  - The declared gaps (inventory category filter, movement filter reset, jobs created only from orders) don't block.
 - Conventions: added the `NEXT_PUBLIC_ADMIN_PREVIEW` rule and the one-toaster rule.
 - `FE_ACCEPTANCE.md` now carries per-item statuses.
 
@@ -31,6 +37,6 @@ Base: `v3-agents-base` @ `d48b482`.
 Turbopack refuses a symlinked `node_modules` that points outside the project root. Review worktrees are placed under this worktree's `frontend-next/` with an uncommitted `turbopack.root` override, and deleted after the build.
 
 ## Next
-- Review FE-2's uncommitted modules (catalog, inventory, jobs and the engineer view, staff, settings) once committed, including the contract check of their stubs.
-- Re-check FE2-1 and FE2-2. Check the vacancies SSG conversion (FE-1).
+- Review FE-1's page ports (`f88de22` onward) and the vacancies SSG conversion.
+- Build `agents/fe-integration` once FE-1 is done, using the FE2-8 resolutions.
 - Phase 3: integration branch.

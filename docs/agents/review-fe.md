@@ -205,3 +205,112 @@ To avoid the `types.ts` conflict now, each agent can move its section into `lib/
 
 ### FE-2 verdict
 The auth, session, capability gating, vacancies, and orders work is solid and follows the contract. **Before sign-off:** fix FE2-1. FE2-2 is handled at integration, or by FE-2 after the FE2-7 re-sync. FE2-3 to FE2-6 are due when those files are next touched. The uncommitted modules (catalog, inventory, jobs and the engineer view, staff, settings) and the E-section contract check of their stubs are still pending review.
+
+---
+
+## Review 3 — FE-2 `agents/fe-admin` @ `2cf7074` (2026-09-16)
+
+New since review 2:
+- `327670f` order deep links (`?order=`)
+- `856a235` products, categories, inventory
+- `a9e2024` installation jobs, engineer "My jobs", staff and roles, settings
+- `baebf03` Tailwind v4 renames and checklist label
+- `2cf7074` fixes for FE2-1 to FE2-7
+
+FE-1 HEAD at review time was `14f0b00` (adds `adminPreview` to `lib/config.ts`, after `f88de22` page ports). I used it only for the trial merge; FE-1's page ports are not reviewed here.
+
+### Method
+- Detached worktree of `2cf7074` under the supervisor's `frontend-next/`, reusing its single install and the uncommitted `turbopack.root` override. Full `next build`, `npm run lint`, and `tsc --noEmit`.
+- **Trial integration:** merged `agents/fe-public` @ `14f0b00` into a throwaway branch, resolved the conflicts, and ran build and lint. The branch, worktree, and `.next` were deleted afterwards.
+- `git diff` of the shared files against FE-1 `0e03b90`/`14f0b00`, and of `lib/api/admin.ts` against `6d07424`.
+- Code read of every `mock.*` use, capability checks in the new modules, the staff and user dialogs, the engineer view, and the types, compared with contract §2, §4, §5, §7, §8, §9, and §13.
+
+### Build results
+| Tree | `next build` | lint / tsc |
+| --- | --- | --- |
+| FE-2 `2cf7074` | **Pass.** 23 routes (FE-2 reported 24; the list is `/`, `_not-found`, 19 × `/admin/*`, `/vacancies`, `/vacancies/[slug]`). All admin routes are ○ static shells. | **0 errors**, 2 warnings (FE-1's `app/vacancies/[slug]`; `tailwind.config.js` anonymous export). `tsc` clean. |
+| Trial merge with FE-1 `14f0b00` | **Pass** after the resolutions below. Public pages build as ISR/SSG (`/packages/[id]` 66 SSG paths from fallbacks). | **0 errors**, 1 warning. |
+
+### Review 2 follow-up
+| Finding | Status | Evidence |
+| --- | --- | --- |
+| FE2-1 mocks in production | **Fixed** | See "FE2-1 verification" below. |
+| FE2-2 duplicate `<Toaster />` | **Fixed** | `git grep "<Toaster"` finds one mount, in `app/layout.tsx`. `AdminApp.tsx` has only a comment. |
+| FE2-3 stale order after a 409 | **Fixed** | `useOrderAction(onChange, onReload)` refetches on a 409 without stock `details`. |
+| FE2-4 rich-text accessible name | **Fixed** | `useEditorA11y` sets `role="textbox"`, `aria-multiline`, `aria-labelledby` (label id), `aria-describedby`, `aria-invalid`, and `aria-readonly` on `.ql-editor`. A MutationObserver waits for Quill to mount, and a label click focuses the editor. |
+| FE2-5 Tailwind v4 renames | **Fixed** | No `outline-none`, bare `shadow`/`rounded`/`ring`, or `flex-shrink-*` in `components/admin` or `app/admin`. |
+| FE2-6 vacancy row actions | **Fixed** | Edit and delete are `disabled={rowBusy}`. |
+| FE2-7 re-sync with FE-1 | **Fixed, with one leftover** | See "FE2-7 verification" below. |
+
+**FE2-1 verification (preview flag unset):**
+- **Fake saves.** `withContractFallback` rethrows every non-`Route not found.` error. On `Route not found.` it throws `FeatureUnavailableError` ("This feature isn't available on the server yet.") unless `config.adminPreview`. No mock write runs, and `markMocked` isn't called.
+- **Capabilities.**
+  - `getSession` on a missing `/me` returns the stored identity unchanged if it already carries `capabilities`, and otherwise `capabilities: []`.
+  - `PREVIEW_CAPABILITIES` is used only behind the flag.
+- **Overlays.**
+  - `getOrders`/`getOrder` return the raw response. `applyOrderOverlay` and `mockOrderJobs` run only with the flag, and `getOrder` now calls `markMocked("orders")` when it fills jobs.
+  - `setRequiresInstallation` throws `FeatureUnavailableError` rather than a synthetic 404.
+  - `resolveKpis` returns `available: false` (no mock KPIs).
+- **Exhaustive check.** `git grep "mock\."` finds nothing outside those gated paths, apart from type imports and `() => mock.*` fallbacks inside `withContractFallback`.
+- **Flag definition and docs.**
+  - The flag is `process.env.NEXT_PUBLIC_ADMIN_PREVIEW === "true"`, so anything else is off.
+  - FE-1's README and `.env.example` document it as dev only, with no Production setting on Vercel.
+
+**FE2-7 verification:**
+- Byte-identical to FE-1 `0e03b90`:
+  - `components/ui/**` (including the `.d.ts` files and `fieldStyles.js`)
+  - `app/globals.css` and `app/layout.tsx`
+  - `lib/cn.ts`, `lib/api/client.ts`, and `lib/site.ts`
+  - `package.json` and `package-lock.json`
+- `components/admin/kit.ts` is deleted, and admin code imports `@/components/ui`.
+- `lib/api/index.ts` is not taken, as agreed. The trial merge adds FE-1's version cleanly.
+- **Leftover (Note):** `tailwind.config.js` is still on FE-2 (FE-1 deleted it). The merge applies FE-1's deletion automatically.
+- **`lib/config.ts`:** content is identical to FE-1 `14f0b00` except the doc comment on `adminPreview` (FE-2 has 4 lines, FE-1 has 1). That produces an add/add conflict; take FE-1's side. It is worth aligning now so the merge is clean.
+
+### New modules against the contract
+
+**Capability gating (UI; the server enforces):**
+| Capability | Where it gates | Contract | OK |
+| --- | --- | --- | --- |
+| `products:read` / `products:write` | Products and Categories nav (`modules.ts`). Create, edit, and delete buttons only when `can("products:write")`. | §4 | ✓ |
+| `inventory:read` / `inventory:adjust` | Inventory nav. Adjust stock and "Run low-stock check" only when `canAdjust`. | §5 (low-stock-check is `inventory:adjust`) | ✓ |
+| `orders:update` / `jobs:assign` | Order installation toggle and engineer assignment need `canUpdate`. Create job needs `canAssignJobs`. Job drawer assign, edit, status, and delete need `canAssign`. Delete only for `unassigned|assigned|cancelled`. | §6.4, §7.2 | ✓ |
+| `jobs:read` | Installations nav. The engineer filter and picker only when `staff:read` (every `jobs:assign` role has `staff:read`). | §7.2, §7.4, §12 | ✓ |
+| `jobs:update-own` | "My jobs" nav, and `/admin` lands on the first allowed module, so an engineer lands on My jobs. | §7.3 | ✓ |
+| `staff:read` / `staff:write` | Staff nav (Team tab). Profile editing only when `staff:write`. | §7.4 | ✓ |
+| `users:read` / `users:manage` | The Accounts tab exists only when `users:read`. Invite, edit, role, and (de)activate only when `users:manage`. | §2 | ✓ |
+| `settings:read` / `settings:write` | Settings nav. Every section's save only when `canWrite`, with a read-only notice otherwise. | §8.1 | ✓ |
+
+- **Engineer view:** `MyJobs.tsx`/`MyJobDetail.tsx` import only `getMyJobs`, `setMyJobStatus`, and `updateMyJob`, which call `/admin/me/jobs*`. It offers only `assigned → in_progress → completed` (`ENGINEER_JOB_TRANSITIONS`). Complete is disabled until every checklist item is done (the server 409 is still surfaced). Checklist PUTs send only `{ id, done }`. Primary controls are `size="lg"`/`min-h-11` (≥44 px). ✓
+- **Self changes:** "Change role" and "Deactivate/Reactivate" are `disabled` on your own row, with an `aria-describedby` explanation ("You can't change your own role or status."). Self edit of name/phone stays available (contract §13.3). ✓
+- **Mock and type shapes:** `lib/api/types.ts` matches the contract field for field for `Category`/`CategoryAttribute`, `Product`/`ProductInput` (stock only on create), `InventoryItem`, `InventoryMovement`, `StockAdjustmentInput` (manual reasons only), `InstallationJob`/`ChecklistItem`/`JobCreateInput`/`JobUpdateInput`/`MyJobUpdateInput`, `AdminUser`/`StaffProfile`/`StaffMember (+openJobs)`, `Settings`/`SettingsInput`, `AdminNotification`/`NotificationsPage (+unreadCount)`, and dashboard `kpis`. Return shapes match too: admin categories are an array; products, inventory, movements, jobs, my jobs, users, staff, and notifications are paged; adjustments return `{ movement, product }`; low-stock returns `{ lowStock, emailed }`. Mocks are typed against these, so `tsc` enforces the shapes. ✓
+
+### Findings (round 3)
+
+**FE2-9 — Minor — Missing invite-expiry hint (contract §13.4).**
+The clarification says FE-2 should tell admins on the users page that an invitee whose 30-minute invite token expired uses "Forgot password" (`POST /admin/auth/request-password-reset`). The invite success toast mentions the reset token but not the expiry or the recovery path. **Fix:** add one helper line in the Invite dialog and the Accounts tab.
+
+**FE2-10 — Note — The mock module ships in the production bundle.**
+`lib/api/admin.ts` statically imports `lib/admin/mocks.ts` (about 1,200 lines of sample data). It is inert with the flag off, but it is downloaded by every admin. **Fix, when mocks are removed after backend integration (already planned):** delete it. Alternatively, `await import()` it inside the preview branch now. Not blocking.
+
+**FE2-11 — Note — Deployment dependency.**
+With preview off, a backend without `/admin/auth/me` and without `capabilities` in the login response gives every admin an empty shell. This is correct fail-closed behaviour, but it means the Next admin cannot replace the Vite admin in production until BE-1's roles milestone (login `capabilities` + `/me`) is deployed to the same environment. Record this in the release plan.
+
+**FE2-8 (updated) — Integration conflicts** with FE-1 `14f0b00`. The trial merge now has **3** add/add conflicts, down from 13:
+| Path | Resolution |
+| --- | --- |
+| `lib/config.ts` | Take FE-1 (comment-only difference). |
+| `lib/validation.ts` | Take FE-2, add FE-1's `LIMITS.cartItems`, `quantityMin`, `quantityMax`, and `PHONE_PATTERN`. |
+| `lib/api/types.ts` | Keep both sections, and keep one copy of the identical `Paged`, `Category`, `CategoryAttribute`, and `EmploymentType`. Rename FE-1's `CustomerSegment` to `PublicCustomerSegment` in `types.ts` **and** in `lib/fallbacks/index.ts`. The first trial build failed type-check on exactly this: 6 errors at `lib/fallbacks/index.ts:84–114`. |
+
+After those resolutions the merged tree builds and lints with 0 errors.
+
+### Known gaps FE-2 declared — acceptance decision
+| Gap | Decision | Reason |
+| --- | --- | --- |
+| No category filter on Inventory (contract §5 supports `category`) | **Not blocking.** Follow-up. | PRD §6.2 asks for a stock view, adjustments, movement history, and a low-stock badge, all of which are present. Search plus low/out filters cover day-to-day use. Add the filter in the next pass (the API function already accepts the query). |
+| Movement filters reset on tab switch | **Not blocking.** Follow-up. | UX polish only; no data or permission impact. |
+| Jobs created only from an order | **Not blocking**, and accepted as designed. | Contract §7.2 requires `orderId`, and the order must `requiresInstallation`. Creating from the order detail, where that toggle lives, is the natural flow. The Installations page should point users to Orders in its empty state, which is a nice-to-have. |
+
+### FE-2 verdict
+**Accepted for integration.** All review-2 findings are fixed, and the new modules gate correctly and match the contract. FE2-9 is a small follow-up that doesn't block. FE2-10 and FE2-11 are tracking notes. Remaining sign-off items are live checks that need BE-1 and BE-2: section D live 401/expiry/reset runs, server-side refusal with limited accounts, and vacancies end to end. They happen during `agents/fe-integration` (section G).
