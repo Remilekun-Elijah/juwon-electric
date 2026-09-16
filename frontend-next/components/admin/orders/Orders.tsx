@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { ReceiptText, SearchX, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/AdminPage";
@@ -57,6 +57,10 @@ const itemCount = (order: Order) => (order.order || []).reduce((sum, line) => su
 export function Orders() {
   const { can, notifications } = useAdmin();
   const query = useAdminQuery("orders", () => getOrders().then((response) => response.data));
+  // Deep link: /admin/orders?order=<id> opens that order once the list has loaded.
+  const [deepLinkId, setDeepLinkId] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("order")
+  );
   const items = useMemo(() => query.data ?? [], [query.data]);
   const firstLoad = query.data === undefined;
   const canDelete = can("orders:delete");
@@ -148,6 +152,19 @@ export function Orders() {
     setDrawerOpen(true);
     void loadOrder(order);
   };
+
+  const openDeepLinked = useEffectEvent((order: Order) => openOrder(order));
+
+  useEffect(() => {
+    if (!deepLinkId || !query.data) return undefined;
+    const order = query.data.find((item) => item.id === deepLinkId);
+    const timer = window.setTimeout(() => {
+      setDeepLinkId(null);
+      if (order) openDeepLinked(order);
+      else toast.error("That order couldn’t be found. It may have been deleted.");
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [deepLinkId, query.data]);
 
   const closeOrder = () => {
     orderRequest.current = null;
