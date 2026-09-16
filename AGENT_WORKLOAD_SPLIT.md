@@ -42,7 +42,7 @@ The previous version of this ledger overstated what was done and left out large 
 
 ### 2.3 Frontend dependency and config drift
 
-- `react-quill@2.0.0` has peer dependency `react ^16–18`, but the app uses React 19.2. It relies on the removed `findDOMNode`, so it will break at runtime. Replace it with `react-quill-new` (or another editor that supports React 19).
+- `react-quill@2.0.0` has peer dependency `react ^16–18`, but the app uses React 19.2. It relies on the removed `findDOMNode`, so it will break at runtime. It also makes **`npm ci` fail with ERESOLVE on the base branch**, so `frontend-next` can't be installed cleanly at all. Replace it with `react-quill-new` (or another editor that supports React 19).
 - Tailwind v4 (`@tailwindcss/postcss`) is installed, but the brand tokens live in an untracked v3-style `tailwind.config.js`. v4 ignores that file without `@config`, so none of the brand colours apply. Port the tokens into `@theme` in `globals.css`.
 - `quill-overrides.css` is untracked and imported nowhere.
 - PLATFORM_PLAN assumes the **Pages Router** (`getStaticProps`, `_app.jsx`, next-redux-wrapper). The scaffold uses the **App Router**; see decision D2.
@@ -88,6 +88,7 @@ These defaults unblock parallel work. Change them here if the business disagrees
 - **D2 — Next.js router.** Use the **App Router**, which is already scaffolded. Pages Router guidance in PLATFORM_PLAN §3 maps as follows: `getStaticProps`/`getStaticPaths` → server components + `generateStaticParams` + `revalidate`; `_app.jsx` → `app/layout.tsx` + client providers.
 - **D3 — State.** Do not bring Redux across unless a page needs it. Cart state moves to a small client store (context or Zustand) persisted to `localStorage`, and keeps the Vite cart's shape so `/cart/quote` and `/order` payloads are unchanged.
 - **D4 — Roles.** Extend the existing admin session system with `role ∈ {superadmin, admin, inventory, sales, engineer, hr, support}` and a server-side capability map. Do not adopt the unused `User` model as-is; resolve the `Order`/`User` model name clash.
+- **D4a — Order enums (open, SUP-BE to confirm in contract).** Existing orders use `status: pending|completed|cancelled` and `paymentStatus: unpaid|partial|paid|refunded`. PLATFORM_PLAN §1 uses `paymentStatus: pending|paid|failed|refunded` and `fulfillmentStatus: pending|processing|out_for_delivery|delivered|installed|cancelled`. Proposed backfill: `unpaid`/`partial` → `pending` (keep the original in `legacyPaymentStatus`); `completed` → `delivered`; keep legacy `status` in sync. Stock decrements on transition to `processing`, not on public order placement.
 - **D5 — Catalog.** Keep `packages` as the storefront unit (PRD §6.1). Add `products` and `categories`, with packages referencing products. Migrate existing package data rather than breaking public routes.
 - **D6 — Editor.** Use `react-quill-new`, loaded client-only. Sanitisation stays server-side and is the security boundary.
 
