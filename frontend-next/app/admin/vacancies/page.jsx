@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:9000";
 
@@ -166,7 +166,7 @@ export default function AdminVacanciesList() {
 
       <div className="mt-6 text-sm text-gray-600">
         <p>TODO: If backend is not available, create vacancies with:</p>
-        <pre className="bg-gray-100 rounded p-2 mt-2">curl -X POST {backend}/vacancies -H "Content-Type: application/json" -d '{"title":"Test","slug":"test","descriptionHtml":"&lt;p&gt;Hello&lt;/p&gt;"}'</pre>
+        <pre className="bg-gray-100 rounded p-2 mt-2">{`curl -X POST ${backend}/vacancies -H "Content-Type: application/json" -d '{"title":"Test","slug":"test","descriptionHtml":"<p>Hello</p>"}'`}</pre>
       </div>
     </main>
   );

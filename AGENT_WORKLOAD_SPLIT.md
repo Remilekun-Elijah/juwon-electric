@@ -129,7 +129,7 @@ Everything goes in **both** Express and `backend/cloudflare` (D1 migrations), gu
 
 PRD §6.1, §6.5 public, §6.8, §7 Next.js criteria · Plan §3
 
-1. **Fix the build first** (the `page.jsx` parse error) so `next build` and `eslint` are green. Keep them green on every commit.
+1. The base branch already builds (parse error fixed, `react-quill` swapped for `react-quill-new`). Keep `next build` and `eslint` green on every commit.
 2. **Brand system:** move tokens from `tailwind.config.js` into Tailwind v4 `@theme` in `globals.css`. Load the Plus Jakarta Sans and JetBrains Mono fonts. Set the real `metadata` and favicon. Delete the create-next-app assets.
 3. Port the shared layout (Navbar, Header, Footer) and the public UI kit pieces needed from `frontend/src/components` into `frontend-next/components`.
 4. **Port pages from `frontend/src/pages`:** Landing (all Home sections), Services, Portfolio, Packages (listing + `packages/[slug]` detail with `generateStaticParams` + ISR), Contact (Turnstile), Cart, Checkout (server quote via `/cart/quote`, fallback behaviour from `FRONTENDS.md`, Turnstile `order`). Keep the local fallbacks the Vite site has for packages, services, and portfolio.
@@ -179,7 +179,7 @@ Admin lives under `frontend-next/app/admin/**`. It is client-rendered and never 
 | Order fulfilment + engineer assignment | BE-2 / FE-2 | PRD §6.3 | Orders CRUD exists; fulfilment not started |
 | Installation jobs + engineer mobile UI | BE-2 / FE-2 | PRD §6.4 | Not started |
 | Settings + notifications | BE-2 / FE-2 | PRD §6.7 | Not started |
-| Next.js build green + brand system | FE-1 | Plan §3 | Broken |
+| Next.js build green + brand system | FE-1 | Plan §3 | Build fixed on base (`react-quill-new`, parse error); brand system not started |
 | Public site port (landing → checkout) | FE-1 | PRD §6.1, §7 | Not started |
 | Vacancies public SSG | FE-1 | PRD §6.5, §7 | Partial (CSR only) |
 | Admin portal port + vacancies admin | FE-2 | PRD §6.5–6.6 | Partial (does not build) |
