@@ -13,8 +13,9 @@
 // - Text keeps valid entity references; stray "&", "<" and ">" are escaped, and open
 //   tags are closed, so the output is well-formed.
 //
-// Parsing is linear: tags are matched with a sticky regex over the original string,
-// and an attribute section is capped, so hostile input cannot cause quadratic work.
+// Parsing is linear (review L7): a tag's attribute section is scanned once per input
+// position (memoised, so overlapping candidate tags never rescan), quoted values are
+// capped, and nesting is capped at MAX_DEPTH (deeper tags are unwrapped, text kept).
 
 const ALLOWED_TAGS = new Set([
   "p", "br", "strong", "b", "em", "i", "u", "s", "blockquote", "ul", "ol", "li", "h2", "h3", "h4", "a",
@@ -90,7 +91,12 @@ const linkAttributes = (source) => {
 };
 
 // <name attributes> or </name attributes>. Quoted values may contain ">".
-const TAG_PATTERN = /<(\/?)([a-zA-Z][a-zA-Z0-9]{0,31})((?:[^>"']|"[^"]{0,2048}"|'[^']{0,2048}'){0,2048})>/y;
+const MAX_NAME_LENGTH = 32;
+const MAX_QUOTED_LENGTH = 2048;
+const MAX_DEPTH = 100;
+
+const isLetter = (code) => (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+const isAlphanumeric = (code) => isLetter(code) || (code >= 48 && code <= 57);
 
 /** Sanitises untrusted HTML to the rich-text allowlist. Non-strings become "". */
 export const sanitizeRichText = (input) => {
@@ -103,6 +109,59 @@ export const sanitizeRichText = (input) => {
 
   const flushText = (end) => {
     if (end > textStart) out += cleanText(html.slice(textStart, end));
+  };
+
+  // Where the attribute section starting at `start` ends: the index of the closing ">"
+  // (outside quotes), or -1 when there is none. The scan from a position does not depend
+  // on which "<" started it, so every position is resolved at most once:
+  // memo[i] = 0 unknown, -1 no tag end, otherwise end index + 1.
+  const memo = new Int32Array(html.length + 1);
+  const attributesEnd = (start) => {
+    const visited = [];
+    let index = start;
+    let result;
+    for (;;) {
+      if (index >= html.length) {
+        result = -1;
+        break;
+      }
+      if (memo[index] !== 0) {
+        result = memo[index] - (memo[index] > 0 ? 1 : 0);
+        break;
+      }
+      visited.push(index);
+      const code = html.charCodeAt(index);
+      if (code === 62) {
+        result = index;
+        break;
+      }
+      if (code === 34 || code === 39) {
+        const close = html.indexOf(code === 34 ? '"' : "'", index + 1);
+        if (close === -1 || close - index - 1 > MAX_QUOTED_LENGTH) {
+          result = -1;
+          break;
+        }
+        index = close + 1;
+        continue;
+      }
+      index += 1;
+    }
+    const stored = result === -1 ? -1 : result + 1;
+    for (const position of visited) memo[position] = stored;
+    return result;
+  };
+
+  // A tag at `lt`, or null: { closing, name, attributes, end } (end = index after ">").
+  const readTag = (lt) => {
+    let cursor = lt + 1;
+    const closing = html.charCodeAt(cursor) === 47;
+    if (closing) cursor += 1;
+    if (!isLetter(html.charCodeAt(cursor))) return null;
+    const nameStart = cursor;
+    while (cursor - nameStart < MAX_NAME_LENGTH && isAlphanumeric(html.charCodeAt(cursor))) cursor += 1;
+    const gt = attributesEnd(cursor);
+    if (gt === -1) return null;
+    return { closing, name: html.slice(nameStart, cursor), attributes: html.slice(cursor, gt), end: gt + 1 };
   };
 
   // Implied end tags, as an HTML parser would apply them, so the stored markup renders
@@ -154,8 +213,7 @@ export const sanitizeRichText = (input) => {
       continue;
     }
 
-    TAG_PATTERN.lastIndex = lt;
-    const match = TAG_PATTERN.exec(html);
+    const match = readTag(lt);
     if (!match) {
       // A "<" that does not start a tag is text; cleanText escapes it.
       position = lt + 1;
@@ -163,9 +221,9 @@ export const sanitizeRichText = (input) => {
     }
 
     flushText(lt);
-    const [whole, closing, rawName, attributes] = match;
-    const tag = rawName.toLowerCase();
-    position = textStart = lt + whole.length;
+    const { closing, name, attributes, end } = match;
+    const tag = name.toLowerCase();
+    position = textStart = end;
 
     if (DROP_CONTENT_TAGS.has(tag)) {
       if (!closing) {
@@ -186,6 +244,7 @@ export const sanitizeRichText = (input) => {
     }
 
     closeImplied(tag);
+    if (!VOID_TAGS.has(tag) && stack.length >= MAX_DEPTH) continue;
     out += `<${tag}${tag === "a" ? linkAttributes(attributes) : ""}>`;
     if (!VOID_TAGS.has(tag)) stack.push(tag);
   }
