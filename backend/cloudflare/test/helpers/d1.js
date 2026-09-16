@@ -89,7 +89,7 @@ export const applyMigrations = (d1, { upTo = Infinity } = {}) => {
       d1.db.exec("COMMIT");
     } catch (error) {
       d1.db.exec("ROLLBACK");
-      throw new Error(`${name}: ${error.message}`);
+      throw new Error(`${name}: ${error.message}`, { cause: error });
     }
   }
   return d1;

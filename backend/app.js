@@ -79,7 +79,7 @@ app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
 
-app.get("/", (req, res, next) => {
+app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
     message: "Juwon Electric API",

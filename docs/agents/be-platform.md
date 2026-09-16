@@ -70,6 +70,20 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` â†
 - **Tests:** `backend/test/cleanup.test.js` asserts that the removed paths stay gone and that no backend source imports `models/`, `routes/user.js`, `middleware/auth.js` or `sanitize-html`, or reads `X-User-Role`/`X-User-Id`.
 - **Ledger:** the retirement is recorded here rather than in `AGENT_WORKLOAD_SPLIT.md`, to avoid ledger conflicts (ledger Â§5 convention). SUP-BE, please copy it into the ledger at integration.
 
+## Milestone 4: lint (C4): done
+
+- `npm run lint` in `backend/` runs `eslint .`, then `node scripts/check-chars.mjs`.
+  - ESLint 10 flat config (`backend/eslint.config.js`) with `@eslint/js` recommended rules, plus `no-var`, `prefer-const`, `eqeqeq` (smart) and `no-implicit-coercion`, and unused variables allowed only with a `_` prefix.
+  - Globals are scoped per runtime: Express, scripts and tests get Node globals; `cloudflare/src` gets web platform globals only; `shared/` gets language globals only. `no-control-regex` is off, because the validators match control characters on purpose.
+  - `scripts/check-chars.mjs` enforces G15 (no Cc/Cf characters other than tab/LF/CR in tracked or new text files under `backend/`). It was checked against an injected U+200B.
+- **Pre-existing lint fixes** (no behaviour change, and tests pass):
+  - A duplicate `id` key in Express `withMeta`.
+  - Useless initial assignments in `buildDefaultCatalog`, in Worker `listAuditLogs` and in the Worker fetch entry.
+  - A needless escape in the Worker `EMAIL_PATTERN`.
+  - `cause` added to rethrown errors.
+  - An unused `next` argument on `GET /`.
+- `engines.node` is `>=22.5` (needed for `node:sqlite` in the Worker tests).
+
 ## Interpretations and deviations (SUP-BE please confirm)
 
 1. **`/admin/reads*` checks.** `POST /admin/reads` checks the record type (`contacts` â†’ `leads:read`, `orders` â†’ `orders:read`). `GET /admin/reads` and `POST /admin/reads/all` need no capability, because they return only read timestamps and never record contents.
@@ -84,4 +98,4 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` â†
 
 ## Remaining BE-1 work (not started)
 
-- C4 `lint` script, C5 CI (Node 22, wrangler deploy on `v3`/main with migrations first), C6 `docs/DEPLOYMENT.md` env matrix.
+- C5 CI (Node 22, wrangler deploy on `v3`/main with migrations first), C6 `docs/DEPLOYMENT.md` env matrix.

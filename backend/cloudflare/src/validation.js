@@ -147,7 +147,7 @@ export const quantityField = (item, label = "Quantity") => {
 
 // Shared with the Express backend and the frontend (fix plan B4).
 export const EMAIL_PATTERN =
-  /^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$/;
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$/;
 
 export const isValidEmail = (email) => {
   if (typeof email !== "string" || email.length > LIMITS.email || !EMAIL_PATTERN.test(email)) return false;

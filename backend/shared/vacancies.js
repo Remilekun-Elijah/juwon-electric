@@ -170,7 +170,7 @@ export const vacancyView = (record) => ({
 
 /** `PublicVacancy`: the admin shape without createdBy and closedAt. */
 export const publicVacancyView = (record) => {
-  const { createdBy, closedAt, ...rest } = vacancyView(record);
+  const { createdBy: _createdBy, closedAt: _closedAt, ...rest } = vacancyView(record);
   return rest;
 };
 

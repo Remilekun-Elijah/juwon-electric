@@ -1632,7 +1632,7 @@ const errorResponse = (error, requestId) => {
 export default {
   async fetch(request, env, ctx) {
     const requestId = resolveRequestId(request);
-    let path = null;
+    let path;
     try {
       path = normalizePath(new URL(request.url));
     } catch {
