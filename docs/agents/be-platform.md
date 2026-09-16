@@ -59,6 +59,17 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` â†
 | L5 | The Mongo unique indexes (admin email, vacancy slug) moved to `ensureUniqueIndexes()`. If one cannot be built, startup logs an error naming the duplicate values, and **exits when `NODE_ENV=production`**; other environments continue with a loud error. This path was not exercised against a live MongoDB here, because no Mongo instance is available locally. |
 | L6 | A shared `backend/shared/adminInviteEmail.js` produces the subject, HTML and text, including the `ADMIN_APP_URL` link. Express uses it through nodemailer (`sendMail` now also sends `text`), and the Worker through Resend (`env.ADMIN_APP_URL`). A Worker test captures the Resend payload. |
 
+## Milestone 3: cleanup (C1, C2): done
+
+- **C1, removed:**
+  - `workers/d1-write`, `backend/d1-sync` (fail-open `SYNC_SECRET` check) and `backend/d1-schemas`, retired by ledger D1.
+  - `backend/routes/user.js` and `backend/controllers/user.js`. The mount was unreachable, because `publicRouter` already serves `/contact`, `/subscribe` and `/order`.
+  - `backend/TODO_SANITIZE.md`, and the now-unused `sanitize-html` dependency (package-lock updated).
+  - The `deploy-workers` CI job, which published `workers/d1-write`. It is replaced in C5.
+- **C2:** removed every `backend/models/*` file (typed Mongoose models that clashed with the `services/store.js` registrations; `Vacancy.js` went in milestone 2). Nothing imports `models/`.
+- **Tests:** `backend/test/cleanup.test.js` asserts that the removed paths stay gone and that no backend source imports `models/`, `routes/user.js`, `middleware/auth.js` or `sanitize-html`, or reads `X-User-Role`/`X-User-Id`.
+- **Ledger:** the retirement is recorded here rather than in `AGENT_WORKLOAD_SPLIT.md`, to avoid ledger conflicts (ledger Â§5 convention). SUP-BE, please copy it into the ledger at integration.
+
 ## Interpretations and deviations (SUP-BE please confirm)
 
 1. **`/admin/reads*` checks.** `POST /admin/reads` checks the record type (`contacts` â†’ `leads:read`, `orders` â†’ `orders:read`). `GET /admin/reads` and `POST /admin/reads/all` need no capability, because they return only read timestamps and never record contents.
@@ -73,5 +84,4 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` â†
 
 ## Remaining BE-1 work (not started)
 
-- Cleanup C1 (`workers/d1-write`, `backend/d1-sync`, `backend/d1-schemas`, `routes/user.js`, `TODO_SANITIZE.md`) and C2 (the `backend/models/*` clash).
 - C4 `lint` script, C5 CI (Node 22, wrangler deploy on `v3`/main with migrations first), C6 `docs/DEPLOYMENT.md` env matrix.

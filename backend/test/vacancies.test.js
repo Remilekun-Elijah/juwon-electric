@@ -1,4 +1,3 @@
-import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { startExpress } from "./helpers/express.js";
 import { TEST_ENV } from "./scenarios/adminUsers.js";
@@ -16,11 +15,4 @@ after(async () => {
 
 test("Express: vacancies", async () => {
   await runVacanciesScenario(server.request);
-});
-
-test("Express: legacy X-User-Role middleware and models are gone", async () => {
-  const { existsSync } = await import("node:fs");
-  for (const file of ["../middleware/auth.js", "../routes/vacancies.js", "../models/Vacancy.js"]) {
-    assert.equal(existsSync(new URL(file, import.meta.url)), false, file);
-  }
 });

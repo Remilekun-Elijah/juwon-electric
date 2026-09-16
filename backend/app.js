@@ -19,7 +19,6 @@ import { ApiError, SERVICE_UNAVAILABLE_MESSAGE } from "./services/errors.js";
 import { isMongoMode, waitForPending } from "./services/runtime.js";
 import { backupJsonStore, ensureSecurityIndexes, ensureUniqueIndexes } from "./services/store.js";
 import mongoose from "mongoose";
-import userRouter from "./routes/user.js";
 
 const app = express();
 if (app.get("env") === "development") env.config();
@@ -80,10 +79,6 @@ app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
 
-// Mount user routes (e.g. order, contact)
-app.use(userRouter);
-
-
 app.get("/", (req, res, next) => {
   res.status(200).json({
     success: true,
@@ -96,6 +91,7 @@ app.get("/", (req, res, next) => {
       "contact",
       "cart",
       "orders",
+      "vacancies",
     ],
   });
 });
