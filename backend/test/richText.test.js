@@ -19,11 +19,36 @@ test("sanitiser output is stable (sanitising twice changes nothing)", () => {
   }
 });
 
-test("hostile input is handled in linear time", () => {
-  const inputs = ["<a ".repeat(30000), "<".repeat(90000), `<p title="${"x".repeat(90000)}`, "<!--".repeat(20000), "&".repeat(90000)];
-  for (const input of inputs) {
-    const started = Date.now();
-    sanitizeRichText(input);
-    assert.ok(Date.now() - started < 1500, `slow on ${input.slice(0, 12)}...`);
+// Review L7: the Worker has a tight CPU budget. 100 KB of pathological markup must stay
+// far below 50 ms (about 5-10 ms locally). The best of 3 runs is used to ignore GC noise.
+const KB100 = 100 * 1024;
+const fill = (unit) => unit.repeat(Math.ceil(KB100 / unit.length)).slice(0, KB100);
+const PATHOLOGICAL = {
+  "repeated <a": fill("<a"),
+  "unclosed double-quoted attributes": fill('<a "'),
+  "unclosed single-quoted attributes": fill("<p title='x"),
+  "nested <": fill("<<a<b "),
+  "bare <": fill("<"),
+  "mixed quotes": fill(`<a '"`),
+  "deep nesting then stray closers": fill("<b>").slice(0, KB100 / 2) + fill("</i>").slice(0, KB100 / 2),
+  "unterminated comments": fill("<!--"),
+  "ampersands": fill("&"),
+  "long quoted value": `<a href="${"x".repeat(KB100)}`,
+};
+
+test("100 KB of pathological input sanitises in well under 50 ms", () => {
+  for (const [name, input] of Object.entries(PATHOLOGICAL)) {
+    let best = Infinity;
+    for (let run = 0; run < 3; run += 1) {
+      const started = process.hrtime.bigint();
+      sanitizeRichText(input);
+      best = Math.min(best, Number(process.hrtime.bigint() - started) / 1e6);
+    }
+    assert.ok(best < 50, `${name}: ${best.toFixed(1)} ms`);
   }
+});
+
+test("nesting deeper than 100 levels is unwrapped and the output stays well-formed", () => {
+  const output = sanitizeRichText(`${"<b>".repeat(150)}deep${"</b>".repeat(150)}`);
+  assert.equal(output, `${"<b>".repeat(100)}deep${"</b>".repeat(100)}`);
 });

@@ -110,7 +110,7 @@ Set Worker secrets with `npx wrangler secret put <NAME>` (in `backend/cloudflare
 ### Migrations that can stop a deploy
 
 - `0007_admin_roles.sql` creates a unique index on lowercase admin email.
-- `0008_vacancies.sql` creates a unique index on vacancy slug.
+- `0008_vacancies.sql` creates a unique index on vacancy slug. It only covers vacancies stored in `records` (collection `vacancies`). **Rows in any hand-made standalone D1 `vacancies` table (for example from the retired `backend/d1-schemas/vacancies.sql`) are not migrated by 0008.** Re-create them through `POST /admin/vacancies` if they are still needed.
 
 If the production data already has duplicates, the migration fails without deleting anything and the deploy stops before `wrangler deploy`. Find the duplicates, fix them by hand, and re-run the job:
 

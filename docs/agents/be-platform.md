@@ -111,6 +111,27 @@ Reusable test harness: `backend/test/helpers/express.js` (`startExpress(env)` �
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is listed as **planned** for FE-1. It is not read by `frontend-next` yet.
 - `backend/Dockerfile` moved to Node 22 (it was `node:18`, below `engines`). It uses `npm ci --omit=dev`, drops the dead build step and runs as `node`. `backend/README.md` now has the correct Docker build command and env names (`SMTP_SECRET`/`SMTP_FROM`, not `SMTP_PASS`/`SMTP_HOST`).
 
+## Review round 3 follow-up: L7 sanitiser performance: done
+
+Accepted for integration at 8e29aec (SUP-BE round 3, a6dcde3); items 10-14 were confirmed.
+
+- **Before:** 100 KB of hostile markup took 300-370 ms (`<a` repeated, unclosed quotes), and deep nesting followed by stray closing tags took about 1.3 s.
+- **Tag matching:** the sticky tag regex is replaced by a scanner. The end of an attribute section (the next `>` outside quotes) is memoised per input position, so overlapping candidate tags never rescan, and quoted values keep the 2048-character cap.
+- **Nesting:** capped at 100 levels. Deeper tags are unwrapped and their text kept. This bounds the implied-end-tag and closing-tag stack scans.
+- **Now:** 4-11 ms for every 100 KB pathological input tried.
+- **Output unchanged:**
+  - All 30 fixtures pass.
+  - A differential run of 200,000 random markup strings against the previous implementation gave 0 differences.
+  - The only intended changes are inputs the fixtures don't cover: nesting deeper than 100, and a tag whose attribute section has more than 2048 units (previously escaped as text, now parsed as a tag and sanitised). Both outputs are safe.
+- **Tests:** `backend/test/richText.test.js` checks 10 pathological 100 KB inputs, each under 50 ms (best of 3), plus the depth cap.
+- `docs/DEPLOYMENT.md` now states that 0008 does not migrate rows from a hand-made standalone D1 `vacancies` table.
+
+**For BE-2 to re-sync**, the git blob SHAs are:
+- `backend/shared/richText.js`: `e9f286d998552894e06c06ca7212fa5d7899604c`
+- `backend/shared/__fixtures__/richText.json`: `c5cce9b11ff2cb18d61bb583da96ea867587d7dd` (unchanged)
+
+Take them from the L7 commit on `agents/be-platform` with `git show agents/be-platform:backend/shared/richText.js`, and check with `git hash-object`.
+
 ## Interpretations and deviations (SUP-BE please confirm)
 
 1. **`/admin/reads*` checks.** `POST /admin/reads` checks the record type (`contacts` → `leads:read`, `orders` → `orders:read`). `GET /admin/reads` and `POST /admin/reads/all` need no capability, because they return only read timestamps and never record contents.
