@@ -125,6 +125,24 @@ const securityModels = {
     ),
 };
 
+// Per-admin read status (numbers are epoch milliseconds). Kept apart from the
+// records so marking something read never changes a contact or order.
+const readModels = {
+  adminReadState:
+    mongoose.models.AdminReadState ||
+    mongoose.model("AdminReadState", recordSchema([[{ adminId: 1 }, { unique: true }]]), "adminReadState"),
+  adminReads:
+    mongoose.models.AdminRead ||
+    mongoose.model(
+      "AdminRead",
+      recordSchema([
+        [{ adminId: 1, recordKey: 1 }, { unique: true }],
+        [{ recordKey: 1 }],
+      ]),
+      "adminReads"
+    ),
+};
+
 const now = () => new Date().toISOString();
 export { useMongo };
 
@@ -229,6 +247,8 @@ const defaultDb = async () => {
     sessions: [],
     auditLogs: [],
     webhookEvents: [],
+    adminReadState: [],
+    adminReads: [],
   };
 };
 
@@ -761,7 +781,149 @@ export const pageRecords = async (collection, { filter = {}, page = 1, limit = 5
 // for webhook replay protection).
 export const ensureSecurityIndexes = async () => {
   if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
-  await Promise.all(Object.values(securityModels).map((model) => model.createIndexes()));
+  await Promise.all(
+    [...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
+      model.createIndexes()
+    )
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Admin read status: adminReadState { adminId, since, updatedAt } and
+// adminReads { adminId, recordKey, readAt }, unique on (adminId, recordKey).
+// ---------------------------------------------------------------------------
+
+// Runs a Mongo upsert, retrying once when a concurrent upsert of the same key
+// wins the insert (E11000); the retry then updates the existing document.
+const upsertWithRetry = async (task) => {
+  try {
+    return await task();
+  } catch (error) {
+    if (!isDuplicateKey(error)) throw error;
+    return task();
+  }
+};
+
+const readItemsMap = (rows) =>
+  Object.fromEntries(rows.map((row) => [row.recordKey, Number(row.readAt)]));
+
+const ensureMongoReadState = (adminId, timestamp) =>
+  upsertWithRetry(() =>
+    readModels.adminReadState.collection.updateOne(
+      { adminId },
+      { $setOnInsert: { since: timestamp, updatedAt: timestamp } },
+      { upsert: true }
+    )
+  );
+
+const mongoReadItemsAfter = async (adminId, since) => {
+  const model = readModels.adminReads.collection;
+  await model.deleteMany({ adminId, readAt: { $lte: since } });
+  return readItemsMap(await model.find({ adminId }).toArray());
+};
+
+// Adds the admin's state row (since = timestamp) to the JSON store when missing.
+const jsonReadState = (db, adminId, timestamp) => {
+  db.adminReadState = db.adminReadState || [];
+  let state = db.adminReadState.find((entry) => entry.adminId === adminId);
+  let changed = false;
+  if (!state) {
+    state = { adminId, since: timestamp, updatedAt: timestamp };
+    db.adminReadState.push(state);
+    changed = true;
+  }
+  return { state, changed };
+};
+
+// Drops the admin's rows covered by since; returns { items, changed }.
+const jsonReadItemsAfter = (db, adminId, since) => {
+  const rows = db.adminReads || [];
+  const kept = rows.filter((row) => !(row.adminId === adminId && Number(row.readAt) <= since));
+  db.adminReads = kept;
+  return {
+    items: readItemsMap(kept.filter((row) => row.adminId === adminId)),
+    changed: kept.length !== rows.length,
+  };
+};
+
+/** { since, items } for this admin; creates the baseline (since = now) on first use. */
+export const getAdminReadStatus = async (adminId) => {
+  const timestamp = Date.now();
+  if (useMongo()) {
+    await ensureMongoReadState(adminId, timestamp);
+    const state = await readModels.adminReadState.collection.findOne({ adminId });
+    const since = Number(state?.since ?? timestamp);
+    return { since, items: await mongoReadItemsAfter(adminId, since) };
+  }
+  return mutateDb((db) => {
+    const { state, changed } = jsonReadState(db, adminId, timestamp);
+    const since = Number(state.since);
+    const pruned = jsonReadItemsAfter(db, adminId, since);
+    const result = { since, items: pruned.items };
+    return changed || pruned.changed ? result : { skipWrite: true, result };
+  });
+};
+
+/** Stores max(existing, readAt) for the key; resolves to the stored read time. */
+export const markAdminRecordRead = async (adminId, recordKey, readAt) => {
+  const timestamp = Date.now();
+  if (useMongo()) {
+    await ensureMongoReadState(adminId, timestamp);
+    const row = await upsertWithRetry(() =>
+      readModels.adminReads.collection.findOneAndUpdate(
+        { adminId, recordKey },
+        { $max: { readAt } },
+        { upsert: true, returnDocument: "after", includeResultMetadata: false }
+      )
+    );
+    return Number(row?.readAt ?? readAt);
+  }
+  return mutateDb((db) => {
+    jsonReadState(db, adminId, timestamp);
+    db.adminReads = db.adminReads || [];
+    const row = db.adminReads.find(
+      (entry) => entry.adminId === adminId && entry.recordKey === recordKey
+    );
+    if (row) row.readAt = Math.max(Number(row.readAt) || 0, readAt);
+    else db.adminReads.push({ adminId, recordKey, readAt });
+    return row ? row.readAt : readAt;
+  });
+};
+
+/** Moves the admin's since forward to max(existing, since) and clears covered rows. */
+export const markAllAdminRead = async (adminId, since) => {
+  const timestamp = Date.now();
+  if (useMongo()) {
+    const state = await upsertWithRetry(() =>
+      readModels.adminReadState.collection.findOneAndUpdate(
+        { adminId },
+        { $max: { since }, $set: { updatedAt: timestamp } },
+        { upsert: true, returnDocument: "after", includeResultMetadata: false }
+      )
+    );
+    const stored = Number(state?.since ?? since);
+    return { since: stored, items: await mongoReadItemsAfter(adminId, stored) };
+  }
+  return mutateDb((db) => {
+    const { state } = jsonReadState(db, adminId, since);
+    state.since = Math.max(Number(state.since) || 0, since);
+    state.updatedAt = timestamp;
+    return { since: state.since, items: jsonReadItemsAfter(db, adminId, state.since).items };
+  });
+};
+
+/** Removes a deleted record's read rows for every admin. */
+export const deleteRecordReads = async (recordKey) => {
+  if (useMongo()) {
+    const result = await readModels.adminReads.collection.deleteMany({ recordKey });
+    return result.deletedCount;
+  }
+  return mutateDb((db) => {
+    const rows = db.adminReads || [];
+    db.adminReads = rows.filter((row) => row.recordKey !== recordKey);
+    const removed = rows.length - db.adminReads.length;
+    return removed === 0 ? { skipWrite: true, result: 0 } : removed;
+  });
 };
 
 // ---- health and backups -------------------------------------------------------

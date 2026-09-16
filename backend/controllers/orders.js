@@ -3,6 +3,7 @@ import { sendMail } from "../mail/mail.js";
 import { formatMoney, priceItems } from "./_pricing.js";
 import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
+import { forgetRecordReads } from "./adminReads.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 import { auditDelete, auditUpdate } from "../services/audit.js";
 import { created, ok } from "../services/http.js";
@@ -153,6 +154,7 @@ export const adminUpdateOrder = asyncHandler(async (req, res) => {
 export const adminDeleteOrder = asyncHandler(async (req, res) => {
   const existing = await getCollectionItem("orders", req.params.id);
   const order = await deleteCollectionItem("orders", existing.id);
+  await forgetRecordReads("orders", order.id);
   auditDelete(req, "order", order);
   ok(res, "Order deleted.", order);
 });

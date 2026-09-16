@@ -131,7 +131,7 @@ const AdminApp = () => {
     setLoaded((state) => ({ ...state, contacts: true, orders: true }));
   }, []);
 
-  const { unread, markSeen, markAllSeen } = useAdminNotifications({
+  const { unread, ready: readsReady, markSeen, markAllSeen } = useAdminNotifications({
     enabled: Boolean(token),
     sessionRef: session,
     contacts: data.contacts,
@@ -152,7 +152,10 @@ const AdminApp = () => {
   // Toast when something new arrives while the console is open (not for what was already unread on load).
   const announced = useRef(null);
   useEffect(() => {
-    if (!data.contacts || !data.orders) return;
+    if (!readsReady || !data.contacts || !data.orders) {
+      if (!readsReady) announced.current = null;
+      return;
+    }
     const current = new Set([
       ...[...unread.contacts.entries()].map(([id, kind]) => `contacts:${id}:${kind}`),
       ...[...unread.orders].map((id) => `orders:${id}`),
@@ -173,7 +176,7 @@ const AdminApp = () => {
       if (fresh.length) invalidateDashboard.current?.();
     }
     announced.current = current;
-  }, [unread, data]);
+  }, [unread, data, readsReady]);
 
   // Unread count in the browser tab title.
   useEffect(() => {

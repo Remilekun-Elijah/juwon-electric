@@ -166,6 +166,7 @@ Database:
 - The store is chosen once at startup. If MongoDB disconnects later, requests return `503` `"Service temporarily unavailable."` until it reconnects; the JSON file is never used mid-run.
 - On first MongoDB connection, empty collections are seeded from the current package/service/portfolio data.
 - Security collections: `sessions`, `auditLogs`, `webhookEvents` (JSON store and MongoDB), plus `rateLimits` (MongoDB only, TTL index on `resetAt`; never written to the JSON file).
+- Read status collections: `adminReadState` (`{ adminId, since, updatedAt }`, unique `adminId`) and `adminReads` (`{ adminId, recordKey, readAt }`, unique `(adminId, recordKey)`), in the JSON store (written under the store lock) and MongoDB. Mongo upserts use `$max`, retried once on a duplicate key error. Indexes are created at startup.
 - `JSON_STORE_PATH` optionally points the JSON store at another file.
 - JSON store backups: at every startup an existing store file is copied to `backups/db-<timestamp>.json` next to it (`backend/data/backups/` by default, git-ignored); the newest 5 are kept.
 - Updates write only the sent fields against the freshly loaded record (Mongo `$set`), and contact reply threads are appended atomically (Mongo `$push`).
@@ -390,6 +391,18 @@ Each entry: `id`, `createdAt`, `adminId`, `adminEmail`, `action`, `entity`, `ent
 Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`.
 
 Audit writes are best-effort and never fail the admin action. Entries older than 180 days are deleted opportunistically. Requests made with the static `ADMIN_TOKEN` are logged with `adminId` and `adminEmail` `"static-token"`.
+
+Read status (per admin):
+
+Admins mark messages (contacts) and orders as read. The state is stored per admin on the server (so it follows the admin across browsers and devices) and never changes the contact or order records. These routes are not audited and not rate limited. The admin id is the signed-in admin's `id`, or `"static-token"` for the static `ADMIN_TOKEN`. Record keys are `"<type>:<record id>"` with type `contacts` or `orders`. All times are epoch milliseconds.
+
+A record's activity is its `receivedAt` (or `createdAt`); for contacts also `lastInboundReplyAt` and every `inboundReplies[].receivedAt`, whichever is newest. Invalid or missing dates count as 0. The frontend treats a record as read when its activity is at or before `since`, or at or before its `items` entry.
+
+- `GET /admin/reads`: `200` `"Read status retrieved."` with `data: { since, items: { "contacts:<id>": readAt, "orders:<id>": readAt } }`. The first call creates the admin's baseline (`since` = now). Item rows with `readAt <= since` are removed.
+- `POST /admin/reads` (body `{ "type": "contacts" | "orders", "id": "<record id>" }`; other fields are ignored): `200` `"Marked as read."` with `data: { key, readAt }`. `id` is resolved like the admin get-by-id routes and the key uses the record's `id`. `readAt` is `max(now, activity)`, and the stored value never goes back (`readAt` in the response is the stored value). Errors: `400` `"Type must be contacts or orders."`, `400` `"Id is required."` (missing, blank, not a string, or over 64 characters), `404` `"Contact not found."` / `"Order not found."`.
+- `POST /admin/reads/all` (body `{}` or none; ignored): `200` `"All marked as read."` with `data: { since, items }`. `since` becomes `max(stored since, now, newest activity across all contacts and orders)` and every item row it covers is removed, so `items` is normally `{}`.
+
+Deleting a contact or order also removes its read rows for every admin (best effort; failures are logged and do not fail the delete).
 
 Dashboard:
 

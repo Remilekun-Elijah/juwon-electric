@@ -23,14 +23,21 @@ import {
   resolveRequestId,
 } from "./http.js";
 import {
+  READ_TYPES,
   appendToArray,
   createCollectionItem,
   deleteCollectionItem,
+  deleteRecordReads,
   findByField,
   getById,
   getCollectionItem,
+  getReadStatus,
   listCollection,
+  markAllRead,
+  markRecordRead,
   now,
+  readKey,
+  recordActivity,
   resolveSlug,
   updateCollectionItem,
 } from "./store.js";
@@ -1142,6 +1149,42 @@ const optionalNote = (body) =>
 const optionalIsActive = (body) =>
   body.isActive !== undefined && body.isActive !== null ? optionalBoolean(body, "isActive", true, "isActive") : undefined;
 
+// Read rows of a deleted record are removed for every admin; failures are only logged.
+const forgetRecordReads = async (env, type, id) => {
+  try {
+    await deleteRecordReads(env, readKey(type, id));
+  } catch (error) {
+    console.error("Failed to delete read status:", describeError(error));
+  }
+};
+
+const MAX_READ_ID_LENGTH = 64;
+
+const handleReads = async (env, method, path, body, admin) => {
+  if (method === "GET" && path === "/admin/reads") {
+    return ok("Read status retrieved.", await getReadStatus(env, admin.id));
+  }
+  if (method === "POST" && path === "/admin/reads") {
+    const { type, id } = body;
+    if (typeof type !== "string" || !READ_TYPES.includes(type)) badRequest("Type must be contacts or orders.");
+    if (typeof id !== "string" || !id.trim() || id.length > MAX_READ_ID_LENGTH) badRequest("Id is required.");
+    const record = await getCollectionItem(env, type, id);
+    const key = readKey(type, record.id);
+    const readAt = await markRecordRead(env, admin.id, key, Math.max(Date.now(), recordActivity(type, record)));
+    return ok("Marked as read.", { key, readAt });
+  }
+  if (method === "POST" && path === "/admin/reads/all") {
+    const lists = await Promise.all(READ_TYPES.map((type) => listCollection(env, type, { includeInactive: true })));
+    const newest = READ_TYPES.reduce(
+      (latest, type, index) =>
+        lists[index].reduce((max, record) => Math.max(max, recordActivity(type, record)), latest),
+      0
+    );
+    return ok("All marked as read.", await markAllRead(env, admin.id, Math.max(Date.now(), newest)));
+  }
+  return null;
+};
+
 const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   const audit = (entry) => recordAudit(env, ctx, request, admin, entry);
   const { method } = request;
@@ -1185,6 +1228,10 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     });
     return created(message, item);
   };
+
+  // Read status: not audited (it never changes records).
+  const readsResponse = await handleReads(env, method, path, body, admin);
+  if (readsResponse) return readsResponse;
 
   if (method === "GET" && path === "/admin/audit-logs") {
     return ok("Audit logs retrieved.", await listAuditLogs(env, url.searchParams));
@@ -1376,6 +1423,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   if (contactId && method === "DELETE") {
     const existing = await getCollectionItem(env, "contacts", contactId);
     await deleteCollectionItem(env, "contacts", existing);
+    await forgetRecordReads(env, "contacts", existing.id);
     audit({
       action: "contact.delete",
       entity: "contact",
@@ -1453,6 +1501,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   if (orderId && method === "DELETE") {
     const existing = await getCollectionItem(env, "orders", orderId);
     await deleteCollectionItem(env, "orders", existing);
+    await forgetRecordReads(env, "orders", existing.id);
     audit({
       action: "order.delete",
       entity: "order",
