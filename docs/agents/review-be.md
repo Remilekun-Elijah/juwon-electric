@@ -4,6 +4,115 @@ Reviewer: SUP-BE · Contract: `docs/agents/API_CONTRACT_V3.md` · Checklist and 
 
 ---
 
+## Round 3 (2026-09-16): BE-1 scope complete; BE-2 catalog and inventory
+
+### Method
+Temporary worktrees inside the supervisor worktree were checked out at `agents/be-platform` 8e29aec and `agents/be-ops` bd75e45, with `node_modules` symlinked (nothing installed). Both were removed afterwards. Probe scripts lived only in those temporary worktrees.
+
+### BE-1 `agents/be-platform` (01b22f3, 9e21528, be41b72, dba5f27, 9743509, 8e29aec)
+
+**BE-1's claims, re-verified:**
+- `npm test`: **32/32 pass.**
+- `npm run lint`: **clean** (ESLint, then `check-chars: 107 files clean`).
+- `node app.js`: **boots.** `/health` returns 200 and `/api/admin/auth/me` returns 401.
+- `wrangler deploy --dry-run`: **builds** (174 KiB).
+
+**Coordinator checks:**
+- **M1 closed.** `middleware/auth.js`, `routes/vacancies.js` and the `/vacancies` mount are deleted. A branch-wide search for `X-User`, `requireAdminOrHR` and `req.header(` finds only docs and the tests that assert legacy `POST/PUT/DELETE /vacancies` with `X-User-Role: admin` return 404. `backend/test/cleanup.test.js` guards against regressions.
+- **Vacancies match contract §3.**
+  - Express `controllers/vacancies.js` and Worker `cloudflare/src/vacancies.js` both delegate rules and shapes to `shared/vacancies.js`: transitions, `postedAt`/`closedAt`, list validation and views.
+  - Every admin route is capability-gated, and `createdBy` comes from the session.
+  - Public routes return `open` only, including detail by slug or id.
+  - Delete is a hard delete.
+  - Parity (`test/parity/vacancies.parity.test.js`) compares **full masked bodies** for every vacancy step. Only the login, user-seeding and audit-list steps are status-only, which matches contract §13.7.
+- **Migration 0008.**
+  - On a DB at 0006 with `seed.sql`, plus a vacancy and a *package* sharing its slug: applied twice, row count unchanged, and no cross-collection clash thanks to the partial index.
+  - A duplicate vacancy slug is rejected.
+  - The status index is used (`SEARCH records USING INDEX idx_records_vacancies_status`).
+  - On a DB with duplicate slugs it fails loudly and keeps both rows.
+- **Sanitiser (§0.5).**
+  - `shared/richText.js` passes its 30 fixtures in both runtimes, which run the same fixture file.
+  - 31 hostile inputs all produce safe output: entity- or whitespace-obfuscated `javascript:`, `data:`, `vbscript:`, `on*`, quote-breaking attributes, `<scr<script>ipt>`, svg/math, `noscript` mutation XSS, unterminated comments and CDATA, and `target`/`rel` overrides.
+  - Output is idempotent across all 60 fixtures (BE-1's and BE-2's).
+- **CI** (`.github/workflows/ci.yml`), read in full:
+  - Node 22 throughout.
+  - `backend` runs `npm ci`, then lint, then test. `worker` runs `wrangler deploy --dry-run`. `frontend` runs lint and build.
+  - `deploy-worker` depends on `backend` and `worker` and has `if: github.event_name == 'push' && (github.ref == 'refs/heads/v3' || github.ref == 'refs/heads/main')`. It uses the `production` environment and a non-cancelling concurrency group, fails fast without `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID`, and runs migrations before `wrangler deploy`.
+  - `permissions: contents: read`.
+  - The Worker test suite imports only `node:*` modules, so the `backend` job needs no `backend/cloudflare` install.
+  - Structure is valid by inspection. BE-1 ran `@action-validator/cli`, but no YAML parser was available here to re-run it.
+- **`docs/DEPLOYMENT.md`:** names only. The only literal strings are `openssl rand` commands and duplicate-finding SQL. No values, keys or tokens. It includes break-glass `ADMIN_TOKEN` recovery (L1).
+- **Cleanup vs BE-2.** A search of `agents/be-ops` for `models/`, `d1-sync`, `d1-write`, `d1-schemas`, `sanitize-html`, `routes/user`, `middleware/auth.js` and `controllers/user` finds hits only in **base files that BE-1 deletes or rewrites**: the old `app.js` user-router import, old `controllers/vacancies.js`, `routes/user.js`, `routes/vacancies.js`, `TODO_SANITIZE.md`, README, and the old CI `workers/d1-write` step. No BE-2 module imports anything BE-1 removed. The Worker (`cloudflare/src`) has no such imports on either branch.
+- **G15:** 0 hits across 83 changed files, confirmed with a second, PCRE-based search at the branch head.
+
+**Findings (BE-1)** — no Critical, High or Medium.
+- **L7. Sanitiser worst-case CPU.** Found by timing probes on 100 KB inputs.
+  - Timings: `"<a" × 50 000` takes about 300 ms and `'<a "' × 25 000` about 360 ms (other patterns under 20 ms). The sticky `TAG_PATTERN` rescans up to about 2 048 attribute units from every unmatched `<`.
+  - Only authenticated `vacancies:write` or `products:write` users can send such input, so the risk is low. On the Workers free plan (10 ms CPU) this would fail the request, though not other requests.
+  - *Fix:* before running `TAG_PATTERN`, find the next `>` with `indexOf`. If there is none, or the span to it exceeds a character cap (for example 4 096), treat the `<` as text and continue. Add a timing test (100 KB in under 50 ms). Not a gate.
+- **L8. Silent slug rename (ruled acceptable, contract §13, item 13).** A PUT with an explicit slug that is taken returns 200 with a `-2` slug. FE must use the response slug.
+- **I3. Expected merge conflicts.** `git merge-tree` of be-platform then be-ops reports 14 conflicted files: `app.js`, both `package.json`, Worker `index.js`/`store.js`, `test/helpers/d1.js`, `routes/public.js`, `services/errors.js`, `services/store.js`, and add/add on `shared/capabilities.js`, `shared/richText.js`, the fixtures and both `richText.test.js`. The richText, fixtures and capabilities files are identical or near-identical on both branches, so those conflicts are mechanical. BE-2 merging `agents/be-platform` into `agents/be-ops` now would shrink integration work.
+
+**BE-1 status:** every BE-1 checklist item is PASS (see `BE_ACCEPTANCE.md`). The remaining open items are integration checks, not branch defects:
+- the Mongo `ensureUniqueIndexes` production exit (no Mongo instance here);
+- the `frontend` CI job;
+- a real GitHub Actions run, including non-interactive `wrangler d1 migrations apply --remote`;
+- wiring `notify('vacancy_posted')` at the two `TODO(integration)` call sites.
+
+**BE-1 is ready for integration.**
+
+### BE-2 `agents/be-ops` (a8da77f, 68e2c5c, 05498dd, bd75e45)
+
+**Verified:**
+- `npm test` (Node 22): **13/13 test files pass** at bd75e45. At 05498dd, 49/49 passed once `sanitize-html` was present. At bd75e45 BE-2 dropped it along with the base vacancy controller's use of it.
+- **Capability probe.** In both runtimes, as engineer, sales, hr and inventory across all 13 catalog and inventory admin routes plus the `/api` alias, every status and message is identical between Express and the Worker and matches §1.2:
+  - engineer and hr: 403 everywhere;
+  - sales: reads 200, writes and adjust 403;
+  - inventory: full access (400 or 404 on empty bodies).
+- **Safety probe** (both runtimes identical):
+  - a `javascript:` image URL is rejected with 400;
+  - `descriptionHtml` is stored sanitised (`onclick`, `<script>` and the `javascript:` href are removed);
+  - a SKU differing only in case gets `409 "Another product already uses SKU pnl-2."`;
+  - the public product exposes no `costPrice`, `stockQuantity`, `reorderLevel` or `lowStock` (it has `inStock`);
+  - a hidden product gets 404 on the public detail route and is absent from the public list;
+  - adjusting below zero gets `409 "Stock cannot go below zero."`;
+  - manual reason `sale` gets `400 "Reason is not valid."`.
+- **Sanitiser:** bd75e45 carries BE-1's `richText.js` and fixtures **byte-identical** (empty diff), so ruling (a) is already implemented.
+- **Capabilities and test helpers** are BE-1's files. There are no shims.
+- **Migrations:** `0010_catalog.sql` (slug and case-insensitive SKU unique partial indexes) and `0012_inventory_jobs.sql` (`batch_guard` plus movement and job indexes) are idempotent and within BE-2's range.
+- **Atomic stock:**
+  - Worker `ops/stock.js` issues one D1 batch with a compare-and-set UPDATE per product, each followed by `INSERT INTO batch_guard SELECT changes()`. A `CHECK (ok = 1)` failure rolls the batch back, and it retries up to 5 times before a 409.
+  - The pattern is sound, and the node:sqlite stand-in tests rollback, retry and 12-way concurrency. It relies on `changes()` behaving per statement inside a real D1 batch, which is **an integration check** (`wrangler dev --local` or a staging D1).
+- **Low-stock:**
+  - The digest includes only `active` products and skips sending when there are no lines.
+  - The Worker cron is `0 7 * * *`. Express uses an unref'd 24-hour timer.
+  - The crossing alert is emailed. The `low_stock` notification waits for §8.
+- **G15:** 0 hits at bd75e45 (PCRE code-point search across `backend` and `docs`).
+
+**Findings (BE-2):**
+- **M2 (Medium, blocks CI). `npm run lint` fails with 2 ESLint errors at bd75e45:**
+  - `backend/cloudflare/src/index.js:1617`: `no-useless-assignment` on `path`, in the fetch entry. BE-1 fixed the same pre-existing line in dba5f27, and BE-2's version of `index.js` re-introduced it.
+  - `backend/shared/inventory.js:8`: unused import `oneOf` (`no-unused-vars`).
+
+  Because `lint` is `eslint . && node scripts/check-chars.mjs`, the G15 check never runs on this branch either.
+  *Fix:* apply BE-1's `let path = null` → `let path;` change (or merge be-platform), and remove `oneOf`. Keep `npm run lint` green on every commit.
+- **L9. Test suite depends on a removed package mid-transition.** At 05498dd the Express suite failed without `sanitize-html` installed, because the base `controllers/vacancies.js` imported it. bd75e45 fixed this by switching that controller to the shared sanitiser. No action is needed beyond taking BE-1's controller at integration.
+- **L10. Express digest per instance** (ruled acceptable, contract §13 BE-2 item 7). Document it in DEPLOYMENT.md at integration.
+- **I4.** Parity exclusions for package create, list ties and concurrent steps are accepted (§13 BE-2 item 6). All other catalog and inventory steps compare full masked bodies.
+
+**BE-2 status:**
+- PASS: G1–G7, G9–G14, K1–K5, I1, I2, I4.
+- PARTIAL: G8 (0011 and 0013 are pending), G15 (the content is clean, but lint doesn't reach the check), I3 (notification pending).
+- Not started: O1–O6, J1–J4, S1–S3, D1.
+- **Not ready for integration.** Fix M2 and finish §6–§9.
+
+### Rulings made this round (contract §13)
+- **Sanitiser: option (a).** `richText.js` is the only sanitiser, used for products too. §0.5 is not widened. BE-2 has already complied.
+- **BE-1 items 10–14:** all confirmed. The `-2` slug suffix is consistent with §0.4 and §10.1, and FE must use the response slug.
+- **BE-2 items 1–8:** confirmed or accepted, as recorded in §13.
+
+---
+
 ## Round 2 (2026-09-16): BE-1 roles and capabilities milestone
 
 ### Scope and method

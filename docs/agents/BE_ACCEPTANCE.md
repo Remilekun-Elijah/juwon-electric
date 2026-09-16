@@ -3,34 +3,33 @@
 Owner: SUP-BE. Sources: PRD §6–7, ledger §4 (D1–D6, D4a) and §5 (BE-1, BE-2), and `docs/agents/API_CONTRACT_V3.md` (below, "contract").
 Grading: each item is **PASS**, **PARTIAL**, **FAIL** or **N/A** in `docs/agents/review-be.md`. Items marked **[gate]** block integration: a branch with any gate item below PASS is not merged into `agents/be-integration`.
 
-## Current status (round 2, 2026-09-16)
+## Current status (round 3, 2026-09-16)
 
 `–` = not started. Evidence and findings are in `review-be.md`.
 
-| Item | BE-1 `agents/be-platform` @ 391a979 | BE-2 `agents/be-ops` (no commits) |
+| Item | BE-1 `agents/be-platform` @ 8e29aec | BE-2 `agents/be-ops` @ bd75e45 |
 |---|---|---|
-| G1 | PASS | – |
-| G2 | PASS | – |
-| G3 | PASS (users module plus every existing route, probed in both runtimes) | – |
-| G4 | PARTIAL: roles are clean, but `middleware/auth.js` (`X-User-Role`) still exists until V1 | – |
-| G5 | PASS (users) | – |
-| G6 | PASS (users full-body parity; existing routes compare status and message only, accepted) | – |
-| G7 | PASS (`npm test` 18/18 re-run by SUP-BE; about 14 real tests plus helper modules) | – |
-| G8 | PASS (0007 re-verified: seeded DB at 0006, idempotent, fails loudly on duplicates) | – |
-| G9 | PASS | – |
-| G10 | PASS | – |
-| G11 | PASS | – |
-| G12 | PASS | – |
-| G13 | PASS | – |
-| G14 | PASS | – |
-| G15 | PASS (32 changed files, 0 hits) | – |
-| P1–P7 | PASS | n/a |
-| P8 | PASS (Mongo index failure is only warned; see L5) | n/a |
-| V1–V9 | – | n/a |
-| C1, C2, C5, C6 | – | n/a |
-| C3 | PASS | n/a |
-| C4 | PARTIAL (`test` and `engines` done; `lint` missing) | n/a |
-| K*, I*, O*, J*, S*, D1 | n/a | – |
+| G1 | PASS | PASS |
+| G2 | PASS | PASS (fake test keys only) |
+| G3 | PASS | PASS (catalog and inventory probed for engineer, sales, hr and inventory in both runtimes) |
+| G4 | PASS (M1 closed: no header-trusted auth left; legacy header routes return 404 in tests) | PASS |
+| G5 | PASS | PASS |
+| G6 | PASS (vacancies full masked-body parity) | PASS for catalog and inventory (exclusions accepted, see contract §13) |
+| G7 | PASS (`npm test` 32/32 re-run) | PASS (`npm test` 13/13 files re-run) |
+| G8 | PASS (0008 re-verified on seeded data, idempotent, fails loudly on duplicates) | PARTIAL: 0010 and 0012 exist; 0011 and 0013 are pending with §6 and §8 |
+| G9–G14 | PASS | PASS for delivered modules |
+| G15 | PASS (0 hits; `lint` runs `check-chars.mjs`) | PASS (0 hits via a PCRE code-point search), but `npm run lint` fails before `check-chars` runs (M2) |
+| P1–P8 | PASS | n/a |
+| V1–V9 | PASS (V9: `TODO(integration)` left as agreed) | n/a |
+| C1–C4, C6 | PASS | n/a |
+| C5 | PASS by inspection. A real Actions run is an integration check | n/a |
+| K1–K3, K5 | n/a | PASS |
+| K4 | n/a | PASS (package `items`; package-create parity is compared on message and items) |
+| I1–I2, I4 | n/a | PASS (real D1 `changes()` inside a batch is an integration check) |
+| I3 | n/a | PARTIAL: email is sent; the `low_stock` notification waits for §8 |
+| O1–O6, J1–J4, S1–S3, D1 | n/a | – |
+
+Integration checks that cannot be verified locally: the Mongo `ensureUniqueIndexes` startup path; the `frontend` CI job and a real GitHub Actions run, including `wrangler d1 migrations apply --remote`; real D1 behaviour of the `batch_guard`/`changes()` rollback; and the Worker cron trigger.
 
 ## G — General (both implementers)
 

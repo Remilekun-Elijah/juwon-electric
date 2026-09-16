@@ -619,3 +619,31 @@ Every migration is idempotent (`IF NOT EXISTS`, guarded `UPDATE ... WHERE`), has
 6. **Last-superadmin guard** may be check-then-write this round. This is a known race that needs two superadmins demoting each other concurrently. Recovery is a temporary `ADMIN_TOKEN` plus `POST /admin/users/:id/reactivate` or `/role`. Document this in `docs/DEPLOYMENT.md`. A post-write recount-and-revert is recommended, not required.
 7. **Parity exclusions.** Existing routes whose bodies depend on runtime-specific seed data (`/admin/orders`, `/admin/carts`, `/admin/packages`, `/admin/audit-logs`) may compare status and message only. **New modules (vacancies, catalog, inventory, orders fulfilment, jobs, staff, settings, notifications) must compare full masked bodies**, with identical fixtures created through the API in both runtimes.
 8. **NotFound label** for `admins` is `"User"` (`"User not found."`) in both runtimes.
+
+### 2026-09-16: round 3 rulings (binding)
+
+**Sanitiser (§0.5): option (a).** `backend/shared/richText.js` (BE-1) is the only rich-text sanitiser. It is used for vacancies **and** products, with a single fixture file, `backend/shared/__fixtures__/richText.json`. §0.5 is **not** widened:
+- Product descriptions don't need tables, code blocks, `tel:` links or relative links this round.
+- A narrower allowlist is the safer default.
+- Forcing `target="_blank"` with `rel=noopener` removes a class of tab-nabbing bugs.
+
+BE-2 has already adopted it: `bd75e45` holds a byte-identical `richText.js` and fixtures, and `sanitizeHtml.js` does not exist on the branch. The `sanitizeHtml` alias export may stay until integration, but new code must import `sanitizeRichText`. Any future widening is a contract change: update §0.5 and the fixtures together, and apply it to every field.
+
+**BE-1 vacancy interpretations:**
+10. **Confirmed.** Any move out of `closed` (to `open` or `draft`) clears `closedAt`.
+11. **Confirmed.** A `PUT` that changes `status` is audited with `vacancy.publish`, `vacancy.unpublish` or `vacancy.close`, and `changes` lists every changed field. A PUT that changes nothing is not written and not audited.
+12. **Confirmed.** The public `department` filter is a case-insensitive exact match, and an invalid `employmentType` returns 400.
+13. **Confirmed, and consistent with §0.4 and §10.1.** Slug collisions get a `-2`, `-3`… suffix instead of a 409, on create and on an explicit slug in PUT. Slugs never change when only the title changes. FE must read the saved slug from the response and never assume the slug it sent.
+14. **Confirmed.** Rows in any hand-made standalone D1 `vacancies` table are not migrated, because it was never a numbered migration. Operators with such data re-create it through `POST /admin/vacancies`. BE-1 should add one line about this to `docs/DEPLOYMENT.md`.
+
+**BE-2 catalog and inventory interpretations** (`docs/agents/be-ops.md`):
+1. **Confirmed.** Low-stock recipients are `settings.notifications.lowStockEmails`, with the env fallback (`SMTP_FROM` in Express, `ADMIN_NOTIFY_EMAIL` in the Worker) when that list is empty. Nothing is sent when `lowStockAlertsEnabled` is false.
+2. **Confirmed.** A new product's `reorderLevel` defaults to `settings.inventory.defaultReorderLevel`, which defaults to 0.
+3. **Confirmed.** Public `GET /products?category=<unknown>` returns an empty page, not 404.
+4. **Confirmed.** The public product list is sorted by name, and `PublicProduct` keeps `status` (always `active`).
+5. **Confirmed.** `productId` in adjustments resolves by id, then slug, then SKU.
+6. **Accepted.** Parity for package create is compared on `message` and `items`, lists with equal `updatedAt` are compared as sets, and concurrent steps are compared as sorted statuses. All other catalog and inventory steps compare full masked bodies.
+7. **Accepted.** Express runs the low-stock digest every 24 hours per process, with an unref'd timer. A deployment running several Express instances sends one digest per instance, so document it in `docs/DEPLOYMENT.md` at integration.
+8. **Confirmed.** Unknown body fields are ignored.
+
+**Migration order.** `0012` exists before `0011`. That is allowed: wrangler applies unapplied migrations in name order, so a later `0011` still applies. `0011` must not depend on `0012` objects, and `0012` must not depend on `0011`.
