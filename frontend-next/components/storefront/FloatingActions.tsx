@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Calculator, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { enterDelay } from "@/lib/storefront/styles";
-import { isActivePath, storeRoutes, whatsappHref } from "@/lib/storefront/routes";
+import { isActivePath, publicPathname, storeRoutes, whatsappHref } from "@/lib/storefront/routes";
 
 export type FloatingActionsProps = {
   /** `settings.website.whatsappNumber`: the WhatsApp pill shows only with digits. */
@@ -35,13 +35,16 @@ const iconCircle = "flex h-10 w-10 shrink-0 items-center justify-center rounded-
  * - On phones they are 56 px circles with an accessible name; from `sm` they show a label and sub-label.
  * - While the footer is on screen their background fades, so footer links underneath stay readable; hover or focus
  *   brings it back.
- * - Hidden on the cart and checkout.
+ * - Hidden on the cart and checkout. On phones on the home page, hidden while the hero is on screen so it does not
+ *   cover the hero stats.
  */
 export default function FloatingActions({ whatsappNumber, calculatorEnabled }: FloatingActionsProps) {
   const pathname = usePathname();
   const [overFooter, setOverFooter] = useState(false);
+  const [overHero, setOverHero] = useState(false);
   const whatsapp = whatsappHref(whatsappNumber);
   const hidden = HIDDEN_ON.some((path) => isActivePath(pathname, path));
+  const onHome = publicPathname(pathname) === "/";
   const showCalculator = calculatorEnabled && !isActivePath(pathname, storeRoutes.calculator);
   const hasActions = !hidden && (showCalculator || Boolean(whatsapp));
 
@@ -53,6 +56,15 @@ export default function FloatingActions({ whatsappNumber, calculatorEnabled }: F
     return () => observer.disconnect();
   }, [hasActions]);
 
+  // On phones the stack would cover the hero's stats, so it waits until the hero has scrolled out of view.
+  useEffect(() => {
+    const hero = document.querySelector("[data-store-hero]");
+    if (!hasActions || !hero || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => setOverHero(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [hasActions, pathname]);
+
   if (!hasActions) return null;
 
   const faded = overFooter && "opacity-60 shadow-none hover:opacity-100 focus-visible:opacity-100";
@@ -61,6 +73,8 @@ export default function FloatingActions({ whatsappNumber, calculatorEnabled }: F
     <div
       className={cn(
         "pointer-events-none fixed right-4 z-30 flex flex-col items-end gap-3 sm:right-6",
+        "transition-[opacity,translate] duration-300 ease-out",
+        overHero && onHome && "max-sm:invisible max-sm:translate-y-4 max-sm:opacity-0",
         "bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
       )}
     >

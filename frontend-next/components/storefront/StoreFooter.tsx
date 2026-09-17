@@ -79,7 +79,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
               <nav key={column.title} aria-label={column.title}>
                 <h2 className={columnTitle}>{column.title}</h2>
                 <ul className="mt-3 space-y-0 md:mt-4 md:space-y-3">
-                  {column.links.map((link) => (
+                  {column.links.filter((link) => settings.calculator || link.href !== storeRoutes.calculator).map((link) => (
                     <li key={link.href}>
                       <Link href={link.href} className={footerLink}>
                         {link.label}

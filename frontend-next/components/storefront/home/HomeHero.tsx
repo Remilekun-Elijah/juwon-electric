@@ -57,6 +57,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
     <section
       id="home-hero"
       aria-labelledby="home-hero-heading"
+      data-store-hero=""
       className="relative isolate -mt-16 flex min-h-[max(640px,min(100svh,920px))] flex-col overflow-hidden bg-slate-950 text-white md:-mt-[72px]"
     >
       <HeroSlideshow slides={HERO_SLIDES} />

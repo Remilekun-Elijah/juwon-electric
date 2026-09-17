@@ -285,7 +285,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
 - Floating actions (replace the single floating WhatsApp button): a stack at the bottom right, clear of the phone's safe area.
   - **Size your system** (sub-label "Load calculator"): a gold pill linking to `/calculator`. Shown only when the calculator is switched on, and not on the calculator page itself.
   - **Chat on WhatsApp** (sub-label "We reply during business hours"): a brand-red pill opening WhatsApp. Shown only when a WhatsApp number is set.
-  - Hidden on `/cart` and `/checkout`, so they never cover the order buttons.
+  - Hidden on `/cart` and `/checkout`, so they never cover the order buttons. On phones (under 640 px) on the home page they stay hidden while the hero is on screen, so they don't cover the hero stats, and appear once the hero scrolls away.
   - They slide in from the right about 1.2 seconds after the page loads. On phones they are 56 px round buttons with an accessible name; on screens 640 px and wider they show the label and sub-label. While the footer is on screen they fade, so footer links stay readable.
   - No "online" status, no notification badge.
 - Section rhythm (no two neighbouring sections share a white background), in page order:
@@ -449,7 +449,7 @@ Team members collection
 - Structured data: an `Organization` with `employee` entries (name and job title) for **non-sample members only**. With only sample members, no team structured data is output.
 
 Header and footer navigation (2026-09-17)
-- Desktop header nav: Packages, Products, Calculator, Services, Our work, **Team**, Contact. **Team replaces Careers** in the desktop nav.
+- Desktop header nav: Packages, Products, Calculator, Services, Our work, **Team**, Contact. **Team replaces Careers** in the desktop nav. The **Calculator** link (header, phone menu and footer) is hidden while the calculator is switched off in Settings.
 - Careers stays in the mobile menu (right after Team) and in the footer's Company column. The footer also links **Meet the team**.
 
 
@@ -610,6 +610,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (navigation and floating buttons)
+- §6.11: the Calculator link is hidden in the header, phone menu and footer while the calculator is switched off.
+- §6.10: on phones on the home page, the floating buttons wait until the hero has scrolled away.
 
 2026-09-17 (Team page and home redesign)
 - §4: in scope: the team page and the home page redesign.

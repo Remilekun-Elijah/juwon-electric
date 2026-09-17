@@ -11,7 +11,9 @@ import { contactTopicPath, isActivePath, primaryPhone, publicPathname, storeDraw
 import { storeContainer, storeFocus, storePress } from "@/lib/storefront/styles";
 import CartButton from "./cart/CartButton";
 
-const drawerLinks = [{ label: "Home", href: storeRoutes.home }, ...storeDrawerNav, { label: "Cart", href: storeRoutes.cart }];
+/** Hides the Calculator link while the calculator is switched off in Settings. */
+const withCalculator = <T extends { href: string }>(items: T[], calculatorEnabled: boolean) =>
+  calculatorEnabled ? items : items.filter((item) => item.href !== storeRoutes.calculator);
 
 /** Scroll distance after which the home header turns solid (TEAM_AND_MOTION_V1 §7.2). */
 const SOLID_AFTER_PX = 24;
@@ -24,6 +26,8 @@ const quoteHref = contactTopicPath("Quote");
 export type StoreHeaderProps = {
   /** Business phone from settings (may hold several numbers; the first is shown). */
   phone: string;
+  /** `settings.calculator` is enabled; when it's off the Calculator link is hidden. */
+  calculatorEnabled: boolean;
 };
 
 /**
@@ -62,7 +66,9 @@ function useScrolledPast(enabled: boolean, threshold: number) {
  * page, it is the solid white header. Colours, background and shadow transition over 250ms; the bar height never
  * changes, so nothing shifts.
  */
-export default function StoreHeader({ phone }: StoreHeaderProps) {
+export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderProps) {
+  const navItems = withCalculator(storeNav, calculatorEnabled);
+  const drawerLinks = [{ label: "Home", href: storeRoutes.home }, ...withCalculator(storeDrawerNav, calculatorEnabled), { label: "Cart", href: storeRoutes.cart }];
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
@@ -106,7 +112,7 @@ export default function StoreHeader({ phone }: StoreHeaderProps) {
 
         <nav aria-label="Main" className="hidden flex-1 justify-center lg:flex">
           <ul className="flex items-center gap-0.5 xl:gap-1">
-            {storeNav.map((item) => {
+            {navItems.map((item) => {
               const active = isActivePath(pathname, item.href);
               return (
                 <li key={item.href}>

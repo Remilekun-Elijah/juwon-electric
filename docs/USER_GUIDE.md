@@ -1031,7 +1031,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a customer, I want to work out what size of system I need so that I can pick the right package and see what I'd save on a generator.*
 
-The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the "Size your system" section on the home page or the link in the footer (and the top menu, if shown).
+The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the "Size your system" section on the home page, the top menu or the link in the footer. When the calculator is switched off, these links are hidden.
 
 1. Open the **Calculator**. A list of common appliances is already filled in with typical amounts.
 2. For each appliance, set **how many** you have and **how many hours a day** you use it, with the steppers. Set the number to 0 for anything you don't have.
@@ -1101,7 +1101,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 
 *As a customer, I want quick buttons to size my system or chat with the team from any page so that I don't have to look for them.*
 
-At the bottom right of most pages you may see up to two buttons. On a phone they are round buttons with just an icon; on a larger screen they show a label.
+At the bottom right of most pages you may see up to two buttons. On a phone they are round buttons with just an icon; on a larger screen they show a label. On a phone's home page they appear once you scroll past the big photo at the top.
 
 - **Size your system** (gold, "Load calculator"): opens the calculator (story 11.8). It shows only when the calculator is available, and not on the calculator page itself.
 - **Chat on WhatsApp** ("We reply during business hours"): opens WhatsApp with "Hello Juwon Electric" ready (story 11.10). It shows only when Juwon Electric has a WhatsApp number set.
@@ -1177,6 +1177,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (navigation and floating buttons)**
+- Customer: the Calculator link is hidden when the calculator is off; on phones the floating buttons appear after you scroll past the home page photo (stories 11.8, 11.13).
 
 **2026-09-17 (Team page and home redesign)**
 - Menu: **Team** added to the **Website** group (chapter 3).
