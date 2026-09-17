@@ -42,12 +42,13 @@ export type PageIntroProps = {
  * Dark page intro (TEAM_AND_MOTION_V1 §8.1), the inner-page version of the home hero. Server component.
  *
  * - slate-950 with one of our installation photos at low opacity under the home hero's left-to-right dark gradient.
- *   Body text is white/75 or brighter; even where the photo is brightest the backdrop stays darker than 12% luminance,
- *   so every text colour here passes 4.5:1.
+ *   Body text is white/75, breadcrumbs white/60 and the eyebrow gold-400. Measured on every page's photo at full zoom, the
+ *   brightest backdrop pixel anywhere in the band stays under 4% luminance, so the weakest of these (white/60) still
+ *   has 5.6:1.
  * - `data-store-hero` lets StoreHeader sit transparent over it; the band pulls itself up under the header by the header's
  *   height, so nothing shifts when the header turns solid.
  * - Entrance is CSS only (it runs before hydration and without JavaScript): breadcrumbs, eyebrow, the heading rising out
- *   of a clipped mask, description, actions, extra content, about 100ms apart. The photo zooms slowly. Reduced motion
+ *   of a clipped mask, description, actions, extra content, 80ms apart. The photo zooms slowly. Reduced motion
  *   turns all of it off.
  */
 export default function PageIntro({

@@ -134,7 +134,9 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
       className={cn(
         "sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow,color] duration-[250ms] ease-out",
         overlay
-          ? "border-transparent bg-transparent text-white"
+          ? // Without JavaScript the header can't turn solid, so it scrolls away with the dark hero instead of floating
+            // transparent over light content.
+            "border-transparent bg-transparent text-white [@media(scripting:none)]:relative"
           : "border-slate-200 bg-white/95 shadow-elev-2 backdrop-blur supports-[backdrop-filter]:bg-white/85"
       )}
     >
