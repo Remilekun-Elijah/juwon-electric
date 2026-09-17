@@ -262,9 +262,16 @@ The image fields intentionally use the same public asset paths as the client fro
 
 - `GET /portfolio`
 - `GET /portfolio?featured=true`
+- `GET /portfolio?category=<customer-segment-slug>` (Landing v1; combinable with `featured`)
 - `GET /portfolio/:id` (inactive items return `404` `"Portfolio item not found."`)
 
 Portfolio image fields use the existing frontend public assets, such as `/image-1.svg` and `/portfolio-5.svg`.
+
+Every portfolio response (public and admin) includes the Landing v1 case-study fields `category`, `summary`, `location`, `system` and `sample` (`null`/`false` for older records). See [Website content (Landing v1)](#website-content-landing-v1).
+
+### FAQs, reviews and client logos
+
+- `GET /faqs?category=`, `GET /testimonials`, `GET /clients`: active items only. See [Website content (Landing v1)](#website-content-landing-v1).
 
 ### Contact
 
@@ -443,8 +450,8 @@ Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `
 | `audit:read` | admin | `GET /admin/audit-logs` |
 | `users:read` | admin | `GET /admin/users`, `GET /admin/users/:id` |
 | `users:manage` | admin | `POST /admin/users`, `PUT /admin/users/:id`, `POST /admin/users/:id/role`, `/deactivate`, `/reactivate` |
-| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio` |
-| `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio |
+| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio`, `/admin/faqs`, `/admin/testimonials`, `/admin/clients` |
+| `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio, FAQs, reviews, client logos |
 | `orders:read` | admin, inventory, sales, support | `GET /admin/orders`, `GET /admin/orders/:id`, `GET /admin/carts` |
 | `orders:create` | admin, sales | `POST /admin/orders` (in-store orders) |
 | `orders:update` | admin, sales | `PUT /admin/orders/:id` |
@@ -488,7 +495,7 @@ Returns `{ "success": true, "message", "data": { "items", "page", "limit", "tota
 
 Each entry: `id`, `createdAt`, `adminId`, `adminEmail`, `action`, `entity`, `entityId`, `summary`, `changes` (changed field names only, never values), `ip`, `userAgent`.
 
-Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`, `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`, `vacancy`.
+Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`, `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`, `vacancy`, `faq`, `testimonial`, `client`.
 
 Audit writes are best-effort and never fail the admin action. Entries older than 180 days are deleted opportunistically. Requests made with the static `ADMIN_TOKEN` are logged with `adminId` and `adminEmail` `"static-token"`.
 
@@ -798,13 +805,14 @@ Audit actions: `job.create`, `job.update`, `job.assign`, `job.status_change`, `j
 
 Settings (contract §8.1, one document with id `global`, defaults when missing):
 
-- `GET /settings/public` (public): `"Settings retrieved."` with `{ business: { name, phone, email, address, website }, payments: { gatewayEnabled } }`. Notification emails are never public.
+- `GET /settings/public` (public): `"Settings retrieved."` with `{ business: { name, phone, email, address, website }, payments: { gatewayEnabled }, website, financing, calculator }`. `website` is public in full; `financing` and `calculator` are public in full only when `enabled`, otherwise `{ enabled: false }` (Landing v1). Notification emails are never public.
 - `GET /admin/settings` (`settings:read`): `"Settings retrieved."` with the full `Settings`, including `updatedAt` and `updatedBy: { id, email }`.
 - `PUT /admin/settings` (`settings:write`): `"Settings updated."`. Sent sections are merged key by key, sent arrays replace, and unknown sections and keys are ignored.
   - A non-object section answers `400` `"<section> must be an object."`.
   - Email lists (≤10 each) with an invalid entry answer `"<Label> must contain valid email addresses."` and are stored lowercase.
   - `payments.provider` is `paystack`, `flutterwave` or `null` (`"Payment provider is not valid."`).
   - `inventory.defaultReorderLevel` is 0–1,000,000 and `uploads.provider` must be `url`.
+  - `website`, `financing` and `calculator` (Landing v1): see [Website content (Landing v1)](#website-content-landing-v1). Saving one of these sections stores its `sample` as `false`.
   - Audited as `settings.update`, with dotted changed keys such as `notifications.lowStockEmails`.
 
 Recipients: new-order emails go to `notifications.orderEmails` and low-stock emails to `notifications.lowStockEmails`. When a list is empty, the existing env mailbox is used (`SMTP_FROM` for Express, `ADMIN_NOTIFY_EMAIL` for the Worker). Vacancy emails go to `notifications.vacancyEmails` on a vacancy's first publish, and only when that list is not empty (there was no earlier vacancy email).
@@ -836,3 +844,53 @@ Helpers: `backend/services/notifications.js` `notify({ type, title, message, ent
 - **`upcomingJobs`:** jobs that are `unassigned` or `assigned` with `scheduledAt` between now and 7 days from now.
 
 Errors: `400` `"from must be a valid date."`, `"to must be a valid date."`, `"Date range must be 366 days or fewer."` and `"from must be before to."`.
+
+## Website content (Landing v1)
+
+Contract: `docs/agents/LANDING_V1.md`. Rules are shared by Express and the Worker (`backend/shared/content.js`, `backend/shared/settings.js`) and covered by the parity scenario `backend/test/scenarios/landing.js`.
+
+**Sample content.** Records and settings sections seeded by the local sample seed carry `sample: true`. `sample` is never accepted from a request: records created through the API have `sample: false`, and any `PUT` on a record (including a sort-order or active-toggle change) stores `sample: false`. Deleting sample records is allowed.
+
+### FAQs, reviews and client logos
+
+| Collection | Admin (`content:read` GET, `content:write` POST/PUT/DELETE) | Public | Audit entity | Not found |
+|---|---|---|---|---|
+| FAQs | `/admin/faqs`, `/admin/faqs/:id` | `GET /faqs?category=` | `faq` | `"FAQ not found."` |
+| Reviews | `/admin/testimonials`, `/admin/testimonials/:id` | `GET /testimonials` | `testimonial` | `"Review not found."` |
+| Client logos | `/admin/clients`, `/admin/clients/:id` | `GET /clients` | `client` | `"Client not found."` |
+
+- Lists return arrays sorted by `sortOrder`, then `createdAt`. Public lists contain active items only; admin lists include inactive ones. `?category=` (FAQs, public and admin) matches case-insensitively; blank means no filter.
+- Messages: `"FAQs retrieved."`, `"FAQ created."`, `"FAQ updated."`, `"FAQ deleted."`; `"Reviews retrieved."`, `"Review created."`, …; `"Clients retrieved."`, `"Client created."`, …. Create answers `201`; update and delete answer `200` with the record.
+- Create applies defaults (`isActive: true`, `sortOrder` = last + 1, optional fields `null`). Update is partial: only sent fields change, and `""` or `null` clears an optional field. Unknown fields are ignored.
+- Audited as `<entity>.create|update|delete` with summaries such as `Created FAQ "Do I pay to place an order?"`, `Updated review "Adaeze O."`, `Deleted client "Palmgrove Farms"`.
+
+Shapes (every record also has `id`, `sortOrder`, `isActive`, `sample`, `createdAt`, `updatedAt`):
+
+- **FAQ:** `question` (5–200, required), `answer` (1–2000, multiline plain text, required), `category` (≤60 or `null`).
+- **Review:** `name` (1–100, required), `context` (≤150 or `null`), `quote` (10–1000, multiline, required), `rating` (whole number 1–5 or `null`), `source` (`website`, `whatsapp`, `google`, `facebook`, `in_person` or `null`), `imageUrl` (`null` or an image reference).
+- **Client:** `name` (1–100, required), `logoUrl` (image reference, required), `website` (`http(s)` URL or `null`).
+
+An image reference is an absolute `http://` or `https://` URL (≤2048) or a site path matching `^/[A-Za-z0-9._/-]{1,200}$`; otherwise `"<Field> must be an http(s) URL or a path starting with /."`. Other errors: `"<Field> is required."`, `"<Field> must be N characters or fewer."`, `"Question must be at least 5 characters."`, `"Quote must be at least 10 characters."`, `"Rating must be a whole number from 1 to 5."`, `"Source must be one of: website, whatsapp, google, facebook, in_person."`, `"Website must be an http(s) URL."`.
+
+### Portfolio case-study fields
+
+`POST`/`PUT /admin/portfolio` accept `category` (customer-segment slug, ≤60, stored lowercase; otherwise `"Category must be a customer segment slug."`), `summary` (≤500, multiline), `location` (≤100) and `system` (≤200). On update `""` or `null` clears them. Responses include them plus `sample`; `GET /portfolio?category=<slug>` filters by `category`.
+
+### Settings sections
+
+Defaults and validation (`PUT /admin/settings`; sent keys merge, sent arrays replace):
+
+- **`website`** `{ stats, whatsappNumber, businessHours, sample }`. Default `{ stats: [], whatsappNumber: null, businessHours: null, sample: false }`. `stats` ≤4 of `{ label (1–40), value (1–20) }` (`"Stats can have at most 4 entries."`, `"Stat label is required."`). `whatsappNumber` follows the phone rule (`"Enter a valid phone number."`). `businessHours` ≤200, multiline.
+- **`financing`** `{ enabled, depositPercent, termsMonths, monthlyRatePercent, approvalTime, note, sample }`. Default disabled with `null`/`[]` values. `enabled` must be `true` or `false`. `depositPercent` whole 0–100 or `null` (`""` stores `null`). `termsMonths` ≤6 whole months 1–60, stored unique and ascending. `monthlyRatePercent` 0–20 with at most 2 decimals, or `null`. `approvalTime` ≤60, `note` ≤300.
+- **`calculator`** `{ enabled, appliances, inverterHeadroomPercent, batteryDepthOfDischargePercent, batteryVoltage, panelWatts, peakSunHours, generator, sample }`. Default disabled, no appliances, headroom 25, depth of discharge 80, 48 V, 550 W panels, 4.5 sun hours, generator zeros. `appliances` ≤40 of `{ key (^[a-z0-9-]{1,40}$, unique), label (1–40), watts (whole 1–10,000), defaultHours (0–24 in 0.5 steps), defaultQuantity (whole 0–20) }`. Headroom whole 0–100, depth of discharge whole 10–100, `batteryVoltage` 12, 24 or 48, `panelWatts` whole 100–1,000, `peakSunHours` 1–10 with one decimal. `generator` is an object whose sent keys merge: `fuelPricePerLitre` whole ₦0–100,000, `litresPerKvaHour` 0–2 with 2 decimals, `maintenancePerMonth` whole ₦0–10,000,000.
+
+Saving a section (sending it in the body, even as `{}`) stores its `sample: false`, and the audit `changes` include `<section>.sample` when it changed. Only send the sections being saved.
+
+### Sample seeds (local only)
+
+Data: `backend/shared/sampleWebsite.js` (8 FAQs, 6 reviews, 6 client logos using `/samples/client-N.svg`, case-study fields for the 15 existing portfolio records, and sample `website`, `financing` and `calculator` sections). All of it is `sample: true` and must be replaced before launch.
+
+- **Express:** `npm run seed:sample` (JSON store, or MongoDB when `MONGODB_URI` is set). Refuses `NODE_ENV=production`.
+- **Worker local D1:** `cd backend/cloudflare && npm run d1:seed:sample:export` regenerates `seeds/sample-website.sql`; `npm run d1:seed:sample:local` applies it with `--local`. Never run it with `--remote`, and never add it to migrations, `seed.sql` or CI.
+
+Both are idempotent: records use fixed `sample-` ids and are upserted; records and portfolio items an admin has saved since (`sample: false`) are kept; a settings section is replaced only while it is missing, empty or still sample content.
