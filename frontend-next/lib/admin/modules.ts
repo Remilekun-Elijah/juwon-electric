@@ -311,7 +311,7 @@ export const modules: AdminModule[] = [
     group: "system",
     eyebrow: "System",
     title: "Settings",
-    description: "Business details, website, financing and calculator, notification emails, payments and stock alerts.",
+    description: "Business profile, notification emails, payments, inventory and website settings.",
   },
 ];
 

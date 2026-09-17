@@ -1,7 +1,7 @@
 "use client";
 
-import { SettingsForm } from "@/components/admin/settings/SettingsForm";
+import { SettingsOverview } from "@/components/admin/settings/SettingsOverview";
 
 export default function SettingsPage() {
-  return <SettingsForm />;
+  return <SettingsOverview />;
 }

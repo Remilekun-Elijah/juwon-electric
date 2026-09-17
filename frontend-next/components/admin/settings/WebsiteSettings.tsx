@@ -3,7 +3,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button, Field, Input, Select, Switch, Textarea } from "@/components/ui";
-import { SampleBadge } from "@/components/admin/website/shared";
 import {
   WEBSITE_LIMITS,
   applianceKey,
@@ -16,7 +15,7 @@ import {
 } from "@/lib/admin/website";
 import type { CalculatorAppliance, CalculatorSettings } from "@/lib/api/types";
 import { LIMITS, PHONE_MESSAGE, isValidPhone } from "@/lib/validation";
-import { SectionCard, saveButton, useSection, type SectionProps } from "./settingsLayout";
+import { SectionForm, SettingsCard, useDirty, useSection, type SectionProps } from "./settingsLayout";
 
 /* ---------- Shared bits ---------- */
 
@@ -101,8 +100,6 @@ function Group({ legend, description, children }: { legend: string; description?
   );
 }
 
-const sampleBadge = (sample: boolean | undefined) => (sample ? <SampleBadge /> : undefined);
-
 /* ---------- Website ---------- */
 
 type StatRow = { id: string; label: string; value: string };
@@ -117,6 +114,7 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
   const [errors, setErrors] = useState<WebsiteErrors>({});
   const [statErrors, setStatErrors] = useState<RowErrors<"label" | "value">>({});
   const section = useSection(save);
+  const dirty = useDirty({ stats: stats.map(({ label, value }) => ({ label, value })), whatsappNumber, businessHours });
   const full = stats.length >= WEBSITE_LIMITS.stats;
 
   const updateStat = (id: string, patch: Partial<StatRow>) =>
@@ -149,17 +147,17 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
   };
 
   return (
-    <SectionCard
-      title="Website"
-      description="Headline figures, WhatsApp and opening hours shown on the public site."
-      badge={sampleBadge(value.sample)}
+    <SectionForm
+      label="Homepage & contact"
+      dirty={dirty}
+      canWrite={canWrite}
+      saving={section.saving}
+      alert={section.alert}
       onSubmit={onSubmit}
-      footer={saveButton(canWrite, section.saving, "Save website")}
     >
-      {section.alert}
-      <Group
-        legend="Stats"
-        description={`Up to ${WEBSITE_LIMITS.stats} figures for the band under the hero, e.g. “500+” installations. Only use numbers you can stand behind.`}
+      <SettingsCard
+        title="Homepage stats"
+        description={`Up to ${WEBSITE_LIMITS.stats} figures in the home page hero, e.g. “500+” installations. Only use numbers you can stand behind.`}
       >
         {stats.length ? (
           <ol className="space-y-3">
@@ -203,7 +201,7 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
             })}
           </ol>
         ) : (
-          <p className="text-sm text-slate-400">No stats. The stats band is hidden on the website.</p>
+          <p className="text-sm text-slate-400">No stats. The home page hero shows the reassurance ticks instead.</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
           {canWrite && (
@@ -221,39 +219,44 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
             {stats.length}/{WEBSITE_LIMITS.stats}
           </span>
         </div>
-      </Group>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="WhatsApp number"
-          error={errors.whatsappNumber}
-          helper="Include the country code, e.g. +234 803 000 0000. Leave empty to hide the WhatsApp button."
-        >
-          <Input
-            type="tel"
-            value={whatsappNumber}
-            disabled={!canWrite}
-            maxLength={LIMITS.phoneNumber}
-            placeholder="+234"
-            onChange={(event) => setWhatsappNumber(event.target.value)}
-          />
-        </Field>
-        <Field
-          label="Business hours"
-          error={errors.businessHours}
-          helper={`One line per day range. ${businessHours.trim().length}/${WEBSITE_LIMITS.businessHours}`}
-        >
-          <Textarea
-            rows={3}
-            className="min-h-[88px]"
-            value={businessHours}
-            disabled={!canWrite}
-            maxLength={WEBSITE_LIMITS.businessHours}
-            placeholder={"Mon–Fri 8am–6pm\nSat 9am–3pm"}
-            onChange={(event) => setBusinessHours(event.target.value)}
-          />
-        </Field>
-      </div>
-    </SectionCard>
+      </SettingsCard>
+      <SettingsCard
+        title="WhatsApp & business hours"
+        description="WhatsApp drives the Chat on WhatsApp buttons; both show in the website footer."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="WhatsApp number"
+            error={errors.whatsappNumber}
+            helper="Include the country code, e.g. +234 803 000 0000. Leave empty to hide the WhatsApp button."
+          >
+            <Input
+              type="tel"
+              value={whatsappNumber}
+              disabled={!canWrite}
+              maxLength={LIMITS.phoneNumber}
+              placeholder="+234"
+              onChange={(event) => setWhatsappNumber(event.target.value)}
+            />
+          </Field>
+          <Field
+            label="Business hours"
+            error={errors.businessHours}
+            helper={`One line per day range. ${businessHours.trim().length}/${WEBSITE_LIMITS.businessHours}`}
+          >
+            <Textarea
+              rows={3}
+              className="min-h-[88px]"
+              value={businessHours}
+              disabled={!canWrite}
+              maxLength={WEBSITE_LIMITS.businessHours}
+              placeholder={"Mon–Fri 8am–6pm\nSat 9am–3pm"}
+              onChange={(event) => setBusinessHours(event.target.value)}
+            />
+          </Field>
+        </div>
+      </SettingsCard>
+    </SectionForm>
   );
 }
 
@@ -272,6 +275,7 @@ export function FinancingSection({ value, canWrite, save }: SectionProps<"financ
   const [note, setNote] = useState(value.note ?? "");
   const [errors, setErrors] = useState<FinancingErrors>({});
   const section = useSection(save);
+  const dirty = useDirty({ enabled, depositPercent, terms, monthlyRatePercent, approvalTime, note });
   const termsFull = terms.length >= WEBSITE_LIMITS.financingTerms;
 
   const addTerm = () => {
@@ -319,134 +323,140 @@ export function FinancingSection({ value, canWrite, save }: SectionProps<"financ
   };
 
   return (
-    <SectionCard
-      title="Financing"
-      description="Pay-in-instalments terms shown on the home page. Customers still call to confirm before anything is agreed."
-      badge={sampleBadge(value.sample)}
+    <SectionForm
+      label="Financing"
+      dirty={dirty}
+      canWrite={canWrite}
+      saving={section.saving}
+      alert={section.alert}
       onSubmit={onSubmit}
-      footer={saveButton(canWrite, section.saving, "Save financing")}
     >
-      {section.alert}
-      <Switch
-        checked={enabled}
-        onChange={setEnabled}
-        disabled={!canWrite}
-        label="Show financing on the website"
-        description="When off, the financing section is hidden and none of these terms are public."
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Deposit (%)" error={errors.depositPercent} helper="Whole number from 0 to 100.">
-          <Input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={100}
-            step={1}
-            value={depositPercent}
-            disabled={!canWrite}
-            onChange={(event) => setDepositPercent(event.target.value)}
-          />
-        </Field>
-        <Field
-          label="Monthly rate (%)"
-          error={errors.monthlyRatePercent}
-          helper={`From 0 to ${WEBSITE_LIMITS.monthlyRateMax}, up to 2 decimal places.`}
+      <SettingsCard title="Show on website" description="Leave financing off unless real terms are agreed.">
+        <Switch
+          checked={enabled}
+          onChange={setEnabled}
+          disabled={!canWrite}
+          label="Show financing on the website"
+          description="When off, the financing section is hidden and none of these terms are public."
+        />
+      </SettingsCard>
+      <SettingsCard title="Terms" description="Deposit, monthly rate, repayment periods and how long approval takes.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Deposit (%)" error={errors.depositPercent} helper="Whole number from 0 to 100.">
+            <Input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={100}
+              step={1}
+              value={depositPercent}
+              disabled={!canWrite}
+              onChange={(event) => setDepositPercent(event.target.value)}
+            />
+          </Field>
+          <Field
+            label="Monthly rate (%)"
+            error={errors.monthlyRatePercent}
+            helper={`From 0 to ${WEBSITE_LIMITS.monthlyRateMax}, up to 2 decimal places.`}
+          >
+            <Input
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={WEBSITE_LIMITS.monthlyRateMax}
+              step={0.01}
+              value={monthlyRatePercent}
+              disabled={!canWrite}
+              onChange={(event) => setMonthlyRatePercent(event.target.value)}
+            />
+          </Field>
+        </div>
+        <Group
+          legend="Terms (months)"
+          description={`Up to ${WEBSITE_LIMITS.financingTerms} repayment periods, from 1 to ${WEBSITE_LIMITS.termMonthsMax} months. Shown shortest first.`}
         >
+          {terms.length ? (
+            <ul className="flex flex-wrap gap-2" aria-label="Terms">
+              {terms.map((months) => (
+                <li
+                  key={months}
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-0.5 pl-3 pr-1 text-sm text-slate-700"
+                >
+                  <span className="tabular-nums">{months} months</span>
+                  {canWrite && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="size-7 rounded-full"
+                      aria-label={`Remove the ${months}-month term`}
+                      onClick={() => setTerms((current) => current.filter((item) => item !== months))}
+                    >
+                      <X aria-hidden="true" />
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400">No terms.</p>
+          )}
+          {canWrite && (
+            <div className="flex items-start gap-2">
+              <Field label="Add a term in months" labelClassName="sr-only" error={termError} className="w-40 space-y-1">
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={WEBSITE_LIMITS.termMonthsMax}
+                  step={1}
+                  value={termDraft}
+                  placeholder="Months"
+                  disabled={termsFull}
+                  onChange={(event) => setTermDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addTerm();
+                    }
+                  }}
+                />
+              </Field>
+              <Button variant="outline" icon={<Plus aria-hidden="true" />} onClick={addTerm} disabled={termsFull || !termDraft.trim()}>
+                Add
+              </Button>
+            </div>
+          )}
+          <p className="text-xs tabular-nums text-slate-500">
+            {terms.length}/{WEBSITE_LIMITS.financingTerms}
+          </p>
+        </Group>
+        <Field label="Approval time" error={errors.approvalTime} helper="How long a decision usually takes." className="sm:max-w-sm">
           <Input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            max={WEBSITE_LIMITS.monthlyRateMax}
-            step={0.01}
-            value={monthlyRatePercent}
+            value={approvalTime}
             disabled={!canWrite}
-            onChange={(event) => setMonthlyRatePercent(event.target.value)}
+            maxLength={WEBSITE_LIMITS.approvalTime}
+            placeholder="24–48 hours"
+            onChange={(event) => setApprovalTime(event.target.value)}
           />
         </Field>
-      </div>
-      <Group
-        legend="Terms (months)"
-        description={`Up to ${WEBSITE_LIMITS.financingTerms} repayment periods, from 1 to ${WEBSITE_LIMITS.termMonthsMax} months. Shown shortest first.`}
-      >
-        {terms.length ? (
-          <ul className="flex flex-wrap gap-2" aria-label="Terms">
-            {terms.map((months) => (
-              <li
-                key={months}
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-0.5 pl-3 pr-1 text-sm text-slate-700"
-              >
-                <span className="tabular-nums">{months} months</span>
-                {canWrite && (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="size-7 rounded-full"
-                    aria-label={`Remove the ${months}-month term`}
-                    onClick={() => setTerms((current) => current.filter((item) => item !== months))}
-                  >
-                    <X aria-hidden="true" />
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-slate-400">No terms.</p>
-        )}
-        {canWrite && (
-          <div className="flex items-start gap-2">
-            <Field label="Add a term in months" labelClassName="sr-only" error={termError} className="w-40 space-y-1">
-              <Input
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={WEBSITE_LIMITS.termMonthsMax}
-                step={1}
-                value={termDraft}
-                placeholder="Months"
-                disabled={termsFull}
-                onChange={(event) => setTermDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addTerm();
-                  }
-                }}
-              />
-            </Field>
-            <Button variant="outline" icon={<Plus aria-hidden="true" />} onClick={addTerm} disabled={termsFull || !termDraft.trim()}>
-              Add
-            </Button>
-          </div>
-        )}
-        <p className="text-xs tabular-nums text-slate-500">
-          {terms.length}/{WEBSITE_LIMITS.financingTerms}
-        </p>
-      </Group>
-      <Field label="Approval time" error={errors.approvalTime} helper="How long a decision usually takes." className="sm:max-w-sm">
-        <Input
-          value={approvalTime}
-          disabled={!canWrite}
-          maxLength={WEBSITE_LIMITS.approvalTime}
-          placeholder="24–48 hours"
-          onChange={(event) => setApprovalTime(event.target.value)}
-        />
-      </Field>
-      <Field
-        label="Note"
-        error={errors.note}
-        helper={`Conditions customers should know, shown under the terms. ${note.trim().length}/${WEBSITE_LIMITS.financingNote}`}
-      >
-        <Textarea
-          rows={3}
-          className="min-h-[88px]"
-          value={note}
-          disabled={!canWrite}
-          maxLength={WEBSITE_LIMITS.financingNote}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </Field>
-    </SectionCard>
+      </SettingsCard>
+      <SettingsCard title="Note" description="Conditions customers should know, shown under the terms.">
+        <Field
+          label="Note"
+          error={errors.note}
+          helper={`${note.trim().length}/${WEBSITE_LIMITS.financingNote}`}
+        >
+          <Textarea
+            rows={3}
+            className="min-h-[88px]"
+            value={note}
+            disabled={!canWrite}
+            maxLength={WEBSITE_LIMITS.financingNote}
+            onChange={(event) => setNote(event.target.value)}
+          />
+        </Field>
+      </SettingsCard>
+    </SectionForm>
   );
 }
 
@@ -503,6 +513,12 @@ export function CalculatorSection({ value, canWrite, save }: SectionProps<"calcu
   const [errors, setErrors] = useState<Partial<Record<ParameterKey, string>>>({});
   const [rowErrors, setRowErrors] = useState<RowErrors<ApplianceField>>({});
   const section = useSection(save);
+  const dirty = useDirty({
+    enabled,
+    appliances: appliances.map((row) => [row.key, row.label, row.watts, row.defaultHours, row.defaultQuantity]),
+    params,
+    batteryVoltage,
+  });
   const full = appliances.length >= WEBSITE_LIMITS.appliances;
 
   const setParam = (key: ParameterKey) => (event: { target: { value: string } }) =>
@@ -591,24 +607,26 @@ export function CalculatorSection({ value, canWrite, save }: SectionProps<"calcu
   );
 
   return (
-    <SectionCard
-      title="Calculator"
-      description="The appliances and assumptions behind the “Size your system” calculator. Results are estimates; an engineer confirms the size."
-      badge={sampleBadge(value.sample)}
+    <SectionForm
+      label="Load calculator"
+      dirty={dirty}
+      canWrite={canWrite}
+      saving={section.saving}
+      alert={section.alert}
       onSubmit={onSubmit}
-      footer={saveButton(canWrite, section.saving, "Save calculator")}
     >
-      {section.alert}
-      <Switch
-        checked={enabled}
-        onChange={setEnabled}
-        disabled={!canWrite}
-        label="Show the calculator on the website"
-        description="When off, the calculator page and its home page teaser are hidden."
-      />
+      <SettingsCard title="Show on website" description="Results are estimates; an engineer confirms the size.">
+        <Switch
+          checked={enabled}
+          onChange={setEnabled}
+          disabled={!canWrite}
+          label="Show the calculator on the website"
+          description="When off, the calculator page and its home page teaser are hidden."
+        />
+      </SettingsCard>
 
-      <Group
-        legend="Appliances"
+      <SettingsCard
+        title="Appliances"
         description={`Up to ${WEBSITE_LIMITS.appliances}. Customers start from these defaults and can change them. Hours go in steps of 0.5.`}
       >
         {appliances.length ? (
@@ -705,9 +723,9 @@ export function CalculatorSection({ value, canWrite, save }: SectionProps<"calcu
             {appliances.length}/{WEBSITE_LIMITS.appliances}
           </span>
         </div>
-      </Group>
+      </SettingsCard>
 
-      <Group legend="Sizing assumptions">
+      <SettingsCard title="Sizing assumptions" description="How the calculator turns the load into inverter, battery and panel sizes.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {numberField("inverterHeadroomPercent", "Inverter headroom (%)", "Extra capacity above the load. 0–100.", {
             min: 0,
@@ -740,9 +758,9 @@ export function CalculatorSection({ value, canWrite, save }: SectionProps<"calcu
             decimal: true,
           })}
         </div>
-      </Group>
+      </SettingsCard>
 
-      <Group legend="Generator costs" description="Used to compare running a generator with a solar or inverter system.">
+      <SettingsCard title="Generator costs" description="Used to compare running a generator with a solar or inverter system.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {numberField("fuelPricePerLitre", "Fuel price per litre (₦)", "Whole naira, 0–100,000.", {
             min: 0,
@@ -761,7 +779,7 @@ export function CalculatorSection({ value, canWrite, save }: SectionProps<"calcu
             step: 1,
           })}
         </div>
-      </Group>
-    </SectionCard>
+      </SettingsCard>
+    </SectionForm>
   );
 }
