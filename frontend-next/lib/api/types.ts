@@ -7,7 +7,34 @@ import type { AdminSelf, Role } from "@/lib/admin/capabilities";
 
 export type PackageType = "tubular" | "lithium" | "hybrid lithium";
 
-export type PackageOption = { name: string; price: number; kits: string };
+/** Commerce v2 §1.2: one product inside a composed option (public shape, no markup fields). */
+export type ComposedItem = {
+  productId: string;
+  quantity: number;
+  note: string | null;
+  name: string;
+  slug: string;
+  sku: string;
+  brand: string | null;
+  categoryId: string | null;
+  attributes: Record<string, string | number | boolean>;
+};
+
+/**
+ * Commerce v2 §1.2: public package option. Legacy (manual price) options have `composed: false`
+ * and `items: []`. `price` is what the customer pays.
+ */
+export type ComposedOption = {
+  name: string;
+  composed: boolean;
+  price: number;
+  available: boolean;
+  inStock: boolean;
+  kits: string;
+  items: ComposedItem[];
+};
+
+export type PackageOption = ComposedOption;
 
 /** Contract §4.3: optional product references, added only when a package has items. */
 export type PackageItem = {
@@ -34,6 +61,7 @@ export type Package = {
   kva: number | string;
   volt: number | string | null;
   options: PackageOption[];
+  /** Deprecated (Commerce v2 §1.1): no longer returned publicly; items live on each option. */
   items?: PackageItem[];
 };
 
@@ -209,16 +237,73 @@ export type LegacyOrderStatus = "pending" | "completed" | "cancelled";
 export type PaymentStatus = "pending" | "partial" | "paid" | "failed" | "refunded";
 export type FulfillmentStatus = "pending" | "processing" | "out_for_delivery" | "delivered" | "installed" | "cancelled";
 
-export type OrderLine = {
-  packageId?: string;
-  name?: string;
-  optionName?: string;
-  kits?: string;
+/* ---------- Packages (Commerce v2 §1) ---------- */
+
+/** Admin responses add the internal markup fields. */
+export type AdminComposedItem = ComposedItem & { unitPrice: number; lineTotal: number };
+
+export type AdminPackageOption = Omit<ComposedOption, "items"> & {
+  productsTotal: number | null;
+  priceAdjustment: number;
+  items: AdminComposedItem[];
+};
+
+/** `GET /admin/packages*` row. */
+export type AdminPackage = Omit<Package, "options" | "items"> & { options: AdminPackageOption[] };
+
+/** `POST/PUT /admin/packages` option. `price`/`kits` are only used when `items` is empty (legacy). */
+export type PackageOptionInput = {
+  name: string;
+  items?: { productId: string; quantity: number; note?: string | null }[];
+  priceAdjustment?: number;
   price?: number | string;
-  unitPrice?: number;
+  kits?: string;
+};
+
+/* ---------- Orders ---------- */
+
+export type OrderChannel = "website" | "in_store";
+
+export type OrderLineComponent = { productId: string; sku: string; name: string; quantity: number; unitPrice: number };
+
+/** Commerce v2 §1.3. Missing `type` on older lines means "package". */
+export type OrderLineSnapshot = {
+  type?: "package" | "product";
+  // package lines
+  packageId?: string;
+  optionName?: string;
+  kva?: number | string;
+  volt?: number | string | null;
+  price?: number | string;
+  components?: OrderLineComponent[];
+  productsTotal?: number | null;
+  priceAdjustment?: number;
+  // product lines (in-store)
+  productId?: string;
+  sku?: string;
+  // both
+  name?: string;
   quantity?: number;
+  unitPrice?: number;
   lineTotal?: number;
+};
+
+export type OrderLine = OrderLineSnapshot & {
+  kits?: string;
   [key: string]: unknown;
+};
+
+export type OrderDiscount = { amount: number; reason: string };
+
+/** `POST /admin/orders` (Commerce v2 §2.2). */
+export type InStoreOrderInput = {
+  customer: { name: string; phoneNumber: string; emailAddress?: string | null; deliveryAddress?: string | null };
+  lines: { productId: string; quantity: number }[];
+  discount?: OrderDiscount | null;
+  fulfilment: "collected" | "later";
+  paymentStatus: "pending" | "partial" | "paid";
+  requiresInstallation?: boolean;
+  note?: string | null;
 };
 
 export type InstallationJobSummary = { id: string; status: JobStatus; engineerId: string | null; scheduledAt: string | null };
@@ -247,6 +332,11 @@ export type Order = {
   stockCommittedAt: string | null;
   legacyPaymentStatus?: string | null;
   jobs?: InstallationJobSummary[];
+  /** Commerce v2 §2.2: always present; `subtotal` is null for legacy orders, `createdBy` null for website orders. */
+  channel: OrderChannel;
+  subtotal: number | null;
+  discount: OrderDiscount | null;
+  createdBy: ActorRef;
 };
 
 export type InsufficientStockDetail = { productId: string; sku: string; required: number; available: number };
