@@ -591,6 +591,15 @@
 [data-reveal="hidden"][data-reveal-from="zoom"] {
   transform: scale(0.97);
 }
+/* Phones: side entrances travel further so the direction reads on a narrow screen. */
+@media (max-width: 767px) {
+  [data-reveal="hidden"][data-reveal-from="left"] {
+    transform: translateX(-40px);
+  }
+  [data-reveal="hidden"][data-reveal-from="right"] {
+    transform: translateX(40px);
+  }
+}
 
 /* A line that draws downwards on mount (order success steps). */
 @keyframes je-draw-down {

@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Lifted scrolled header (see section 12, Change log)
+Last updated: 2026-09-17, Mobile and footer motion (see section 12, Change log)
 
 1. Executive summary
 
@@ -360,7 +360,7 @@ Motion and accessibility (storefront-wide, 2026-09-17)
 - Page motion: packages (filter bar, staggered cards, cross-fade on filter change, price card slide-in, option ring, price counts to the new amount, staggered "What's included"); products and categories (category nav slide-in, staggered cards and specs, gallery zoom, "Added" confirmation, rolling quantity); services and portfolio (staggered image cards, filter cross-fade); careers (staggered cards, role summary slide-in, one Apply pulse); contact (form and details slide in, growing focus rings, one shake on field errors, drawn check when sent); cart (staggered lines, removed line folds away, Undo slides it back, totals count, all entrances 300 ms or less); checkout (sections rise, summary slides in, Place order shimmer while sending); order success (check mark draws, steps stagger); 404 (floating illustration, staggered suggestions).
 - Contrast on dark intros is measured at 4.5:1 or better for body text over every photo. Reduced motion turns all of this off.
 - Built with CSS transitions and keyframes plus a small `IntersectionObserver` helper. No animation libraries and no scroll listeners (except the header check above).
-- What moves: sections and card grids fade and slide in as they scroll into view (staggered, once); numbers count up (hero stats, team stats, the calculator teaser preview, the financing worked example); client logos marquee; cards lift, images zoom gently and arrows nudge on hover; buttons have a press state; How it works draws its line; review stars fill; FAQ answers open smoothly; calculator results tween; the header fades from transparent to solid; the floating actions slide in.
+- What moves: sections and card grids fade and slide in as they scroll into view (staggered, once; on phones items come in from the left, right and below instead of all rising); the footer's columns, bottom bar and social links animate in; numbers count up (hero stats, team stats, the calculator teaser preview, the financing worked example); client logos marquee; cards lift, images zoom gently and arrows nudge on hover; buttons have a press state; How it works draws its line; review stars fill; FAQ answers open smoothly; calculator results tween; the header fades from transparent to solid; the floating actions slide in.
 - Content stays visible without JavaScript and to search engines: everything is in the HTML and visible by default. The hidden "before" state is applied only after the page loads, and only to content that starts below the screen. Counting figures keep their final value in the markup; if scripts never run, the figures show within 3 seconds.
 - Reduced motion (`prefers-reduced-motion: reduce`): no slideshow autoplay and no photo zoom (the bars still switch photos), no marquee (the static logo grid shows), no count-up (final values show at once), no entrance animations, no hover zoom or lift, no scroll cue. Fades are at most 150 ms.
 - No layout shift: only `transform` and `opacity` animate, counting numbers reserve their final width, and the header height is fixed.
@@ -688,6 +688,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (mobile and footer motion)
+- Storefront motion: on phones, scroll reveals mix directions (staggered items alternate left and right; single sections take turns rising and sliding from each side) instead of all sliding up. The footer now animates: brand column from the left, link and contact columns in sequence, bottom bar fade and social links popping in.
 
 2026-09-17 (lifted scrolled header)
 - Storefront header: after scrolling (and on pages without a hero) the header keeps its top-of-page look and lifts into a floating, rounded, translucent dark glass bar with a shadow, instead of the solid white header; the logo no longer sits on a white chip. The gold logo was washing out on the white bar.

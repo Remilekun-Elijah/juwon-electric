@@ -74,6 +74,8 @@ Build it with CSS transitions and keyframes plus a tiny `IntersectionObserver` h
 1. **`Reveal` component** (`components/storefront/motion/Reveal.tsx`, client).
    - Wraps children and fades and slides them in (`opacity 0→1`, `translateY 16px→0`, 500 ms, ease-out) when about 15% visible. It animates once.
    - Props: `delay` (ms), `as`, and `stagger` (for lists: children get incremental delays of 60 ms each, capped at 8 items).
+   - **Phones (below 768 px, revised 2026-09-17):** reveals without an explicit `from` mix directions instead of all rising: staggered items alternate sliding in from the left and right, and single reveals take turns rising, sliding from the left and sliding from the right. Side slides travel 40 px on phones (24 px on larger screens). An explicit `from` always wins; desktop is unchanged.
+   - **Footer (added 2026-09-17):** the brand column slides in from the left, the Shop, Company and Contact columns follow one after another (90 ms apart), and the bottom bar fades in while the social pills zoom in one by one.
    - **Content must be visible without JavaScript, and to crawlers.** Render visible by default; apply the hidden pre-animation state only after mount and only when the element is below the fold at mount. Nothing may flash or shift layout.
 2. **`CountUp` component.** Animates numbers inside a string ("500+" → counts 0→500 then shows "+"; "8 yrs" → 0→8) over about 1.2 s when revealed. Non-numeric values render as-is.
 3. **Hover polish utilities.**
