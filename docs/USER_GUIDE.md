@@ -1194,7 +1194,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 
 At the bottom right of most pages you may see one button. On a phone it is a round button with just an icon; on a larger screen it shows a label. On a phone's home page it appears once you scroll past the big photo at the top.
 
-- **Chat on WhatsApp** ("We reply during business hours"): opens WhatsApp with "Hello Juwon Electric" ready (story 11.10). It shows only when Juwon Electric has a WhatsApp number set.
+- **Chat on WhatsApp** ("We are available"): opens WhatsApp with "Hello Juwon Electric" ready (story 11.10). It shows only when Juwon Electric has a WhatsApp number set.
 - The load calculator is no longer a floating button: use **Load calculator** in the top menu (story 11.8).
 
 **Tips**

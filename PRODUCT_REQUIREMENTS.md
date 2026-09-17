@@ -331,7 +331,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   - Glass price card: "Complete packages from ₦…" in gold with an arrow link to the packages, bottom right of the hero. It shows only on wide screens (1280 px and up, so it doesn't cover the stats or the floating buttons) and only when there is a priced package.
   - On load the pill, headline lines, lead, buttons, stats and price card appear one after another (about 100 ms apart). All of it is in the page HTML.
 - Floating action (2026-09-17: ~~a stack of two pills~~ one pill, since the load calculator moved to the header button): bottom right, clear of the phone's safe area.
-  - **Chat on WhatsApp** (sub-label "We reply during business hours"): a WhatsApp-green pill with the WhatsApp mark on a white circle (2026-09-18; ~~a brand-red pill with a chat bubble~~), opening WhatsApp. Shown only when a WhatsApp number is set.
+  - **Chat on WhatsApp** (sub-label "We are available"): a WhatsApp-green pill with the WhatsApp mark on a white circle (2026-09-18; ~~a brand-red pill with a chat bubble~~), opening WhatsApp. Shown only when a WhatsApp number is set.
   - Hidden on `/cart` and `/checkout`, so it never covers the order buttons. On phones (under 640 px) on the home page it stays hidden while the hero is on screen, so it doesn't cover the hero stats, and appears once the hero scrolls away.
   - It slides in from the right about 1.2 seconds after the page loads. On phones they are 56 px round buttons with an accessible name; on screens 640 px and wider they show the label and sub-label. While the footer is on screen they fade, so footer links stay readable.
   - No "online" status, no notification badge.

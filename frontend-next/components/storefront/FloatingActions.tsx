@@ -89,7 +89,7 @@ export default function FloatingActions({ whatsappNumber }: FloatingActionsProps
             </span>
             <span aria-hidden="true" className="hidden text-left sm:block">
               <span className="block text-sm font-semibold leading-tight">Chat on WhatsApp</span>
-              <span className="block text-xs leading-tight text-whatsapp-deep/80">We reply during business hours</span>
+              <span className="block text-xs leading-tight text-whatsapp-deep/80">We are available</span>
             </span>
           </a>
         </div>
