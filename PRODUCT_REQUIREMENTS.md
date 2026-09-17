@@ -110,7 +110,7 @@ Persona: HR
   - Public package responses never reveal the markup: products total, price adjustment and per-product unit prices are admin-only. Customers see the option price, availability, stock hint and the included products with their specs.
   - Admin editor per option: product picker (name, SKU, price, stock, status), rows of product/quantity/note, a read-only Products total, a Price adjustment (₦) input, the resulting Public price, and an "In stock" or "Short: <sku>" hint. The package list shows the public price per option and a "Composed" or "Manual price" badge.
   - Editing the price of a product used in packages shows "Used in N package options. Their prices will update."
-  - Open item (2026-09-17): package editing requires the `content:write` capability, which the inventory role does not currently hold (§6.6). Until the owner decides, packages are composed by Super admin, Admin or Sales accounts.
+  - Decision (2026-09-17): package editing stays with the `content:write` capability (Super admin, Admin and Sales). The inventory role does not compose or edit packages; inventory managers keep products, categories and stock accurate, and package prices follow those products automatically.
 - Cart & Checkout: cart persistence, basic validation, toggle payment gateway visibility
 
 6.2 Inventory
@@ -122,7 +122,7 @@ Persona: HR
 - Order schema storing items, amounts, paymentStatus, fulfillmentStatus
 - Admin order view to change statuses and assign engineers
 - If requiresInstallation, allow assignment of engineers and creation of InstallationJob
-- Fulfilment steps: pending → processing → out for delivery → delivered → installed (installed only when installation is required); cancelled from any step before delivery. Payment statuses: pending, partial, paid, failed, refunded.
+- Fulfilment steps: pending → processing → out for delivery → delivered → installed (installed only when installation is required); cancelled from any step before delivery. In-store orders may also be cancelled after delivery (a walk-in customer returns the goods), which restores their committed stock (§6.9). Payment statuses: pending, partial, paid, failed, refunded.
 - Order line snapshot (2026-09-17): every order line stores, at the time the order is placed, the prices and (for package lines) the component products and quantities of the chosen option, plus the products total and adjustment. In-store product lines store product, SKU, quantity, unit price and line total.
 - Stock is committed (moving to processing, or an in-store "collected now" sale) from the snapshot, not from the package's current contents, so recomposing a package never changes stock for orders already placed. Orders placed before snapshots existed fall back to the package's current products.
 - Stock commit is all-or-nothing: if any product would go below zero, nothing changes and staff see the shortfall per product.
@@ -183,7 +183,7 @@ Persona: HR
 - Payment status at creation: pending, partially paid or paid (paid records the paid date).
 - Optional internal note (up to 500 characters).
 - Records: channel `in_store` and the creating staff member. The website channel is `website`. The orders list filters by channel.
-- Cancelling a collected in-store order restores stock, as for any committed order.
+- Returns (decision 2026-09-17): an in-store order can be cancelled even after it is delivered (for example a walk-in customer returns the goods). Cancelling restores the stock taken for it through Sale reversed movements and is written to the activity log. Payment status is not changed automatically; if money is given back, staff set the payment status to Refunded. Website orders still cannot be cancelled once delivered.
 - Dashboard revenue uses order totals, so discounts are reflected.
 
 6.10 Public storefront (added 2026-09-17)
@@ -213,6 +213,7 @@ Persona: HR
 - In-store sale, collected now: a sales rep records 2 × a product with 5 in stock as collected now; the order is created as delivered with channel In store, stock drops to 3, and a Sale movement references the order.
 - In-store sale, later: the same sale with "Deliver or install later" and a delivery address creates a pending order with no stock change; with "Requires installation" an engineer can be assigned and a job created.
 - In-store sale, stock shortfall: a collected-now sale of 6 against 5 in stock shows "Insufficient stock to process this order." with required 6 and available 5, creates no order and changes no stock.
+- In-store return: cancelling a delivered in-store order (collected now) sets it to cancelled, restores its stock with Sale reversed movements and records the change in the activity log; cancelling a delivered website order is rejected.
 - Discount reason: a discount above ₦0 without a reason (or with fewer than 3 characters) is rejected; a discount greater than the subtotal is rejected; a valid discount reduces the total and appears with its reason on the order and in the activity log.
 - Capability: an inventory, engineer, HR or support account cannot create an in-store order (no button, and the server returns "You do not have permission to perform this action.").
 - Storefront toggle: with `NEXT_PUBLIC_PUBLIC_UI` unset the new storefront is served at the public URLs; with `NEXT_PUBLIC_PUBLIC_UI=classic` the classic site is served at the same URLs; `/storefront/...` URLs redirect to the public path in both modes.
@@ -270,7 +271,15 @@ Commerce v2 round (2026-09-17)
 - API contract: docs/agents/API_CONTRACT_V3.md; commerce addendum: docs/agents/COMMERCE_V2.md; storefront spec: docs/agents/fe-storefront.md
 - Staff user guide: docs/USER_GUIDE.md
 
+Open items for owner review
+- Storefront order confirmation says "Delivery within Lagos is free." This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
+
 12. Change log
+
+2026-09-17 (later)
+- §6.1: recorded the owner's decision that the inventory role does not edit packages (package editing stays with Super admin, Admin and Sales).
+- §6.3, §6.9, §7: in-store orders can be cancelled after delivery (returns), restoring stock; payment status is updated separately; added the acceptance criterion.
+- §11 Open items: added the "Delivery within Lagos is free" storefront message, to be reviewed by the owner.
 
 2026-09-17
 - §2, §3: added objectives for in-store sales and composed package pricing; added support staff as a stakeholder.

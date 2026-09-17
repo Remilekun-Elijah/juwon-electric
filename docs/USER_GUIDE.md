@@ -352,6 +352,25 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 
 **Tip:** if you see "Reply not sent", check the customer's email address and try again.
 
+### Story 6.5: Record a return from a walk-in customer
+
+*As a sales rep, I want to cancel an in-store sale when the customer brings the goods back so that the stock is put back on the shelf in the system.*
+
+1. Go to **Orders** and filter by channel **In store**, or search for the customer.
+2. Open the order. It shows **Delivered** if it was collected in the store.
+3. In the status panel, choose **Cancel order**.
+4. Read the message and confirm with **Cancel order**.
+5. If you gave the customer their money back, change **Payment** to **Refunded**.
+
+**What you'll see:** the order shows **Cancelled**, and every product on it goes back into stock. In **Inventory → Movements** each one appears as **Sale reversed**. The change is recorded in the Activity log with your name.
+
+**Tips and common mistakes**
+
+- Cancelling can't be undone. If the customer only returns part of the sale, cancel the order and record a new in-store sale for the items they keep.
+- Cancelling doesn't change the payment status by itself. Update it yourself if money was returned.
+- Only in-store sales can be cancelled after delivery. A delivered website order can't be cancelled; talk to an admin.
+- If a product on the order was deleted since the sale, its stock can't be put back. The Activity log says "stock not restored for deleted product <SKU>". Ask the inventory manager to adjust the count.
+
 ---
 
 ## 7. Inventory manager
@@ -422,7 +441,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 
 *As an inventory manager, I want each package option to list its real products so that its price and contents always match the catalogue.*
 
-> **Permission note:** saving packages needs package-editing access. Today that is given to **Super admin**, **Admin** and **Sales** accounts. If you can see Packages but can't save, ask the owner.
+> **Who does this:** packages are edited by **Super admin**, **Admin** and **Sales** accounts. Inventory managers don't edit packages. Your part is keeping products, prices and stock correct, because package prices update from them automatically. The steps below are for the staff who edit packages.
 
 1. Go to **Packages** and open the package (or add one).
 2. For each option (for example "Without solar" and "With solar"):
@@ -712,6 +731,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (later)**
+- Sales rep: added Story 6.5, recording a return by cancelling a delivered in-store sale (stock goes back; update payment to Refunded if money is returned).
+- Inventory manager: Story 7.5 now states that inventory managers don't edit packages (owner decision).
 
 **2026-09-17**
 - First version of the guide.
