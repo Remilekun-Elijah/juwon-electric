@@ -5,8 +5,11 @@ import Section from "@/components/storefront/Section";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
 import { EmptyState, buttonClasses } from "@/components/ui";
-import { getStorePortfolio, getStoreSettings } from "@/lib/storefront/data";
-import { storeRoutes } from "@/lib/storefront/routes";
+import { cn } from "@/lib/cn";
+import { categoryLabel, segmentSlug, segmentTitles } from "@/lib/storefront/content";
+import { getStorePortfolio, getStoreServices, getStoreSettings } from "@/lib/storefront/data";
+import { portfolioCategoryPath, storeRoutes } from "@/lib/storefront/routes";
+import { storeFocus } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -16,30 +19,99 @@ export const metadata: Metadata = {
   alternates: { canonical: "/portfolio" },
 };
 
-/** Portfolio (docs/agents/fe-storefront.md §4 `/portfolio`): installations with featured projects first. */
-export default async function PortfolioPage() {
-  const [portfolio, settings] = await Promise.all([getStorePortfolio(), getStoreSettings()]);
-  const items = featuredFirst(portfolio);
+const firstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
+
+type Chip = { value: string; label: string; count: number };
+
+function FilterChip({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      scroll={false}
+      className={cn(
+        "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors md:min-h-10",
+        storeFocus,
+        active ? "border-brand-700 bg-brand-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+      )}
+    >
+      {label}
+      <span className={cn("rounded-full px-2 py-0.5 text-xs tabular-nums", active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600")}>{count}</span>
+    </Link>
+  );
+}
+
+/**
+ * Portfolio (fe-storefront.md §4, LANDING_V1 §7): installations with featured projects first, filtered by customer
+ * segment through `?category=<slug>` chips. Chips list only categories with projects; a segment without projects shows an
+ * empty state and an unknown category shows everything.
+ */
+export default async function PortfolioPage({ searchParams }: PageProps<"/storefront/portfolio">) {
+  const query = await searchParams;
+  const [portfolio, services, settings] = await Promise.all([getStorePortfolio(), getStoreServices(), getStoreSettings()]);
+
+  const titles = segmentTitles(services.customerSegments);
+  const counts = new Map<string, number>();
+  for (const item of portfolio) {
+    const category = item.category?.trim();
+    if (category) counts.set(category, (counts.get(category) ?? 0) + 1);
+  }
+  // Segment order first, then any other categories in the order they appear.
+  const segmentOrder = services.customerSegments.map(segmentSlug);
+  const chips: Chip[] = [...counts.entries()]
+    .map(([value, count]) => ({ value, label: categoryLabel(value, titles), count }))
+    .sort((a, b) => {
+      const indexA = segmentOrder.indexOf(a.value);
+      const indexB = segmentOrder.indexOf(b.value);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+    });
+
+  const requested = firstValue(query.category).toLowerCase();
+  // A known segment without projects (linked from the home page Solutions) shows an empty state, not everything.
+  const segmentMatch = segmentOrder.find((slug) => slug.toLowerCase() === requested);
+  const active =
+    chips.find((chip) => chip.value.toLowerCase() === requested) ??
+    (segmentMatch ? { value: segmentMatch, label: categoryLabel(segmentMatch, titles), count: 0 } : null);
+  const items = featuredFirst(active ? (active.count > 0 ? await getStorePortfolio({ category: active.value }) : []) : portfolio);
 
   return (
     <>
       <PageIntro
         eyebrow="Portfolio"
-        title="Our work"
+        title={active ? `Our work: ${active.label}` : "Our work"}
         description="Inverter, battery and solar installations we have completed for homes and businesses."
-      />
+      >
+        {chips.length > 0 && (
+          <nav aria-label="Filter projects by customer type">
+            <ul className="flex flex-wrap gap-2">
+              <li>
+                <FilterChip href={storeRoutes.portfolio} active={!active} label="All projects" count={portfolio.length} />
+              </li>
+              {chips.map((chip) => (
+                <li key={chip.value}>
+                  <FilterChip href={portfolioCategoryPath(chip.value)} active={active?.value === chip.value} label={chip.label} count={chip.count} />
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </PageIntro>
 
       <Section>
+        <p role="status" className="sr-only">
+          {items.length} {items.length === 1 ? "project" : "projects"}
+          {active ? ` for ${active.label}` : ""}
+        </p>
         {items.length > 0 ? (
-          <PortfolioGrid items={items} headingAs="h2" priorityCount={3} />
+          <PortfolioGrid items={items} headingAs="h2" priorityCount={3} categoryTitles={titles} showCategory={!active} />
         ) : (
           <EmptyState
             standalone
-            title="No projects to show yet"
+            title={active ? "No projects in this group yet" : "No projects to show yet"}
             description="We’re adding photos of recent installations. Ask us for examples of systems like the one you need."
             action={
-              <Link href={storeRoutes.contact} className={buttonClasses()}>
-                Contact us
+              <Link href={active ? storeRoutes.portfolio : storeRoutes.contact} className={buttonClasses()}>
+                {active ? "See all projects" : "Contact us"}
               </Link>
             }
           />
