@@ -8,7 +8,9 @@ import type {
   CartQuote,
   CartRequestItem,
   Category,
+  Client,
   ContactPayload,
+  Faq,
   OrderPayload,
   Package,
   Paged,
@@ -20,6 +22,7 @@ import type {
   SaveCartPayload,
   ServicesData,
   SubscribePayload,
+  Testimonial,
 } from "./types";
 
 const seg = (value: string | number) => encodeURIComponent(String(value));
@@ -46,11 +49,26 @@ export const getPackage = (id: string | number, init?: ApiRequestInit) =>
 
 export const getServices = (init?: ApiRequestInit) => getPublicData<ServicesData>("/services", undefined, init);
 
-export const getPortfolio = (params: { featured?: boolean } = {}, init?: ApiRequestInit) =>
-  getPublicData<PortfolioItem[]>("/portfolio", params, init);
+export type PortfolioQuery = { featured?: boolean; category?: string };
+
+/** `GET /portfolio?featured=&category=` (Landing v1 §2: `category` is a customer-segment slug). */
+export const getPortfolio = (params: PortfolioQuery = {}, init?: ApiRequestInit) =>
+  getPublicData<PortfolioItem[]>("/portfolio", { featured: params.featured || undefined, category: params.category || undefined }, init);
 
 export const getPortfolioItem = (id: string, init?: ApiRequestInit) =>
   getPublicData<PortfolioItem>(`/portfolio/${seg(id)}`, undefined, init);
+
+/* ---------- Website content (Landing v1 §1: active only, sorted) ---------- */
+
+/** `GET /faqs?category=` */
+export const getFaqs = (params: { category?: string } = {}, init?: ApiRequestInit) =>
+  getPublicData<Faq[]>("/faqs", { category: params.category || undefined }, init);
+
+/** `GET /testimonials` (customer reviews). */
+export const getTestimonials = (init?: ApiRequestInit) => getPublicData<Testimonial[]>("/testimonials", undefined, init);
+
+/** `GET /clients` (client logos). */
+export const getClients = (init?: ApiRequestInit) => getPublicData<Client[]>("/clients", undefined, init);
 
 /* ---------- Products & categories (contract §4) ---------- */
 

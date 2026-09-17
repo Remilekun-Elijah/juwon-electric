@@ -14,6 +14,8 @@ import { cache } from "react";
 import { ApiError, type ApiEnvelope, type ApiRequestInit } from "@/lib/api/client";
 import {
   getCategories,
+  getClients,
+  getFaqs,
   getPackage,
   getPackages,
   getPackagesInCategory,
@@ -22,6 +24,7 @@ import {
   getProducts,
   getPublicSettings,
   getServices,
+  getTestimonials,
   getVacancies,
   getVacancy,
   type ProductQuery,
@@ -29,6 +32,8 @@ import {
 } from "@/lib/api/public";
 import type {
   Category,
+  Client,
+  Faq,
   Package,
   Paged,
   PortfolioItem,
@@ -36,12 +41,16 @@ import type {
   PublicSettings,
   PublicVacancy,
   ServicesData,
+  Testimonial,
+  WebsiteStat,
 } from "@/lib/api/types";
 import { PRODUCTS_PER_PAGE, emptyPage } from "@/lib/catalog";
 import { isBuildPhase } from "@/lib/config";
 import { fallbackCustomers, fallbackOfferings, fallbackPackages, fallbackPortfolio } from "@/lib/fallbacks";
 import { SITE_NAME, contactFallback } from "@/lib/site";
 import { isOpenVacancy } from "@/lib/vacancies";
+import type { StoreCalculator } from "./calculator";
+import type { StoreFinancing } from "./financing";
 
 /** Time-based safety net in seconds. Route segment configs must export the literal: `export const revalidate = 60`. */
 export const STORE_REVALIDATE = 60;
@@ -182,13 +191,48 @@ export const getStoreServices = cache(async (): Promise<ServicesData> => {
   return { offerings: data?.offerings ?? [], customerSegments: data?.customerSegments ?? [] };
 });
 
-/** `GET /portfolio` (optionally `featured` only). */
-export const getStorePortfolio = cache(
-  async (featured = false): Promise<PortfolioItem[]> =>
-    (await storeRead(`GET /portfolio${featured ? "?featured=true" : ""}`, (init) => getPortfolio(featured ? { featured } : {}, init), {
+const readPortfolio = cache(
+  async (featured: boolean, category: string): Promise<PortfolioItem[]> => {
+    const label = `GET /portfolio?featured=${featured}&category=${category}`;
+    const data = await storeRead(label, (init) => getPortfolio({ featured, category }, init), {
       tags: ["portfolio"],
-      fallback: fallbackPortfolio,
-    })) ?? []
+      // The bundled fallback projects have no category, so a filtered build read gets none.
+      fallback: category ? [] : fallbackPortfolio,
+    });
+    return data ?? [];
+  }
+);
+
+export type StorePortfolioQuery = { featured?: boolean; category?: string };
+
+/**
+ * `GET /portfolio`, optionally `featured` only and/or one `category` (a customer-segment slug, Landing v1 §2).
+ * `getStorePortfolio(true)` still means featured only.
+ */
+export const getStorePortfolio = (query: boolean | StorePortfolioQuery = {}): Promise<PortfolioItem[]> => {
+  const { featured = false, category = "" } = typeof query === "boolean" ? { featured: query } : query;
+  return readPortfolio(featured, category.trim());
+};
+
+/* ---------- Website content (Landing v1 §1) ---------- */
+
+const readFaqs = cache(
+  async (category: string): Promise<Faq[]> =>
+    (await storeRead<Faq[]>(`GET /faqs?category=${category}`, (init) => getFaqs({ category }, init), { tags: ["faqs"], fallback: [] })) ?? []
+);
+
+/** `GET /faqs` (active, sorted), optionally one category. Empty when the route is missing. */
+export const getStoreFaqs = (category?: string): Promise<Faq[]> => readFaqs(category?.trim() ?? "");
+
+/** `GET /testimonials`: customer reviews (active, sorted). */
+export const getStoreTestimonials = cache(
+  async (): Promise<Testimonial[]> =>
+    (await storeRead<Testimonial[]>("GET /testimonials", (init) => getTestimonials(init), { tags: ["testimonials"], fallback: [] })) ?? []
+);
+
+/** `GET /clients`: client logos (active, sorted). */
+export const getStoreClients = cache(
+  async (): Promise<Client[]> => (await storeRead<Client[]>("GET /clients", (init) => getClients(init), { tags: ["clients"], fallback: [] })) ?? []
 );
 
 /* ---------- Vacancies ---------- */
@@ -226,7 +270,54 @@ export type StoreSettings = {
     website: string | null;
   };
   payments: { gatewayEnabled: boolean };
+  /** Landing v1 §3 `website`, with empty values normalised to null and blank stats dropped. */
+  website: {
+    stats: WebsiteStat[];
+    whatsappNumber: string | null;
+    businessHours: string | null;
+    sample: boolean;
+  };
+  /** Terms when financing is enabled and has at least one term, otherwise null (the section hides). */
+  financing: StoreFinancing | null;
+  /** Calculator settings when enabled, otherwise null (the page shows "Talk to an engineer"). */
+  calculator: StoreCalculator | null;
 };
+
+const text = (value: string | null | undefined) => (typeof value === "string" && value.trim() ? value.trim() : null);
+const num = (value: unknown, fallback: number) => (typeof value === "number" && Number.isFinite(value) ? value : fallback);
+
+function toStoreFinancing(financing: PublicSettings["financing"] | undefined): StoreFinancing | null {
+  if (!financing || financing.enabled !== true) return null;
+  const termsMonths = Array.from(new Set((financing.termsMonths ?? []).filter((months) => Number.isInteger(months) && months > 0))).sort((a, b) => a - b);
+  if (!termsMonths.length) return null;
+  return {
+    depositPercent: typeof financing.depositPercent === "number" ? financing.depositPercent : null,
+    termsMonths,
+    monthlyRatePercent: typeof financing.monthlyRatePercent === "number" ? financing.monthlyRatePercent : null,
+    approvalTime: text(financing.approvalTime),
+    note: text(financing.note),
+    sample: financing.sample === true,
+  };
+}
+
+function toStoreCalculator(calculator: PublicSettings["calculator"] | undefined): StoreCalculator | null {
+  if (!calculator || calculator.enabled !== true) return null;
+  const generator = calculator.generator ?? { fuelPricePerLitre: 0, litresPerKvaHour: 0, maintenancePerMonth: 0 };
+  return {
+    appliances: (calculator.appliances ?? []).filter((appliance) => appliance.key && appliance.label && appliance.watts > 0),
+    inverterHeadroomPercent: num(calculator.inverterHeadroomPercent, 25),
+    batteryDepthOfDischargePercent: num(calculator.batteryDepthOfDischargePercent, 80),
+    batteryVoltage: num(calculator.batteryVoltage, 48),
+    panelWatts: num(calculator.panelWatts, 550),
+    peakSunHours: num(calculator.peakSunHours, 4.5),
+    generator: {
+      fuelPricePerLitre: num(generator.fuelPricePerLitre, 0),
+      litresPerKvaHour: num(generator.litresPerKvaHour, 0),
+      maintenancePerMonth: num(generator.maintenancePerMonth, 0),
+    },
+    sample: calculator.sample === true,
+  };
+}
 
 const withContactFallback = (settings: PublicSettings | null): StoreSettings => ({
   business: {
@@ -237,6 +328,14 @@ const withContactFallback = (settings: PublicSettings | null): StoreSettings => 
     website: settings?.business?.website ?? null,
   },
   payments: { gatewayEnabled: settings?.payments?.gatewayEnabled === true },
+  website: {
+    stats: (settings?.website?.stats ?? []).filter((stat) => text(stat.label) && text(stat.value)).slice(0, 4),
+    whatsappNumber: text(settings?.website?.whatsappNumber),
+    businessHours: text(settings?.website?.businessHours),
+    sample: settings?.website?.sample === true,
+  },
+  financing: toStoreFinancing(settings?.financing),
+  calculator: toStoreCalculator(settings?.calculator),
 });
 
 /** `GET /settings/public`, with `contactFallback` (lib/site.ts) per empty field. Throws at runtime like every read. */
