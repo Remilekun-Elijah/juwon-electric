@@ -161,7 +161,7 @@ export function NotificationsSection({
           title={list.label}
           description={
             list.key === "lowStockEmails" && !lowStockAlertsEnabled
-              ? `${list.helper} Low-stock alerts are switched off in Settings → Inventory, so none are sent.`
+              ? `${list.helper} Low-stock alerts are switched off in Settings → Sales → Inventory, so none are sent.`
               : list.helper
           }
         >
@@ -365,7 +365,7 @@ export function InventorySection({ value, canWrite, save }: SectionProps<"invent
           />
         </Field>
       </SettingsCard>
-      <SettingsCard title="Low-stock alerts" description="Recipients are set in Settings → Notification emails → Low stock.">
+      <SettingsCard title="Low-stock alerts" description="Recipients are set in Settings → Communication → Notification emails → Low stock.">
         <Switch
           checked={alertsEnabled}
           onChange={setAlertsEnabled}
