@@ -689,13 +689,13 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 *As an admin or marketing staff member, I want to keep the frequently asked questions accurate and in a sensible order so that customers find answers without calling.*
 
 1. Go to **Website** → **FAQs**.
-2. To add one, select the add button. To change one, open it from the list.
+2. To add one, select **Add FAQ**. To change one, select **Edit** on its row.
 3. Fill in:
    - **Question** (5 to 200 characters), for example "Do I pay to place an order?"
    - **Answer** (up to 2,000 characters). Plain text only; press Enter to start a new line.
-   - **Category** (optional, up to 60 characters), for example "Ordering", "Installation" or "Products".
-4. Leave **Active** on to show it on the website. Save.
-5. To change the order, use the **▲** and **▼** buttons on each row. Higher in the list shows first.
+   - **Category** (optional, up to 60 characters): pick an existing category from the suggestions or type a new one, for example "Ordering", "Installation" or "Products".
+4. Leave **Show on the website** on, then select **Add FAQ** (or **Save changes**).
+5. To change the order, use **Move up** and **Move down** (▲ ▼) on each row. Higher in the list shows first.
 6. To see only one group, use the **category filter** at the top of the list.
 
 **What you'll see on the website:** the first 6 FAQs appear at the bottom of the home page with a "See all questions" link. The **FAQ** page (`/faq`) shows every active FAQ, grouped under its category.
@@ -705,7 +705,7 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 - Type the category the same way every time ("Installation", not "installation" or "Installations"), or you'll get two groups.
 - Put the most common questions at the top: only the first 6 show on the home page.
 - Make sure each answer matches how we really work. For example: customers don't pay to place an order; we call to confirm first.
-- To hide an FAQ for a while, switch **Active** off instead of deleting it.
+- To hide an FAQ for a while, switch **Show on the website** off instead of deleting it.
 
 ### Story 10A.2: Add and edit reviews
 
@@ -713,15 +713,15 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 
 > **Only real reviews, with permission.** Add a review only if a real customer said it and agreed that we can show it on the website. Don't make up reviews, and don't change what the customer meant. Fixing a spelling mistake is fine.
 
-1. Go to **Website** → **Reviews** and add a review.
+1. Go to **Website** → **Reviews** and select **Add review**.
 2. Fill in:
-   - **Name** (required). Use the name the customer agreed to, for example first name and initial: "Adaeze O."
+   - **Customer name** (required). Use the name the customer agreed to; first name and initial is enough, for example "Adaeze O."
    - **Context** (optional, up to 150 characters): what we installed and where, for example "5kVA lithium system, Lekki".
-   - **Quote** (required, 10 to 1,000 characters): the customer's words.
-   - **Rating** (optional): 1 to 5 stars.
-   - **Source** (optional): Website, WhatsApp, Google, Facebook or In person.
-   - **Image** (optional): a link to the customer's photo, or a path to a picture on our website (starting with `/`). Only use a photo the customer agreed to.
-3. Leave **Active** on and save. Use **▲▼** or the sort order to decide which show first.
+   - **Review** (required, 10 to 1,000 characters): the customer's words.
+   - **Rating** (optional): 1 to 5 stars, or **No rating**.
+   - **Source** (optional): where the customer left the review: Website, WhatsApp, Google, Facebook or In person.
+   - **Photo URL** (optional): an `https://` link to the customer's photo, or a path to a picture on our website such as `/reviews/adaeze.jpg`. Only use a photo the customer agreed to share.
+3. Leave **Show on the website** on and select **Add review** (or **Save changes**). Use **Move up** and **Move down** to decide which show first.
 
 **What you'll see on the website:** a reviews section on the home page with stars, name, context and a small source badge. Customers move through the reviews themselves; they never change on their own.
 
@@ -736,12 +736,12 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 
 > **Only with permission.** Add a client's logo only if the client agreed in writing (an email or WhatsApp message is fine) that we can show it.
 
-1. Go to **Website** → **Client logos** and add a client.
+1. Go to **Website** → **Client logos** and select **Add client logo**.
 2. Fill in:
-   - **Name** (required). It's also read out by screen readers in place of the logo.
-   - **Logo** (required): either a full link starting with `https://`, or a path to a file on our website starting with `/`, for example `/logos/acme.svg`. Ask your developer to add the logo file to the website if you don't have a link.
-   - **Website** (optional): the client's website.
-3. Leave **Active** on and save. Check the logo preview in the grid.
+   - **Client name** (required). It's also read out by screen readers in place of the logo.
+   - **Logo** (required): either a full link starting with `https://`, or a path to a file on our website starting with `/`, for example `/clients/acme.svg`. SVG or a transparent PNG looks best. Ask your developer to add the logo file to the website if you don't have a link.
+   - **Website** (optional): the client's `https://` website link.
+3. Leave **Show on the website** on and select **Add client logo** (or **Save changes**). Check the logo preview. Use **Move up** and **Move down** to change the order.
 
 **What you'll see on the website:** a row of logos on the home page (up to 6 per row), shown in grey until the visitor points at them.
 
@@ -775,14 +775,14 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 *As the owner, I want the home page and footer to show our real figures, WhatsApp and opening hours so that customers know how to reach us.*
 
 1. Go to **Settings** → **Website**.
-2. **Stats:** add up to **4** rows. Each row has a **Label** (up to 40 characters, for example "Installations") and a **Value** (up to 20 characters, for example "500+"). Only use figures you can prove.
-3. **WhatsApp number:** the business WhatsApp number, for example `+2348012345678`.
+2. **Stats:** select **Add stat** for each row, up to **4**. Each row has a **Label** (up to 40 characters, for example "Installations") and a **Figure** (up to 20 characters, for example "500+"). Only use figures you can prove.
+3. **WhatsApp number:** the business WhatsApp number with the country code, for example `+234 803 000 0000`. Leave it empty to hide the WhatsApp button.
 4. **Business hours:** one line per day range, for example:
    ```
    Mon–Fri 8am–6pm
    Sat 9am–3pm
    ```
-5. Save.
+5. Select **Save website**.
 
 **What you'll see on the website:**
 
@@ -798,20 +798,20 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 
 > **Financing is off unless you switch it on.** Anything shown on the website can be read as an offer. Only switch it on when the terms are agreed and approved (including with any finance partner).
 
-To leave financing off: go to **Settings** → **Financing**, make sure **Enabled** is off, and save. The financing section doesn't show on the website.
+To leave financing off: go to **Settings** → **Financing**, make sure **Show financing on the website** is off, and select **Save financing**. The financing section doesn't show on the website.
 
 To switch it on:
 
-1. Go to **Settings** → **Financing** and switch **Enabled** on.
+1. Go to **Settings** → **Financing** and switch **Show financing on the website** on.
 2. Fill in:
-   - **Deposit %**: a whole number from 0 to 100, for example 40.
-   - **Terms**: the number of months customers can spread payments over, added as chips (up to 6, each 1 to 60, for example 3, 6 and 12).
-   - **Monthly rate %**: 0 to 20, for example 3.5.
+   - **Deposit (%)**: a whole number from 0 to 100, for example 40.
+   - **Terms (months)**: type a number of months and add it; each shows as a chip (up to 6, each 1 to 60, for example 3, 6 and 12).
+   - **Monthly rate (%)**: 0 to 20, for example 3.5.
    - **Approval time**: for example "24–48 hours".
    - **Note** (up to 300 characters): conditions in plain words, for example "Subject to approval. Terms may change."
-3. Save.
+3. Select **Save financing**.
 
-**What you'll see on the website:** a financing section near the end of the home page with a table of the terms, a worked example on a package price, your note and buttons to contact us. Customers can't apply online; they call, message or visit.
+**What you'll see on the website:** a financing section near the end of the home page with a table of the terms, a worked example on the cheapest package (deposit today, balance and the monthly instalment for each term), your note and buttons to contact us. Interest in the example is worked out simply: balance × monthly rate × number of months. Customers can't apply online; they call, message or visit.
 
 ### Story 10A.7: Set up the calculator
 
@@ -819,35 +819,34 @@ To switch it on:
 
 The calculator is at `/calculator`. It's **off unless you switch it on**.
 
-1. Go to **Settings** → **Calculator** and switch **Enabled** on.
-2. **Appliances** (up to 40): the list customers start from. For each row:
-   - **Key**: a short code in lower case with dashes, for example `ceiling-fan`. Each key must be different.
-   - **Label**: the name customers see, for example "Ceiling fan".
+1. Go to **Settings** → **Calculator** and switch **Show the calculator on the website** on.
+2. **Appliances** (up to 40): the list customers start from. Select **Add appliance** for each row, and fill in:
+   - **Appliance**: the name customers see, for example "Standing fan".
    - **Watts**: the appliance's power, a whole number, for example 75.
-   - **Default hours**: hours a day it's usually on (0 to 24, half hours allowed).
-   - **Default quantity**: how many a typical home has (0 to 20).
-   - Use add, remove and the order buttons to arrange the list.
-3. **Parameters** (leave the defaults unless an engineer says otherwise):
+   - **Hours a day**: how long it's usually on (0 to 24, half hours allowed).
+   - **Quantity**: how many a typical home has (0 to 20).
+   - Use **Move up**, **Move down** and **Remove** to arrange the list.
+3. **Sizing assumptions** (leave the defaults unless an engineer says otherwise):
 
 | Field | Default | What it means |
 |---|---|---|
-| **Inverter headroom %** | 25 | Extra room added to the load when sizing the inverter |
-| **Battery depth of discharge %** | 80 | How much of the battery is safely used |
-| **Battery voltage** | 48 | 12, 24 or 48 volts, used to show battery size in Ah |
-| **Panel watts** | 550 | The panel size we usually install |
+| **Inverter headroom (%)** | 25 | Extra room added to the load when sizing the inverter |
+| **Battery depth of discharge (%)** | 80 | How much of the battery is safely used |
+| **Battery voltage** | 48 V | 12 V, 24 V or 48 V, used to show battery size in Ah |
+| **Panel watts (W)** | 550 | The panel size we usually install |
 | **Peak sun hours** | 4.5 | Average useful sun hours a day |
 
 4. **Generator costs** (for the "compared with a generator" figures):
-   - **Fuel price per litre** (₦): today's petrol or diesel price.
+   - **Fuel price per litre (₦)**: today's petrol or diesel price.
    - **Litres per kVA-hour**: how much fuel a generator uses, for example 0.25.
-   - **Maintenance per month** (₦): typical servicing cost.
-5. Save.
+   - **Maintenance per month (₦)**: typical servicing cost.
+5. Select **Save calculator**.
 
 **What you'll see on the website:** a "Size your system" teaser on the home page and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
 
 **Tips**
 
-- Update the fuel price when it changes a lot, or the generator comparison will be out of date.
+- Update the fuel price when it changes a lot, or the generator comparison will be out of date. If **Fuel price per litre** or **Litres per kVA-hour** is 0, the generator comparison doesn't show.
 - If the calculator seems to recommend sizes that are too big or small, ask an engineer to check the appliance watts and the parameters.
 - Nothing customers type into the calculator is saved.
 
@@ -857,7 +856,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 **How to spot sample content**
 
-- In the admin: a **Sample** badge on the item or settings section, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews** or **Client logos** while they still have sample items.
+- In the admin: a **Sample** badge on the item or settings section, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
 - On the website: a small "Sample" label on stats, reviews, client logos, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
 
 **What to do**
@@ -866,9 +865,9 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 2. **Reviews:** delete every Sample review. Add only real ones (story 10A.2).
 3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
 4. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
-5. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Save.
-6. **Settings → Financing:** enter real terms and save, or switch **Enabled** off and save.
-7. **Settings → Calculator:** check every appliance, the parameters and the generator costs, then save; or switch **Enabled** off and save.
+5. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save website**.
+6. **Settings → Financing:** enter real terms and select **Save financing**, or switch **Show financing on the website** off and save.
+7. **Settings → Calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
 8. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work** and the footer. No "Sample" label should be left.
 
 **What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
@@ -996,7 +995,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
    - **Battery capacity:** in kWh and in Ah.
    - **Solar panels:** how many panels you'd need to recharge in a normal day.
 5. Look at **Matching packages**: up to 3 packages big enough for you, cheapest first. Open one to see what's included.
-6. Look at the **generator comparison**: roughly what a generator of the same size costs you a month in fuel and servicing, and how many months a matching package would take to pay for itself.
+6. Look at the **generator comparison**: set **Generator hours a day** to how long you run a generator. You'll see roughly what a generator of the same size costs you a month in fuel and servicing, and how many months the cheapest matching package takes to pay for itself ("Pays for itself in about …").
 7. Select **Talk to an engineer** to have an engineer check your answer.
 
 **Tips**
@@ -1063,9 +1062,9 @@ When staff change something in the admin console (a price, a product, a package,
 | **An engineer can't see a job** | They aren't on the job's crew, or the job was cancelled. | Open the job in **Installations** and add them under **Engineers**. |
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
 | **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings** → Website, Financing and Calculator. |
-| **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings** → **Calculator** or **Financing**, switches **Enabled** on, checks the values and saves (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
+| **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings** → **Calculator** or **Financing**, switches on **Show the calculator on the website** or **Show financing on the website**, checks the values and saves (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
 | **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings** → **Website**, or the page hasn't refreshed yet. | Enter the number, save, and reload the website (story 10A.5). |
-| **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Active** is on, and reload the website. |
+| **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Show on the website** is on, and reload the website. |
 
 ---
 
