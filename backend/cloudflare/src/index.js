@@ -95,6 +95,7 @@ import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.
 import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
 import { assertCategoryExists, packagesInCategory } from "../../shared/catalog.js";
 import { idRef } from "../../shared/fields.js";
+import { filterPortfolio, portfolioCaseStudyPayload, serializePortfolio } from "../../shared/content.js";
 import {
   assertOptionProducts,
   packageLineSnapshot,
@@ -262,6 +263,8 @@ const contentPayload = async (env, body, existing, kind) => {
       link: link || (existing ? undefined : ""),
       featured: body.featured === undefined || body.featured === null ? (existing ? undefined : false) : optionalBoolean(body, "featured", false, "featured"),
       mobile: body.mobile === undefined || body.mobile === null ? (existing ? undefined : true) : optionalBoolean(body, "mobile", true, "mobile"),
+      // LANDING_V1 §2: category, summary, location, system; every save stores sample: false.
+      ...portfolioCaseStudyPayload(body, { isUpdate: Boolean(existing) }),
     };
   } else {
     const subtitle = stringField(body, "subtitle", { label: "Subtitle", required: true, max: LIMITS.serviceSubtitle });
@@ -863,15 +866,14 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
 
   if (request.method === "GET" && path === "/portfolio") {
     const items = await listCollection(env, "portfolio");
-    const data = url.searchParams.get("featured") === "true" ? items.filter((item) => item.featured) : items;
-    return ok("Portfolio retrieved.", data);
+    return ok("Portfolio retrieved.", filterPortfolio(items, Object.fromEntries(url.searchParams)));
   }
 
   const portfolioId = request.method === "GET" ? idAfter(path, "/portfolio") : null;
   if (portfolioId) {
     const item = await getCollectionItem(env, "portfolio", portfolioId);
     if (item.isActive === false) notFound("Portfolio item not found.");
-    return ok("Portfolio item retrieved.", item);
+    return ok("Portfolio item retrieved.", serializePortfolio(item));
   }
 
   if (request.method === "POST" && path === "/cart/quote") {
@@ -1409,12 +1411,13 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   // Portfolio
   if (method === "GET" && path === "/admin/portfolio") {
     can("content:read");
-    return ok("Portfolio retrieved.", await listCollection(env, "portfolio", { includeInactive: true }));
+    return ok("Portfolio retrieved.", (await listCollection(env, "portfolio", { includeInactive: true })).map(serializePortfolio));
   }
+  const servePortfolio = async (item) => serializePortfolio(item);
   if (method === "POST" && path === "/admin/portfolio") {
     can("content:write");
     const payload = await contentPayload(env, body, null, "portfolio");
-    return create({ entity: "portfolio", collection: "portfolio", payload, message: "Portfolio item created." });
+    return create({ entity: "portfolio", collection: "portfolio", payload, message: "Portfolio item created.", serialize: servePortfolio });
   }
   const portfolioId = idAfter(path, "/admin/portfolio");
   if (portfolioId) {
@@ -1424,6 +1427,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       id: portfolioId,
       payloadFor: (input, existing) => contentPayload(env, input, existing, "portfolio"),
       messages: { update: "Portfolio item updated.", delete: "Portfolio item deleted." },
+      serialize: servePortfolio,
     });
     if (response) return response;
   }

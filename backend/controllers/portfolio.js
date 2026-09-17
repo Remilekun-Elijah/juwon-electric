@@ -12,6 +12,7 @@ import {
   requiredUrl,
   sortOrderField,
 } from "../services/validators.js";
+import { filterPortfolio, portfolioCaseStudyPayload, serializePortfolio } from "../shared/content.js";
 
 // Update: optional fields that are absent (or blank text) are not written.
 const portfolioPayload = (body, { isUpdate }) => {
@@ -33,6 +34,8 @@ const portfolioPayload = (body, { isUpdate }) => {
     mobile: isUpdate ? mobile : mobile ?? true,
     isActive: isUpdate ? isActive : isActive ?? true,
     sortOrder,
+    // LANDING_V1 §2: category, summary, location, system; every save stores sample: false.
+    ...portfolioCaseStudyPayload(body, { isUpdate }),
   };
 };
 
@@ -41,6 +44,7 @@ const handlers = catalogHandlers({
   entity: "portfolio",
   buildPayload: portfolioPayload,
   slugSource: (item) => item.name,
+  serialize: serializePortfolio,
   messages: {
     create: "Portfolio item created.",
     update: "Portfolio item updated.",
@@ -50,19 +54,18 @@ const handlers = catalogHandlers({
 
 export const listPortfolio = async (req, res) => {
   const items = await listCollection("portfolio");
-  const data = req.query.featured === "true" ? items.filter((item) => item.featured) : items;
-  ok(res, "Portfolio retrieved.", data);
+  ok(res, "Portfolio retrieved.", filterPortfolio(items, req.query));
 };
 
 export const getPortfolioItem = async (req, res) => {
   const item = await getCollectionItem("portfolio", req.params.id);
   if (item.isActive === false) throw notFound("portfolio");
-  ok(res, "Portfolio item retrieved.", item);
+  ok(res, "Portfolio item retrieved.", serializePortfolio(item));
 };
 
 export const adminListPortfolio = async (_req, res) => {
   const items = await listCollection("portfolio", { includeInactive: true });
-  ok(res, "Portfolio retrieved.", items);
+  ok(res, "Portfolio retrieved.", items.map(serializePortfolio));
 };
 
 export const adminCreatePortfolioItem = handlers.create;
