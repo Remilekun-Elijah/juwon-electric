@@ -1,14 +1,13 @@
 "use client";
 
 import { Fragment, useEffect, useRef, type ReactNode } from "react";
-import Link from "next/link";
-import { ArrowLeft, FlaskConical, Lock } from "lucide-react";
+import { FlaskConical, Lock } from "lucide-react";
 import { useMockedAreas } from "@/components/admin/AdminContext";
 import { SampleBadge, SampleBanner } from "@/components/admin/website/shared";
 import { Alert, Button, EmptyState, ErrorState, Skeleton } from "@/components/ui";
 import { FEATURE_UNAVAILABLE_MESSAGE } from "@/lib/api/admin";
 import type { Settings } from "@/lib/api/types";
-import { SETTINGS_HREF, getSettingsSection, type SettingsSectionId } from "./sections";
+import { getSettingsSection, type SettingsSectionId } from "./sections";
 import { useSettings } from "./SettingsContext";
 import type { SaveSection } from "./settingsLayout";
 import { SettingsPills, SettingsRail } from "./SettingsNav";
@@ -50,7 +49,7 @@ export function SettingsLoadError({ error, onRetry, retrying }: { error: string;
 type SectionContext = { canWrite: boolean; save: SaveSection };
 
 /**
- * One settings page: back link, header (with the Sample badge while the section is sample), section navigation,
+ * One settings page: header (with the Sample badge while the section is sample), section navigation,
  * loading/error/permission states, then the section's form. The form is keyed by its saved values and the Discard
  * counter, so saving or discarding resets it.
  */
@@ -76,29 +75,20 @@ export function SettingsSectionPage({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Link
-          href={SETTINGS_HREF}
-          className="-ml-1 inline-flex min-h-11 items-center gap-1.5 rounded-md px-1 text-sm font-medium text-slate-600 transition-colors hover:text-brand-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 lg:min-h-0"
-        >
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-          Back to settings
-        </Link>
-        <header className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-700">Settings</p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1
-              ref={headingRef}
-              tabIndex={-1}
-              className="text-2xl font-bold tracking-tight text-slate-900 focus:outline-hidden"
-            >
-              {meta.label}
-            </h1>
-            {sample && <SampleBadge />}
-          </div>
-          <p className="mt-1 text-sm text-slate-500">{meta.description}</p>
-        </header>
-      </div>
+      <header className="min-w-0">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-700">Settings</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h1
+            ref={headingRef}
+            tabIndex={-1}
+            className="text-2xl font-bold tracking-tight text-slate-900 focus:outline-hidden"
+          >
+            {meta.label}
+          </h1>
+          {sample && <SampleBadge />}
+        </div>
+      <p className="mt-1 text-sm text-slate-500">{meta.description}</p>
+      </header>
 
       {!canRead ? (
         <EmptyState
