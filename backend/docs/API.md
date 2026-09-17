@@ -100,7 +100,7 @@ Request limits:
 | reply `message` | 10000 |
 | order/contact `note` | 2000 |
 | package `name` 100, `type`/`category` 50, `load` 1000, `kva` 20, `volt` 20 | |
-| package option `name` 100, `kits` 500 (required) | |
+| package option `name` 60 (unique per package, case-insensitive), `kits` 300 (required for manual-price options), item `note` 200 | |
 | service/customer segment `title` 150, `subtitle` 500; service `ctaLabel` 50 | |
 | portfolio `name` | 150 |
 | URL fields (`image`, `link`, `ctaUrl`) | 2048 |
@@ -117,7 +117,8 @@ Request limits:
   - `kva` is required and must be > 0; `volt` must be > 0 when present (send `null` to clear it).
   - `sortOrder`: 0 to 1,000,000.
   - `legacyId`: a whole number from 0 to 1,000,000,000, unique among packages; a duplicate returns `409` `"Another package already uses id N."`.
-  - Option `price`: greater than 0 and at most 1,000,000,000.
+  - Option `price` (manual-price options only): greater than 0 and at most 1,000,000,000.
+  - Option `priceAdjustment` (composed options only): a whole number from -1,000,000,000 to 1,000,000,000, default 0.
 - Cart `phoneNumber` and `emailAddress` are optional but validated when present.
 - Phone numbers may contain digits, spaces, `-`, `(`, `)` and one leading `+`, with 10-15 digits in total; otherwise `400` `"Enter a valid phone number."`. The trimmed original is stored.
 - URL fields (`image` on portfolio/services/customer segments, `link` on portfolio, `ctaUrl` on services) must be a site-relative path starting with a single `/` (no `//`, backslashes, whitespace or control characters) or an absolute `https://` URL; otherwise `400` `"<Field> must be an https:// URL or a path starting with /."`.
@@ -192,7 +193,7 @@ Cloudflare Workers runtime:
 - `GET /packages`
 - `GET /packages/:id` (`:id` is the id, slug or public `legacyId`; inactive packages return `404` `"Package not found."`)
 
-Returns package plans in the shape the existing React packages/cart UI expects:
+Returns package plans in the shape the existing React packages/cart UI expects, with computed options (COMMERCE_V2 §1.2):
 
 ```json
 {
@@ -210,12 +211,29 @@ Returns package plans in the shape the existing React packages/cart UI expects:
       "kva": 1.1,
       "volt": null,
       "options": [
-        { "name": "Without solar", "price": 700000, "kits": "1 battery..." }
+        { "name": "Without solar", "composed": false, "price": 700000, "available": true, "inStock": true, "kits": "1 battery...", "items": [] },
+        {
+          "name": "With solar",
+          "composed": true,
+          "price": 1150000,
+          "available": true,
+          "inStock": false,
+          "kits": "1 × 5kVA Inverter, 4 × 200Ah Battery",
+          "items": [
+            { "productId": "uuid", "quantity": 1, "note": null, "name": "5kVA Inverter", "slug": "5kva-inverter", "sku": "INV-5", "brand": "Felicity", "categoryId": "uuid", "attributes": { "capacity": 5 } }
+          ]
+        }
       ]
     }
   ]
 }
 ```
+
+- **Composed option** (`composed: true`, the stored option has `items`): `price` = Σ current product `price` × `quantity` + the option's `priceAdjustment`. `kits` is generated. `available` is `false` when a component product is missing or archived, or the price is ≤ 0. `inStock` is `true` when every component product has `stockQuantity >= quantity`. Hidden products can be components.
+- **Manual-price option** (`composed: false`, no `items`): the stored `price` and `kits`, `available: price > 0`, `inStock: true`, `items: []`.
+- The markup is internal: public responses never include `productsTotal`, `priceAdjustment`, or item `unitPrice`/`lineTotal`, and the deprecated top-level `items` is not returned.
+- Read-time migration: when a stored package still has top-level `items`, an option without items uses them (the next admin write persists this).
+- Product price changes are reflected immediately, because prices are computed on every read.
 
 ### Services
 
@@ -329,6 +347,8 @@ Quote body:
 }
 ```
 
+Package lines are priced with the option's computed `price` (see Packages); an option with `available: false` can't be priced. Request payloads are unchanged.
+
 Quote response (`200`): `data: { "items", "total", "unavailable" }`. `items` has the same length and order as the request. A line that can be priced has `packageId`, `legacyId`, `name`, `type`, `kva`, `volt`, `optionName`, `kits`, numeric `price`, `unitPrice`, `quantity`, `lineTotal` and `available: true`. A line that can't (inactive, removed or unmatched package/option) is `{ "available": false, "message": "This item is no longer available." }`. `total` sums the available lines and `unavailable` lists the indexes of the others. Validation errors (types, lengths, quantity, more than 50 items) still return `400`.
 
 Saved cart (`POST /cart`) also requires a `sessionId` and a `turnstileToken` (action `cart`). A cart with the same `sessionId` is updated (items, total, and name/phone/email when sent) and returns `200` `"Cart saved."`; otherwise a new cart is created with `201` `"Cart saved."`. Any unavailable item returns `400` `"Some items in your cart are no longer available. Please refresh your cart."`. Carts not updated for 30 days are deleted opportunistically. Cart items may also reference a package by its internal `packageId`.
@@ -368,8 +388,11 @@ Checkout item shape:
 
 Client-sent `price` and `total` are ignored. The server resolves each item to an active package, takes the unit price of the selected option, and stores:
 
-- per item: `package`, `type`, `kva` (display strings), `price` (`"₦1,150,000"`), `quantity`, plus `name`, `packageId`, `legacyId`, `optionName`, numeric `unitPrice` and `lineTotal`;
-- on the order: `total` (`"₦…"` string) and numeric `totalAmount`.
+- per item: `package`, `typeLabel`, `kva` (display strings), `volt`, `price` (`"₦1,150,000"`), `quantity`, plus `name`, `packageId`, `legacyId`, `optionName`, numeric `unitPrice` and `lineTotal`;
+- the line snapshot (COMMERCE_V2 §1.3): `type: "package"`, `components: [{ productId, sku, name, quantity, unitPrice }]` (per 1 package; `[]` for manual-price options), `productsTotal` (`null` for manual-price options) and `priceAdjustment`;
+- on the order: `total` (`"₦…"` string), numeric `totalAmount` and `channel: "website"`.
+
+Lines stored before this change carry the display label in `type` (`"Inverter + tubular"`); new lines carry it in `typeLabel`. A line is a product line only when `type` is `"product"`; any other value (or none) is a package line. The order email shows `typeLabel`, falling back to `type`.
 
 If any item cannot be resolved the request fails with `400` and `"Some items in your cart are no longer available. Please refresh your cart."`. Quantities must be whole numbers from 1 to 100.
 
@@ -380,7 +403,7 @@ Package resolution (identical in the Node backend and the Cloudflare Worker):
 
 Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With solar", otherwise "Without solar") → the kits text at the end of `package`. An explicit option name that doesn't exist falls back to `withSolar` and then the kits text; if neither is given or matches, the item is unavailable. With none of the three given, the first option is used.
 
-The order is persisted in `orders` with `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: false` and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
+The order is persisted in `orders` with `channel: "website"`, `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: false` and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
 
 ### Vacancies
 
@@ -412,6 +435,7 @@ Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `
 | `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio` |
 | `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio |
 | `orders:read` | admin, inventory, sales, support | `GET /admin/orders`, `GET /admin/orders/:id`, `GET /admin/carts` |
+| `orders:create` | admin, sales | `POST /admin/orders` (in-store orders) |
 | `orders:update` | admin, sales | `PUT /admin/orders/:id` |
 | `orders:delete` | admin | `DELETE /admin/orders/:id` |
 | `leads:read` | admin, sales, support | `GET /admin/contacts`, `GET /admin/newsletter` |
@@ -516,6 +540,8 @@ Packages:
 - `PUT /admin/packages/:id`
 - `DELETE /admin/packages/:id`
 
+Admin package responses (list, create, update, delete) are the stored record with computed `options` (the public option fields plus `productsTotal`, `priceAdjustment`, and per item `unitPrice` and `lineTotal`), without the deprecated top-level `items`. Package writes are described under "Package options" in the Commerce section.
+
 Services:
 
 - `GET /admin/services`
@@ -589,7 +615,13 @@ Products:
 - **`stockQuantity`:** can only be set on create (0–1,000,000), where it is written as an `initial` movement. A `PUT` with a different value answers `400` `"Use an inventory adjustment to change stock."`.
 - **Responses:** add `lowStock` (`stockQuantity <= reorderLevel`). Public products omit `costPrice`, `stockQuantity`, `reorderLevel` and `lowStock`, and add `inStock` and `category`.
 
-Packages accept `items: [{ productId, quantity (1–1000), note (≤200) }]` (≤50). Every product must exist, otherwise `400` `"Product not found."`. Public `GET /packages` and `GET /packages/:id` are unchanged for packages without items. With items, they add `items: [{ productId, quantity, note, name, slug, sku }]`.
+Package options (COMMERCE_V2 §1.1). `POST/PUT /admin/packages` take `options[]` (1–10):
+
+- **Composed option:** `{ name, items: [{ productId, quantity (1–1000), note? (≤200) }] (1–50), priceAdjustment? }`. A sent `price` or `kits` is ignored; the price is computed.
+- **Manual-price option:** `{ name, price, kits }` with no items (or `items: []`).
+- Errors (all `400`): `"At least one package option is required."`, `"Option names must be unique."`, `"Each product can appear once per option."`, `"Product not found."`, `"Archived products can't be added to a package."`, `"Option <name> price must be greater than 0."`, `"Price adjustment must be a whole number from -1,000,000,000 to 1,000,000,000."`, `"An option can have at most 50 products."`.
+- Top-level `items` is deprecated: sent together with any option without items it answers `400` `"Add products to each option instead of the package."`; otherwise it is ignored. Every update clears a stored top-level `items`.
+- `DELETE /admin/products/:id` answers `409` `"Product is used by a package."` when any option (or a stored top-level `items`) uses the product. Archiving such a product is allowed and makes those options unavailable.
 
 Audit actions: `category.create|update|delete`, `product.create|update|delete`.
 
@@ -626,10 +658,12 @@ Enums, transitions and stock rules: contract §6. Every admin order response is 
 - **`status`:** always derived from `fulfillmentStatus`.
 - **Persistence:** D1 migration `0011_orders_fulfilment.sql` writes the same values, and Express writes them on the next change.
 - **Removed field:** the internal `sortOrder` is no longer part of order responses.
+- **Commerce v2 fields:** every response includes `channel` (`"website"` when not stored), `subtotal` (`null` for website orders), `discount` (`{ amount, reason }` or `null`) and `createdBy` (`{ id, email }`, `null` for website orders). These defaults are read-time only.
 
 Endpoints:
 
-- `GET /admin/orders?fulfillmentStatus&paymentStatus&engineerId&requiresInstallation&from&to` (`orders:read`): array. `from` and `to` filter on `receivedAt`, falling back to `createdAt`.
+- `GET /admin/orders?fulfillmentStatus&paymentStatus&channel&engineerId&requiresInstallation&from&to` (`orders:read`): array. `from` and `to` filter on `receivedAt`, falling back to `createdAt`. `channel` is `website` or `in_store` (otherwise `400` `"Channel is not valid."`).
+- `POST /admin/orders` (`orders:create`): an in-store sale of products. See "In-store orders" below.
 - `GET /admin/orders/:id` (`orders:read`): the order plus `jobs: [{ id, status, engineerId, scheduledAt }]`.
 - `PUT /admin/orders/:id` (`orders:update`): `200` `"Order updated."`. Body `{ note?, isActive?, requiresInstallation?, paymentStatus?, fulfillmentStatus?, status? }`.
   - `status` must equal the current derived value, otherwise `400` `"Use fulfillmentStatus to change the order status."`.
@@ -645,8 +679,8 @@ Transition errors: `409` `"Cannot change fulfilment status from <from> to <to>."
 
 Stock:
 
-- **`pending → processing`:** every order line whose `packageId` resolves to a package with `items` decrements `item.quantity × line.quantity` per product. These are `sale` movements with `referenceType: "order"`. It is all-or-nothing: a shortfall answers `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]` ordered by SKU, and nothing is written. `stockCommittedAt` is set only when stock actually moved.
-- **`→ cancelled` with `stockCommittedAt` set:** `sale_reversal` movements restore the net quantity of the order's `sale` movements, and `stockCommittedAt` becomes `null`.
+- **`pending → processing`:** stock is taken from the order line snapshots: a product line (`type: "product"`) decrements `line.quantity`, and a package line decrements `components[i].quantity × line.quantity`. A package line without `components` (placed before snapshots) falls back to the current package: the items of the option named `optionName`, else the package's top-level `items`. Later package edits never change what an order commits. These are `sale` movements with `referenceType: "order"`. It is all-or-nothing: a shortfall answers `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]` ordered by SKU, and nothing is written. `stockCommittedAt` is set only when stock actually moved.
+- **`→ cancelled` with `stockCommittedAt` set:** `sale_reversal` movements restore the net quantity of the order's `sale` movements, and `stockCommittedAt` becomes `null`. A product that has since been deleted is skipped: the cancel still succeeds, and the `order.fulfillment_change` audit summary ends with `; stock not restored for deleted product <sku>`.
 - **Write safety:** the stock changes and the order update are one atomic write. It is guarded by the order's stored `fulfillmentStatus` and `paymentStatus` (`assignedEngineerId` for assignment). A concurrent status change answers `409` `"This record was changed by another request. Please try again."`, so stock is never committed twice.
 
 Audit actions:
@@ -655,6 +689,39 @@ Audit actions:
 - `order.fulfillment_change`: the summary shows `from → to`.
 - `order.status_change`: written in addition when the derived `status` changes.
 - `order.payment_change`, `order.assign_engineer`, `order.delete`.
+- `order.create`: an in-store order (below).
+
+#### In-store orders
+
+`POST /admin/orders` (`orders:create`: superadmin, admin, sales) → `201` `"Order created."` with the order.
+
+```json
+{
+  "customer": { "name": "Ada", "phoneNumber": "08012345678", "emailAddress": null, "deliveryAddress": null },
+  "lines": [{ "productId": "uuid", "quantity": 2 }],
+  "discount": { "amount": 10000, "reason": "Loyal customer" },
+  "fulfilment": "collected",
+  "paymentStatus": "paid",
+  "requiresInstallation": false,
+  "note": null
+}
+```
+
+Validation (`400`):
+
+- Customer: `name` required (≤100), `phoneNumber` required (the public order rule, `"Enter a valid phone number."`), `emailAddress` optional (`"A valid email address is required."`), `deliveryAddress` optional (≤500). A missing `customer` answers `"Name is required."`.
+- `lines`: 1–50 (`"Add at least one product."`, `"An order can have at most 50 lines."`), unique `productId` (`"Each product can appear once per order."`), `quantity` a whole number from 1 to 1,000. Products must exist (`"Product not found."`) and not be archived (`"Archived products can't be sold."`); hidden products are allowed.
+- `discount` (optional): `amount` a whole number ≥ 0 (`"Discount amount must be a whole number..."`) and not more than the subtotal (`"Discount can't be more than the subtotal."`). When `amount > 0`, `reason` is required (`"Discount reason is required."`), 3–200 characters (`"Discount reason must be at least 3 characters."`).
+- `fulfilment`: `collected` or `later` (`"Fulfilment is not valid."`). `paymentStatus`: `pending`, `partial` or `paid` (`"Payment status is not valid."`).
+- `requiresInstallation: true` needs `later` (`"Installation requires a later fulfilment."`); `later` needs a `deliveryAddress` (`"Delivery address is required for later fulfilment."`).
+- `note`: ≤500.
+
+Stored order: the customer fields (absent email or address stored as `null`), `order: [{ type: "product", productId, sku, name, quantity, unitPrice, lineTotal }]` with the current product prices, `subtotal`, `discount` (`null` when the amount is 0), `totalAmount = subtotal − discount`, `total` (`"₦…"`), `channel: "in_store"`, `createdBy: { id, email }`, `source: "admin"`, `paymentStatus` (`paidAt` set when `paid`), `requiresInstallation`, `note`, `assignedEngineerId: null`.
+
+- **`later`:** `fulfillmentStatus: "pending"`, no stock change. Stock is committed at `processing`, as for website orders.
+- **`collected`:** the `sale` movements, the stock updates and the order insert are one atomic write (the JSON store lock; Mongo conditional `$inc` with compensation; one D1 batch with guard rows). The order is stored `fulfillmentStatus: "delivered"` (`status: "completed"`) with `stockCommittedAt` set. On a shortfall the answer is `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]`, and no order is created.
+
+Audit: `order.create` with summary `In-store order for <name>: <n> items, ₦<total>` (n = total quantity), plus `; discount ₦<amount> (<reason>)` when discounted. Collected orders also log `order.fulfillment_change` `pending → delivered`. Notification: `new_order` with `data: { channel: "in_store" }`.
 
 ### Installation jobs, engineer endpoints and staff
 
@@ -716,13 +783,13 @@ Recipients: new-order emails go to `notifications.orderEmails` and low-stock ema
 Notifications (contract §8.2). Types and when they are created:
 
 - `low_stock`: a product crosses its reorder level. Created even when low-stock emails are disabled.
-- `new_order`: a public order is placed.
+- `new_order`: a public order is placed or an in-store order is created. `data: { channel }`.
 - `vacancy_posted`: a vacancy's first publish.
 - `job_assigned`: a job is created with an engineer or assigned. `recipientId` is the engineer.
 
 Audience: `low_stock` needs `inventory:read`, `new_order` needs `orders:read`, `vacancy_posted` needs `vacancies:read`, and `job_assigned` is visible only to its recipient. `read` is computed per admin. Records older than 90 days are removed opportunistically.
 
-- `GET /admin/notifications?unread=true&type&page&limit` (`notifications:read`, paged, newest first): `"Notifications retrieved."`, plus `unreadCount` for every unread notification in the audience, whatever the filters. An invalid type answers `400` `"Type is not valid."`.
+- `GET /admin/notifications?unread=true&type&page&limit` (`notifications:read`, paged, newest first): `"Notifications retrieved."`. Each notification is `{ id, type, title, message, entity, entityId, recipientId, data, read, createdAt }` (`data` is `null` except for `new_order`), plus `unreadCount` for every unread notification in the audience, whatever the filters. An invalid type answers `400` `"Type is not valid."`.
 - `POST /admin/notifications/:id/read` (`notifications:read`): `"Notification marked as read."` with the notification. `404` `"Notification not found."` when it does not exist or is outside the caller's audience.
 - `POST /admin/notifications/read-all` (`notifications:read`): `"All notifications marked as read."` with `{ unreadCount: 0 }`.
 
