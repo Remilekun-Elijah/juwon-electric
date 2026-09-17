@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PageIntro from "@/components/storefront/PageIntro";
+import CartView from "@/components/storefront/cart/CartView";
 
-// Placeholder from S0 (storefront foundation). The owning agent replaces the body; keep the metadata canonical.
 export const revalidate = 60;
 
 export const metadata: Metadata = {
@@ -11,12 +11,16 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
+/** `/cart`: static shell with the stored cart rendered by a client island (the cart lives in the browser). */
 export default function Page() {
   return (
-    <PageIntro
-      eyebrow="Cart"
-      title="Your cart"
-      description="Review your packages, choose with or without solar, and check out."
-    />
+    <>
+      <PageIntro
+        eyebrow="Cart"
+        title="Your cart"
+        description="Review your packages, choose with or without solar, and check out. We’ll call you to confirm before anything is delivered."
+      />
+      <CartView />
+    </>
   );
 }
