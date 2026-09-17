@@ -1,6 +1,6 @@
 # How to use the Juwon Electric platform
 
-Last updated: 2026-09-17 (Team page and home redesign)
+Last updated: 2026-09-17 (Image uploads)
 
 This guide explains, in plain steps, how to do everyday work on the Juwon Electric platform: the **admin console** (for staff) and the **public website** (for customers). Each chapter is written for one kind of user.
 
@@ -94,6 +94,32 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 - **Refresh data** (the circular arrow at the top) reloads the page's information.
 - **New activity banner:** when new customer messages, customer replies or orders arrive, a banner says, for example, "You have 2 new messages and 1 new order." Open an item to mark it as read, or select **Mark all as read**. Your read status is saved to your account, so it follows you to other devices.
 - **Signing out:** use the account menu at the top.
+
+### Adding images
+
+Most forms with a picture (products, categories, services, portfolio, customer segments, reviews, client logos and team members) let you upload an image from your computer or phone.
+
+1. In the image field, select **Choose image** (**Choose images** on products), or drag the file from your computer and drop it on the box that says "Drag an image here, or choose one."
+2. Wait while the field shows **Preparing image…** and then **Uploading…** with a progress bar. To stop, select the cross (**Cancel**).
+3. When it's done you'll see a small preview. Select **Replace** to use a different picture, or **Remove** to clear it.
+4. Save the form as usual. The picture shows on the website once the form is saved.
+
+**Which files work:** JPEG, PNG and WebP pictures. Photos straight from a phone camera are fine. Other files, such as SVG drawings, PDFs or documents, aren't accepted.
+
+**Big photos are shrunk automatically.** Before uploading, the console makes large photos smaller so the website stays fast. You don't need to resize anything first. Logos with a transparent background stay transparent.
+
+**Using a link instead:** select **Use an image link instead** and type an `https://` link, or a path to a picture already on our website starting with `/` (for example `/panel-4.webp`). Older items that already use a link keep working. If a form shows only a link box and no **Choose image** button (on products, an **Add image** button), uploading isn't available right now: type a link, or try again later.
+
+**If an upload fails**, the message under the field tells you what to do:
+
+| Message | What to do |
+|---|---|
+| "That file isn't an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image." | Choose a JPEG, PNG or WebP picture. If you only have another kind of file, open it and save or export it as JPEG or PNG first. |
+| "Couldn't read that image. Choose a JPEG, PNG or WebP image." | The file may be damaged or in a format the browser can't open. Save it again as JPEG or PNG, or choose another picture. |
+| "That image is over 15 MB. Choose a smaller image." | Choose a smaller copy of the picture (for example, send it to yourself on WhatsApp or email and save that copy). |
+| "Couldn't make that image small enough to upload. Choose a different image." or "Image must be 2 MB or smaller." | Choose a different, simpler picture, or a smaller copy of it. |
+| "Couldn't upload the image. Try again." | Check your internet connection and try again. |
+| "Image uploads are unavailable right now. Please use an image link or try again later." | The link box opens for you. Use an image link instead, or try uploading again later. |
 
 ---
 
@@ -233,9 +259,9 @@ Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super ad
 
 1. Go to **Services**.
 2. To add a service, select **Add service**. To change one, select **Edit** on its row.
-3. Fill in **Title**, **Description**, **Image path** (a photo already on the website, like `/panel-4.webp`, or a full `https://` link), and optionally **Button label** and **Button link**.
+3. Fill in **Title** and **Description**. For **Image**, select **Choose image** or drag a photo onto the box (see [Adding images](#adding-images)); or select **Use an image link instead** and type a path such as `/panel-4.webp` or a full `https://` link. Optionally fill in **Button label** and **Button link**.
 4. Tick **Show on the Services page** to make it public. Save.
-5. For **Customer segments** (the kinds of customers listed under "Who we serve", for example homes or businesses), open the customer segments section on the Services page. Fill in **Title**, **Subtitle** and **Image path**, tick **Show on the Services page**, and save.
+5. For **Customer segments** (the kinds of customers listed under "Who we serve", for example homes or businesses), open the customer segments section on the Services page. Fill in **Title** and **Subtitle**, upload the **Image** with **Choose image** (or use an image link), tick **Show on the Services page**, and save.
 
 **Tip:** untick "Show on…" to hide an item without deleting it.
 
@@ -244,7 +270,7 @@ Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super ad
 *As an admin, I want to show completed installations so that customers trust our work.*
 
 1. Go to **Portfolio** and add a project.
-2. Enter **Name**, **Image path** and optionally an **External link** (for example the Instagram post).
+2. Enter **Name**, upload the project photo under **Image** with **Choose image** or drag and drop (or select **Use an image link instead**), and optionally add an **External link** (for example the Instagram post).
 3. Choose where it shows: **Featured on the home page**, **Show on mobile**, **Show on the Portfolio page**. Save.
 
 **Tip:** to show a project as a case study on the home page, also fill in **Category**, **Summary**, **Location** and **System** (chapter 10A, story 10A.4).
@@ -419,7 +445,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 *As an inventory manager, I want to group products and decide which specifications each group records so that product pages are consistent.*
 
 1. Go to **Categories** and add a category.
-2. Enter **Name**, optionally **Parent category** (or "None (top level)"), **Description**, **Image URL** and **Sort order** (lower numbers show first).
+2. Enter **Name**, optionally **Parent category** (or "None (top level)"), **Description**, an **Image** (select **Choose image** or drag one in, or use an image link) and **Sort order** (lower numbers show first).
 3. Under specifications, add one row per spec: **Key** (for example `capacityKwh`), **Label** (for example "Capacity"), **Type** (Text, Number or Yes / no) and **Unit** (for example "kWh").
 4. Tick **Active** to show it on the website. Save.
 
@@ -434,14 +460,20 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 1. Go to **Products** and select **Add product**.
 2. Fill in **SKU**, **Name**, **Brand**, **Category** and **Price (NGN)**. **Cost price (NGN)** is optional and only visible to admins.
 3. Fill in the specifications for the category, and add any extra details.
-4. Add image links, **Tags** (separated by commas) and a **Description**.
-5. Set **Opening stock** and **Reorder level** (low-stock alerts start at this quantity).
-6. Choose **Status**: Active (on the website), Hidden (admin only, can still be used in packages and in-store sales) or Archived (retired).
-7. Select **Add product**.
+4. Add **Images** (up to 10):
+   - Select **Choose images**, or drag several photos onto the box ("Drag images here, or choose them."). They upload one after another, in the order you chose them.
+   - The first image has a **Main** badge. It's the one customers see first. Use the up and down arrows (**Move up** / **Move down**) on a row to change the order.
+   - On each row, **Replace** swaps the picture, **Edit link** shows its link, and **Remove** (the bin) takes it off.
+   - To add a picture by link, select **Use an image link instead** and type the link.
+5. Add **Tags** (separated by commas) and a **Description**.
+6. Set **Opening stock** and **Reorder level** (low-stock alerts start at this quantity).
+7. Choose **Status**: Active (on the website), Hidden (admin only, can still be used in packages and in-store sales) or Archived (retired).
+8. Select **Add product**.
 
 **Tips and common mistakes**
 
 - Each SKU must be unique.
+- A product can have up to 10 images. If you choose more than fit, the first ones are added and a message says how many ("Only 2 more images fit, so the first 2 were added."). Remove one to add another.
 - After creating a product, change stock only through **Inventory** (story 7.3), not the product form.
 - Changing the price of a product used in packages shows "Used in N package options. Their prices will update." That is expected.
 
@@ -547,7 +579,7 @@ Use **My jobs** on your phone on site. It shows only jobs where you are on the c
 
 *As an engineer, I want to leave evidence and notes so that the office can close the order.*
 
-1. Add a photo by pasting its link in **Photo URL**. Photos are added as links for now.
+1. Add a photo by pasting its link in **Photo URL**. Job photos are still added as links; uploading from your phone isn't available on this screen yet.
 2. Type what you did and anything the office should know in **Notes for the office**, and save.
 3. When **every** checklist item is ticked, tap **Mark complete**.
 
@@ -720,7 +752,7 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
    - **Review** (required, 10 to 1,000 characters): the customer's words.
    - **Rating** (optional): 1 to 5 stars, or **No rating**.
    - **Source** (optional): where the customer left the review: Website, WhatsApp, Google, Facebook or In person.
-   - **Photo URL** (optional): an `https://` link to the customer's photo, or a path to a picture on our website such as `/reviews/adaeze.jpg`. Only use a photo the customer agreed to share.
+   - **Photo** (optional): select **Choose image** or drag the customer's photo onto the box. It shows as a round preview. Or select **Use an image link instead** and type an `https://` link or a path such as `/reviews/adaeze.jpg`. Only use a photo the customer agreed to share.
 3. Leave **Show on the website** on and select **Add review** (or **Save changes**). Use **Move up** and **Move down** to decide which show first.
 
 **What you'll see on the website:** a reviews section on the home page with stars, name, context and a small source badge. Customers move through the reviews themselves; they never change on their own.
@@ -739,7 +771,7 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 1. Go to **Website** → **Client logos** and select **Add client logo**.
 2. Fill in:
    - **Client name** (required). It's also read out by screen readers in place of the logo.
-   - **Logo** (required): either a full link starting with `https://`, or a path to a file on our website starting with `/`, for example `/clients/acme.svg`. SVG or a transparent PNG looks best. Ask your developer to add the logo file to the website if you don't have a link.
+   - **Logo** (required): select **Choose image** or drag the logo file onto the box. A PNG with a transparent background looks best, and it stays transparent after upload; JPEG and WebP work too. SVG files can't be uploaded: if the client only sent an SVG, ask them for a PNG, or select **Use an image link instead** and type a link starting with `https://` or a path on our website such as `/clients/acme.svg`.
    - **Website** (optional): the client's `https://` website link.
 3. Leave **Show on the website** on and select **Add client logo** (or **Save changes**). Check the logo preview. Use **Move up** and **Move down** to change the order.
 
@@ -747,7 +779,7 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 **Tips and common mistakes**
 
-- A logo must be a link or a path starting with `/`. Anything else is refused.
+- A logo must be an uploaded JPEG, PNG or WebP image, or a link or a path starting with `/`. Anything else is refused.
 - A logo on a clear or white background with the name readable looks best.
 
 ### Story 10A.4: Fill in portfolio case-study details
@@ -864,7 +896,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 1. **FAQs:** open each Sample FAQ. Rewrite it to match how we really work and save, or delete it.
 2. **Reviews:** delete every Sample review. Add only real ones (story 10A.2).
 3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
-4. **Team:** delete every Sample team member and add the real team, or replace each one's details and photo and save (story 10A.9).
+4. **Team:** delete every Sample team member and add the real team, or replace each one's details, upload their real photo and save (story 10A.9).
 5. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
 6. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save website**.
 7. **Settings → Financing:** enter real terms and select **Save financing**, or switch **Show financing on the website** off and save.
@@ -894,7 +926,7 @@ The public page is **Meet the team** at `/team`. It lists every team member whos
    - **Role** (required, up to 80 characters), for example "Lead installation engineer".
    - **Group** (required, up to 60 characters): the heading they appear under. Pick an existing group from the suggestions or type a new one. Suggestions include "Leadership", "Engineering & installations", "Sales & customer care" and "Operations".
    - **Bio** (optional, up to 300 characters): one or two sentences about their work. A counter shows how many characters you've used. Line breaks aren't kept.
-   - **Photo URL** (optional): an `https://` link or a path to a picture on our website, such as `/team/ada.jpg`. Square photos look best. A preview shows how the photo will look. If there's no photo, or the link doesn't work ("Can't show this image. Check the link."), the website shows their initials instead.
+   - **Photo** (optional): select **Choose image** or drag their photo onto the box. Square photos look best. A preview shows how it will look; use **Replace** or **Remove** to change it. You can also select **Use an image link instead** and type an `https://` link or a path such as `/team/ada.jpg`. Without a photo, the website shows their initials.
    - **LinkedIn URL** (optional): their public LinkedIn profile, starting with `https://`.
 4. Leave **Show on the website** on, then select **Add team member** (or **Save changes**).
 
@@ -913,7 +945,7 @@ The public page is **Meet the team** at `/team`. It lists every team member whos
 
 The team page was built with **12 sample team members**: made-up names with drawn placeholder portraits (not real people). Each has a **Sample** badge, and the list shows the sample banner.
 
-1. Delete every sample member, then add the real team, or open each sample member and replace **Name**, **Role**, **Group**, **Bio** and **Photo URL** with a real person's details and save.
+1. Delete every sample member, then add the real team, or open each sample member and replace **Name**, **Role**, **Group**, **Bio** and **Photo** with a real person's details and save.
 2. Moving a sample member or switching them off doesn't remove the Sample badge. Only changing their details and saving does.
 3. Check `/team` on your phone: no card should show a "Sample" label, and no photo should be a drawing.
 
@@ -1162,7 +1194,10 @@ When staff change something in the admin console (a price, a product, a package,
 | **Hero photos aren't changing** (home page) | The slideshow is paused: someone selected the pause button, or the mouse is resting over the photo area, or keyboard focus is inside it. Or the device is set to reduce motion, which turns off automatic changes. | Select the **play** button next to the bars, or move the mouse away. With reduce motion on, this is expected: select a bar to see each photo. |
 | **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're under the right heading. |
 | **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings** → **Website** (home stats) or the team list (team page figures are counted from it). |
-| **Team page shows drawings instead of photos** | These are the sample team members' placeholder portraits, or a member has no **Photo URL** (initials show instead). | Replace the sample team with real people (story 10A.9) and add each person's photo. |
+| **Image won't upload** | The file isn't a supported picture, the connection dropped, or uploads are unavailable for a while ("Image uploads are unavailable right now. Please use an image link or try again later."). | Read the message under the field and follow [Adding images](#adding-images). Check your connection and try again. If uploads are unavailable, select **Use an image link instead**, or try again later. |
+| **Image looks blurry** (website) | The original picture was small or low quality. Large photos are shrunk to a sensible size, but small ones can't be made sharper. | Upload a larger, sharper original with **Replace**. Use the photo straight from the camera, not a screenshot or a copy from a chat. |
+| **Wrong file type** ("That file isn't an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image.") | Only JPEG, PNG and WebP pictures can be uploaded. SVG drawings, PDFs and documents can't. | Save or export the picture as JPEG or PNG and upload that, or ask whoever sent it for a PNG or JPEG. You can also use an image link. |
+| **Team page shows drawings instead of photos** | These are the sample team members' placeholder portraits, or a member has no **Photo** (initials show instead). | Replace the sample team with real people (story 10A.9) and add each person's photo. |
 
 ---
 
@@ -1177,6 +1212,12 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (Image uploads)**
+- New section in chapter 3, Adding images: **Choose image** or drag and drop, progress, **Replace** and **Remove**, JPEG, PNG and WebP only, big photos shrunk automatically, what each error message means, and **Use an image link instead**.
+- Uploading images instead of typing links: services and customer segments (story 5.1), portfolio (story 5.2), categories (story 7.1), products with up to 10 images, the **Main** badge and **Move up** / **Move down** (story 7.2), review photos (story 10A.2), client logos, which stay transparent (story 10A.3), and team photos, now labelled **Photo** (stories 10A.8, 10A.9).
+- Engineer job photos (story 8.3) and staff profile photos (story 9.4) are still added as links.
+- Troubleshooting: image won't upload, image looks blurry, and wrong file type.
 
 **2026-09-17 (motion on every page)**
 - Customer: every page now opens with a dark photo header and animates like the home page; in the cart, a removed item folds away and **Undo** brings it back.
