@@ -107,12 +107,6 @@ export function SettingsForm() {
           />
           <PaymentsSection key={JSON.stringify(data.payments)} value={data.payments} canWrite={canWrite} save={save} />
           <InventorySection key={JSON.stringify(data.inventory)} value={data.inventory} canWrite={canWrite} save={save} />
-          <SectionCard title="Uploads" description="How images are added across the admin.">
-            <p className="text-sm text-slate-700">
-              <span className="font-medium">Image URLs.</span> Paste an https:// link or a site path for each image.
-              File uploads aren’t available yet.
-            </p>
-          </SectionCard>
         </div>
       )}
     </AdminPage>
