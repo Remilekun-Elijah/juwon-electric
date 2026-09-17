@@ -282,7 +282,8 @@ export const getUploadConfig = async () => (await adminFetch<UploadConfig>("/upl
  * `?purpose=` for POST /admin/uploads: the shared purposes plus `jobs` (job photos: jobs:update-own or jobs:assign)
  * and `staff` (staff profile photos: staff:write).
  */
-export type AdminUploadPurpose = UploadPurpose | "jobs" | "staff";
+/** Kept as an alias; `UploadPurpose` now includes jobs and staff. */
+export type AdminUploadPurpose = UploadPurpose;
 
 export type UploadImageOptions = {
   /** Called with the fraction (0 to 1) of bytes sent. */

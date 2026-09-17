@@ -938,6 +938,8 @@ export type UploadPurpose =
   | "reviews"
   | "clients"
   | "team"
+  | "jobs"
+  | "staff"
   | "other";
 
 /** GET /admin/uploads/config. Never carries usage or storage limits. */

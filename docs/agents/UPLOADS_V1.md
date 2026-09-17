@@ -17,7 +17,7 @@ Status: **binding**. Branch: `agents/v3-commerce`. Owner decisions, 2026-09-17:
 Both runtimes expose these endpoints.
 - **`GET /admin/uploads/config`**: authenticated, any capability. Returns `{ enabled: true, maxBytes: 2_000_000, accept: ["image/jpeg","image/png","image/webp"], maxDimension: 1600 }`. Nothing about usage or limits is exposed.
 - **`POST /admin/uploads`**:
-  - Access: requires at least one of `content:write`, `products:write` or `staff:write`; otherwise 403 with the standard message.
+  - Access: requires at least one of `content:write`, `products:write`, `staff:write`, `jobs:update-own` or `jobs:assign`; otherwise 403 with the standard message. Per purpose (follow-up 2026-09-17): `jobs` needs `jobs:update-own` or `jobs:assign`, `staff` needs `staff:write`, all other purposes need `content:write`, `products:write` or `staff:write`. The 429 message is "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again."
   - Body: raw bytes, not JSON. `Content-Type` is `image/jpeg`, `image/png` or `image/webp`, and there's an optional `?purpose=` for the key prefix: `products|categories|packages|services|portfolio|segments|reviews|clients|team|other` (default `other`). This route is exempt from the JSON-only 415 rule.
   - Validation:
     - Size 1 byte to 2 MB, otherwise `413 "Image must be 2 MB or smaller."`. Enforce this before reading the whole body: check `Content-Length` first and cap the read.
