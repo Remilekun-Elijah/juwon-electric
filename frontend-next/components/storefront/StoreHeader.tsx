@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, Menu, Phone } from "lucide-react";
 import { Drawer, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { contactTopicPath, isActivePath, primaryPhone, publicPathname, storeDrawerNav, storeNav, storeRoutes, telHref } from "@/lib/storefront/routes";
+import { contactTopicPath, isActivePath, primaryPhone, storeDrawerNav, storeNav, storeRoutes, telHref } from "@/lib/storefront/routes";
 import { storeContainer, storeFocus, storePress } from "@/lib/storefront/styles";
 import CartButton from "./cart/CartButton";
 
@@ -18,7 +18,10 @@ const withCalculator = <T extends { href: string }>(items: T[], calculatorEnable
 /** Scroll distance after which the home header turns solid (TEAM_AND_MOTION_V1 §7.2). */
 const SOLID_AFTER_PX = 24;
 
-/** Height of the header bar. HomeHero pulls itself up by the same amount (`-mt-16 md:-mt-[72px]`) to sit under it. */
+/**
+ * Height of the header bar. HomeHero, PageIntro and their loading placeholders pull themselves up by the same amount
+ * (`-mt-16 md:-mt-[72px]`) to sit under it.
+ */
 const HEADER_HEIGHT = "h-16 md:h-[72px]";
 
 const quoteHref = contactTopicPath("Quote");
@@ -30,9 +33,54 @@ export type StoreHeaderProps = {
   calculatorEnabled: boolean;
 };
 
+/** Elements that take no space or aren't shown, so a hero after them still starts the page. */
+const NON_VISUAL_TAGS = new Set(["SCRIPT", "STYLE", "TEMPLATE", "LINK", "META", "NOSCRIPT"]);
+const isNonVisual = (element: Element) =>
+  NON_VISUAL_TAGS.has(element.tagName) || element.hasAttribute("hidden") || element.classList.contains("sr-only");
+
+/** True when the first shown element of `#store-main` is (or starts with) a `[data-store-hero]` band. */
+function pageStartsWithHero() {
+  const main = document.getElementById("store-main");
+  const hero = main?.querySelector("[data-store-hero]");
+  if (!main || !hero) return false;
+  for (let node: Element | null = hero; node && node !== main; node = node.parentElement) {
+    for (let sibling = node.previousElementSibling; sibling; sibling = sibling.previousElementSibling) {
+      if (!isNonVisual(sibling)) return false;
+    }
+  }
+  return true;
+}
+
+/** Re-checks after the page content changes (navigation, a loading placeholder swapping to the page), once a frame. */
+function subscribeToPage(onChange: () => void) {
+  const main = document.getElementById("store-main");
+  if (!main || typeof MutationObserver === "undefined") return () => {};
+  let frame = 0;
+  const observer = new MutationObserver(() => {
+    if (!frame) {
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        onChange();
+      });
+    }
+  });
+  observer.observe(main, { childList: true, subtree: true });
+  return () => {
+    observer.disconnect();
+    if (frame) cancelAnimationFrame(frame);
+  };
+}
+
+/**
+ * Whether the page begins with a dark hero (TEAM_AND_MOTION_V1 §8.1). Every storefront page and loading placeholder
+ * does, so the server render (and hydration) assume yes; the browser then checks the DOM, which only differs on the
+ * error page.
+ */
+const usePageHasHero = () => useSyncExternalStore(subscribeToPage, pageStartsWithHero, () => true);
+
 /**
  * True while the page is scrolled past the threshold. The one scroll listener the storefront allows (§7.2): passive, and
- * throttled to one check per animation frame. Only attached on the home page.
+ * throttled to one check per animation frame. Only attached on pages that start with a hero.
  */
 function useScrolledPast(enabled: boolean, threshold: number) {
   const [past, setPast] = useState(false);
@@ -61,9 +109,9 @@ function useScrolledPast(enabled: boolean, threshold: number) {
 /**
  * Sticky header: logo, main navigation, phone (xl), "Get a quote", cart with live count, and a mobile navigation drawer.
  *
- * On the home page at the top it is transparent over the hero: white nav with a gold underline on the active item, the
- * logo on a white chip, a glass cart and menu button and a gold quote pill. After scrolling 24px, and on every other
- * page, it is the solid white header. Colours, background and shadow transition over 250ms; the bar height never
+ * At the top of any page that starts with a `[data-store-hero]` band (the home hero and every PageIntro) it is
+ * transparent over it: white nav with a gold underline on the active item, the logo on a white chip, a glass cart and
+ * menu button and a gold quote pill. After scrolling 24px, and on a page without a hero, it is the solid white header. Colours, background and shadow transition over 250ms; the bar height never
  * changes, so nothing shifts.
  */
 export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderProps) {
@@ -73,9 +121,9 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const mainPhone = primaryPhone(phone);
-  const isHome = publicPathname(pathname) === "/";
-  const scrolled = useScrolledPast(isHome, SOLID_AFTER_PX);
-  const overlay = isHome && !scrolled;
+  const hasHero = usePageHasHero();
+  const scrolled = useScrolledPast(hasHero, SOLID_AFTER_PX);
+  const overlay = hasHero && !scrolled;
 
   const glassFocus = overlay ? "focus-visible:ring-white focus-visible:ring-offset-slate-900" : "";
 

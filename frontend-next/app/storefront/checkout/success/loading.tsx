@@ -1,12 +1,12 @@
 import { Skeleton } from "@/components/ui";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import { cn } from "@/lib/cn";
 import { storeContainer } from "@/lib/storefront/styles";
 
 export default function Loading() {
   return (
     <>
-      <PageIntro eyebrow="Checkout" title="Order confirmation" headingAs="p" />
+      <PageIntro eyebrow="Checkout" title="Order confirmation" headingAs="p" compact image={INTRO_IMAGES.sunset} />
       <div className={cn(storeContainer, "py-8 sm:py-12")} aria-busy="true">
         <p className="sr-only" role="status">
           Loading your order

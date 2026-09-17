@@ -56,14 +56,15 @@ export default function FloatingActions({ whatsappNumber, calculatorEnabled }: F
     return () => observer.disconnect();
   }, [hasActions]);
 
-  // On phones the stack would cover the hero's stats, so it waits until the hero has scrolled out of view.
+  // On phones the stack would cover the home hero's stats, so it waits until that hero has scrolled out of view. Inner
+  // pages also start with a `[data-store-hero]` intro (§8.1), but it is short, so the stack stays visible there.
   useEffect(() => {
-    const hero = document.querySelector("[data-store-hero]");
+    const hero = onHome ? document.querySelector("#store-main [data-store-hero]") : null;
     if (!hasActions || !hero || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(([entry]) => setOverHero(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
     observer.observe(hero);
     return () => observer.disconnect();
-  }, [hasActions, pathname]);
+  }, [hasActions, onHome, pathname]);
 
   if (!hasActions) return null;
 

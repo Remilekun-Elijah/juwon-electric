@@ -9,15 +9,19 @@ export default function Loading() {
       <p role="status" className="sr-only">
         Loading the home page
       </p>
-      <div className={cn(storeContainer, "pt-4 sm:pt-6 lg:pt-8")}>
-        <div className="grid gap-10 rounded-2xl bg-brand-800 px-5 py-10 sm:px-10 sm:py-14 lg:grid-cols-2 lg:px-14 lg:py-16">
-          <div className="space-y-4">
-            <Skeleton className="h-3 w-48 bg-white/15 motion-reduce:animate-none" />
-            <Skeleton className="h-10 w-full max-w-md bg-white/15 motion-reduce:animate-none sm:h-14" />
-            <Skeleton className="h-4 w-full max-w-lg bg-white/15 motion-reduce:animate-none" />
-            <Skeleton className="h-11 w-44 bg-white/15 motion-reduce:animate-none" />
+      {/* Full-bleed dark hero placeholder under the transparent header, the same height as HomeHero. */}
+      <div data-store-hero="" className="-mt-16 flex min-h-[max(640px,min(100svh,920px))] flex-col bg-slate-950 md:-mt-[72px]">
+        <div className={cn(storeContainer, "flex flex-1 flex-col justify-center pb-24 pt-28 sm:pb-28 md:pt-36")}>
+          <div className="max-w-3xl space-y-5">
+            <Skeleton className="h-8 w-72 max-w-full rounded-full bg-white/10 motion-reduce:animate-none" />
+            <Skeleton className="h-12 w-full max-w-xl bg-white/10 motion-reduce:animate-none sm:h-16" />
+            <Skeleton className="h-12 w-3/4 max-w-lg bg-white/10 motion-reduce:animate-none sm:h-16" />
+            <Skeleton className="h-5 w-full max-w-2xl bg-white/10 motion-reduce:animate-none" />
+            <div className="flex flex-col gap-3 pt-3 sm:flex-row">
+              <Skeleton className="h-14 w-full rounded-full bg-white/10 motion-reduce:animate-none sm:w-48" />
+              <Skeleton className="h-14 w-full rounded-full bg-white/10 motion-reduce:animate-none sm:w-56" />
+            </div>
           </div>
-          <Skeleton className="aspect-[4/3] w-full rounded-xl bg-white/15 motion-reduce:animate-none" />
         </div>
       </div>
       <div className={storeSection}>

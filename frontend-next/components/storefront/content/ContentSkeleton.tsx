@@ -5,17 +5,18 @@ import { storeCard, storeContainer, storeSection } from "@/lib/storefront/styles
 
 const pulse = "motion-reduce:animate-none";
 
-/** PageIntro-shaped placeholder: eyebrow, title and description lines. */
+/** Dark PageIntro-shaped placeholder (TEAM_AND_MOTION_V1 §8.1); `data-store-hero` keeps the header transparent over it. */
 export function IntroSkeleton({ breadcrumbs = false, actions = false }: { breadcrumbs?: boolean; actions?: boolean }) {
+  const bar = cn(pulse, "bg-white/10");
   return (
-    <div className="border-b border-slate-200 bg-white">
-      <div className={cn(storeContainer, "py-10 sm:py-14")}>
-        {breadcrumbs && <Skeleton className={cn(pulse, "mb-6 h-4 w-48")} />}
-        <Skeleton className={cn(pulse, "h-3 w-24")} />
-        <Skeleton className={cn(pulse, "mt-4 h-9 w-full max-w-md sm:h-11")} />
-        <Skeleton className={cn(pulse, "mt-4 h-4 w-full max-w-2xl")} />
-        <Skeleton className={cn(pulse, "mt-2 h-4 w-3/4 max-w-xl")} />
-        {actions && <Skeleton className={cn(pulse, "mt-6 h-11 w-40")} />}
+    <div data-store-hero="" className="-mt-16 bg-slate-950 md:-mt-[72px]">
+      <div className={cn(storeContainer, "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
+        {breadcrumbs && <Skeleton className={cn(bar, "mb-6 h-4 w-48")} />}
+        <Skeleton className={cn(bar, "h-3 w-24")} />
+        <Skeleton className={cn(bar, "mt-4 h-9 w-full max-w-md sm:h-11")} />
+        <Skeleton className={cn(bar, "mt-4 h-4 w-full max-w-2xl")} />
+        <Skeleton className={cn(bar, "mt-2 h-4 w-3/4 max-w-xl")} />
+        {actions && <Skeleton className={cn(bar, "mt-6 h-11 w-40")} />}
       </div>
     </div>
   );

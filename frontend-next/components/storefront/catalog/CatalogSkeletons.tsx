@@ -5,18 +5,19 @@ import { storeCard, storeCardPadding, storeContainer } from "@/lib/storefront/st
 
 /** Loading stand-ins for the catalogue routes (loading.tsx). Server components; screen readers get one status line. */
 
+/** Dark PageIntro-shaped placeholder (TEAM_AND_MOTION_V1 §8.1); `data-store-hero` keeps the header transparent over it. */
 export function IntroSkeleton({ breadcrumbs = false, children }: { breadcrumbs?: boolean; children?: ReactNode }) {
   return (
-    <div className="border-b border-slate-200 bg-white">
-      <div className={cn(storeContainer, "py-10 sm:py-14")}>
+    <div data-store-hero="" className="-mt-16 bg-slate-950 md:-mt-[72px]">
+      <div className={cn(storeContainer, "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
         <p role="status" className="sr-only">
           Loading…
         </p>
-        {breadcrumbs && <Skeleton className="mb-6 h-4 w-56" />}
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="mt-4 h-9 w-full max-w-md sm:h-11" />
-        <Skeleton className="mt-4 h-5 w-full max-w-2xl" />
-        <Skeleton className="mt-2 h-5 w-2/3 max-w-xl" />
+        {breadcrumbs && <Skeleton className="mb-6 h-4 w-56 bg-white/10" />}
+        <Skeleton className="h-3 w-24 bg-white/10" />
+        <Skeleton className="mt-4 h-9 w-full max-w-md bg-white/10 sm:h-11" />
+        <Skeleton className="mt-4 h-5 w-full max-w-2xl bg-white/10" />
+        <Skeleton className="mt-2 h-5 w-2/3 max-w-xl bg-white/10" />
         {children}
       </div>
     </div>
