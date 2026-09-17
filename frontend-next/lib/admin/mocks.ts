@@ -514,6 +514,28 @@ let settings: Settings = {
   payments: { gatewayEnabled: false, provider: null },
   inventory: { defaultReorderLevel: 0, lowStockAlertsEnabled: true },
   uploads: { provider: "url" },
+  // LANDING_V1 §3 defaults.
+  website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+  financing: {
+    enabled: false,
+    depositPercent: null,
+    termsMonths: [],
+    monthlyRatePercent: null,
+    approvalTime: null,
+    note: null,
+    sample: false,
+  },
+  calculator: {
+    enabled: false,
+    appliances: [],
+    inverterHeadroomPercent: 25,
+    batteryDepthOfDischargePercent: 80,
+    batteryVoltage: 48,
+    panelWatts: 550,
+    peakSunHours: 4.5,
+    generator: { fuelPricePerLitre: 0, litresPerKvaHour: 0, maintenancePerMonth: 0 },
+    sample: false,
+  },
   updatedAt: null,
   updatedBy: null,
 };
@@ -1198,6 +1220,16 @@ export const mockSaveSettings = (input: SettingsInput) => {
     notifications: { ...settings.notifications, ...input.notifications },
     payments: { ...settings.payments, ...input.payments },
     inventory: { ...settings.inventory, ...input.inventory },
+    website: input.website ? { ...settings.website, ...input.website, sample: false } : settings.website,
+    financing: input.financing ? { ...settings.financing, ...input.financing, sample: false } : settings.financing,
+    calculator: input.calculator
+      ? {
+          ...settings.calculator,
+          ...input.calculator,
+          generator: { ...settings.calculator.generator, ...input.calculator.generator },
+          sample: false,
+        }
+      : settings.calculator,
     updatedAt: now(),
     updatedBy: actor,
   };

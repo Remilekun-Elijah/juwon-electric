@@ -5,6 +5,8 @@
 import {
   Boxes,
   BriefcaseBusiness,
+  Building,
+  CircleQuestionMark,
   ClipboardList,
   FolderTree,
   HardHat,
@@ -12,6 +14,7 @@ import {
   Images,
   LayoutDashboard,
   Mails,
+  MessageSquareQuote,
   MessageSquareText,
   Package,
   PackageSearch,
@@ -38,6 +41,9 @@ export type ModuleId =
   | "packages"
   | "services"
   | "portfolio"
+  | "faqs"
+  | "reviews"
+  | "clients"
   | "contacts"
   | "newsletter"
   | "vacancies"
@@ -45,7 +51,7 @@ export type ModuleId =
   | "activity"
   | "settings";
 
-export type NavGroupId = "overview" | "sales" | "catalog" | "customers" | "team" | "system";
+export type NavGroupId = "overview" | "sales" | "catalog" | "website" | "customers" | "team" | "system";
 
 export type AdminModule = {
   id: ModuleId;
@@ -193,7 +199,40 @@ export const modules: AdminModule[] = [
     group: "catalog",
     eyebrow: "Catalog",
     title: "Portfolio",
-    description: "Photos of completed installations.",
+    description: "Photos of completed installations and the case-study details shown on the home page.",
+  },
+  {
+    id: "faqs",
+    href: "/admin/faqs",
+    capability: "content:read",
+    label: "FAQs",
+    icon: CircleQuestionMark,
+    group: "website",
+    eyebrow: "Website",
+    title: "FAQs",
+    description: "Questions and answers shown on the home page and the FAQ page.",
+  },
+  {
+    id: "reviews",
+    href: "/admin/reviews",
+    capability: "content:read",
+    label: "Reviews",
+    icon: MessageSquareQuote,
+    group: "website",
+    eyebrow: "Website",
+    title: "Reviews",
+    description: "Customer reviews shown on the home page.",
+  },
+  {
+    id: "clients",
+    href: "/admin/clients",
+    capability: "content:read",
+    label: "Client logos",
+    icon: Building,
+    group: "website",
+    eyebrow: "Website",
+    title: "Client logos",
+    description: "Logos of businesses you’ve worked with, shown on the home page.",
   },
   {
     id: "contacts",
@@ -267,6 +306,7 @@ export const navGroups: { id: NavGroupId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "sales", label: "Sales" },
   { id: "catalog", label: "Catalog" },
+  { id: "website", label: "Website" },
   { id: "customers", label: "Customers" },
   { id: "team", label: "Team" },
   { id: "system", label: "System" },

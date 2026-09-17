@@ -21,8 +21,12 @@ import type {
   Cart,
   Category,
   CategoryInput,
+  Client,
+  ClientInput,
   CustomerSegment,
   Dashboard,
+  Faq,
+  FaqInput,
   FulfillmentStatus,
   InStoreOrderInput,
   InstallationJob,
@@ -40,6 +44,8 @@ import type {
   PackageOptionInput,
   Paged,
   PaymentStatus,
+  PortfolioItem,
+  PortfolioItemInput,
   Product,
   ProductInput,
   Role,
@@ -49,6 +55,8 @@ import type {
   StaffMember,
   StaffProfile,
   StockAdjustmentInput,
+  Testimonial,
+  TestimonialInput,
   Vacancy,
   VacancyInput,
   VacancyStatus,
@@ -613,6 +621,52 @@ export const getStaffMember = (staffId: string) =>
 
 export const updateStaff = (staffId: string, input: { phone?: string | null; profile?: Partial<StaffProfile> }) =>
   withContractFallback("staff", () => put<StaffMember>(`/staff/${id(staffId)}`, input), () => mock.mockUpdateStaff(staffId, input));
+
+/* ---------- Website content (LANDING_V1 §1–§2) ---------- */
+
+/**
+ * No mock: a backend without the route answers with `FeatureUnavailableError`, like `createInStoreOrder`.
+ * Every other error (400/401/403/404 record/409/5xx) is rethrown as is.
+ */
+async function withoutFallback<T>(request: () => Promise<ApiEnvelope<T>>): Promise<ApiEnvelope<T>> {
+  try {
+    return await request();
+  } catch (error) {
+    if (isMissingRoute(error)) throw new FeatureUnavailableError(error instanceof ApiError ? error.data : null);
+    throw error;
+  }
+}
+
+export const getFaqs = async () => (await withoutFallback(() => adminFetch<Faq[]>("/faqs"))).data || [];
+
+export const saveFaq = (faqId: string | null, input: FaqInput) =>
+  withoutFallback(() => (faqId ? put<Faq>(`/faqs/${id(faqId)}`, input) : post<Faq>("/faqs", input)));
+
+export const deleteFaq = (faqId: string) => withoutFallback(() => del<Faq>(`/faqs/${id(faqId)}`));
+
+export const getTestimonials = async () =>
+  (await withoutFallback(() => adminFetch<Testimonial[]>("/testimonials"))).data || [];
+
+export const saveTestimonial = (testimonialId: string | null, input: TestimonialInput) =>
+  withoutFallback(() =>
+    testimonialId
+      ? put<Testimonial>(`/testimonials/${id(testimonialId)}`, input)
+      : post<Testimonial>("/testimonials", input)
+  );
+
+export const deleteTestimonial = (testimonialId: string) =>
+  withoutFallback(() => del<Testimonial>(`/testimonials/${id(testimonialId)}`));
+
+export const getClients = async () => (await withoutFallback(() => adminFetch<Client[]>("/clients"))).data || [];
+
+export const saveClient = (clientId: string | null, input: ClientInput) =>
+  withoutFallback(() => (clientId ? put<Client>(`/clients/${id(clientId)}`, input) : post<Client>("/clients", input)));
+
+export const deleteClient = (clientId: string) => withoutFallback(() => del<Client>(`/clients/${id(clientId)}`));
+
+/** Portfolio create/update, including the case-study fields (LANDING_V1 §2). `sample` is server-owned. */
+export const savePortfolioItem = (itemId: string | null, input: PortfolioItemInput) =>
+  itemId ? put<PortfolioItem>(`/portfolio/${id(itemId)}`, input) : post<PortfolioItem>("/portfolio", input);
 
 /* ---------- Settings and notifications (contract §8) ---------- */
 
