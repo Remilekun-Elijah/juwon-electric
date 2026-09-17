@@ -275,23 +275,23 @@ Managed collections
 - Three new collections under a new **Website** group in the admin menu: **FAQs**, **Reviews** and **Client logos**.
 - Access: viewing needs `content:read` (Super admin, Admin, Inventory, Sales, Support); adding, editing, reordering and deleting need `content:write` (Super admin, Admin, Sales).
 - Shared rules for all three:
-  - Each item has a **Sort order** (lower shows first; ties show oldest first), an **Active** switch and a **Sample** flag.
+  - Each item has a **Sort order** (lower shows first; ties show oldest first), an active switch (labelled **Show on the website** in the admin) and a **Sample** flag.
   - The website shows active items only. Inactive items stay in the admin.
   - Each screen has a create/edit drawer, the active switch and a delete confirmation.
   - Every create, update and delete is written to the activity log (`faq.*`, `testimonial.*`, `client.*`).
   - Image and logo fields accept a full `http(s)` link or a site path starting with `/` (letters, numbers, `.`, `_`, `-` and `/`, up to 200 characters), for example `/samples/client-1.svg`.
 - FAQs:
   - Fields: Question (5–200 characters, required), Answer (1–2000 characters, plain text, line breaks kept, required), Category (optional, up to 60 characters, for example "Ordering", "Installation", "Products").
-  - Admin list: category filter and ▲▼ buttons to change the order (no drag and drop).
+  - Admin list: category filter and **Move up** / **Move down** (▲▼) buttons to change the order (no drag and drop). The Category field suggests existing categories. Reviews and Client logos use the same Move up / Move down buttons.
   - Public: the home page shows the first 6; `/faq` shows all, grouped by category.
   - Messages: "FAQ created.", "FAQ updated.", "FAQ deleted.", "FAQ not found."
 - Reviews (stored as testimonials):
-  - Fields: Name (1–100, required; for example "Adaeze O."), Context (optional, up to 150; for example "5kVA lithium system, Lekki"), Quote (10–1000, required), Rating (optional, 1–5 stars), Source (optional: Website, WhatsApp, Google, Facebook, In person), Image (optional link or site path).
+  - Fields (admin labels): Customer name (1–100, required; for example "Adaeze O."), Context (optional, up to 150; for example "5kVA lithium system, Lekki"), Review (the quote, 10–1000, required), Rating (optional, 1–5 stars or No rating), Source (optional: Website, WhatsApp, Google, Facebook, In person), Photo URL (optional link or site path).
   - Rule: only real reviews from customers who agreed to be quoted. Don't edit a customer's meaning.
   - Admin list shows the star rating. Public: the home page reviews section (cards or a scroller that the customer moves; never auto-rotating) with stars, name, context and a source badge.
   - Messages: "Review created.", "Review updated.", "Review deleted.", "Review not found."
 - Client logos (stored as clients):
-  - Fields: Name (1–100, required; used as the logo's alt text), Logo (required link or site path), Website (optional).
+  - Fields (admin labels): Client name (1–100, required; used as the logo's alt text), Logo (required link or site path), Website (optional).
   - Rule: only add a client's logo with the client's permission.
   - Admin shows a grid with a logo preview. Public: the home page client logos grid (up to 6 per row, greyscale until hovered).
   - Messages: "Client created.", "Client updated.", "Client deleted.", "Client not found."
@@ -304,19 +304,19 @@ Portfolio case-study fields
 
 Settings sections (Super admin and Admin change them; other staff view)
 - Website:
-  - Stats: up to 4 rows, each a Label (1–40 characters) and a Value (1–20, for example "500+").
+  - Stats: up to 4 rows (**Add stat**), each a Label (1–40 characters) and a Figure (the value, 1–20, for example "500+"). Saved with **Save website**.
   - WhatsApp number: optional, same phone rule as the business phone.
   - Business hours: optional, up to 200 characters, several lines (for example "Mon–Fri 8am–6pm" on one line and "Sat 9am–3pm" on the next).
   - Public: all of it. Stats appear in the home stats band; WhatsApp and business hours in the footer; WhatsApp also drives the floating button and the final call to action.
 - Financing (off by default):
-  - Fields: Enabled switch; Deposit % (whole number 0–100); Terms (up to 6 different month counts, 1–60, shown in ascending order as chips); Monthly rate % (0–20, up to 2 decimals); Approval time (up to 60 characters, for example "24–48 hours"); Note (up to 300 characters).
+  - Fields: Enabled switch (**Show financing on the website**); Deposit (%) (whole number 0–100); Terms (months) (up to 6 different month counts, 1–60, shown in ascending order as chips); Monthly rate (%) (0–20, up to 2 decimals); Approval time (up to 60 characters, for example "24–48 hours"); Note (up to 300 characters). Saved with **Save financing**.
   - Public: every field only when Enabled is on. When off, the website receives nothing but "not enabled" and the financing section is hidden.
   - Financing on the website describes terms only. Customers can't apply or be approved online; they talk to the team.
 - Calculator (off by default):
-  - Enabled switch.
-  - Appliances: up to 40 rows, each with Key (lower-case letters, numbers and `-`, up to 40, unique), Label (1–40), Watts (whole number 1–10,000), Default hours a day (0–24 in half-hour steps) and Default quantity (whole number 0–20). Rows can be added, removed and reordered.
-  - Parameters (defaults in brackets): Inverter headroom % (25; whole number 0–100), Battery depth of discharge % (80; 10–100), Battery voltage (48; 12, 24 or 48), Panel watts (550; 100–1000), Peak sun hours (4.5; 1–10, one decimal).
-  - Generator costs: Fuel price per litre (₦, whole number 0–100,000), Litres per kVA-hour (0–2, two decimals), Maintenance per month (₦, whole number 0–10,000,000).
+  - Enabled switch (**Show the calculator on the website**). Saved with **Save calculator**.
+  - Appliances: up to 40 rows (**Add appliance**), each with a Key (lower-case letters, numbers and `-`, up to 40, unique; not typed by staff in the admin), Label (admin label **Appliance**, 1–40), Watts (whole number 1–10,000), Default hours a day (**Hours a day**, 0–24 in half-hour steps) and Default quantity (**Quantity**, whole number 0–20). Rows can be added, removed and reordered.
+  - Parameters (admin group **Sizing assumptions**; defaults in brackets): Inverter headroom (%) (25; whole number 0–100), Battery depth of discharge (%) (80; 10–100), Battery voltage (48 V; 12 V, 24 V or 48 V), Panel watts (W) (550; 100–1000), Peak sun hours (4.5; 1–10, one decimal).
+  - Generator costs: Fuel price per litre (₦) (whole number 0–100,000), Litres per kVA-hour (0–2, two decimals), Maintenance per month (₦) (whole number 0–10,000,000).
   - Public: every field only when Enabled is on. When off, `/calculator` and the home teaser are not shown.
 - Notification emails and other private settings are never public.
 - Each new section shows a **Sample** badge while it holds sample values.
@@ -333,7 +333,7 @@ Every section hides itself when it has no data, so an empty collection or unset 
 8. Case studies: up to 3 portfolio items with a Summary.
 9. Reviews.
 10. How it works: 6 steps: order or call → confirmation call → processing → delivery → installation → after-sales support.
-11. Financing (only when enabled): a terms table (deposit, terms, monthly rate, approval time), a worked example calculated live on a package price, the note, and calls to action.
+11. Financing (only when enabled): a terms table (deposit, terms, monthly rate, approval time), a worked example calculated live on the cheapest available package, the note, and calls to action. Worked example: deposit = price × deposit % (rounded to the naira); balance = price − deposit; interest is flat = balance × monthly rate % × months; monthly instalment = (balance + interest) ÷ months, rounded up to the naira; one row per term.
 12. FAQ: the first 6 FAQs as an accessible accordion, and "See all questions" linking to `/faq`.
 13. Final call to action: Shop packages, Call, and WhatsApp (only when a WhatsApp number is set).
 
@@ -346,7 +346,7 @@ Every section hides itself when it has no data, so an empty collection or unset 
   - Battery capacity (kWh) = daily energy ÷ (depth of discharge % ÷ 100); also shown in Ah at the battery voltage (kWh × 1000 ÷ voltage).
   - Solar panels = daily energy ÷ (panel watts × peak sun hours ÷ 1000), rounded up to a whole panel.
 - Matching packages: available packages whose kVA is at least the recommended size, cheapest first, up to 3.
-- Generator comparison: monthly generator cost = recommended kVA × litres per kVA-hour × hours a day × 30 × fuel price per litre, plus maintenance per month. It is compared with the cheapest matching package's price as a simple payback in months (package price ÷ monthly generator cost).
+- Generator comparison: monthly generator cost = recommended kVA × litres per kVA-hour × generator hours a day × 30 × fuel price per litre, plus maintenance per month. **Generator hours a day** is a stepper on the page (1–24); it starts at the longest hours of any appliance row and the customer can change it. It is compared with the cheapest matching package's price as a simple payback in months (package price ÷ monthly generator cost), shown as "Pays for itself in about …". The comparison is only shown when there is a load and both the fuel price and litres per kVA-hour are above 0.
 - Disclaimer, always shown in plain words: "Estimates only — an engineer confirms your size before installation."
 - A "Talk to an engineer" call to action. Nothing the customer enters is stored or sent.
 - Worked example (default parameters): load 1,000 W → 1,000 × 1.25 ÷ 0.8 ÷ 1000 = 1.5625 → **2 kVA**; daily energy 5 kWh → battery 5 ÷ 0.8 = 6.25 kWh ≈ 130 Ah at 48 V; panels 5 ÷ (550 × 4.5 ÷ 1000 = 2.475) = 2.02 → **3 panels**. With fuel ₦1,000/litre, 0.25 litres per kVA-hour, 8 hours a day and ₦20,000 maintenance: 2 × 0.25 × 8 × 30 × ₦1,000 + ₦20,000 = **₦140,000 a month**; a ₦1,400,000 package pays back in **10 months**.
@@ -360,7 +360,7 @@ Every section hides itself when it has no data, so an empty collection or unset 
 
 Sample content
 - Flagged: every seeded record and settings section carries a sample flag.
-- Labelled in the admin: a **Sample** badge on each sample record and settings section, and on each screen with sample records the banner "Sample content is showing on the website. Edit or replace it before launch."
+- Labelled in the admin: a **Sample** badge on each sample record and settings section; the edit form notes "Saving your changes turns this into real content and removes the Sample badge."; and on FAQs, Reviews, Client logos and Portfolio, while they have sample records, the banner "Sample content is showing on the website. Edit or replace it before launch."
 - Labelled on the website: a small neutral "Sample" label on sample stats, reviews, client logos, case-study details, financing and the calculator notes. Sample FAQs are not labelled on the website, so they must be checked in the admin.
 - Cleared on save: when staff edit and save a sample record or settings section, it becomes real content (the flag is cleared), even if no value changed. Deleting sample records is allowed.
 - Seeded locally only: `npm run seed:sample` (backend) and `npm run d1:seed:sample:local` (Worker, local D1) load the same sample data. The seed refuses to run when `NODE_ENV=production`, is never part of migrations, `seed.sql` or CI, and the D1 seed file warns never to run it with `--remote`. Running it again updates the same sample records (fixed ids starting `sample-`) and never overwrites settings sections that already hold real content.
@@ -492,8 +492,8 @@ Complete every item before the website goes live. The local seed never runs in p
   - [ ] WhatsApp number (sample `+2348000000000`): enter the real business WhatsApp number or clear it.
   - [ ] Business hours (sample "Mon–Sat 8am–6pm"): enter the real hours or clear them.
   - [ ] Save the section.
-- [ ] Settings → Financing (sample: enabled, 40% deposit, 3/6/12 months, 3.5% a month, "48 hours", note "Sample terms — not an offer."): enter real, approved terms and save, or switch **Enabled** off and save.
-- [ ] Settings → Calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then save; or switch **Enabled** off and save.
+- [ ] Settings → Financing (sample: enabled, 40% deposit, 3/6/12 months, 3.5% a month, "48 hours", note "Sample terms — not an offer."): enter real, approved terms and save, or switch **Show financing on the website** off and save.
+- [ ] Settings → Calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
 - [ ] Walk through the website (home, `/calculator`, `/faq`, `/portfolio`, footer) on a phone and a computer and confirm no "Sample" label remains.
 
 Open items for owner review
