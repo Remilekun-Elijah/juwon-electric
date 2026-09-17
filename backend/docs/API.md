@@ -71,6 +71,7 @@ Rate limiting (Node backend, fixed window; stored in MongoDB `rateLimits` when c
 | `POST /admin/auth/reset-password` | 10 / hour | IP prefix |
 | `POST /contact`, `/subscribe`, `/order`, `/cart` | 30 / 10 min per route | IP prefix |
 | `POST /cart/quote` | 60 / 10 min | IP prefix |
+| `POST /admin/uploads` | 60 / 10 min | admin id |
 
 All counted attempts count (not just failures), and `/api` aliases share the same buckets. Exceeding a limit returns `429` with a `Retry-After` header (seconds); public routes use `"Too many requests. Please try again in N minutes."`. With in-memory storage, limits reset when the process restarts (a warning is logged at startup). If a MongoDB call fails the request falls back to memory; the limiter never fails a request.
 
@@ -123,6 +124,7 @@ Request limits:
 - Cart `phoneNumber` and `emailAddress` are optional but validated when present.
 - Phone numbers may contain digits, spaces, `-`, `(`, `)` and one leading `+`, with 10-15 digits in total; otherwise `400` `"Enter a valid phone number."`. The trimmed original is stored.
 - URL fields (`image` on portfolio/services/customer segments, `link` on portfolio, `ctaUrl` on services) must be a site-relative path starting with a single `/` (no `//`, backslashes, whitespace or control characters) or an absolute `https://` URL; otherwise `400` `"<Field> must be an https:// URL or a path starting with /."`.
+  - Image fields also accept `http://localhost` and `http://127.0.0.1` URLs (any port, no user name or password), so images uploaded to a local API work in development: `image` on portfolio, services and customer segments, product `images`, category `imageUrl`, staff `profile.avatarUrl` and job `photos`. Any other `http://` host (including `0.0.0.0` and `localhost.<domain>`) is refused with the same message. `link`, `ctaUrl` and the other website and LinkedIn fields are unchanged.
 - Slugs exist only on packages, services, portfolio items and customer segments. A sent slug is normalized (lowercase, `&` → `and`, other characters → `-`); a UUID-shaped slug returns `400` `"Slug must not look like an id."`; an empty slug is derived from the name/title (packages: `name-type-kva`), or a short random id; collisions get `-2`, `-3`, ... Updates and deletes resolve `:id` by id, then slug, then `legacyId`, and then write strictly by the resolved record id.
 - Paging (`/admin/audit-logs`): `page` must be a whole number from 1 to 100000 and `limit` a positive whole number (capped at 100); otherwise `400`.
 
@@ -815,7 +817,7 @@ Settings (contract §8.1, one document with id `global`, defaults when missing):
   - A non-object section answers `400` `"<section> must be an object."`.
   - Email lists (≤10 each) with an invalid entry answer `"<Label> must contain valid email addresses."` and are stored lowercase.
   - `payments.provider` is `paystack`, `flutterwave` or `null` (`"Payment provider is not valid."`).
-  - `inventory.defaultReorderLevel` is 0–1,000,000 and `uploads.provider` must be `url`.
+  - `inventory.defaultReorderLevel` is 0–1,000,000 and `uploads.provider` must be `url` or `r2` (stored only; uploads depend on server configuration, see [Image uploads](#image-uploads-uploads-v1)).
   - `website`, `financing` and `calculator` (Landing v1): see [Website content (Landing v1)](#website-content-landing-v1). Saving one of these sections stores its `sample` as `false`.
   - Audited as `settings.update`, with dotted changed keys such as `notifications.lowStockEmails`.
 
@@ -930,3 +932,53 @@ Contract: `docs/agents/TEAM_AND_MOTION_V1.md` §1. Same rules as [Website conten
 ```
 
 Fields: `name` (1–100, required), `role` (1–80, required), `group` (1–60, required, free text), `bio` (≤300, single-line plain text, or `null`), `photoUrl` (`null` or an image reference), `linkedinUrl` (`https` URL or `null`). Errors: `"<Field> is required."`, `"<Field> must be N characters or fewer."`, `"Bio contains invalid characters."` (line breaks and control characters), `"Photo URL must be an http(s) URL or a path starting with /."`, `"LinkedIn URL must be an https URL."`.
+
+## Image uploads (Uploads v1)
+
+Contract: `docs/agents/UPLOADS_V1.md`. Rules are shared by Express and the Worker (`backend/shared/uploads.js`) and covered by the parity scenario `backend/test/scenarios/uploads.js`. The Worker stores files in the R2 bucket bound as `IMAGES`; Express stores them under `UPLOADS_DIR` (default `backend/data/uploads/`). Records live in the `uploads` collection. Deployment, env vars and storage safeguards: `docs/DEPLOYMENT.md` §1.7.
+
+Every image field keeps accepting a typed URL. An upload only returns a URL for the admin to save into a record; it does not change any record itself.
+
+### Endpoints
+
+- `GET /admin/uploads/config` (any signed-in admin, no capability): `200` `"Upload settings retrieved."` with `UploadConfig`:
+
+  ```json
+  { "enabled": true, "maxBytes": 2000000, "accept": ["image/jpeg", "image/png", "image/webp"], "maxDimension": 1600 }
+  ```
+
+  `enabled` is `false` on a Worker without the `IMAGES` binding (the admin then shows only the link field). It never includes usage or limits.
+
+- `POST /admin/uploads?purpose=<purpose>` (`content:write`, `products:write` or `staff:write`). The body is the raw image bytes (not multipart) with `Content-Type: image/jpeg`, `image/png` or `image/webp`. `purpose` is one of `products`, `categories`, `packages`, `services`, `portfolio`, `segments`, `reviews`, `clients`, `team`, `other`; missing or blank means `other`. Checks, in order:
+
+  1. `401` without a session; `403` `"You do not have permission to perform this action."` without one of the capabilities.
+  2. `400` `"Purpose must be one of: products, categories, packages, services, portfolio, segments, reviews, clients, team, other."`.
+  3. `415` `"Upload a JPEG, PNG or WebP image."` for any other `Content-Type` (parameters such as `; charset` are ignored).
+  4. `413` `"Image must be 2 MB or smaller."` when `Content-Length` declares more than 2,000,000 bytes.
+  5. Worker only: `507` (neutral message below) when the `IMAGES` binding is missing.
+  6. `429` `"Too many requests. Please try again in N minutes."` + `Retry-After` after 60 uploads by the same admin in 10 minutes.
+  7. The body is read up to the limit: `413` when it is longer or empty.
+  8. `415` when the bytes do not start with the declared type's signature (JPEG `FF D8 FF`, PNG `89 50 4E 47 0D 0A 1A 0A`, WebP `RIFF....WEBP`). SVG, GIF and anything else are refused.
+  9. `507` `"Image uploads are unavailable right now. Please use an image link or try again later."` when storing the file would pass `IMAGE_STORAGE_LIMIT_BYTES`. Nothing is stored. The message never mentions storage or limits.
+  10. The file is stored, the record written and `201` `"Image uploaded."` returned with `{ id, url, key, size, contentType }`. If storing fails the response is `503` with the same neutral message and the reserved bytes are released.
+
+  Audited as `upload.create` (entity `upload`, summary `Uploaded image <key>`).
+
+- `GET /uploads/:key` and `HEAD /uploads/:key` (public, also under `/api`): the stored file with its stored `Content-Type`, `Cache-Control: public, max-age=31536000, immutable`, `X-Content-Type-Options: nosniff` and `Cross-Origin-Resource-Policy: cross-origin`. A key that does not match the key pattern (including any `..`, backslash, upper-case id or other extension) or a missing file answers `404` `"Image not found."`.
+
+### Keys, URLs and records
+
+- **Key:** `<purpose>/<yyyy>/<mm>/<uuid>.<jpg|png|webp>` (UTC year and month, lower-case UUID). Keys are never reused, so files are immutable.
+- **URL:** `<IMAGES_PUBLIC_BASE_URL>/<key>` when that variable is set, otherwise `<API origin>/uploads/<key>`.
+- **Record** (`uploads` collection): `{ id, key, url, contentType, size, purpose, uploadedBy: { id, email }, createdAt, updatedAt }`. There are no list or delete endpoints.
+- **Usage:** the running total is `system/uploads-usage` `{ totalBytes, lastAlertAt }`. Each upload reserves its size atomically (a conditional D1 update, the JSON store lock, or a conditional MongoDB update), so concurrent uploads cannot pass the cap.
+
+### Cleanup and the storage alert
+
+Runs daily (Worker cron `0 7 * * *` after the low-stock digest; Express daily timer):
+
+1. **Sweep:** uploads older than 24 hours that no stored content references are deleted (file and record), oldest first, at most 500 per run. A reference is the upload's key appearing anywhere in (`IMAGE_REFERENCE_FIELDS`): product `images` and `descriptionHtml`, category `imageUrl` and `description`, package `image` and `images`, service, portfolio and customer segment `image`, portfolio `summary`, review `imageUrl`, client `logoUrl`, team `photoUrl`, FAQ `answer`, staff `profile.avatarUrl` and job `photos`. Matching by key means a URL saved under another origin still counts.
+2. **Reconcile:** `totalBytes` is recomputed from the remaining upload records.
+3. **Alert:** when `STORAGE_ALERT_EMAIL` is set and usage is at or over `STORAGE_ALERT_BYTES`, one email is sent, at most once every 7 days (`lastAlertAt`). An upload refused at the cap also triggers it, within the same 7-day throttle. Addresses belonging to the business (`ADMIN_NOTIFY_EMAIL`, `SMTP_FROM`, admin account emails and the Settings notification lists) are removed from the recipients, and `MAIL_BCC` is never added; if no address is left nothing is sent and a line is logged.
+
+Nothing about storage usage, limits or cleanup appears in any admin response, notification or audit summary.
