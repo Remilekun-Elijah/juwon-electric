@@ -1,7 +1,10 @@
 // Server-side package resolution and pricing for carts and orders.
 // Client-sent prices/totals are never trusted; everything is recomputed from
-// the active package catalog.
+// the active package catalog and, for composed options, current product prices
+// (COMMERCE_V2 §1.2, shared/packagePricing.js).
 import { badRequest } from "../services/errors.js";
+import { listCollection } from "../services/store.js";
+import { packagesNeedProducts, withComposedOptions } from "../shared/packagePricing.js";
 
 export const UNAVAILABLE_ITEMS_MESSAGE =
   "Some items in your cart are no longer available. Please refresh your cart.";
@@ -126,9 +129,22 @@ export const selectPackageOption = (pack, item) => {
 };
 
 /**
- * Resolves and prices one shape-checked item; null when the package or option
- * can't be priced (inactive, removed or unmatched). Carts may also reference a
- * package by its internal `packageId`.
+ * Active packages with computed options (ComposedOption[]), the catalog priceItem
+ * works on. Products are loaded only when some package has a composed option.
+ */
+export const loadPricingPackages = async () => {
+  const packages = await listCollection("packages");
+  const products = packagesNeedProducts(packages)
+    ? new Map((await listCollection("products", { includeInactive: true })).map((product) => [product.id, product]))
+    : new Map();
+  return packages.map((pack) => withComposedOptions(pack, products));
+};
+
+/**
+ * Resolves and prices one shape-checked item against loadPricingPackages()
+ * output; null when the package or option can't be priced (inactive, removed,
+ * unmatched, or an unavailable option). Carts may also reference a package by
+ * its internal `packageId`.
  */
 export const priceItem = (packages, { item, quantity }, { kind = "order" } = {}) => {
   const pack =
@@ -137,8 +153,8 @@ export const priceItem = (packages, { item, quantity }, { kind = "order" } = {})
       packages.find((entry) => entry.id === String(item.packageId))) ||
     resolvePackage(packages, item);
   const option = pack && selectPackageOption(pack, item);
-  const unitPrice = option ? parseMoney(option.price) : 0;
-  if (!pack || !option || unitPrice <= 0) return null;
+  const unitPrice = option ? Number(option.price) || 0 : 0;
+  if (!pack || !option || option.available === false || unitPrice <= 0) return null;
   return { pack, option, unitPrice, quantity, lineTotal: unitPrice * quantity };
 };
 

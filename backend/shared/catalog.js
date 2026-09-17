@@ -1,4 +1,4 @@
-// Categories, products and package items (API_CONTRACT_V3 §4, decision D5): validation,
+// Categories and products (API_CONTRACT_V3 §4, decision D5): validation,
 // relationship checks, filters and serializers. Pure: storage lives in each runtime.
 import { badRequest, conflict } from "./errors.js";
 import {
@@ -18,6 +18,7 @@ import {
   url,
   urlList,
 } from "./fields.js";
+import { packageProductIds } from "./packagePricing.js";
 import { RICH_TEXT_MAX_LENGTH, RICH_TEXT_TOO_LONG_MESSAGE, sanitizeRichText } from "./richText.js";
 
 export const PRODUCT_STATUSES = ["active", "hidden", "archived"];
@@ -242,11 +243,9 @@ export const assertSkuFree = (products, sku, selfId = null) => {
   if (products.some((product) => product.id !== selfId && skuKey(product.sku) === key)) throw skuConflict(sku);
 };
 
+/** 409 when any package option (or deprecated top-level item list) uses the product. */
 export const assertProductDeletable = (product, packages) => {
-  const used = packages.some(
-    (pack) => Array.isArray(pack.items) && pack.items.some((item) => item?.productId === product.id)
-  );
-  if (used) throw conflict("Product is used by a package.");
+  if (packages.some((pack) => packageProductIds(pack).has(product.id))) throw conflict("Product is used by a package.");
 };
 
 export const isLowStockProduct = (product) =>
@@ -372,52 +371,5 @@ export const inventoryPage = (products, categories, query, page) => {
       status: product.status || "active",
       updatedAt: product.updatedAt ?? null,
     })),
-  };
-};
-
-// ---- package items (packages reference products, §4.3) ---------------------------------
-
-/** items: [{ productId, quantity, note }] on packages. Undefined when absent; null or [] clears. */
-export const packageItemsField = (body) => {
-  const raw = body?.items;
-  if (raw === undefined) return undefined;
-  if (raw === null) return [];
-  if (!Array.isArray(raw)) throw badRequest("Items must be a list.");
-  if (raw.length > 50) throw badRequest("A package can have at most 50 items.");
-  return raw.map((entry) => {
-    if (!isPlainObject(entry)) throw badRequest("Invalid package item.");
-    return {
-      productId: text(entry, "productId", { label: "Product", required: true, max: OPS_LIMITS.id }),
-      quantity: integer(entry, "quantity", { label: "Item quantity", required: true, min: 1, max: 1000 }),
-      note: text(entry, "note", { label: "Item note", max: 200 }) || null,
-    };
-  });
-};
-
-export const assertPackageItemsExist = (items, products) => {
-  if (!items?.length) return;
-  const ids = new Set(products.map((product) => product.id));
-  if (items.some((item) => !ids.has(item.productId))) throw badRequest("Product not found.");
-};
-
-/**
- * Public package response: unchanged for packages without items; otherwise adds
- * items: [{ productId, quantity, note, name, slug, sku }].
- */
-export const withPublicPackageItems = (serialized, stored, productsById) => {
-  if (!Array.isArray(stored.items) || stored.items.length === 0) return serialized;
-  return {
-    ...serialized,
-    items: stored.items.map((item) => {
-      const product = productsById.get(item.productId);
-      return {
-        productId: item.productId,
-        quantity: item.quantity,
-        note: item.note ?? null,
-        name: product?.name ?? null,
-        slug: product?.slug ?? null,
-        sku: product?.sku ?? null,
-      };
-    }),
   };
 };

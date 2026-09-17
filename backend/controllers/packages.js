@@ -2,7 +2,13 @@ import { catalogHandlers } from "./_catalog.js";
 import { badRequest, notFound } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { getCollectionItem, listCollection } from "../services/store.js";
-import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../shared/catalog.js";
+import {
+  assertOptionProducts,
+  packageOptionsPayload,
+  packagesNeedProducts,
+  serializeAdminPackage,
+  serializePublicPackage,
+} from "../shared/packagePricing.js";
 import {
   LIMITS,
   deriveSlug,
@@ -13,21 +19,7 @@ import {
   optionalString,
   requiredString,
   sortOrderField,
-  validateOptions,
 } from "../services/validators.js";
-
-const serializeForClient = (item) => ({
-  id: item.legacyId ?? item.id,
-  _id: item.id,
-  slug: item.slug,
-  type: item.type,
-  category: item.category || item.type,
-  name: item.name,
-  load: item.load,
-  kva: item.kva,
-  volt: item.volt,
-  options: item.options,
-});
 
 const positive = (value, label) => {
   if (value !== undefined && value !== null && !(value > 0)) {
@@ -55,11 +47,10 @@ const packagePayload = (body, { isUpdate }) => {
   const legacyId = legacyIdField(body);
   const slug = optionalSlug(body);
   const load = requiredString(body, "load", "Load", { max: LIMITS.packageLoad, multiline: true });
-  const options = validateOptions(body.options);
+  // Options carry their own products (COMMERCE_V2 §1.1); top-level items are deprecated.
+  const options = packageOptionsPayload(body);
   const isActive = optionalBoolean(body, "isActive", undefined);
   const sortOrder = sortOrderField(body);
-  // Products this package is made of (API_CONTRACT_V3 §4.3; stock is committed per item).
-  const items = packageItemsField(body);
 
   return {
     legacyId,
@@ -73,9 +64,16 @@ const packagePayload = (body, { isUpdate }) => {
     options,
     isActive: isUpdate ? isActive : isActive ?? true,
     sortOrder,
-    items,
+    // Persists the read-time migration: an update clears the deprecated top-level items.
+    items: isUpdate ? [] : undefined,
   };
 };
+
+const allProducts = async () =>
+  new Map((await listCollection("products", { includeInactive: true })).map((product) => [product.id, product]));
+
+/** Products by id when any of the packages has a composed option (prices are computed on read). */
+export const productsForPackages = async (packages) => (packagesNeedProducts(packages) ? allProducts() : new Map());
 
 const handlers = catalogHandlers({
   collection: "packages",
@@ -83,34 +81,28 @@ const handlers = catalogHandlers({
   buildPayload: packagePayload,
   slugSource: (item) => `${item.name}-${item.type}-${item.kva}`,
   validate: async (payload) => {
-    if (payload.items?.length) {
-      assertPackageItemsExist(payload.items, await listCollection("products", { includeInactive: true }));
-    }
+    if (packagesNeedProducts([payload])) assertOptionProducts(payload.options, await allProducts());
   },
+  serialize: async (item) => serializeAdminPackage(item, await productsForPackages([item])),
   messages: { create: "Package created.", update: "Package updated.", delete: "Package deleted." },
 });
 
-// Packages with items add `items` (with product name/slug/sku); others are unchanged.
-const productsFor = async (packages) =>
-  packages.some((pack) => Array.isArray(pack.items) && pack.items.length)
-    ? new Map((await listCollection("products", { includeInactive: true })).map((product) => [product.id, product]))
-    : new Map();
-
 export const listPackages = async (_req, res) => {
   const packages = await listCollection("packages");
-  const products = await productsFor(packages);
-  ok(res, "Packages retrieved.", packages.map((pack) => withPublicPackageItems(serializeForClient(pack), pack, products)));
+  const products = await productsForPackages(packages);
+  ok(res, "Packages retrieved.", packages.map((pack) => serializePublicPackage(pack, products)));
 };
 
 export const getPackage = async (req, res) => {
   const item = await getCollectionItem("packages", req.params.id);
   if (item.isActive === false) throw notFound("packages");
-  ok(res, "Package retrieved.", withPublicPackageItems(serializeForClient(item), item, await productsFor([item])));
+  ok(res, "Package retrieved.", serializePublicPackage(item, await productsForPackages([item])));
 };
 
 export const adminListPackages = async (req, res) => {
   const packages = await listCollection("packages", { includeInactive: true });
-  ok(res, "Packages retrieved.", packages);
+  const products = await productsForPackages(packages);
+  ok(res, "Packages retrieved.", packages.map((pack) => serializeAdminPackage(pack, products)));
 };
 
 export const adminCreatePackage = handlers.create;

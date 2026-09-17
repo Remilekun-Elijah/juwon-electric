@@ -39,9 +39,10 @@ const definedKeys = (payload) => Object.keys(payload).filter((key) => payload[ke
 
 /**
  * Express handlers for one catalog collection. `buildPayload(body, { isUpdate })`;
- * optional async `validate(payload)` runs before any write (e.g. reference checks).
+ * optional async `validate(payload)` runs before any write (e.g. reference checks);
+ * optional async `serialize(item)` shapes the response record.
  */
-export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource, validate }) => ({
+export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource, validate, serialize = (item) => item }) => ({
   create: async (req, res) => {
     const payload = buildPayload(req.body || {}, { isUpdate: false });
     if (validate) await validate(payload);
@@ -52,7 +53,7 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
       },
     });
     auditCreate(req, entity, item, definedKeys(payload));
-    created(res, messages.create, item);
+    created(res, messages.create, await serialize(item));
   },
 
   update: async (req, res) => {
@@ -69,13 +70,13 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
       },
     });
     auditUpdate(req, entity, existing, item, definedKeys(payload));
-    ok(res, messages.update, item);
+    ok(res, messages.update, await serialize(item));
   },
 
   remove: async (req, res) => {
     const existing = await getCollectionItem(collection, req.params.id);
     const item = await deleteCollectionItem(collection, existing.id);
     auditDelete(req, entity, item);
-    ok(res, messages.delete, item);
+    ok(res, messages.delete, await serialize(item));
   },
 });

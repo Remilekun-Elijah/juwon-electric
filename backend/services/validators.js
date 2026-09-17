@@ -286,34 +286,6 @@ export const validatePassword = (password, email = "") => {
   return password;
 };
 
-export const validateOptions = (options) => {
-  if (!Array.isArray(options) || options.length === 0) {
-    throw badRequest("At least one package option is required.");
-  }
-  if (options.length > LIMITS.packageOptions) {
-    throw badRequest(`A package can have at most ${LIMITS.packageOptions} options.`);
-  }
-
-  return options.map((option) => {
-    if (!option || typeof option !== "object" || Array.isArray(option)) {
-      throw badRequest("Invalid package option.");
-    }
-    const name = requiredString(option, "name", "Option name", { max: LIMITS.optionName });
-    const price = numberField(option, "price", "Option price", { required: true });
-    if (!(price > 0) || price > LIMITS.optionPriceMax) {
-      throw badRequest("Option price must be greater than 0 and at most 1,000,000,000.");
-    }
-    return {
-      name,
-      price,
-      kits: requiredString(option, "kits", "Option kits", {
-        max: LIMITS.optionKits,
-        multiline: true,
-      }),
-    };
-  });
-};
-
 // ---- pricing items (orders, carts, quotes) --------------------------------
 
 const isPlainObject = (value) =>

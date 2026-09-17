@@ -1,4 +1,4 @@
-import { priceItem, priceItems } from "./_pricing.js";
+import { loadPricingPackages, priceItem, priceItems } from "./_pricing.js";
 import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
 import { asyncHandler } from "../services/asyncHandler.js";
@@ -54,7 +54,7 @@ const cartLine = ({ pack, option, unitPrice, quantity, lineTotal }) => ({
 
 // Prices are always taken from the active package catalog.
 const quoteItems = async (validated) => {
-  const packages = await listCollection("packages");
+  const packages = await loadPricingPackages();
   return priceItems(packages, validated, { kind: "cart" }).map((line) => ({ ...cartLine(line), available: true }));
 };
 
@@ -66,7 +66,7 @@ const bodyItems = (body) => body?.items ?? body?.cart;
 export const quoteCart = asyncHandler(async (req, res) => {
   const validated = validatePricingItems(bodyItems(req.body), "cart");
   await enforceLimit(req, res, "public-quote", RATE_LIMITS.quote);
-  const packages = await listCollection("packages");
+  const packages = await loadPricingPackages();
   const unavailable = [];
   const items = validated.map((entry, index) => {
     const priced = priceItem(packages, entry, { kind: "cart" });

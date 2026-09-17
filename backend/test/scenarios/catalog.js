@@ -1,4 +1,4 @@
-// Categories, products and package items (API_CONTRACT_V3 §4). Runtime-agnostic scenario;
+// Categories, products and package options (API_CONTRACT_V3 §4, COMMERCE_V2 §1). Runtime-agnostic scenario;
 // returns the transcript for the parity test.
 import assert from "node:assert/strict";
 import { recorder } from "./opsKit.js";
@@ -168,10 +168,10 @@ export const runCatalogScenario = async (client) => {
   await expect("engineer cannot read categories", "GET", "/admin/categories", { token: engineer.token }, 403, FORBIDDEN);
   await expect("no token", "GET", "/admin/products", { token: null }, 401, "Admin authorization is required.");
 
-  // ---- packages reference products (§4.3) -----------------------------------------------------
+  // ---- package options reference products (COMMERCE_V2 §1) ---------------------------------------
   // Express seeds a package catalog and the Worker does not, so package bodies are compared
-  // on message and items only.
-  const packageParts = (body) => ({ message: body?.message, items: body?.data?.items });
+  // on message and options only.
+  const packageParts = (body) => ({ message: body?.message, options: body?.data?.options });
   const packageBody = {
     type: "tubular",
     name: "Starter Kit",
@@ -179,30 +179,38 @@ export const runCatalogScenario = async (client) => {
     load: "Fridge, TV",
     options: [{ name: "Without solar", price: 1200000, kits: "2 batteries" }],
   };
+  const composedOptions = [
+    { name: "Without solar", items: [{ productId: product.id, quantity: 1 }, { productId: battery.id, quantity: 2, note: "Tubular" }] },
+  ];
   const pack = (
-    await expect("package with items", "POST", "/admin/packages", {
-      body: { ...packageBody, items: [{ productId: product.id, quantity: 1 }, { productId: battery.id, quantity: 2, note: "Tubular" }] },
+    await expect("package with option items", "POST", "/admin/packages", {
+      body: { ...packageBody, options: composedOptions },
       project: packageParts,
     }, 201)
   ).body.data;
-  assert.deepEqual(pack.items, [
+  assert.deepEqual(pack.options[0].items.map(({ productId, quantity, note }) => ({ productId, quantity, note })), [
     { productId: product.id, quantity: 1, note: null },
     { productId: battery.id, quantity: 2, note: "Tubular" },
   ]);
+  assert.equal("items" in pack, false);
+  await expect("top-level items are deprecated", "POST", "/admin/packages", {
+    body: { ...packageBody, name: "Old Style", items: [{ productId: product.id, quantity: 1 }] },
+  }, 400, "Add products to each option instead of the package.");
   await expect("package item with unknown product", "POST", "/admin/packages", {
-    body: { ...packageBody, name: "Broken", items: [{ productId: "missing", quantity: 1 }] },
+    body: { ...packageBody, name: "Broken", options: [{ name: "Without solar", items: [{ productId: "missing", quantity: 1 }] }] },
   }, 400, "Product not found.");
   const plain = (
     await expect("package without items", "POST", "/admin/packages", { body: { ...packageBody, name: "Plain Kit" }, project: packageParts }, 201)
   ).body.data;
 
   const publicPack = (await expect("public package with items", "GET", `/packages/${pack.id}`, { token: null }, 200)).body.data;
-  assert.deepEqual(publicPack.items, [
-    { productId: product.id, quantity: 1, note: null, name: "5kVA Inverter Pro", slug: product.slug, sku: "Inv-5KVA-01" },
-    { productId: battery.id, quantity: 2, note: "Tubular", name: "200Ah Battery", slug: battery.slug, sku: "BAT-200AH" },
+  assert.deepEqual(publicPack.options[0].items, [
+    { productId: product.id, quantity: 1, note: null, name: "5kVA Inverter Pro", slug: product.slug, sku: "Inv-5KVA-01", brand: null, categoryId: child.id, attributes: { capacity: 5, phase: "single", wifi: true } },
+    { productId: battery.id, quantity: 2, note: "Tubular", name: "200Ah Battery", slug: battery.slug, sku: "BAT-200AH", brand: null, categoryId: root.id, attributes: {} },
   ]);
   const publicPlain = (await expect("public package without items", "GET", `/packages/${plain.id}`, { token: null }, 200)).body.data;
   assert.deepEqual(Object.keys(publicPlain).sort(), ["_id", "category", "id", "kva", "load", "name", "options", "slug", "type", "volt"]);
+  assert.deepEqual(publicPlain.options, [{ name: "Without solar", composed: false, price: 1200000, available: true, inStock: true, kits: "2 batteries", items: [] }]);
 
   await expect("product used by a package", "DELETE", `/admin/products/${battery.id}`, {}, 409, "Product is used by a package.");
   await expect("delete unused product", "DELETE", `/admin/products/${hidden.id}`, {}, 200, "Product deleted.");
