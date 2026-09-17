@@ -3,8 +3,9 @@
 import type { ChangeEvent } from "react";
 import { useAdminQuery } from "@/components/admin/AdminContext";
 import { categoryOptions } from "@/components/admin/catalog/categoryTree";
-import { Field, Input, Select, Switch, Textarea } from "@/components/ui";
-import { getCategories } from "@/lib/api/admin";
+import { Alert, Field, Input, Select, Switch, Textarea } from "@/components/ui";
+import { getCategories, getServicesAdmin } from "@/lib/api/admin";
+import { WEBSITE_LIMITS } from "@/lib/admin/website";
 import { LIMITS } from "@/lib/validation";
 import { packageTypeOptions, type ContentItem, type FieldErrors } from "./contentConstants";
 import { PackageOptionsEditor, type PackageOptionsState } from "./PackageOptionsEditor";
@@ -143,8 +144,25 @@ export function ServiceForm({ model, setModel, errors = {} }: ContentFormProps) 
 
 export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps) {
   const set = (key: keyof ContentItem) => (event: ControlEvent) => setModel({ ...model, [key]: event.target.value });
+  const segments = useAdminQuery("portfolio-form:segments", async () => (await getServicesAdmin()).data?.customerSegments || []);
+  const category = model.category || "";
+  const segmentOptions = [
+    { value: "", label: "No category" },
+    ...(segments.data ?? [])
+      .filter((segment) => segment.slug)
+      .map((segment) => ({ value: segment.slug as string, label: segment.isActive ? segment.title : `${segment.title} (hidden)` })),
+  ];
+  if (category && segments.data && !segmentOptions.some((option) => option.value === category)) {
+    segmentOptions.push({ value: category, label: `${category} (not found)` });
+  }
+  const summaryLength = text(model.summary).trim().length;
   return (
     <div className="space-y-5">
+      {model.sample && (
+        <Alert tone="info" title="Sample content">
+          <p>Saving your changes turns this into real content and removes the Sample badge.</p>
+        </Alert>
+      )}
       <Field label="Name" required error={errors.name}>
         <Input
           value={text(model.name)}
@@ -161,6 +179,58 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
       >
         <Input value={text(model.image)} onChange={set("image")} maxLength={LIMITS.url} />
       </Field>
+      <fieldset className="space-y-4 rounded-lg border border-slate-200 p-4">
+        <legend className="px-1 text-sm font-medium text-slate-700">Case study</legend>
+        <p className="text-sm text-slate-500">
+          Optional. Items with a summary can appear as case studies on the home page.
+        </p>
+        <Field
+          label="Category"
+          error={errors.category}
+          helper={
+            segments.error && !segments.data
+              ? `Couldn’t load customer segments. ${segments.error}`
+              : "Who this installation was for. Customers can filter the portfolio by it."
+          }
+        >
+          <Select
+            value={category}
+            disabled={segments.initialLoading && Boolean(category)}
+            options={segments.initialLoading && category ? [{ value: category, label: "Loading segments…" }] : segmentOptions}
+            onChange={(event) => setModel({ ...model, category: event.target.value || null })}
+          />
+        </Field>
+        <Field
+          label="Summary"
+          error={errors.summary}
+          helper={`What the customer needed and what you installed. ${summaryLength}/${WEBSITE_LIMITS.portfolioSummary}`}
+        >
+          <Textarea
+            rows={4}
+            value={text(model.summary)}
+            onChange={set("summary")}
+            maxLength={WEBSITE_LIMITS.portfolioSummary}
+          />
+        </Field>
+        <div className={grid}>
+          <Field label="Location" error={errors.location}>
+            <Input
+              value={text(model.location)}
+              onChange={set("location")}
+              placeholder="Lekki, Lagos"
+              maxLength={WEBSITE_LIMITS.portfolioLocation}
+            />
+          </Field>
+          <Field label="System" error={errors.system}>
+            <Input
+              value={text(model.system)}
+              onChange={set("system")}
+              placeholder="10kVA inverter, 8 × 200Ah lithium"
+              maxLength={WEBSITE_LIMITS.portfolioSystem}
+            />
+          </Field>
+        </div>
+      </fieldset>
       <Field label="External link" helper="Optional, e.g. the Instagram post for this project." error={errors.link}>
         <Input
           type="text"

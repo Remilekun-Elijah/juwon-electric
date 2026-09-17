@@ -5,6 +5,8 @@
  */
 import type { PackageCategoryRef, PackageOptionInput } from "@/lib/api/types";
 import type { PackageOptionRecord } from "@/lib/admin/packageOptions";
+import type { PortfolioItemInput } from "@/lib/api/types";
+import { WEBSITE_LIMITS } from "@/lib/admin/website";
 import { LIMITS, validateUrlField } from "@/lib/validation";
 
 export type ContentType = "packages" | "services" | "portfolio";
@@ -42,6 +44,13 @@ export type ContentItem = {
   link?: string;
   featured?: boolean;
   mobile?: boolean;
+  /** LANDING_V1 §2 case-study fields: customer-segment slug, summary, location and system. */
+  category?: string | null;
+  summary?: string | null;
+  location?: string | null;
+  system?: string | null;
+  /** Seeded sample content (read only; any save clears it on the server). */
+  sample?: boolean;
 };
 
 export type FieldErrors = Partial<Record<keyof ContentItem, string>>;
@@ -83,6 +92,10 @@ export const emptyPortfolio: ContentItem = {
   featured: false,
   mobile: true,
   isActive: true,
+  category: null,
+  summary: "",
+  location: "",
+  system: "",
 };
 
 export const getTitle = (item: ContentItem) => item.name || item.title || "Untitled";
@@ -162,6 +175,31 @@ export const validateModel = (type: ContentType, model: ContentItem): FieldError
             name: textError(model.name, LIMITS.portfolioName, "Name", { required: true }),
             image: validateUrlField(model.image, "Image", { required: true }),
             link: validateUrlField(model.link, "Link"),
+            category: textError(model.category, WEBSITE_LIMITS.portfolioCategory, "Category"),
+            summary: textError(model.summary, WEBSITE_LIMITS.portfolioSummary, "Summary"),
+            location: textError(model.location, WEBSITE_LIMITS.portfolioLocation, "Location"),
+            system: textError(model.system, WEBSITE_LIMITS.portfolioSystem, "System"),
           };
   return Object.fromEntries(Object.entries(errors).filter(([, message]) => message)) as FieldErrors;
+};
+
+/**
+ * Portfolio payload: the case-study fields go trimmed, with blanks sent as null so they clear (LANDING_V1 §2).
+ * `sample` is server-owned and never sent.
+ */
+export const toPortfolioPayload = (model: ContentItem): PortfolioItemInput => {
+  const optional = (value: unknown) => (typeof value === "string" ? value.trim() || null : null);
+  return {
+    name: model.name?.trim(),
+    image: model.image?.trim(),
+    link: model.link?.trim() ?? "",
+    featured: Boolean(model.featured),
+    mobile: Boolean(model.mobile),
+    isActive: model.isActive !== false,
+    ...(typeof model.sortOrder === "number" ? { sortOrder: model.sortOrder } : {}),
+    category: optional(model.category),
+    summary: optional(model.summary),
+    location: optional(model.location),
+    system: optional(model.system),
+  };
 };

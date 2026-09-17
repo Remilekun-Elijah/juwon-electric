@@ -27,7 +27,7 @@ import {
 } from "@/components/ui";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { ApiError, adminFetch, getProduct, getServicesAdmin, savePackage } from "@/lib/api/admin";
+import { ApiError, adminFetch, getProduct, getServicesAdmin, savePackage, savePortfolioItem } from "@/lib/api/admin";
 import type { Product } from "@/lib/api/types";
 import { formatCurrency, matchesQuery, parseMoney } from "@/lib/admin/format";
 import {
@@ -41,6 +41,7 @@ import {
   type OptionErrors,
   type PackageOptionRecord,
 } from "@/lib/admin/packageOptions";
+import { SampleBadge, SampleBanner } from "@/components/admin/website/shared";
 import { PackageForm, PortfolioForm, ServiceForm, type ContentFormProps } from "./ContentForms";
 import {
   capitalize,
@@ -51,6 +52,7 @@ import {
   packageCategoryName,
   packageTypeOptions,
   toPackagePayload,
+  toPortfolioPayload,
   validateModel,
   type ContentItem,
   type ContentType,
@@ -202,7 +204,13 @@ function PortfolioCells({ item }: CellsProps) {
   return (
     <>
       <TD className="max-w-[280px]">
-        <p className="truncate font-medium text-slate-900">{getTitle(item)}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="truncate font-medium text-slate-900">{getTitle(item)}</p>
+          {item.sample && <SampleBadge className="shrink-0" />}
+        </div>
+        {(item.location || item.summary) && (
+          <p className="truncate text-sm text-slate-500">{[item.location, item.summary].filter(Boolean).join(" · ")}</p>
+        )}
         <p className="truncate font-mono text-xs text-slate-500 md:hidden">{item.image}</p>
       </TD>
       <TD className="hidden max-w-[220px] md:table-cell">
@@ -300,7 +308,7 @@ export function ContentManager({ type, children }: ContentManagerProps) {
         }
         if (statusFilter === "active" && item.isActive === false) return false;
         if (statusFilter === "hidden" && item.isActive !== false) return false;
-        return matchesQuery(query, item.name, item.title, item.subtitle, item.load, item.type, item.image, item.kva, item.categoryRef?.name);
+        return matchesQuery(query, item.name, item.title, item.subtitle, item.load, item.type, item.image, item.kva, item.categoryRef?.name, item.location, item.system);
       }),
     [items, packageTypeFilter, statusFilter, query, type]
   );
@@ -385,7 +393,9 @@ export function ContentManager({ type, children }: ContentManagerProps) {
     try {
       const response = packages
         ? await savePackage<ContentItem>(editingId || null, toPackagePayload(model, toOptionInputs(optionDrafts)))
-        : await adminFetch<ContentItem>(`/${type}${editingId ? `/${encodeURIComponent(editingId)}` : ""}`, {
+        : type === "portfolio"
+          ? await savePortfolioItem(editingId || null, toPortfolioPayload(model))
+          : await adminFetch<ContentItem>(`/${type}${editingId ? `/${encodeURIComponent(editingId)}` : ""}`, {
             method: editingId ? "PUT" : "POST",
             body: model,
           });
@@ -545,6 +555,7 @@ export function ContentManager({ type, children }: ContentManagerProps) {
       onRetry={list.reload}
       retrying={list.loading}
     >
+      {type === "portfolio" && items.some((item) => item.sample) && <SampleBanner />}
       {pageError && (
         <Alert tone="danger" onDismiss={() => setPageError("")}>
           {pageError}
