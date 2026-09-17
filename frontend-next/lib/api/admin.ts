@@ -11,6 +11,7 @@
 import type { AdminSelf } from "@/lib/admin/capabilities";
 import { config } from "@/lib/config";
 import * as mock from "@/lib/admin/mocks";
+import { notifyStorefront } from "@/lib/storefront/notify";
 import { ApiError, apiRequest, toQuery, type ApiEnvelope, type ApiRequestInit, type QueryParams } from "./client";
 import type {
   AdminNotification,
@@ -144,7 +145,7 @@ export const setAdminForbiddenHandler = (handler: () => void) => {
 export async function adminFetch<T>(path: string, init: ApiRequestInit = {}): Promise<ApiEnvelope<T>> {
   const token = readAdminToken();
   try {
-    return await apiRequest<T>(`/admin${path}`, {
+    const response = await apiRequest<T>(`/admin${path}`, {
       ...init,
       cache: "no-store",
       headers: {
@@ -152,6 +153,9 @@ export async function adminFetch<T>(path: string, init: ApiRequestInit = {}): Pr
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
+    // Storefront refresh after a successful write (fe-storefront §2.3); fire-and-forget, GETs are ignored.
+    notifyStorefront(init.method, `/admin${path}`, token);
+    return response;
   } catch (error) {
     if (error instanceof ApiError) {
       // Only act when the rejected token is still the stored one, so a late 401 from an earlier
