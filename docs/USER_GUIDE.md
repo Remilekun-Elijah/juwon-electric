@@ -1006,7 +1006,7 @@ This chapter describes the public website for customers. Staff can use it to gui
 
 **On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-On a computer, the top menu has **Packages**, **Products**, **Calculator**, **Services**, **Our work**, **Team** and **Contact**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Team**). **Careers** is in the footer too.
+On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Team** and **Contact**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Team**). **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
@@ -1102,7 +1102,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a customer, I want to work out what size of system I need so that I can pick the right package and see what I'd save on a generator.*
 
-The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the gold **Load calculator** button in the top menu, the "Size your system" section on the home page, the **Calculator** menu item or the link in the footer. When the calculator is switched off, these links are hidden.
+The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the gold **Load calculator** button in the top menu, the "Size your system" section on the home page or the link in the footer. When the calculator is switched off, these links are hidden.
 
 1. Open the **Calculator**. A list of common appliances is already filled in with typical amounts.
 2. For each appliance, set **how many** you have and **how many hours a day** you use it, with the steppers. Set the number to 0 for anything you don't have.
@@ -1255,7 +1255,7 @@ This guide is a living document. **Update it in the same change as every feature
 ### Change log
 
 **2026-09-17 (load calculator button in the header)**
-- Customer: the top menu's gold button is now **Load calculator** instead of **Get a quote** (which moved into the phone menu), and the floating **Size your system** button at the bottom right is gone. **Chat on WhatsApp** still floats there.
+- Customer: the top menu's gold button is now **Load calculator** instead of **Get a quote** (which moved into the phone menu), the separate **Calculator** menu item is gone, and the floating **Size your system** button at the bottom right is gone too. **Chat on WhatsApp** still floats there.
 
 **2026-09-17 (products on the website switch)**
 - Owner: **Settings → Website → Homepage & contact** has a new switch, **Show products on the website**. Turn it off to sell packages only: customers stop seeing the Products menu item, the product sections on the home page and every product page. Packages keep their products, and nothing changes in the admin.

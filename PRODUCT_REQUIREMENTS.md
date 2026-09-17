@@ -691,7 +691,7 @@ Open items for owner review
 12. Change log
 
 2026-09-17 (load calculator button in the header)
-- §6.10: the header's gold **Get a quote** button is now **Load calculator**, linking to `/calculator` (it falls back to **Get a quote** while the calculator is switched off), and the phone menu lists both. The floating **Size your system** button at the bottom right is removed; only **Chat on WhatsApp** remains there.
+- §6.10: the header's gold **Get a quote** button is now **Load calculator**, linking to `/calculator` (it falls back to **Get a quote** while the calculator is switched off), and the **Calculator** menu item is removed from the header and the phone menu, which lists **Load calculator** and **Get a quote** as buttons. The floating **Size your system** button at the bottom right is removed; only **Chat on WhatsApp** remains there. The footer keeps its **Load calculator** link.
 
 2026-09-17 (products on the website switch)
 - §6.7 and §6.11: **Settings → Website → Homepage & contact** gains **Products on the website** (`website.productsEnabled`, public, default on). Off hides every Products link, section and page on the storefront and drops product URLs from the sitemap; packages and the whole admin are unaffected. The API keeps the same endpoints and payloads; the flag is a new key in the `website` settings section.
