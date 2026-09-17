@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Banknote, Briefcase, Building2, CalendarDays, CheckCircle2, Mail, MapPin } from "lucide-react";
 import JsonLd from "@/components/storefront/JsonLd";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
+import Reveal from "@/components/storefront/motion/Reveal";
 import RichText from "@/components/public/RichText";
 import { Badge, buttonClasses } from "@/components/ui";
 import type { PublicVacancy } from "@/lib/api/types";
@@ -12,7 +13,7 @@ import { richTextToPlain, sanitizeRichText } from "@/lib/sanitize";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { getStoreSettings, getStoreVacancies, getStoreVacancy } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeCard, storeContainer, storeLink, storeSection } from "@/lib/storefront/styles";
+import { enterDelay, staggerDelay, storeCard, storeContainer, storeGoldButton, storeLink, storeSection } from "@/lib/storefront/styles";
 import { cleanList, employmentTypeLabel, formatPostedDate, schemaEmploymentType, vacancyPath } from "@/lib/vacancies";
 
 export const revalidate = 60;
@@ -95,14 +96,14 @@ export default async function VacancyPage({ params }: PageProps<"/storefront/vac
         <h2 id={id} className="text-xl font-semibold tracking-tight text-slate-900">
           {title}
         </h2>
-        <ul className="mt-4 space-y-3">
+        <Reveal as="ul" stagger className="mt-4 space-y-3">
           {items.map((item, index) => (
-            <li key={index} className="flex gap-3 text-slate-700">
+            <li key={index} style={staggerDelay(index, 50, 400)} className="je-in flex gap-3 text-slate-700">
               <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
               <span className="min-w-0 leading-relaxed">{item}</span>
             </li>
           ))}
-        </ul>
+        </Reveal>
       </section>
     );
 
@@ -115,16 +116,18 @@ export default async function VacancyPage({ params }: PageProps<"/storefront/vac
         description={[vacancy.location, type].filter(Boolean).join(" · ") || undefined}
         breadcrumbs={[{ label: "Careers", href: storeRoutes.vacancies }, { label: vacancy.title, href: vacancyPath(vacancy) }]}
         actions={
-          <a href={applyHref} className={buttonClasses({ size: "lg" })}>
+          // One soft gold ring pulses around Apply after the intro has settled.
+          <a href={applyHref} className={cn(storeGoldButton, "je-attention relative")}>
             <Mail aria-hidden="true" />
             Apply by email
           </a>
         }
+        image={INTRO_IMAGES.array}
       />
 
       <div className={storeSection}>
         <div className={cn(storeContainer, "grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-8")}>
-          <article className={cn(storeCard, "min-w-0 space-y-8 p-5 sm:p-8")}>
+          <article style={enterDelay(300)} className={cn(storeCard, "je-in min-w-0 space-y-8 p-5 sm:p-8")}>
             {hasDescription && (
               <section aria-labelledby="role-about">
                 <h2 id="role-about" className="text-xl font-semibold tracking-tight text-slate-900">
@@ -140,7 +143,7 @@ export default async function VacancyPage({ params }: PageProps<"/storefront/vac
             )}
           </article>
 
-          <aside aria-labelledby="role-summary" className="lg:sticky lg:top-24">
+          <aside aria-labelledby="role-summary" style={enterDelay(380)} className="je-in je-in-right lg:sticky lg:top-24">
             <div className={cn(storeCard, "p-5 sm:p-6")}>
               <div className="flex items-center justify-between gap-3">
                 <h2 id="role-summary" className="font-semibold tracking-tight text-slate-900">

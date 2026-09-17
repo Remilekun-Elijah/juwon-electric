@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui";
 import type { PublicVacancy } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { richTextToPlain } from "@/lib/sanitize";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storeFocus, storeHoverLift } from "@/lib/storefront/styles";
 import { employmentTypeLabel, formatPostedDate, vacancyPath } from "@/lib/vacancies";
 
-/** Open role card: title, department, location, employment type, salary range and posted date. Server component. */
+/** Open role card: title, department, location, employment type, salary range and posted date. Lifts on hover. Server component. */
 export default function VacancyCard({ vacancy }: { vacancy: PublicVacancy }) {
   const type = employmentTypeLabel(vacancy.employmentType);
   const posted = formatPostedDate(vacancy.postedAt);
@@ -19,7 +19,7 @@ export default function VacancyCard({ vacancy }: { vacancy: PublicVacancy }) {
   ].filter((item): item is { icon: typeof MapPin; label: string; value: string } => Boolean(item));
 
   return (
-    <article className={cn(storeCard, "group relative flex h-full flex-col p-5 transition-shadow hover:shadow-elev-3 focus-within:shadow-elev-3 sm:p-6")}>
+    <article className={cn(storeCard, storeHoverLift, "group relative flex h-full flex-col p-5 sm:p-6")}>
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="success" dot>
           Open role
@@ -58,7 +58,7 @@ export default function VacancyCard({ vacancy }: { vacancy: PublicVacancy }) {
           )}
           <span aria-hidden="true" className="inline-flex items-center gap-1 text-sm font-medium text-brand-700">
             View role
-            <ArrowRight className="h-4 w-4 transition-transform motion-safe:group-hover:translate-x-0.5" />
+            <ArrowRight className={cn("h-4 w-4", storeArrowNudge)} />
           </span>
         </div>
       </div>

@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase, Filter } from "lucide-react";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import VacancyCard from "@/components/storefront/content/VacancyCard";
 import VacancyFilters, { type VacancyFilterOption } from "@/components/storefront/content/VacancyFilters";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import type { PublicVacancy } from "@/lib/api/types";
 import { getStoreVacancies } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
+import { enterDelay, staggerDelay } from "@/lib/storefront/styles";
 import { employmentTypeLabel, vacancyKey } from "@/lib/vacancies";
 
 export const revalidate = 60;
@@ -63,12 +65,14 @@ export default async function VacanciesPage({ searchParams }: PageProps<"/storef
             ? `Help us keep homes and businesses powered. We have ${count} open ${count === 1 ? "role" : "roles"} right now.`
             : "Help us keep homes and businesses powered. Open roles for engineers, installers and support staff are listed here."
         }
+        image={INTRO_IMAGES.rooftop}
       />
 
       <Section>
         {count === 0 ? (
           <EmptyState
             standalone
+            className="je-in"
             icon={Briefcase}
             title="No open roles right now"
             description="Check back soon, or send us a message with the kind of work you do and we’ll keep your details on file."
@@ -80,21 +84,24 @@ export default async function VacanciesPage({ searchParams }: PageProps<"/storef
           />
         ) : (
           <div className="space-y-6">
-            <VacancyFilters departments={departments} types={types} selected={{ department, type }} />
-            <p className="text-sm text-slate-500">
+            <div style={enterDelay(300)} className="je-in">
+              <VacancyFilters departments={departments} types={types} selected={{ department, type }} />
+            </div>
+            <p style={enterDelay(350)} className="je-in je-in-fade text-sm text-slate-500">
               Showing {shown.length} of {count} open {count === 1 ? "role" : "roles"}
             </p>
             {shown.length > 0 ? (
-              <ul className="grid gap-5 md:grid-cols-2">
-                {shown.map((vacancy) => (
-                  <li key={vacancyKey(vacancy)} className="min-w-0">
+              <Reveal as="ul" stagger className="grid gap-5 md:grid-cols-2">
+                {shown.map((vacancy, index) => (
+                  <li key={vacancyKey(vacancy)} style={staggerDelay(index, 60, 400, 6)} className="je-in min-w-0">
                     <VacancyCard vacancy={vacancy} />
                   </li>
                 ))}
-              </ul>
+              </Reveal>
             ) : (
               <EmptyState
                 standalone
+                className="je-in"
                 icon={Filter}
                 title="No roles match these filters"
                 description="Try another department or employment type."
