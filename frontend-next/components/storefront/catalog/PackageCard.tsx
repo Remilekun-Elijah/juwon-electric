@@ -15,6 +15,8 @@ export type PackageCardProps = {
   headingAs?: "h2" | "h3";
   /** Smaller card without the load text and cart button, for "Included in these packages" and related lists. */
   compact?: boolean;
+  /** Show the catalogue category name (Commerce v3 §4) when the package has one. Off where the category is the page. */
+  showCategory?: boolean;
   className?: string;
 };
 
@@ -22,7 +24,7 @@ export type PackageCardProps = {
  * Package summary card: type, kVA and volt, what it powers, "from" price, solar availability, included items count,
  * "View details" and add to cart. Prices and the solar badge only count available options (Commerce v2 §4). No "use client": it renders inside the server pages and the PackageFilters island.
  */
-export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = false, className }: PackageCardProps) {
+export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = false, showCategory = true, className }: PackageCardProps) {
   const productCount = includedProductCount(pkg);
   const solar = hasSolarOption(pkg);
   const label = `${pkg.name} ${pkg.kva}kVA ${packageTypeLabel(pkg).toLowerCase()}`;
@@ -48,6 +50,12 @@ export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = 
         <Zap aria-hidden="true" className="h-4 w-4 text-brand-700" />
         {packageRating(pkg)}
       </p>
+      {showCategory && pkg.categoryRef?.name && (
+        <p className="mt-1 truncate text-xs font-medium uppercase tracking-[0.08em] text-slate-500">
+          <span className="sr-only">Category: </span>
+          {pkg.categoryRef.name}
+        </p>
+      )}
 
       {!compact && pkg.load && (
         <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">

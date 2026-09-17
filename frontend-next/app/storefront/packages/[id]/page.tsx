@@ -27,7 +27,7 @@ import PriceTag from "@/components/storefront/PriceTag";
 import Section from "@/components/storefront/Section";
 import { Badge, buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
-import { formatPrice } from "@/lib/catalog";
+import { categoryPath, formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { packagePath, packageTitle } from "@/lib/packages";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -128,15 +128,18 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
   const available = isPackageAvailable(pkg);
   const productCount = includedProductCount(pkg);
   const related = relatedPackages(all, pkg);
+  // Commerce v3 §4: the catalogue category, when set and active.
+  const categoryRef = pkg.categoryRef ?? null;
 
   return (
     <>
       <JsonLd data={packageJsonLd(pkg)} />
       <PageIntro
-        eyebrow={`${packageTypeLabel(pkg)} package`}
+        eyebrow={categoryRef ? `${categoryRef.name} · ${packageTypeLabel(pkg)} package` : `${packageTypeLabel(pkg)} package`}
         title={packageTitle(pkg)}
         breadcrumbs={[
           { label: "Packages", href: storeRoutes.packages },
+          ...(categoryRef ? [{ label: categoryRef.name, href: categoryPath(categoryRef) }] : []),
           { label: `${pkg.name} ${pkg.kva}kVA`, href: packagePath(pkg) },
         ]}
       >

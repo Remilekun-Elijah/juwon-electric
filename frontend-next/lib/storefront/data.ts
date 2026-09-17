@@ -16,6 +16,7 @@ import {
   getCategories,
   getPackage,
   getPackages,
+  getPackagesInCategory,
   getPortfolio,
   getProduct,
   getProducts,
@@ -94,11 +95,31 @@ export async function storeRead<T>(
 
 /* ---------- Packages ---------- */
 
-/** `GET /packages`. Empty when the route is missing. */
-export const getStorePackages = cache(
+const readAllPackages = cache(
   async (): Promise<Package[]> =>
     (await storeRead("GET /packages", (init) => getPackages(init), { tags: ["packages"], fallback: fallbackPackages })) ?? []
 );
+
+// The category filter includes descendants and is resolved by the API, so it is tagged `categories` too. The build
+// fallback is empty: the bundled fallback packages have no category.
+const readCategoryPackages = cache(
+  async (category: string): Promise<Package[]> =>
+    (await storeRead(`GET /packages?category=${category}`, (init) => getPackagesInCategory({ category }, init), {
+      tags: ["packages", "categories"],
+      fallback: [],
+    })) ?? []
+);
+
+export type StorePackageQuery = { category?: string };
+
+/**
+ * `GET /packages`, or with `category` (id or slug) `GET /packages?category=` (Commerce v3 §4: that category and its
+ * descendants). Empty when the route is missing.
+ */
+export const getStorePackages = (query: StorePackageQuery = {}): Promise<Package[]> => {
+  const category = query.category?.trim() ?? "";
+  return category ? readCategoryPackages(category) : readAllPackages();
+};
 
 /** `GET /packages/:id`, or `null` (use `notFound()`). */
 export const getStorePackage = cache(
