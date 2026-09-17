@@ -238,7 +238,7 @@ Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super ad
 
 The steps are: **Pending → Processing → Out for delivery → Delivered → Installed** (Installed only when the order needs installation). An order can be **Cancelled** any time before it is delivered.
 
-1. Go to **Orders**. New orders are marked as new. Each order shows two statuses in their own columns: **Fulfilment** (where the order is: Pending, Processing, Out for delivery, Delivered, Installed or Cancelled) and **Payment** (Unpaid, Part-paid, Paid, Failed or Refunded). On a phone, payment shows as a small "Payment: …" line under the fulfilment status. The tabs filter by fulfilment; use the drop-downs to filter by payment or channel (**Website** / **In store**).
+1. Go to **Orders**. New orders are marked as new. Each order shows two statuses in their own columns: **Fulfilment** (where the order is: Pending, Processing, Out for delivery, Delivered, Installed or Cancelled) and **Payment** (Unpaid, Part-paid, Paid, Failed or Refunded). On a phone, both show under the customer's name (fulfilment as a badge, then "Payment: …"). The tabs filter by fulfilment; use the drop-downs to filter by payment or channel (**Website** / **In store**).
 2. Open the order and check the customer's name, phone, delivery address and items.
 3. **Call the customer to confirm** the order and arrange payment.
 4. Record payment (chapter 6, story 6.2).

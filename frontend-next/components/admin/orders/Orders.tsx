@@ -318,22 +318,19 @@ export function Orders() {
               <span className="truncate">{item.phoneNumber || item.deliveryAddress}</span>
               <ChannelBadge channel={orderChannel(item)} />
             </p>
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 sm:hidden">
+              <FulfillmentBadge status={orderFulfillment(item)} />
+              <span className="text-xs text-slate-500">Payment: {paymentLabels[orderPayment(item)]}</span>
+              {isRefundDue(item) && <RefundDueBadge />}
+            </div>
           </TD>
           <TD className="hidden whitespace-nowrap md:table-cell">{formatDate(getRecordDate(item))}</TD>
           <TD className="hidden whitespace-nowrap tabular-nums lg:table-cell">{itemCount(item)}</TD>
           <TD align="right" className="whitespace-nowrap font-medium tabular-nums text-slate-900">
             {formatCurrency(getOrderRevenue(item))}
           </TD>
-          <TD>
-            <div className="flex flex-col items-start gap-1">
-              <FulfillmentBadge status={orderFulfillment(item)} />
-              <span className="text-xs text-slate-500 sm:hidden">Payment: {paymentLabels[orderPayment(item)]}</span>
-              {isRefundDue(item) && (
-                <span className="sm:hidden">
-                  <RefundDueBadge />
-                </span>
-              )}
-            </div>
+          <TD className="hidden sm:table-cell">
+            <FulfillmentBadge status={orderFulfillment(item)} />
           </TD>
           <TD className="hidden sm:table-cell">
             <div className="flex flex-col items-start gap-1">
@@ -447,7 +444,7 @@ export function Orders() {
           <TH className="hidden md:table-cell">Date</TH>
           <TH className="hidden lg:table-cell">Items</TH>
           <TH align="right">Total</TH>
-          <TH>Fulfilment</TH>
+          <TH className="hidden sm:table-cell">Fulfilment</TH>
           <TH className="hidden sm:table-cell">Payment</TH>
           <TH align="right" srOnly>
             Actions
