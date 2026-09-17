@@ -1,24 +1,28 @@
 "use client";
 
 import { useId, useState } from "react";
-import { CheckCircle2, Sun, Zap } from "lucide-react";
+import { Sun, Zap } from "lucide-react";
 import AddToCartButton from "@/components/storefront/cart/AddToCartButton";
 import PriceTag from "@/components/storefront/PriceTag";
 import type { Package } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import { cheapestOptionIndex, pricedOptions } from "./packageMeta";
-
-/** The cart contract knows two options: index 0 without solar, index 1 with solar. */
-const CART_OPTION_COUNT = 2;
+import OptionStockHint from "./OptionStockHint";
+import { usePackageOptionScope } from "./PackageOptionScope";
+import { cartOptions, defaultCartOptionIndex } from "./packageMeta";
 
 /**
- * Option radio group (without or with solar, with prices). Drives AddToCartButton's `optionIndex` and shows the kits
- * text for the chosen option.
+ * Option radio group (without or with solar, with prices). Only available options are listed (Commerce v2 §4), and
+ * each keeps its ORIGINAL index into `pkg.options`, which is what AddToCartButton receives. Inside a
+ * PackageOptionScope the choice also switches the page's "What's included" panels.
  */
 export default function PackageOptionPicker({ pkg }: { pkg: Package }) {
   const baseId = useId();
-  const options = pricedOptions(pkg).filter((option) => option.index < CART_OPTION_COUNT);
-  const [selected, setSelected] = useState(() => cheapestOptionIndex(pkg));
+  const scope = usePackageOptionScope();
+  const [localSelected, setLocalSelected] = useState(() => defaultCartOptionIndex(pkg));
+  const selected = scope ? scope.selected : localSelected;
+  const select = scope ? scope.select : setLocalSelected;
+
+  const options = cartOptions(pkg);
   const chosen = options.find((option) => option.index === selected) ?? options[0];
 
   if (!options.length) {
@@ -53,7 +57,7 @@ export default function PackageOptionPicker({ pkg }: { pkg: Package }) {
                   name={`${baseId}-option`}
                   value={option.index}
                   checked={checked}
-                  onChange={() => setSelected(option.index)}
+                  onChange={() => select(option.index)}
                   className="h-4 w-4 shrink-0 accent-brand-600 focus-visible:outline-hidden"
                 />
                 <Icon aria-hidden="true" className={cn("h-5 w-5 shrink-0", checked ? "text-brand-700" : "text-slate-400")} />
@@ -65,14 +69,12 @@ export default function PackageOptionPicker({ pkg }: { pkg: Package }) {
         </div>
       </fieldset>
 
-      {chosen?.kits && (
-        <div className="mt-4 flex gap-2.5 rounded-xl bg-slate-50 p-4 text-sm text-slate-600" aria-live="polite">
-          <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-          <p>
-            <span className="font-medium text-slate-900">{chosen.name} includes </span>
-            {chosen.kits}
-          </p>
-        </div>
+      {chosen && (
+        <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-live="polite">
+          <span className="font-medium text-slate-900">{chosen.name}:</span>
+          <OptionStockHint inStock={chosen.inStock} />
+          {chosen.inStock === false && <span>We’ll confirm a delivery date when we call.</span>}
+        </p>
       )}
 
       <div className="mt-5">
