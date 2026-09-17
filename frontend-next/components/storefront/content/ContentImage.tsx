@@ -3,7 +3,7 @@ import SiteImage from "@/components/public/SiteImage";
 import { cn } from "@/lib/cn";
 
 export type ContentImageProps = {
-  /** Local path (`/panel-1.webp`) or a CMS https URL. Blank shows a neutral placeholder. */
+  /** Local path (`/panel-1.webp`) or a CMS http(s) URL, such as an uploaded image. Blank shows a neutral placeholder. */
   src: string | null | undefined;
   alt: string;
   /** `sizes` for the responsive image. */
@@ -14,12 +14,15 @@ export type ContentImageProps = {
   priority?: boolean;
 };
 
-/** Accepts local paths and https URLs only; anything else renders the placeholder. */
+/**
+ * Accepts local paths and absolute http(s) URLs (uploaded images live on the API origin or the image domain, which is
+ * plain http in local development); anything else renders the placeholder.
+ */
 const usableSrc = (src: string | null | undefined) => {
   const value = (src || "").trim();
   if (!value) return "";
   if (value.startsWith("/") && !value.startsWith("//")) return value;
-  return /^https:\/\//i.test(value) ? value : "";
+  return /^https?:\/\//i.test(value) ? value : "";
 };
 
 /**
