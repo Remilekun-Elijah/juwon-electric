@@ -236,7 +236,7 @@ Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super ad
 
 *As an admin, I want to move each order through its steps so that the customer gets their system on time and stock stays right.*
 
-The steps are: **Pending → Processing → Out for delivery → Delivered → Installed** (Installed only when the order needs installation). An order can be **Cancelled** any time before it is delivered.
+The steps are: **Pending → Processing → Out for delivery → Delivered → Installed**. An order can be **Cancelled** any time before it is delivered.
 
 1. Go to **Orders**. New orders are marked as new. Each order shows two statuses in their own columns: **Fulfilment** (where the order is: Pending, Processing, Out for delivery, Delivered, Installed or Cancelled) and **Payment** (Unpaid, Part-paid, Paid, Failed or Refunded). On phones, tablets and smaller laptop screens, both show under the customer's name (fulfilment as a badge, then "Payment: …"); tap the row to open the order. The tabs filter by fulfilment; use the drop-downs to filter by payment or channel (**Website** / **In store**).
 2. Open the order and check the customer's name, phone, delivery address and items.
@@ -244,7 +244,7 @@ The steps are: **Pending → Processing → Out for delivery → Delivered → I
 4. Record payment (chapter 6, story 6.2).
 5. Select **Mark as processing**. This **takes the items out of stock**.
 6. When it leaves the store, select **Mark as out for delivery**, then **Mark as delivered** on arrival.
-7. If it needs installation, turn on **Requires installation** and create a job (chapter 6, story 6.3). When every job is completed, the order becomes **Installed** automatically.
+7. If it needs installation, turn on **Requires installation** and create a job (chapter 6, story 6.3). When every job is completed, the order becomes **Installed** automatically. If the installation was done without a job, open the delivered order and select **Mark as installed**. If **Requires installation** wasn't on, you'll be asked to confirm and it's turned on for you.
 8. Add an **Internal note** if needed (only staff see it) and select **Save note**.
 
 **Tips and common mistakes**
@@ -733,6 +733,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (installed step and menu)**
+- Orders: every delivered order now offers **Mark as installed**; confirming turns on **Requires installation** if it was off (story 5.3).
+- Menu: **New sale** is no longer in the sidebar. Start an in-store sale with **New in-store sale** on the Orders page (story 6.1).
 
 **2026-09-17 (orders list)**
 - Orders: fulfilment and payment now have separate labelled columns; payment labels are Unpaid and Part-paid; cancelled orders that were paid show **Refund due** (stories 5.3 and 6.2).
