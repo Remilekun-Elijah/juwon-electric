@@ -56,7 +56,6 @@ export function DateTimePicker(props: DateTimePickerProps) {
   const {
     id,
     invalid,
-    required,
     "aria-describedby": describedBy,
     value,
     onChange,
@@ -74,7 +73,6 @@ export function DateTimePicker(props: DateTimePickerProps) {
         id={id}
         disabled={disabled}
         aria-invalid={invalid || undefined}
-        aria-required={required || undefined}
         aria-describedby={[valueId, describedBy].filter(Boolean).join(" ")}
         className={cn(
           fieldClasses,
