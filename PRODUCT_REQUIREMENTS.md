@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Team page and home redesign (see section 12, Change log)
+Last updated: 2026-09-17, Image uploads (see section 12, Change log)
 
 1. Executive summary
 
@@ -37,7 +37,7 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Orders: lifecycle and basic payment status
 - Inventory: stock tracking, reorder level, low-stock alerts
 - Staff & engineer management and job assignment
-- Installation job workflow (basic checklist and photo attachments)
+- Installation job workflow (basic checklist and photo attachments; job photos are added as links)
 - Vacancies module with rich-text job descriptions (admin CRUD + public listing)
 - Admin dashboard & reporting (basic KPIs)
 - Port frontend to Next.js (public pages SSG)
@@ -53,6 +53,7 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Clearly labelled sample content for local development and review, seeded locally only and replaced before launch (§6.11, §11 Before launch checklist)
 - Team page (2026-09-17): team members managed in the admin (Website → Team) and a public "Meet the team" page at `/team` (§6.11)
 - Home page redesign (2026-09-17): a transparent header over a full-bleed photo hero, hero stats, floating "Size your system" and WhatsApp buttons, a darker section rhythm, a dark footer, and storefront-wide motion that respects reduced motion (§6.10)
+- Image uploads (2026-09-17): staff upload images (JPEG, PNG or WebP) from the product, category, services, portfolio, customer segment, review, client logo and team forms, with an image link as a fallback (§6.1, §6.7, §6.8, §6.11)
 
 Out of scope (initial release)
 - Complex promotions engine, loyalty, multi-currency pricing, advanced analytics
@@ -61,7 +62,7 @@ Out of scope (initial release)
 - Selling packages through in-store orders (in-store orders sell individual products only)
 - ~~Buying individual products on the website~~: moved in scope in Commerce v3 (2026-09-17). Customers can now buy active, in-stock products online (§4, §6.10).
 - Customer-facing stock reservation: placing a website order does not hold stock; stock is taken when staff move the order to processing
-- File uploads (images and job photos are added as links)
+- ~~File uploads (images and job photos are added as links)~~: moved in scope in Image uploads (2026-09-17) for catalogue and website content images (§4, §6.1, §6.11). Still out of scope: uploading job photos and staff profile photos, which are still added as links.
 - Online financing applications, credit checks or loan approval: the financing section only shows terms set in Settings; customers talk to the team to apply (Landing v1)
 - Saving calculator results or collecting customer details from the calculator (Landing v1)
 - Copying any wording, images, logos, statistics, reviews, prices, office lists or financing numbers from the reference site used for layout ideas (Landing v1)
@@ -126,6 +127,15 @@ Persona: HR
 
 6.1 Core commerce
 - Products & Categories: CRUD, images, sanitized rich descriptions, attributes per category
+  - Images (Image uploads, 2026-09-17): image fields support uploads (upload or link). The shared upload field applies to every admin image field listed in §6.1 and §6.11:
+    - Staff choose a file with **Choose image** (**Choose images** for products) or drag and drop it. Only JPEG, PNG and WebP are accepted. SVG and non-image files are refused ("That file isn't an image. Choose a JPEG, PNG or WebP image." in the browser; "Upload a JPEG, PNG or WebP image." from the server, which checks the file's real content, not only its declared type).
+    - The browser resizes and compresses each image before upload: longest side at most 1600 px, saved as WebP at quality 0.82 (JPEG when the browser can't make WebP). It steps down in size if needed, and camera metadata is dropped. Originals over 15 MB are refused before processing ("That image is over 15 MB. Choose a smaller image.").
+    - The server accepts at most 2 MB per file after processing ("Image must be 2 MB or smaller.").
+    - While working the field shows "Preparing image…", then "Uploading…" with a progress bar and a cancel button. After upload it shows a preview with **Replace** and **Remove**. Error messages show under the field.
+    - Link fallback: **Use an image link instead** opens the image link field (an `https://` link or a site path starting with `/`, as before). Existing records keep their links. When uploads are unavailable, the field shows only the link input, and a refused upload opens the link field with "Image uploads are unavailable right now. Please use an image link or try again later."
+    - The stored value is still the image URL, so the storefront shows uploaded and linked images the same way.
+  - Product images: up to 10. Several files can be chosen or dropped at once and upload one after another in order. Each row has **Move up** / **Move down** buttons (the first image carries a **Main** badge and is the main image), **Replace**, **Edit link** and **Remove**. Adding more than fit adds the first ones and shows "Only N more images fit, so the first N were added."; at 10, "A product can have up to 10 images. Remove one to add another."
+  - Category image: a single upload field (**Image**).
   - A category can't be deleted while it has subcategories, products or packages ("Category has subcategories, products or packages."). (Packages added in Commerce v3.)
   - Products with status Active are sold on the website when in stock (§6.10). Hidden products are not sold online but can still be package components and in-store sale lines. Archived products are not sold anywhere.
 - Packages (composed pricing; replaces "group multiple products as bundles with a single price", 2026-09-17):
@@ -166,7 +176,7 @@ Persona: HR
 - Orders have a channel: `website` or `in_store` (orders placed before this change read as `website`). The orders list can be filtered by channel and shows a channel badge; order details show who created an in-store order, subtotal, and discount with reason.
 
 6.4 Installation jobs
-- Job assignment, scheduling, checklist, photo uploads, completion notes
+- Job assignment, scheduling, checklist, photos (added as links; job photo uploads are not part of Image uploads, 2026-09-17), completion notes
 - Engineer mobile-friendly UI showing assigned jobs and ability to update
 - Crews (Commerce v3):
   - A job has a crew of 0 to 10 engineers, each listed once. Every crew member must be an active account with the Engineer role ("Assignee must be an active engineer."). Adding the same engineer twice is refused ("Each engineer can be added once."), and more than 10 is refused ("A job can have at most 10 engineers.").
@@ -206,9 +216,10 @@ Persona: HR
 - All roles receive the admin notifications relevant to them (new orders for roles that can see orders, low stock for roles that can see inventory, vacancy posted for HR/admin, job assigned for each engineer newly added to a job's crew). Only superadmin and admin can see the activity log, manage accounts and change settings.
 
 6.7 Settings & Notifications
-- System settings for payment gate toggles, notification emails, upload provider
+- System settings for payment gate toggles and notification emails. ~~upload provider~~ (Image uploads, 2026-09-17: the stored `uploads.provider` value is kept for compatibility but is not shown in the admin; whether uploads work depends on server configuration only, §6.8)
 - Notifications: low-stock, new order, vacancy posted (optional)
-- Settings sections: Business (name, email, phone, address, website; shown on the public site), Notifications (email lists for new orders, low stock and vacancies, up to 10 each), Payments (accept online payments; Paystack or Flutterwave), Inventory (default reorder level; low-stock alerts on/off), Uploads (image URLs). Landing v1 adds Website, Financing and Calculator (§6.11).
+- Settings sections: Business (name, email, phone, address, website; shown on the public site), Notifications (email lists for new orders, low stock and vacancies, up to 10 each), Payments (accept online payments; Paystack or Flutterwave), Inventory (default reorder level; low-stock alerts on/off), ~~Uploads (image URLs)~~ (the Uploads card was removed on 2026-09-17: images are uploaded or linked in each form, §6.1). Landing v1 adds Website, Financing and Calculator (§6.11).
+- Settings never show any upload or storage section (Image uploads, 2026-09-17).
 - In-store orders raise the same new-order notification as website orders, with the channel recorded.
 
 6.8 Non-functional requirements
@@ -217,6 +228,16 @@ Persona: HR
 - Maintainability: modular backend models and clear API contracts
 - Accessibility: admin forms and public pages meet basic a11y standards
 - Admin sessions last at most 8 hours and end after 2 hours without activity.
+
+Image storage safeguards (developer-facing; Image uploads, 2026-09-17)
+
+This subsection is for developers and whoever runs the hosting. None of it is shown to admins or described in the user guide: the project is handed to a client, so admins never see storage usage, limits, percentages or alerts. Setup and operations: docs/DEPLOYMENT.md §1.7. Contract: docs/agents/UPLOADS_V1.md. Endpoints: backend/docs/API.md → Image uploads.
+- Storage: the Worker stores uploads in the Cloudflare R2 bucket `juwon-electric-images` (binding `IMAGES`). Images are served from a public image domain set in `IMAGES_PUBLIC_BASE_URL` (for example `https://images.<domain>`); when it is unset, the API serves them at `/uploads/<key>` with a one-year immutable cache header. Express (local and self-host) stores files on disk under `UPLOADS_DIR` with the same API.
+- Upload rules: `POST /admin/uploads` needs `content:write`, `products:write` or `staff:write`; JPEG, PNG or WebP only, checked by the file's magic bytes (SVG refused); 2 MB per file; 60 uploads per admin per 10 minutes. Each upload is recorded and written to the activity log (`upload.create`). `GET /admin/uploads/config` returns only whether uploads are enabled, the per-file limit, accepted types and maximum dimension; nothing about usage.
+- Hidden storage cap: before storing, the server checks total stored bytes against `IMAGE_STORAGE_LIMIT_BYTES` (default 9 GB, `9000000000`; unset or `0` means the default). Over the cap the upload is refused with `507` and the neutral message "Image uploads are unavailable right now. Please use an image link or try again later." Nothing is stored, and staff can keep working with image links. The message never mentions storage or limits.
+- Daily cleanup: the Worker cron and the Express daily timer delete uploads that no stored image field references and that are older than 24 hours (at most 500 per run), then recompute the usage total. Referenced images are never deleted.
+- Private developer alert: when usage reaches `STORAGE_ALERT_BYTES` (default 8 GB, `8000000000`), or an upload is refused at the cap, one plain email goes to `STORAGE_ALERT_EMAIL` (optional; unset means no alert), at most once every 7 days. It is never sent to admin addresses (`ADMIN_NOTIFY_EMAIL`, `SMTP_FROM`, admin accounts or Settings notification lists, which are dropped if listed) and never appears in the admin UI, notifications or activity log summaries.
+- No usage display: no banner, badge, percentage, usage figure or storage setting appears anywhere in the admin console.
 
 6.9 In-store sales (added 2026-09-17)
 - Who: accounts with the `orders:create` capability (superadmin, admin, sales). The Orders screen shows a "New in-store sale" button that opens a full, mobile-friendly page.
@@ -336,19 +357,20 @@ Managed collections
   - The website shows active items only. Inactive items stay in the admin.
   - Each screen has a create/edit drawer, the active switch and a delete confirmation.
   - Every create, update and delete is written to the activity log (`faq.*`, `testimonial.*`, `client.*`).
-  - Image and logo fields accept a full `http(s)` link or a site path starting with `/` (letters, numbers, `.`, `_`, `-` and `/`, up to 200 characters), for example `/samples/client-1.svg`.
+  - Image and logo fields support upload or link (Image uploads, 2026-09-17; §6.1): staff upload a JPEG, PNG or WebP image, or use **Use an image link instead** to enter a full `http(s)` link or a site path starting with `/` (letters, numbers, `.`, `_`, `-` and `/`, up to 200 characters), for example `/samples/client-1.svg`. The services, portfolio and customer segment **Image** fields work the same way.
 - FAQs:
   - Fields: Question (5–200 characters, required), Answer (1–2000 characters, plain text, line breaks kept, required), Category (optional, up to 60 characters, for example "Ordering", "Installation", "Products").
   - Admin list: category filter and **Move up** / **Move down** (▲▼) buttons to change the order (no drag and drop). The Category field suggests existing categories. Reviews and Client logos use the same Move up / Move down buttons.
   - Public: the home page shows the first 6; `/faq` shows all, grouped by category.
   - Messages: "FAQ created.", "FAQ updated.", "FAQ deleted.", "FAQ not found."
 - Reviews (stored as testimonials):
-  - Fields (admin labels): Customer name (1–100, required; for example "Adaeze O."), Context (optional, up to 150; for example "5kVA lithium system, Lekki"), Review (the quote, 10–1000, required), Rating (optional, 1–5 stars or No rating), Source (optional: Website, WhatsApp, Google, Facebook, In person), Photo URL (optional link or site path).
+  - Fields (admin labels): Customer name (1–100, required; for example "Adaeze O."), Context (optional, up to 150; for example "5kVA lithium system, Lekki"), Review (the quote, 10–1000, required), Rating (optional, 1–5 stars or No rating), Source (optional: Website, WhatsApp, Google, Facebook, In person), Photo (optional; upload or link, shown with a round preview; ~~Photo URL, link or site path only~~ changed 2026-09-17).
   - Rule: only real reviews from customers who agreed to be quoted. Don't edit a customer's meaning.
   - Admin list shows the star rating. Public: the home page reviews section (cards or a scroller that the customer moves; never auto-rotating) with stars, name, context and a source badge.
   - Messages: "Review created.", "Review updated.", "Review deleted.", "Review not found."
 - Client logos (stored as clients):
-  - Fields (admin labels): Client name (1–100, required; used as the logo's alt text), Logo (required link or site path), Website (optional).
+  - Fields (admin labels): Client name (1–100, required; used as the logo's alt text), Logo (required; upload or link, ~~link or site path only~~ changed 2026-09-17), Website (optional).
+  - Logo uploads keep PNG transparency: a PNG (or other image) with a transparent background is kept as a transparent PNG, longest side at most 800 px. Logos without transparency are processed like photos. The drop area hint reads "PNG with a transparent background looks best. JPEG and WebP work too."
   - Rule: only add a client's logo with the client's permission.
   - Admin shows a grid with a logo preview. Public: the home page client logos grid (up to 6 per row, greyscale until hovered).
   - Messages: "Client created.", "Client updated.", "Client deleted.", "Client not found."
@@ -428,7 +450,7 @@ Team members collection
   - **Role** (required, 1–80), for example "Lead installation engineer".
   - **Group** (required, 1–60, free text): the heading the member is listed under on the website. The field suggests existing groups first, then "Leadership", "Engineering & installations", "Sales & customer care" and "Operations".
   - **Bio** (optional, up to 300 characters, one line of plain text; line breaks become spaces). The admin shows a character count.
-  - **Photo URL** (optional): an `http(s)` link or a site path starting with `/`, as for other Website images. The drawer shows a square preview; with no usable photo it shows the member's initials ("No photo yet. The website shows their initials instead.").
+  - **Photo** (optional; ~~Photo URL~~ renamed 2026-09-17): upload or link, as for other Website images. Helper: "Optional. Square photos look best. Without one, the website shows their initials." The drawer shows a preview with **Replace** and **Remove**.
   - **LinkedIn URL** (optional): an `https` link.
   - **Show on the website** switch ("Hidden team members stay here but aren't shown on the team page.").
   - Sort order and the Sample flag, as for the other collections.
@@ -498,7 +520,7 @@ Sample content
 - Home page order (Landing v1): with all content present the sections appear in the §6.11 order; removing the data behind any section hides that section without leaving an empty heading or gap.
 - Sample content (Landing v1): after running the local seed, every seeded record and settings section shows a Sample badge in the admin, the banner "Sample content is showing on the website. Edit or replace it before launch." shows on screens with sample records, and the website shows "Sample" labels on sample stats, reviews, client logos, case-study details, financing and calculator notes. Editing and saving a sample record or section removes its badge and label. The seed refuses to run with `NODE_ENV=production`.
 - No sample content visible before launch (Landing v1): on the production website at launch, no "Sample" label appears on any page, no FAQ, review, client logo, team member (added 2026-09-17), portfolio item or settings section in the admin shows a Sample badge, no screen shows the sample banner, the WhatsApp link does not use `+2348000000000`, and no files under `/samples/` are referenced. Every item in the §11 Before launch checklist is ticked.
-- Team members admin (2026-09-17): a Sales account opens **Website → Team**, selects **Add team member**, enters Name, Role, Group "Engineering & installations", a Bio, a Photo URL such as `/team/ada.jpg` and a LinkedIn URL, leaves **Show on the website** on and saves; the member appears in the list with a round photo and in that group on `/team` on the next page view. A LinkedIn URL that isn't `https`, a Photo URL that is neither a link nor a path starting with `/`, or a Bio over 300 characters is rejected. Switching **Show on the website** off removes the member from `/team` and from `GET /team`. A Support account can view Team but has no add, edit, move or delete buttons, and the server refuses changes with "You do not have permission to perform this action."
+- Team members admin (2026-09-17): a Sales account opens **Website → Team**, selects **Add team member**, enters Name, Role, Group "Engineering & installations", a Bio, a Photo (uploaded, or a link such as `/team/ada.jpg`) and a LinkedIn URL, leaves **Show on the website** on and saves; the member appears in the list with a round photo and in that group on `/team` on the next page view. A LinkedIn URL that isn't `https`, a Photo URL that is neither a link nor a path starting with `/`, or a Bio over 300 characters is rejected. Switching **Show on the website** off removes the member from `/team` and from `GET /team`. A Support account can view Team but has no add, edit, move or delete buttons, and the server refuses changes with "You do not have permission to perform this action."
 - Team order and groups (2026-09-17): moving the first member of "Operations" to the top of the list with ▲ makes "Operations" the first group on `/team`. **Filter by group** shows only that group's members.
 - Team page (2026-09-17): with the 12 sample members, `/team` shows "Meet the team", stats of 12 team members, 4 teams and 4 engineers and installers counting up, 4 group sections in seed order with 2 cards a row at 375 px, 3 at 768 px and 4 at 1280 px, a Sample pill on every card, and "Want to join us?" linking to `/vacancies`. On a mouse device, hovering or tabbing to a card zooms the photo and shows the bio overlay; on a touch device the bio shows under the role with no overlay. A member with no photo shows their initials. The page's structured data lists no sample members; after one member is edited and saved as real content, the `Organization` `employee` list contains exactly that member's name and job title. With no active members the page shows "Our team page is being updated" and no stats.
 - Header navigation (2026-09-17): at 1280 px the desktop header shows Team and no Careers; the mobile menu lists Careers right after Team; the footer's Company column links both **Meet the team** and Careers; `/team` is in the sitemap.
@@ -506,6 +528,12 @@ Sample content
 - Reduced motion (2026-09-17): with the operating system's reduce-motion setting on, the home hero stays on the first photo with no zoom (the bars still switch photos) and has no pause button, client logos don't scroll, every count-up figure shows its final value straight away, hover zoom and lift are off, the scroll cue is hidden, and no content waits for an animation to appear.
 - No JavaScript (2026-09-17): with JavaScript disabled, the home page, team page and all sections show their full content and final figures straight away, with the first hero photo. If scripts are on but fail to start, counting figures still show their final values within 3 seconds.
 - Layout at 375 px (2026-09-17): on a 375 px wide screen, the home page, `/team`, `/calculator`, `/faq`, the catalogue and the cart have no horizontal scroll, and no animation causes layout shift (Cumulative Layout Shift from animations is 0).
+- Image upload (Image uploads, 2026-09-17): an admin opens a product, selects **Choose images**, picks a 5 MB JPEG photo and saves; the field shows "Preparing image…" and "Uploading…", then a preview with a **Main** badge, the stored file is 2 MB or smaller with its longest side at most 1600 px, and the photo shows on the product page on the next storefront page view. The same works for the category, services, portfolio, customer segment, review, client logo and team image fields and their storefront pages. A transparent PNG client logo stays transparent on the home page.
+- Product images (Image uploads): a product takes up to 10 images; choosing 3 files with 8 already added adds the first 2 and shows "Only 2 more images fit, so the first 2 were added."; **Move down** on image 1 makes image 2 the **Main** image and the storefront shows it first.
+- Upload type checks (Image uploads): choosing an SVG, a PDF or a text file is refused with an inline message and nothing is uploaded; sending SVG bytes or a file whose content doesn't match its declared type straight to `POST /admin/uploads` returns `415` "Upload a JPEG, PNG or WebP image." and stores nothing.
+- Upload size (Image uploads): a file over 2 MB after processing is refused by the server with `413` "Image must be 2 MB or smaller." and nothing is stored; an original over 15 MB is refused in the browser with "That image is over 15 MB. Choose a smaller image."
+- Link fallback (Image uploads): **Use an image link instead** accepts an `https://` link or a site path starting with `/`, which saves and displays as before; existing records with links keep working. When uploads are refused (for example at the hidden storage cap, tested with a small `IMAGE_STORAGE_LIMIT_BYTES`), the field shows "Image uploads are unavailable right now. Please use an image link or try again later.", opens the link field, and saving with a link succeeds.
+- No storage information in the admin (Image uploads): with usage at, near or over any limit, no admin screen, Settings section, notification, activity log summary or API response for the admin (including `GET /admin/uploads/config`) shows storage usage, a limit, a percentage or an alert; Settings has no Uploads card; the storage alert email goes only to `STORAGE_ALERT_EMAIL` and never to an admin address.
 - Floating actions (2026-09-17): with the calculator on and a WhatsApp number set, every storefront page except the calculator page shows **Size your system** and **Chat on WhatsApp** at the bottom right (round buttons on phones, labelled pills from 640 px); the calculator page shows only WhatsApp; `/cart` and `/checkout` show neither. With the calculator off and no WhatsApp number, no floating buttons show. Neither button shows an "online" status or a badge.
 
 8. Metrics & success criteria
@@ -563,6 +591,9 @@ Team page and home redesign round (2026-09-17)
 - Home page redesign: transparent header, full-bleed photo hero with stats, floating actions, darker section rhythm and dark footer
 - Storefront motion system that respects reduced motion
 
+Image uploads round (2026-09-17)
+- Admin image uploads with browser resizing and a link fallback, stored in Cloudflare R2 with hidden developer-only storage safeguards
+
 10. Risks & mitigation
 
 - Rich-text security: sanitize server-side and limit allowed tags/attributes. Use `sanitize-html` and disallow scripts.
@@ -581,7 +612,7 @@ Team page and home redesign round (2026-09-17)
 11. Appendix
 - Link to technical plan: /PLATFORM_PLAN.md
 - Vacancy schema example and sanitization guidance included in PLATFORM_PLAN.md
-- API contract: docs/agents/API_CONTRACT_V3.md; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md; landing page and website content: docs/agents/LANDING_V1.md; team page, home redesign and motion: docs/agents/TEAM_AND_MOTION_V1.md
+- API contract: docs/agents/API_CONTRACT_V3.md; image uploads: docs/agents/UPLOADS_V1.md and docs/DEPLOYMENT.md §1.7; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md; landing page and website content: docs/agents/LANDING_V1.md; team page, home redesign and motion: docs/agents/TEAM_AND_MOTION_V1.md
 - Staff user guide: docs/USER_GUIDE.md (website content: chapter 10A)
 
 Before launch checklist (Landing v1)
@@ -598,7 +629,7 @@ Complete every item before the website goes live. The local seed never runs in p
   - Sample FAQs have no "Sample" label on the website, so check them in the admin (Website → FAQs).
 - [ ] Reviews (6 sample, made-up names such as "Adaeze O."): delete all; add only real reviews from customers who agreed to be quoted.
 - [ ] Client logos (6 sample, fictional clients using `/samples/client-1.svg` to `/samples/client-6.svg`): delete all; add only real clients who gave permission, with their own logo files or links.
-- [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo URL with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
+- [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo (upload or link) with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
 - [ ] Portfolio case-study details: for each portfolio item marked Sample, replace Category, Summary, Location and System with the real project details, or clear them.
 - [ ] Settings → Website:
   - [ ] Stats (4 sample: Installations, Years in Lagos, Engineers, Average install time): enter true figures or remove the rows.
@@ -609,10 +640,30 @@ Complete every item before the website goes live. The local seed never runs in p
 - [ ] Settings → Calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
 - [ ] Walk through the website (home, `/calculator`, `/faq`, `/portfolio`, `/team`, footer) on a phone and a computer and confirm no "Sample" label remains.
 
+Before deploying image uploads (developer steps; Image uploads, 2026-09-17)
+Do these before the first production deploy that includes image uploads. Details: docs/DEPLOYMENT.md §1.7. These are developer tasks: nothing here is shown to admins.
+- [ ] Create the R2 bucket: `npx wrangler r2 bucket create juwon-electric-images` (from `backend/cloudflare`). Deploying without it fails and the previous Worker keeps serving.
+- [ ] Connect a public image domain to the bucket (for example `images.<domain>`) and set `IMAGES_PUBLIC_BASE_URL` on the Worker. Don't use the `r2.dev` URL in production. If no domain is set up yet, leave it unset (the API serves images itself).
+- [ ] Set `STORAGE_ALERT_EMAIL` to a developer mailbox (never an admin or business address).
+- [ ] Leave `IMAGE_STORAGE_LIMIT_BYTES` (default 9 GB) and `STORAGE_ALERT_BYTES` (default 8 GB) unset unless the hosting plan changes.
+- [ ] Make sure the `CLOUDFLARE_API_TOKEN` used by CI includes Workers R2 Storage:Edit.
+- [ ] After deploying, upload one test image in the admin, check it shows on the storefront, then remove it (the daily cleanup deletes the unused file after 24 hours).
+
 Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (Image uploads)
+- §4: file uploads moved in scope for catalogue and website content images (struck through in Out of scope); job photos and staff profile photos are still added as links.
+- §6.1: image fields support upload or link: JPEG, PNG and WebP only; resized and compressed in the browser (longest side 1600 px, WebP); 2 MB per file on the server; progress, preview, **Replace** and **Remove**; **Use an image link instead**; product images up to 10 with **Move up** / **Move down** and a **Main** badge.
+- §6.4: job photos are still links.
+- §6.7: the Settings Uploads card was removed and the upload provider is no longer shown; Settings never shows an upload or storage section.
+- §6.8: new developer-facing subsection, Image storage safeguards (R2 bucket and image domain, hidden 9 GB cap with a neutral refusal message, daily cleanup of unreferenced uploads older than 24 hours, private developer alert at 8 GB at most weekly and never to admins, no usage display), referring to docs/DEPLOYMENT.md §1.7.
+- §6.11: review photos, client logos (PNG transparency kept) and team photos support upload or link; the team field is now **Photo** and the review field **Photo**.
+- §7: added acceptance criteria for a successful upload shown on the storefront, product images, SVG and non-image files refused, files over 2 MB refused, the link fallback, and no storage information in the admin.
+- §9: added the Image uploads milestone.
+- §11: added links to the uploads contract and deployment notes, and the developer checklist for deploying image uploads (bucket, image domain, env vars).
 
 2026-09-17 (motion on every page)
 - §6.10: dark animated page intros and motion on every storefront page; header transparent over any page intro.
