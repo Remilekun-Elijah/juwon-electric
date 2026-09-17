@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { contactUs, inboundContactReply } from "../controllers/contact.js";
-import { clients, faqs, testimonials } from "../controllers/content.js";
+import { clients, faqs, teamMembers, testimonials } from "../controllers/content.js";
 import { quoteCart, saveCart } from "../controllers/cart.js";
 import { health } from "../controllers/health.js";
 import { subscribe } from "../controllers/newsletter.js";
@@ -24,6 +24,8 @@ router.get("/portfolio/:id", asyncHandler(getPortfolioItem));
 router.get("/faqs", faqs.publicList);
 router.get("/testimonials", testimonials.publicList);
 router.get("/clients", clients.publicList);
+// Team members (TEAM_AND_MOTION_V1 §1): active only.
+router.get("/team", teamMembers.publicList);
 // Open vacancies only (writes live under /admin/vacancies).
 router.get("/vacancies", listVacancies);
 router.get("/vacancies/:slug", getVacancy);

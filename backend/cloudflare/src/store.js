@@ -32,6 +32,8 @@ const COLLECTIONS = [
   "faqs",
   "testimonials",
   "clients",
+  // Team and motion v1
+  "teamMembers",
 ];
 
 // Catalog collections (public catalog records with admin-controlled sortOrder).

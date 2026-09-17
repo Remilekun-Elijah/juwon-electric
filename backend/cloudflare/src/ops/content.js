@@ -1,4 +1,4 @@
-// Website content (LANDING_V1 §1): FAQs, reviews (testimonials) and client logos for the
+// Website content (LANDING_V1 §1, TEAM_AND_MOTION_V1 §1): FAQs, reviews, client logos and team members for the
 // Worker, at parity with backend/controllers/content.js. Rules: backend/shared/content.js.
 import { created, ok } from "../http.js";
 import { createCollectionItem, deleteCollectionItem, getCollectionItem, listCollection, updateCollectionItem } from "../store.js";
@@ -11,7 +11,7 @@ const all = (env, collection) => listCollection(env, collection, { includeInacti
 
 export const handleContentPublic = async ({ request, env, path, url }) => {
   if (request.method !== "GET") return null;
-  const collection = CONTENT_COLLECTIONS.find((name) => path === `/${name}`);
+  const collection = CONTENT_COLLECTIONS.find((name) => path === `/${CONTENT_MODULES[name].path}`);
   if (!collection) return null;
   const items = contentList(collection, await all(env, collection), queryOf(url), { publicView: true });
   return ok(CONTENT_MODULES[collection].messages.list, items);
@@ -20,7 +20,7 @@ export const handleContentPublic = async ({ request, env, path, url }) => {
 export const handleContentAdmin = async ({ request, env, path, body, admin, audit, url }) => {
   const { method } = request;
   for (const collection of CONTENT_COLLECTIONS) {
-    const base = `/admin/${collection}`;
+    const base = `/admin/${CONTENT_MODULES[collection].path}`;
     const { entity, payload: buildPayload, serialize, messages } = CONTENT_MODULES[collection];
 
     if (path === base && method === "GET") {

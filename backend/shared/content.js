@@ -1,10 +1,10 @@
-// Website content (LANDING_V1 §1, §2): FAQs, reviews (testimonials), client logos and the
-// portfolio case-study fields. Validation, public filtering and serializers shared by Express
+// Website content (LANDING_V1 §1, §2; TEAM_AND_MOTION_V1 §1): FAQs, reviews (testimonials), client
+// logos, team members and the portfolio case-study fields. Validation, public filtering and serializers shared by Express
 // and the Worker. Pure: storage lives in each runtime.
 import { badRequest } from "./errors.js";
 import { OPS_LIMITS, boolean, integer, isPlainObject, oneOf, queryText, sortOrder, text } from "./fields.js";
 
-export const CONTENT_COLLECTIONS = ["faqs", "testimonials", "clients"];
+export const CONTENT_COLLECTIONS = ["faqs", "testimonials", "clients", "teamMembers"];
 export const TESTIMONIAL_SOURCES = ["website", "whatsapp", "google", "facebook", "in_person"];
 
 export const CONTENT_LIMITS = {
@@ -21,6 +21,10 @@ export const CONTENT_LIMITS = {
   portfolioSummary: 500,
   portfolioLocation: 100,
   portfolioSystem: 200,
+  teamName: 100,
+  teamRole: 80,
+  teamGroup: 60,
+  teamBio: 300,
 };
 
 const SITE_PATH = /^\/[A-Za-z0-9._/-]{1,200}$/;
@@ -58,6 +62,13 @@ const httpUrl = (body, key, label) => {
   const value = text(body, key, { label, max: OPS_LIMITS.url });
   if (!value) return null;
   if (!isHttpUrl(value)) throw badRequest(`${label} must be an http(s) URL.`);
+  return value;
+};
+
+const httpsUrl = (body, key, label) => {
+  const value = text(body, key, { label, max: OPS_LIMITS.url });
+  if (!value) return null;
+  if (!/^https:\/\//i.test(value) || !isHttpUrl(value)) throw badRequest(`${label} must be an https URL.`);
   return value;
 };
 
@@ -174,6 +185,29 @@ export const serializeClient = (item) => ({
   ...commonFields(item),
 });
 
+// ---- Team members (TEAM_AND_MOTION_V1 §1) ----------------------------------------------------
+
+export const teamMemberPayload = (body, { isUpdate = false } = {}) =>
+  buildPayload(body, isUpdate, {
+    name: (input) => text(input, "name", { label: "Name", required: true, max: CONTENT_LIMITS.teamName }),
+    role: (input) => text(input, "role", { label: "Role", required: true, max: CONTENT_LIMITS.teamRole }),
+    group: (input) => text(input, "group", { label: "Group", required: true, max: CONTENT_LIMITS.teamGroup }),
+    bio: (input) => text(input, "bio", { label: "Bio", max: CONTENT_LIMITS.teamBio }) || null,
+    photoUrl: (input) => imageRef(input, "photoUrl", "Photo URL"),
+    linkedinUrl: (input) => httpsUrl(input, "linkedinUrl", "LinkedIn URL"),
+  });
+
+export const serializeTeamMember = (item) => ({
+  id: item.id,
+  name: item.name ?? "",
+  role: item.role ?? "",
+  group: item.group ?? "",
+  bio: item.bio || null,
+  photoUrl: item.photoUrl || null,
+  linkedinUrl: item.linkedinUrl || null,
+  ...commonFields(item),
+});
+
 // ---- shared shape, lists and filters ------------------------------------------------------
 
 function commonFields(item) {
@@ -186,9 +220,13 @@ function commonFields(item) {
   };
 }
 
-/** Per collection: payload builder, serializer, audit entity, messages and the audit label. */
+/**
+ * Per collection: URL path (`/<path>` public, `/admin/<path>` admin), payload builder, serializer,
+ * audit entity, messages and the audit label.
+ */
 export const CONTENT_MODULES = {
   faqs: {
+    path: "faqs",
     entity: "faq",
     noun: "FAQ",
     payload: faqPayload,
@@ -197,6 +235,7 @@ export const CONTENT_MODULES = {
     messages: { list: "FAQs retrieved.", create: "FAQ created.", update: "FAQ updated.", delete: "FAQ deleted." },
   },
   testimonials: {
+    path: "testimonials",
     entity: "testimonial",
     noun: "review",
     payload: testimonialPayload,
@@ -205,12 +244,27 @@ export const CONTENT_MODULES = {
     messages: { list: "Reviews retrieved.", create: "Review created.", update: "Review updated.", delete: "Review deleted." },
   },
   clients: {
+    path: "clients",
     entity: "client",
     noun: "client",
     payload: clientPayload,
     serialize: serializeClient,
     label: (item) => item?.name,
     messages: { list: "Clients retrieved.", create: "Client created.", update: "Client updated.", delete: "Client deleted." },
+  },
+  teamMembers: {
+    path: "team",
+    entity: "team_member",
+    noun: "team member",
+    payload: teamMemberPayload,
+    serialize: serializeTeamMember,
+    label: (item) => item?.name,
+    messages: {
+      list: "Team retrieved.",
+      create: "Team member created.",
+      update: "Team member updated.",
+      delete: "Team member deleted.",
+    },
   },
 };
 

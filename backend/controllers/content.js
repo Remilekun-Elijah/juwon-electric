@@ -1,4 +1,5 @@
-// Website content (LANDING_V1 §1): FAQs, reviews (testimonials) and client logos.
+// Website content (LANDING_V1 §1, TEAM_AND_MOTION_V1 §1): FAQs, reviews (testimonials), client logos
+// and team members.
 // Validation, filters and serializers are shared with the Worker (backend/shared/content.js).
 import { asyncHandler } from "../services/asyncHandler.js";
 import { audit, changedFields } from "../services/audit.js";
@@ -77,3 +78,4 @@ const handlersFor = (collection) => {
 export const faqs = handlersFor("faqs");
 export const testimonials = handlersFor("testimonials");
 export const clients = handlersFor("clients");
+export const teamMembers = handlersFor("teamMembers");

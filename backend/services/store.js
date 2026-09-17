@@ -100,6 +100,8 @@ const models = {
   faqs: mongoose.models.Faq || mongoose.model("Faq", flexibleSchema, "faqs"),
   testimonials: mongoose.models.Testimonial || mongoose.model("Testimonial", flexibleSchema, "testimonials"),
   clients: mongoose.models.Client || mongoose.model("Client", flexibleSchema, "clients"),
+  // Team and motion v1 team members.
+  teamMembers: mongoose.models.TeamMember || mongoose.model("TeamMember", flexibleSchema, "teamMembers"),
 };
 
 // Non-catalog collections whose writers keep slugs unique through `prepare`.
@@ -294,6 +296,7 @@ const defaultDb = async () => {
     faqs: [],
     testimonials: [],
     clients: [],
+    teamMembers: [],
   };
 };
 
