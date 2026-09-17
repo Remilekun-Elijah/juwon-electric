@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import { Box, CheckCircle2, Mail, Package, Phone, ShoppingCart, Truck, Wrench, type LucideIcon } from "lucide-react";
 import { Badge, Skeleton, buttonClasses } from "@/components/ui";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import { cn } from "@/lib/cn";
 import { LAST_ORDER_KEY, phoneNumbers, storeRoutes, telHref } from "@/lib/storefront/routes";
-import { storeCard, storeCardPadding, storeContainer, storeLink } from "@/lib/storefront/styles";
+import { enterDelay, staggerDelay, storeCard, storeCardPadding, storeContainer, storeLink } from "@/lib/storefront/styles";
 import { parseLastOrder } from "./orderPayload";
 
 export type OrderReceivedProps = {
@@ -62,6 +62,8 @@ const firstName = (name: string) => name.trim().split(/\s+/)[0] || "";
 /**
  * `/checkout/success` client island. Reads the summary checkout stored in `sessionStorage["je/last-order"]` and shows
  * the order, what happens next and how to reach us. Nothing stored (a new tab, or storage blocked) shows an empty state.
+ * A received order gets a small celebration (§8.2): the check mark draws itself, the heading scales in, and the
+ * fulfilment steps appear one by one with their connector drawing down. No confetti.
  */
 export default function OrderReceived({ phone, email, gatewayEnabled }: OrderReceivedProps) {
   const raw = useSyncExternalStore(noopSubscribe, readStored, serverSnapshot);
@@ -98,7 +100,7 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
   if (order === undefined) {
     return (
       <>
-        <PageIntro eyebrow="Checkout" title="Order confirmation" />
+        <PageIntro eyebrow="Checkout" title="Order confirmation" image={INTRO_IMAGES.sunset} compact />
         <div className={cn(storeContainer, "py-8 sm:py-12")} aria-busy="true">
           <p className="sr-only" role="status">
             Loading your order
@@ -119,6 +121,8 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
           eyebrow="Checkout"
           title="No recent order to show"
           description="We couldn’t find an order placed in this browser tab. If you placed one, we’ve received it and will call you to confirm."
+          image={INTRO_IMAGES.sunset}
+          compact
         />
         <div className={cn(storeContainer, "grid gap-6 py-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start")}>
           <section aria-labelledby="order-empty-heading" className={cn(storeCard, "flex flex-col items-center px-6 py-12 text-center")}>
@@ -154,10 +158,18 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
         eyebrow="Checkout"
         title="Order received"
         description={`Thank you${greeting ? `, ${greeting}` : ""}. We’ve received your order and will call you shortly to confirm it.`}
+        image={INTRO_IMAGES.sunset}
+        compact
+        celebrate
+        icon={
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-gold-400/15 text-gold-400 ring-1 ring-gold-400/40">
+            <CheckCircle2 aria-hidden="true" style={enterDelay(150)} className="je-check-draw h-7 w-7" />
+          </span>
+        }
       />
       <div className={cn(storeContainer, "grid gap-6 py-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start")}>
         <div className="space-y-6">
-          <section aria-labelledby="order-details-heading" className={cn(storeCard, storeCardPadding)}>
+          <section aria-labelledby="order-details-heading" style={enterDelay(250)} className={cn(storeCard, storeCardPadding, "je-in")}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 id="order-details-heading" className="text-base font-semibold text-slate-900">
@@ -187,7 +199,7 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
             </ul>
           </section>
 
-          <section aria-labelledby="order-next-heading" className={cn(storeCard, storeCardPadding)}>
+          <section aria-labelledby="order-next-heading" style={enterDelay(350)} className={cn(storeCard, storeCardPadding, "je-in")}>
             <h2 id="order-next-heading" className="text-base font-semibold text-slate-900">
               What happens next
             </h2>
@@ -197,8 +209,16 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
                 const current = index === 0;
                 const last = index === all.length - 1;
                 return (
-                  <li key={step.title} aria-current={current ? "step" : undefined} className="relative flex gap-4 pb-6 last:pb-0">
-                    {!last && <span aria-hidden="true" className="absolute left-[19px] top-10 bottom-0 w-px bg-slate-200" />}
+                  <li
+                    key={step.title}
+                    aria-current={current ? "step" : undefined}
+                    style={staggerDelay(index, 120, 450)}
+                    className="je-in relative flex gap-4 pb-6 last:pb-0"
+                  >
+                    {/* The connector draws down to the next step as the steps appear. */}
+                    {!last && (
+                      <span aria-hidden="true" style={staggerDelay(index, 120, 650)} className="je-draw-down absolute bottom-0 left-[19px] top-10 w-px bg-slate-200" />
+                    )}
                     <span
                       className={cn(
                         "relative grid h-10 w-10 shrink-0 place-items-center rounded-full border",
@@ -224,7 +244,7 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
           </section>
         </div>
 
-        <div className="space-y-6 lg:sticky lg:top-24">
+        <div style={enterDelay(300)} className="je-in je-in-right space-y-6 lg:sticky lg:top-24">
           {contact}
           <div className="flex flex-col gap-3">
             <Link href={storeRoutes.packages} className={buttonClasses({ variant: "outline", size: "lg", className: "w-full" })}>

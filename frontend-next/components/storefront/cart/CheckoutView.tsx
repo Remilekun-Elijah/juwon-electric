@@ -10,7 +10,7 @@ import { clearCart, useCart } from "@/lib/cart/store";
 import { useCartQuote } from "@/lib/cart/useCartQuote";
 import { cn } from "@/lib/cn";
 import { LAST_ORDER_KEY, primaryPhone, storeRoutes, telHref } from "@/lib/storefront/routes";
-import { storeCard, storeCardPadding, storeContainer, storeLink } from "@/lib/storefront/styles";
+import { enterDelay, storeCard, storeCardPadding, storeContainer, storeLink } from "@/lib/storefront/styles";
 import { useHydrated } from "@/lib/useHydrated";
 import CartEmpty from "./CartEmpty";
 import CartSkeleton from "./CartSkeleton";
@@ -77,7 +77,7 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
   return (
     <div className={cn(storeContainer, "py-8 sm:py-12")}>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-        <div className="lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+        <div style={enterDelay(60)} className="je-in je-in-fast je-in-right lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
           <OrderSummary
             cart={cart}
             products={products}
@@ -105,7 +105,7 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
           />
         </div>
 
-        <div className={cn(storeCard, storeCardPadding, "lg:col-start-1 lg:row-start-1")}>
+        <div className={cn(storeCard, storeCardPadding, "je-in je-in-fast lg:col-start-1 lg:row-start-1")}>
           <CheckoutForm
             cart={cart}
             products={products}

@@ -10,6 +10,8 @@ import type { ProductCartItem } from "@/lib/cart/productStore";
 import type { CartItem } from "@/lib/cart/store";
 import type { CartQuoteState } from "@/lib/cart/useCartQuote";
 import { useTurnstile } from "@/lib/turnstile/useTurnstile";
+import { cn } from "@/lib/cn";
+import { staggerDelay } from "@/lib/storefront/styles";
 import { LIMITS, PHONE_MESSAGE, isValidEmail, isValidPhone } from "@/lib/validation";
 import { UNAVAILABLE_MESSAGE } from "./OrderSummary";
 import {
@@ -39,6 +41,9 @@ const EMPTY: CheckoutValues = { name: "", phoneNumber: "", emailAddress: "", del
 const FIELD_ORDER: FieldName[] = ["name", "phoneNumber", "emailAddress", "deliveryAddress"];
 const fieldId = (name: FieldName) => `checkout-${name}`;
 const NO_PRODUCTS: ProductCartItem[] = [];
+
+/** Form sections rise in sequence, 25ms apart and 200ms each, so the last is in place by 275ms and inputs work throughout. */
+const section = (index: number) => ({ className: "je-in je-in-fast", style: staggerDelay(index, 25, 0, 5) });
 
 /**
  * Same rules as the classic checkout (components/public/cart/CheckoutForm.tsx): name, phone and address required,
@@ -145,26 +150,28 @@ export default function CheckoutForm({ cart, products = NO_PRODUCTS, quote, onPl
 
   return (
     <form onSubmit={handleSubmit} noValidate aria-labelledby="checkout-details-heading" aria-busy={busy || undefined} className="space-y-5">
-      <div>
+      <div {...section(0)}>
         <h2 id="checkout-details-heading" className="text-base font-semibold text-slate-900">
           Delivery details
         </h2>
         <p className="mt-1 text-sm text-slate-500">We use these to confirm your order and arrange delivery and installation.</p>
       </div>
 
-      <Field id={fieldId("name")} label="Full name" required error={errors.name}>
-        <Input
-          size="lg"
-          name="name"
-          autoComplete="name"
-          maxLength={LIMITS.personName}
-          value={values.name}
-          onChange={onChange}
-          disabled={busy}
-        />
-      </Field>
+      <div {...section(1)}>
+        <Field id={fieldId("name")} label="Full name" required error={errors.name}>
+          <Input
+            size="lg"
+            name="name"
+            autoComplete="name"
+            maxLength={LIMITS.personName}
+            value={values.name}
+            onChange={onChange}
+            disabled={busy}
+          />
+        </Field>
+      </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className={cn("grid gap-5 sm:grid-cols-2", section(2).className)} style={section(2).style}>
         <Field
           id={fieldId("phoneNumber")}
           label="Phone number"
@@ -200,23 +207,25 @@ export default function CheckoutForm({ cart, products = NO_PRODUCTS, quote, onPl
         </Field>
       </div>
 
-      <Field
-        id={fieldId("deliveryAddress")}
-        label="Delivery address"
-        required
-        error={errors.deliveryAddress}
-        helper="House number, street, area and a landmark, for example 12 Admiralty Way, Lekki Phase 1."
-      >
-        <Textarea
-          name="deliveryAddress"
-          rows={3}
-          autoComplete="street-address"
-          maxLength={LIMITS.deliveryAddress}
-          value={values.deliveryAddress}
-          onChange={onChange}
-          disabled={busy}
-        />
-      </Field>
+      <div {...section(3)}>
+        <Field
+          id={fieldId("deliveryAddress")}
+          label="Delivery address"
+          required
+          error={errors.deliveryAddress}
+          helper="House number, street, area and a landmark, for example 12 Admiralty Way, Lekki Phase 1."
+        >
+          <Textarea
+            name="deliveryAddress"
+            rows={3}
+            autoComplete="street-address"
+            maxLength={LIMITS.deliveryAddress}
+            value={values.deliveryAddress}
+            onChange={onChange}
+            disabled={busy}
+          />
+        </Field>
+      </div>
 
       {beforeSubmit}
 
@@ -233,11 +242,11 @@ export default function CheckoutForm({ cart, products = NO_PRODUCTS, quote, onPl
         </Alert>
       )}
 
-      <div>
+      <div {...section(4)}>
         <Button
           type="submit"
           size="lg"
-          className="w-full"
+          className={cn("relative w-full overflow-hidden", busy && "je-shimmer")}
           loading={busy}
           loadingText="Placing your order…"
           disabled={busy || quote.blocked || !turnstile.ready}

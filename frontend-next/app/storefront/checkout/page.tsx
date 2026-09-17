@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import CheckoutView from "@/components/storefront/cart/CheckoutView";
 import { getStoreSettings } from "@/lib/storefront/data";
 
@@ -22,6 +22,8 @@ export default async function Page() {
         eyebrow="Checkout"
         title="Checkout"
         description="Enter your delivery details and place your order. We’ll call you to confirm it before delivery."
+        image={INTRO_IMAGES.commercial}
+        compact
       />
       <CheckoutView gatewayEnabled={settings.payments.gatewayEnabled} phone={settings.business.phone} />
     </>
