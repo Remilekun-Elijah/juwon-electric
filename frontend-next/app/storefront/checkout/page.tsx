@@ -24,6 +24,7 @@ export default async function Page() {
         description="Enter your delivery details and place your order. We’ll call you to confirm it before delivery."
         image={INTRO_IMAGES.commercial}
         compact
+        quick
       />
       <CheckoutView gatewayEnabled={settings.payments.gatewayEnabled} phone={settings.business.phone} />
     </>

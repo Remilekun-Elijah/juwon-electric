@@ -20,6 +20,7 @@ export default function Page() {
         title="Your cart"
         description="Review the packages and products in your cart, then check out. We’ll call you to confirm before anything is delivered."
         image={INTRO_IMAGES.home}
+        quick
       />
       <CartView />
     </>

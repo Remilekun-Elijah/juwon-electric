@@ -4,7 +4,7 @@ import CartSkeleton from "@/components/storefront/cart/CartSkeleton";
 export default function Loading() {
   return (
     <>
-      <PageIntro eyebrow="Cart" title="Your cart" headingAs="p" image={INTRO_IMAGES.home} />
+      <PageIntro eyebrow="Cart" title="Your cart" headingAs="p" image={INTRO_IMAGES.home} quick />
       <CartSkeleton />
     </>
   );

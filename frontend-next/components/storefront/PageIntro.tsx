@@ -36,6 +36,11 @@ export type PageIntroProps = {
   icon?: ReactNode;
   /** The heading scales in instead of rising from its mask (order success). */
   celebrate?: boolean;
+  /**
+   * Cart and checkout (§8.2: nothing there over 300ms): each part fades up in 200ms, 30ms apart, and the photo stays
+   * still.
+   */
+  quick?: boolean;
 };
 
 /**
@@ -64,11 +69,14 @@ export default function PageIntro({
   compact = false,
   icon,
   celebrate = false,
+  quick = false,
 }: PageIntroProps) {
   const Heading = headingAs;
   const hasTrail = Boolean(breadcrumbs?.length);
   let step = hasTrail ? 1 : 0;
-  const next = () => enterDelay(80 * step++);
+  const next = () => enterDelay((quick ? 30 : 80) * step++);
+  /** Entrance class for one part of the intro. */
+  const enter = quick ? "je-in je-in-fast" : "je-enter";
 
   return (
     <header
@@ -76,13 +84,13 @@ export default function PageIntro({
       className={cn("relative isolate -mt-[65px] overflow-hidden bg-slate-950 text-white md:-mt-[73px]", className)}
     >
       <div aria-hidden="true" className="absolute inset-0 -z-20 overflow-hidden">
-        <Image src={image} alt="" fill sizes="100vw" loading="eager" className="je-kenburns object-cover opacity-40" />
+        <Image src={image} alt="" fill sizes="100vw" loading="eager" className={cn("object-cover opacity-40", !quick && "je-kenburns")} />
       </div>
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/55" />
       <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-slate-950/80 to-transparent" />
 
       <div className={cn(storeContainer, compact ? "pb-8 pt-24" : "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
-        {hasTrail && breadcrumbs && <Breadcrumbs items={breadcrumbs} tone="dark" className={cn("je-enter", compact ? "mb-4" : "mb-6")} />}
+        {hasTrail && breadcrumbs && <Breadcrumbs items={breadcrumbs} tone="dark" className={cn(enter, compact ? "mb-4" : "mb-6")} />}
         <div className="max-w-3xl">
           {icon && (
             <div style={next()} className="je-in je-in-pop mb-4">
@@ -90,7 +98,7 @@ export default function PageIntro({
             </div>
           )}
           {eyebrow && (
-            <p style={next()} className="je-enter text-xs font-semibold uppercase tracking-[0.14em] text-gold-400">
+            <p style={next()} className={cn(enter, "text-xs font-semibold uppercase tracking-[0.14em] text-gold-400")}>
               {eyebrow}
             </p>
           )}
@@ -98,11 +106,12 @@ export default function PageIntro({
             className={cn(
               "text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl",
               eyebrow && "mt-3",
-              celebrate && "je-in je-in-pop"
+              celebrate && "je-in je-in-pop",
+              quick && !celebrate && enter
             )}
-            style={celebrate ? next() : undefined}
+            style={celebrate || quick ? next() : undefined}
           >
-            {celebrate ? (
+            {celebrate || quick ? (
               title
             ) : (
               <span className="-mb-[0.15em] block overflow-hidden pb-[0.15em]">
@@ -113,18 +122,18 @@ export default function PageIntro({
             )}
           </Heading>
           {description && (
-            <p style={next()} className="je-enter mt-4 text-base leading-relaxed text-white/75 sm:text-lg">
+            <p style={next()} className={cn(enter, "mt-4 text-base leading-relaxed text-white/75 sm:text-lg")}>
               {description}
             </p>
           )}
         </div>
         {actions && (
-          <div style={next()} className="je-enter mt-6 flex flex-wrap items-center gap-3">
+          <div style={next()} className={cn(enter, "mt-6 flex flex-wrap items-center gap-3")}>
             {actions}
           </div>
         )}
         {children && (
-          <div style={next()} className="je-enter mt-6">
+          <div style={next()} className={cn(enter, "mt-6")}>
             {children}
           </div>
         )}
