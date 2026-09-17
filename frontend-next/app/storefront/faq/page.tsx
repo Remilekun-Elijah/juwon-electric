@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleHelp } from "lucide-react";
 import JsonLd from "@/components/storefront/JsonLd";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import FaqList from "@/components/storefront/landing/FaqList";
@@ -14,7 +14,7 @@ import { SITE_URL } from "@/lib/site";
 import { groupFaqs } from "@/lib/storefront/content";
 import { getStoreFaqs, getStoreSettings } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeFocus, storeH2 } from "@/lib/storefront/styles";
+import { staggerDelay, storeDarkChip, storeH2 } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -51,19 +51,14 @@ export default async function FaqPage() {
         eyebrow="Help"
         title="Frequently asked questions"
         description="How ordering, payment, delivery and installation work, and how to choose the right system."
+        image={INTRO_IMAGES.home}
       >
         {withIds.length > 1 && (
           <nav aria-label="Question topics">
             <ul className="flex flex-wrap gap-2">
-              {withIds.map((group) => (
-                <li key={group.id}>
-                  <a
-                    href={`#${group.id}`}
-                    className={cn(
-                      "inline-flex min-h-11 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 md:min-h-10",
-                      storeFocus
-                    )}
-                  >
+              {withIds.map((group, index) => (
+                <li key={group.id} style={staggerDelay(index, 50, 450)} className="je-in">
+                  <a href={`#${group.id}`} className={storeDarkChip(false)}>
                     {group.category}
                   </a>
                 </li>

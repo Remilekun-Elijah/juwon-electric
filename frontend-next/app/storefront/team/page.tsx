@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Briefcase, Users } from "lucide-react";
 import BrandPanel from "@/components/storefront/BrandPanel";
 import JsonLd from "@/components/storefront/JsonLd";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
 import CountUp from "@/components/storefront/motion/CountUp";
@@ -62,20 +62,21 @@ export default async function TeamPage() {
         eyebrow="Our people"
         title="Meet the team"
         description="The engineers, installers and customer care staff behind every Juwon Electric system."
+        image={INTRO_IMAGES.commercial}
       >
         {members.length > 0 && (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-10">
               {stats.map((stat) => (
-                <div key={stat.label} className="flex min-w-0 flex-col-reverse gap-0.5 border-l-2 border-brand-100 pl-4">
-                  <dt className="text-sm text-slate-600">{stat.label}</dt>
-                  <dd className="text-3xl font-semibold tabular-nums tracking-tight text-slate-900">
-                    <CountUp value={stat.value} />
+                <div key={stat.label} className="flex min-w-0 flex-col-reverse gap-0.5 border-l-2 border-gold-400/50 pl-4">
+                  <dt className="text-sm text-white/75">{stat.label}</dt>
+                  <dd className="text-3xl font-semibold tabular-nums tracking-tight text-gold-400">
+                    <CountUp value={stat.value} delay={500} />
                   </dd>
                 </div>
               ))}
             </dl>
-            {allSample && <SampleBadge />}
+            {allSample && <SampleBadge tone="brand" />}
           </div>
         )}
       </PageIntro>

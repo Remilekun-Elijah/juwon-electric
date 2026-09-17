@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, MessageSquare, Phone } from "lucide-react";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import LoadCalculator, { type CalculatorPackage } from "@/components/storefront/calculator/LoadCalculator";
 import { availablePackages, kvaValue, lowestPrice, packageTypeLabel } from "@/components/storefront/catalog/packageMeta";
@@ -38,6 +38,7 @@ export default async function CalculatorPage() {
           eyebrow="Size your system"
           title="Talk to an engineer"
           description="Tell us the appliances you want to keep running during outages and an engineer will work out the right inverter, battery and solar size for you."
+          image={INTRO_IMAGES.panels}
         />
         <Section>
           <div className={cn(storeCard, "mx-auto max-w-2xl p-6 text-center sm:p-10")}>
@@ -85,8 +86,9 @@ export default async function CalculatorPage() {
         eyebrow="Size your system"
         title="Load calculator"
         description="Choose the appliances you want to keep running during outages. We’ll suggest an inverter, battery and solar panel size, and show packages that fit."
+        image={INTRO_IMAGES.panels}
       >
-        <SampleBadge show={calculator.sample} />
+        <SampleBadge show={calculator.sample} tone="brand" />
       </PageIntro>
       <Section className="pt-8 sm:pt-10">
         <LoadCalculator settings={calculator} packages={packages} phone={phone} />
