@@ -28,6 +28,10 @@ const COLLECTIONS = [
   "settings",
   "notifications",
   "notificationReads",
+  // Landing v1 website content
+  "faqs",
+  "testimonials",
+  "clients",
 ];
 
 // Catalog collections (public catalog records with admin-controlled sortOrder).

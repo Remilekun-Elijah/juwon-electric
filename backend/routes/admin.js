@@ -17,6 +17,7 @@ import {
   adminReplyMessage,
   adminUpdateMessage,
 } from "../controllers/contact.js";
+import { clients, faqs, testimonials } from "../controllers/content.js";
 import { adminDashboard } from "../controllers/dashboard.js";
 import {
   adminDeleteSubscriber,
@@ -132,6 +133,14 @@ router.get("/portfolio", contentRead, asyncHandler(adminListPortfolio));
 router.post("/portfolio", contentWrite, asyncHandler(adminCreatePortfolioItem));
 router.put("/portfolio/:id", contentWrite, asyncHandler(adminUpdatePortfolioItem));
 router.delete("/portfolio/:id", contentWrite, asyncHandler(adminDeletePortfolioItem));
+
+// Website content (LANDING_V1 §1).
+for (const [path, handlers] of [["/faqs", faqs], ["/testimonials", testimonials], ["/clients", clients]]) {
+  router.get(path, contentRead, handlers.adminList);
+  router.post(path, contentWrite, handlers.create);
+  router.put(`${path}/:id`, contentWrite, handlers.update);
+  router.delete(`${path}/:id`, contentWrite, handlers.remove);
+}
 
 router.get("/contacts", can("leads:read"), adminListMessages);
 router.put("/contacts/:id", can("leads:write"), adminUpdateMessage);

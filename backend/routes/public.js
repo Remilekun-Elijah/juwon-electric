@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { contactUs, inboundContactReply } from "../controllers/contact.js";
+import { clients, faqs, testimonials } from "../controllers/content.js";
 import { quoteCart, saveCart } from "../controllers/cart.js";
 import { health } from "../controllers/health.js";
 import { subscribe } from "../controllers/newsletter.js";
@@ -19,6 +20,10 @@ router.get("/packages/:id", asyncHandler(getPackage));
 router.get("/services", asyncHandler(listServices));
 router.get("/portfolio", asyncHandler(listPortfolio));
 router.get("/portfolio/:id", asyncHandler(getPortfolioItem));
+// Website content (LANDING_V1 §1): active items only.
+router.get("/faqs", faqs.publicList);
+router.get("/testimonials", testimonials.publicList);
+router.get("/clients", clients.publicList);
 // Open vacancies only (writes live under /admin/vacancies).
 router.get("/vacancies", listVacancies);
 router.get("/vacancies/:slug", getVacancy);

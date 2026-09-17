@@ -26,6 +26,10 @@ export const OPS_NOT_FOUND_LABELS = {
   installationJobs: "Job",
   settings: "Settings",
   notifications: "Notification",
+  // Landing v1 §1
+  faqs: "FAQ",
+  testimonials: "Review",
+  clients: "Client",
 };
 
 export const notFoundFor = (collection) =>

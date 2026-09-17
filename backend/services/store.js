@@ -96,6 +96,10 @@ const models = {
   notificationReads:
     mongoose.models.OpsNotificationRead ||
     mongoose.model("OpsNotificationRead", flexibleSchema, "notificationReads"),
+  // Landing v1 website content.
+  faqs: mongoose.models.Faq || mongoose.model("Faq", flexibleSchema, "faqs"),
+  testimonials: mongoose.models.Testimonial || mongoose.model("Testimonial", flexibleSchema, "testimonials"),
+  clients: mongoose.models.Client || mongoose.model("Client", flexibleSchema, "clients"),
 };
 
 // Non-catalog collections whose writers keep slugs unique through `prepare`.
@@ -287,6 +291,9 @@ const defaultDb = async () => {
     settings: [],
     notifications: [],
     notificationReads: [],
+    faqs: [],
+    testimonials: [],
+    clients: [],
   };
 };
 
