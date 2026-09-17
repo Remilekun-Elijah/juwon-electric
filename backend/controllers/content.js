@@ -10,7 +10,7 @@ import {
   listCollection,
   updateCollectionItem,
 } from "../services/store.js";
-import { CONTENT_MODULES, contentAuditSummary, contentList, nextContentSortOrder } from "../shared/content.js";
+import { keepSampleUnlessEdited, CONTENT_MODULES, contentAuditSummary, contentList, nextContentSortOrder } from "../shared/content.js";
 import { definedKeys } from "../shared/fields.js";
 
 const all = (collection) => listCollection(collection, { includeInactive: true });
@@ -47,7 +47,7 @@ const handlersFor = (collection) => {
 
     update: asyncHandler(async (req, res) => {
       const existing = await getCollectionItem(collection, req.params.id);
-      const payload = buildPayload(req.body, { isUpdate: true });
+      const payload = keepSampleUnlessEdited(existing, buildPayload(req.body, { isUpdate: true }));
       const item = await updateCollectionItem(collection, existing.id, payload);
       audit(req, {
         action: `${entity}.update`,

@@ -91,6 +91,10 @@ export const runLandingScenario = async (client) => {
   assert.equal(moved.category, "Ordering");
   const cleared = (await expect("clear faq category", "PUT", `/admin/faqs/${faq.id}`, { body: { category: null } }, 200)).body.data;
   assert.equal(cleared.category, null);
+  const reordered = (await expect("reordering a sample faq keeps it sample", "PUT", "/admin/faqs/sample-faq-test", { body: { sortOrder: 7, isActive: true } }, 200)).body.data;
+  assert.equal(reordered.sample, true, "moving or showing a sample record is not an edit");
+  const resaved = (await expect("re-saving unchanged sample faq keeps it sample", "PUT", "/admin/faqs/sample-faq-test", { body: { question: reordered.question, answer: reordered.answer, category: reordered.category } }, 200)).body.data;
+  assert.equal(resaved.sample, true, "unchanged values are not an edit");
   const saved = (await expect("saving a sample faq makes it real", "PUT", "/admin/faqs/sample-faq-test", { body: { answer: "Real answer." } }, 200)).body.data;
   assert.equal(saved.sample, false);
   await expect("faq bad update", "PUT", `/admin/faqs/${faq.id}`, { body: { question: "" } }, 400, "Question is required.");
@@ -240,6 +244,13 @@ export const runLandingScenario = async (client) => {
   assert.deepEqual(publicSample.calculator.appliances, [appliance]);
   assert.equal("notifications" in publicSample, false);
 
+  const unchanged = (
+    await expect("re-save sample financing unchanged", "PUT", "/admin/settings", {
+      body: { financing: { enabled: false, depositPercent: 40, termsMonths: [3, 6, 12], monthlyRatePercent: 3.5, approvalTime: "48 hours", note: "Sample terms." } },
+    }, 200)
+  ).body.data;
+  assert.equal(unchanged.financing.sample, true, "a section saved without changes keeps its Sample label");
+
   const saved1 = (
     await expect("save website section", "PUT", "/admin/settings", {
       body: { website: { businessHours: "Mon–Fri 8am–6pm\nSat 9am–3pm", sample: true }, calculator: { generator: { fuelPricePerLitre: 1200 } } },
@@ -264,7 +275,8 @@ export const runLandingScenario = async (client) => {
 
   const auditChanges = (
     await expect("settings audit lists the cleared sample flag", "GET", "/admin/audit-logs?entity=settings", {
-      project: (body) => ({ changes: body?.data?.items?.map((item) => item.changes) }),
+      // Entries written in the same millisecond can list in either order, so compare them sorted.
+      project: (body) => ({ changes: (body?.data?.items?.map((item) => item.changes) || []).map((list) => [...list].sort()).sort((a, b) => a.join().localeCompare(b.join())) }),
     }, 200)
   ).body.data.items.map((item) => item.changes);
   assert.ok(auditChanges.some((changes) => changes.includes("website.sample") && changes.includes("calculator.generator")));

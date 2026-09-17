@@ -66,6 +66,24 @@ const minLength = (value, min, label) => {
   return value;
 };
 
+/** Fields that don't count as editing a sample record: moving it or hiding it keeps its Sample label. */
+const NON_EDIT_FIELDS = new Set(["sample", "sortOrder", "isActive", "slug"]);
+
+/**
+ * Update payloads always carry `sample: false`. For a stored sample record, drop that unless a content
+ * field actually changed, so reordering, showing/hiding or re-saving unchanged values keeps it a sample.
+ */
+export const keepSampleUnlessEdited = (existing, payload) => {
+  if (existing?.sample !== true || payload?.sample !== false) return payload;
+  const edited = Object.entries(payload).some(
+    ([key, value]) =>
+      !NON_EDIT_FIELDS.has(key) && value !== undefined && JSON.stringify(value) !== JSON.stringify(existing[key] ?? null)
+  );
+  if (edited) return payload;
+  const { sample: _sample, ...rest } = payload;
+  return rest;
+};
+
 /**
  * Builds a payload from per-field parsers. Create: every field is parsed (defaults applied).
  * Update (partial): only sent fields. `sample` is never accepted from a request: records

@@ -5,7 +5,7 @@ import { createCollectionItem, deleteCollectionItem, getCollectionItem, listColl
 import { changedFields, providedFields } from "../audit.js";
 import { requireCapability } from "../capabilities.js";
 import { idAfter, queryOf } from "./catalog.js";
-import { CONTENT_COLLECTIONS, CONTENT_MODULES, contentAuditSummary, contentList } from "../../../shared/content.js";
+import { keepSampleUnlessEdited, CONTENT_COLLECTIONS, CONTENT_MODULES, contentAuditSummary, contentList } from "../../../shared/content.js";
 
 const all = (env, collection) => listCollection(env, collection, { includeInactive: true });
 
@@ -45,7 +45,7 @@ export const handleContentAdmin = async ({ request, env, path, body, admin, audi
     if (id && method === "PUT") {
       requireCapability(admin, "content:write");
       const existing = await getCollectionItem(env, collection, id);
-      const payload = buildPayload(body, { isUpdate: true });
+      const payload = keepSampleUnlessEdited(existing, buildPayload(body, { isUpdate: true }));
       const item = await updateCollectionItem(env, collection, existing.id, payload);
       audit({
         action: `${entity}.update`,

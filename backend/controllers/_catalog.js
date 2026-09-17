@@ -1,6 +1,7 @@
 // Shared create/update/delete flow for the catalog collections (packages,
 // services, portfolio, customerSegments).
 import { auditCreate, auditDelete, auditUpdate } from "../services/audit.js";
+import { keepSampleUnlessEdited } from "../shared/content.js";
 import { ApiError } from "../services/errors.js";
 import { created, ok } from "../services/http.js";
 import {
@@ -58,7 +59,9 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
 
   update: async (req, res) => {
     const existing = await getCollectionItem(collection, req.params.id);
-    const payload = buildPayload(req.body || {}, { isUpdate: true });
+    // Portfolio sample records stay samples unless a content field changed (LANDING_V1 §0).
+    const built = buildPayload(req.body || {}, { isUpdate: true });
+    const payload = collection === "portfolio" ? keepSampleUnlessEdited(existing, built) : built;
     if (validate) await validate(payload);
     // Written strictly by the resolved id, with only the sent fields, against
     // the fresh stored record.

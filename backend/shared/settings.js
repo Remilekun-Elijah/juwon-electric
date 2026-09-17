@@ -283,8 +283,10 @@ export const planSettingsUpdate = (current, body) => {
       if (JSON.stringify(value) !== JSON.stringify(next[section][key])) changes.push(`${section}.${key}`);
       next[section][key] = value;
     }
-    // Saving a sample section makes it real content (LANDING_V1 §0).
-    if (SAMPLE_SECTIONS.includes(section) && next[section].sample !== false) {
+    // Changing a sample section makes it real content (LANDING_V1 §0). Re-saving it unchanged, for example
+    // when another section is saved from the same page, keeps its Sample label.
+    const sectionChanged = changes.some((key) => key.startsWith(`${section}.`));
+    if (SAMPLE_SECTIONS.includes(section) && sectionChanged && next[section].sample !== false) {
       next[section].sample = false;
       changes.push(`${section}.sample`);
     }

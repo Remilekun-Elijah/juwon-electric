@@ -95,7 +95,7 @@ import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.
 import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
 import { assertCategoryExists, packagesInCategory } from "../../shared/catalog.js";
 import { idRef } from "../../shared/fields.js";
-import { filterPortfolio, portfolioCaseStudyPayload, serializePortfolio } from "../../shared/content.js";
+import { filterPortfolio, keepSampleUnlessEdited, portfolioCaseStudyPayload, serializePortfolio } from "../../shared/content.js";
 import {
   assertOptionProducts,
   packageLineSnapshot,
@@ -278,7 +278,7 @@ const contentPayload = async (env, body, existing, kind) => {
   }
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
-  return {
+  const payload = {
     [nameKey]: name,
     slug: await slugPatch(env, collection, body, existing, name),
     image,
@@ -286,6 +286,8 @@ const contentPayload = async (env, body, existing, kind) => {
     isActive,
     sortOrder,
   };
+  // Portfolio sample records stay samples unless a content field changed (LANDING_V1 §0).
+  return isPortfolio && existing ? keepSampleUnlessEdited(existing, payload) : payload;
 };
 
 const segmentPayload = async (env, body, existing = null) => {
