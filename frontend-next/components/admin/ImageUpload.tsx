@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { ChevronDown, ImageOff, ImageUp, Link2, RefreshCw, Trash2, Upload as UploadIcon, X } from "lucide-react";
 import { Button, Field, Input } from "@/components/ui";
-import type { UploadConfig, UploadPurpose } from "@/lib/api/types";
+import type { AdminUploadPurpose } from "@/lib/api/admin";
+import type { UploadConfig } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import {
   isUploadUnavailable,
@@ -118,12 +119,18 @@ export function ImageDropZone({
   disabled = false,
   hint,
   describedBy,
+  prompt,
+  buttonLabel,
 }: {
   onFiles: (files: File[]) => void;
   multiple?: boolean;
   disabled?: boolean;
   hint?: ReactNode;
   describedBy?: string;
+  /** Replaces "Drag an image here, or choose one." */
+  prompt?: ReactNode;
+  /** Replaces "Choose image" / "Choose images". */
+  buttonLabel?: ReactNode;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -157,7 +164,9 @@ export function ImageDropZone({
     >
       <ImageUp aria-hidden="true" className="size-6 shrink-0 text-slate-400" />
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-slate-700">{multiple ? "Drag images here, or choose them." : "Drag an image here, or choose one."}</p>
+        <p className="text-sm text-slate-700">
+          {prompt ?? (multiple ? "Drag images here, or choose them." : "Drag an image here, or choose one.")}
+        </p>
         <p id={hintId} className="text-xs text-slate-500">
           {hint ?? "JPEG, PNG or WebP. Large photos are resized before upload."}
         </p>
@@ -170,7 +179,7 @@ export function ImageDropZone({
         aria-describedby={[hintId, describedBy].filter(Boolean).join(" ")}
         onClick={() => inputRef.current?.click()}
       >
-        {multiple ? "Choose images" : "Choose image"}
+        {buttonLabel ?? (multiple ? "Choose images" : "Choose image")}
       </Button>
       <input
         ref={inputRef}
@@ -225,7 +234,7 @@ export function useUploadTask() {
 
   useEffect(() => () => controllerRef.current?.abort(), []);
 
-  const run = async (file: File, options: { purpose: UploadPurpose; kind: ImageKind; config: UploadConfig }) => {
+  const run = async (file: File, options: { purpose: AdminUploadPurpose; kind: ImageKind; config: UploadConfig }) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -266,7 +275,7 @@ export type ImageUploadProps = {
   value: string;
   onChange: (value: string) => void;
   /** `?purpose=` key prefix on the server. */
-  purpose: UploadPurpose;
+  purpose: AdminUploadPurpose;
   /** `logo` keeps a transparent PNG as PNG (800 px). */
   kind?: ImageKind;
   required?: boolean;

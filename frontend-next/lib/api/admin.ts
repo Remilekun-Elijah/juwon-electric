@@ -278,6 +278,12 @@ export const getSession = async (): Promise<AdminSelf | null> => {
 /** `GET /admin/uploads/config`: whether uploads are on, the accepted types and the byte and pixel caps per image. */
 export const getUploadConfig = async () => (await adminFetch<UploadConfig>("/uploads/config")).data;
 
+/**
+ * `?purpose=` for POST /admin/uploads: the shared purposes plus `jobs` (job photos: jobs:update-own or jobs:assign)
+ * and `staff` (staff profile photos: staff:write).
+ */
+export type AdminUploadPurpose = UploadPurpose | "jobs" | "staff";
+
 export type UploadImageOptions = {
   /** Called with the fraction (0 to 1) of bytes sent. */
   onProgress?: (fraction: number) => void;
@@ -288,7 +294,7 @@ export type UploadImageOptions = {
 const UPLOAD_FALLBACK_MESSAGES: Record<number, string> = {
   413: "Image must be 2 MB or smaller.",
   415: "Upload a JPEG, PNG or WebP image.",
-  429: "Too many images uploaded in a short time. Wait a few minutes and try again.",
+  429: "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again.",
   507: "Image uploads are unavailable right now. Please use an image link or try again later.",
 };
 
@@ -303,7 +309,7 @@ export const isUploadAborted = (error: unknown) => error instanceof DOMException
  */
 export function uploadImage(
   file: Blob,
-  purpose: UploadPurpose = "other",
+  purpose: AdminUploadPurpose = "other",
   { onProgress, signal }: UploadImageOptions = {}
 ): Promise<ApiEnvelope<Upload>> {
   const token = readAdminToken();

@@ -5,8 +5,8 @@
  * Nothing here reads or shows storage usage or limits (owner rule).
  */
 import { useEffect, useSyncExternalStore } from "react";
-import { ApiError, getUploadConfig, isUploadAborted, uploadImage } from "@/lib/api/admin";
-import type { UploadConfig, UploadPurpose } from "@/lib/api/types";
+import { ApiError, getUploadConfig, isUploadAborted, uploadImage, type AdminUploadPurpose } from "@/lib/api/admin";
+import type { UploadConfig } from "@/lib/api/types";
 import { isAllowedUrl, validateUrlField } from "@/lib/validation";
 
 /** Originals above this are refused before decoding. */
@@ -224,7 +224,7 @@ export async function processImage(file: File, kind: ImageKind, config: UploadCo
 export type UploadStage = "processing" | "uploading";
 
 export type PrepareAndUploadOptions = {
-  purpose: UploadPurpose;
+  purpose: AdminUploadPurpose;
   kind?: ImageKind;
   config: UploadConfig;
   signal?: AbortSignal;
