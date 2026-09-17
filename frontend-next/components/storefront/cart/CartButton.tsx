@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
+import { cartLineCount, useProductCart } from "@/lib/cart/productStore";
 import { useCart } from "@/lib/cart/store";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
@@ -10,12 +11,13 @@ import { storeFocus } from "@/lib/storefront/styles";
 const itemsLabel = (count: number) => `${count} ${count === 1 ? "item" : "items"}`;
 
 /**
- * Header cart link with a live count badge (cart lines, as the classic Navbar counts them). The count is announced
+ * Header cart link with a live count badge: package lines (as the classic Navbar counts them) plus product lines. The count is announced
  * politely when it changes. The server render and hydration show 0 until the stored cart loads.
  */
 export default function CartButton({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
   const cart = useCart();
-  const count = cart.length;
+  const products = useProductCart();
+  const count = cartLineCount(cart.length, products.length);
 
   return (
     <>

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { CheckCircle2, ShoppingCart } from "lucide-react";
 import { Button, buttonClasses, toast } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
+import { isCombinedCartFull, useProductCart } from "@/lib/cart/productStore";
 import { MAX_CART_ITEMS, addToCart, getCartItemKey, isCartFull, useCart } from "@/lib/cart/store";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
@@ -31,7 +32,7 @@ const packageTitle = (pkg: Package) => `${pkg.name} ${pkg.kva}kVA`;
  * - an option without a price, or marked `available: false`, is "Unavailable";
  * - a package already in the cart shows "In cart" and links to it (cart lines are keyed per package, not per option;
  *   switch with or without solar on the cart page);
- * - a full cart explains the limit in a toast instead of adding.
+ * - a full cart (package and product lines share the limit) explains it in a toast instead of adding.
  * Adding shows a toast with a "View cart" action and is announced through a polite live region.
  *
  * The props are a shared contract with S1 (catalogue): keep them unchanged.
@@ -40,6 +41,7 @@ export default function AddToCartButton({ pkg, optionIndex = 0, className, size 
   const router = useRouter();
   const hydrated = useHydrated();
   const cart = useCart();
+  const products = useProductCart();
   const [announcement, setAnnouncement] = useState("");
 
   const inCart = cart.some((line) => getCartItemKey(line) === getCartItemKey(pkg));
@@ -53,8 +55,8 @@ export default function AddToCartButton({ pkg, optionIndex = 0, className, size 
 
   const add = () => {
     if (!hydrated || unavailable || inCart) return;
-    if (isCartFull(cart)) {
-      const message = `Your cart can hold up to ${MAX_CART_ITEMS} packages. Place your order or remove one to add another.`;
+    if (isCartFull(cart) || isCombinedCartFull(cart.length, products.length)) {
+      const message = `Your cart can hold up to ${MAX_CART_ITEMS} items. Place your order or remove one to add another.`;
       toast.error(message, { action: viewCart });
       setAnnouncement(message);
       return;

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import PriceTag from "@/components/storefront/PriceTag";
+import ProductCardCartButton from "@/components/storefront/cart/ProductCardCartButton";
 import StockBadge from "@/components/storefront/StockBadge";
 import type { CategoryAttribute, PublicProduct } from "@/lib/api/types";
 import { attributeRows, productPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
+import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
 import { storeCard, storeFocus } from "@/lib/storefront/styles";
 import ProductImage from "./ProductImage";
 
@@ -15,9 +17,13 @@ export type ProductCardProps = {
   className?: string;
 };
 
-/** Catalogue card: image, brand, name, two key specs, price and stock. The whole card is one link. Server component. */
+/**
+ * Catalogue card: image, brand, name, two key specs, price, stock and, when the product can be bought online, a compact
+ * Add to cart. The whole card is one link (the cart button sits above it). Server component.
+ */
 export default function ProductCard({ product, schema, headingAs: Heading = "h3", className }: ProductCardProps) {
   const specs = attributeRows(product.attributes ?? {}, schema ?? []).slice(0, 2);
+  const cartProduct = toCartProduct(product);
 
   return (
     <article
@@ -67,6 +73,7 @@ export default function ProductCard({ product, schema, headingAs: Heading = "h3"
           <PriceTag amount={product.price} size="sm" />
           <StockBadge inStock={product.inStock} />
         </div>
+        {canBuyOnline(cartProduct) && <ProductCardCartButton product={cartProduct} className="mt-3" />}
       </div>
     </article>
   );

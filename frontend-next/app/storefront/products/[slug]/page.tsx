@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, MessageSquare, Package as PackageIcon, Wrench } from "lucide-react";
 import RichText from "@/components/public/RichText";
+import ProductAddToCart from "@/components/storefront/cart/ProductAddToCart";
 import CatalogHelpBand from "@/components/storefront/catalog/CatalogHelpBand";
 import PackageGrid from "@/components/storefront/catalog/PackageGrid";
 import { packageIncludesProduct } from "@/components/storefront/catalog/packageMeta";
@@ -19,6 +20,7 @@ import { attributeRows, categoryPath, categoryTrail, formatPrice, productPath } 
 import { cn } from "@/lib/cn";
 import { richTextToPlain, sanitizeRichText } from "@/lib/sanitize";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
 import { getStoreCategories, getStorePackages, getStoreProduct, getStoreProducts } from "@/lib/storefront/data";
 import { contactTopicPath, storeRoutes } from "@/lib/storefront/routes";
 import { storeCard, storeCardPadding, storeContainer, storeH3, storeLink, storeMeta } from "@/lib/storefront/styles";
@@ -97,6 +99,7 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
   const hasSpecs = attributeRows(product.attributes ?? {}, category?.attributes).length > 0;
   const hasDescription = Boolean(sanitizeRichText(product.descriptionHtml));
   const including = packagesIncluding(packages, product);
+  const cartProduct = toCartProduct(product);
 
   return (
     <>
@@ -144,15 +147,20 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
                 <StockBadge inStock={product.inStock} />
               </div>
               <p className="mt-4 text-sm leading-relaxed text-slate-600">
-                We supply this item as part of an installed system or on request. Ask us about price, availability and
-                installation for your home or business.
+                {canBuyOnline(cartProduct)
+                  ? "Order online and we call to confirm before delivery. No payment is needed to place your order."
+                  : "Ask us about price, availability and installation for your home or business."}
               </p>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row md:flex-col xl:flex-row">
-                <Link href={contactTopicPath(product.name)} className={buttonClasses({ size: "lg", className: "w-full sm:flex-1" })}>
+              <ProductAddToCart product={cartProduct} className="mt-5" />
+              <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row md:flex-col xl:flex-row">
+                <Link
+                  href={contactTopicPath(product.name)}
+                  className={buttonClasses({ variant: "outline", size: "lg", className: "w-full sm:flex-1" })}
+                >
                   <MessageSquare aria-hidden="true" />
                   Ask about this product
                 </Link>
-                <Link href={storeRoutes.packages} className={buttonClasses({ variant: "outline", size: "lg", className: "w-full sm:flex-1" })}>
+                <Link href={storeRoutes.packages} className={buttonClasses({ variant: "ghost", size: "lg", className: "w-full sm:flex-1" })}>
                   <PackageIcon aria-hidden="true" />
                   Browse packages
                 </Link>

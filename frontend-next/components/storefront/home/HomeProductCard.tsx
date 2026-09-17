@@ -1,14 +1,17 @@
 import Link from "next/link";
 import PriceTag from "@/components/storefront/PriceTag";
+import ProductCardCartButton from "@/components/storefront/cart/ProductCardCartButton";
 import StockBadge from "@/components/storefront/StockBadge";
 import ContentImage from "@/components/storefront/content/ContentImage";
 import type { PublicProduct } from "@/lib/api/types";
 import { productPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
+import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
 import { storeCard, storeFocus } from "@/lib/storefront/styles";
 
-/** Compact product card for the home page: image, brand, name, price and stock. Server component. */
+/** Compact product card for the home page: image, brand, name, price, stock and Add to cart when buyable. Server component. */
 export default function HomeProductCard({ product }: { product: PublicProduct }) {
+  const cartProduct = toCartProduct(product);
   return (
     <article className={cn(storeCard, "group relative flex h-full flex-col overflow-hidden transition-shadow hover:shadow-elev-3")}>
       <ContentImage
@@ -31,6 +34,7 @@ export default function HomeProductCard({ product }: { product: PublicProduct })
           <PriceTag amount={product.price} size="sm" />
           <StockBadge inStock={product.inStock} />
         </div>
+        {canBuyOnline(cartProduct) && <ProductCardCartButton product={cartProduct} className="mt-3" />}
       </div>
     </article>
   );
