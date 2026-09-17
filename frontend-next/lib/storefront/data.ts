@@ -23,6 +23,7 @@ import {
   getProduct,
   getProducts,
   getPublicSettings,
+  getReasons,
   getServices,
   getTeam,
   getTestimonials,
@@ -41,6 +42,7 @@ import type {
   PublicProduct,
   PublicSettings,
   PublicVacancy,
+  Reason,
   ServicesData,
   TeamMember,
   Testimonial,
@@ -74,6 +76,7 @@ export const STORE_TAGS = [
   "testimonials",
   "clients",
   "team",
+  "reasons",
 ] as const;
 
 export type StoreTag = (typeof STORE_TAGS)[number];
@@ -242,6 +245,12 @@ export const getStoreClients = cache(
 export const getStoreTeam = cache(async (): Promise<TeamMember[]> => {
   const team = await storeRead<TeamMember[]>("GET /team", (init) => getTeam(init), { tags: ["team"], fallback: [] });
   return (team ?? []).filter((member) => member.isActive !== false && member.name?.trim());
+});
+
+/** `GET /reasons`: the "Why customers choose us" cards. Empty means the home page shows its built-in reasons. */
+export const getStoreReasons = cache(async (): Promise<Reason[]> => {
+  const reasons = await storeRead<Reason[]>("GET /reasons", (init) => getReasons(init), { tags: ["reasons"], fallback: [] });
+  return (reasons ?? []).filter((reason) => reason.isActive !== false && reason.title?.trim() && reason.text?.trim());
 });
 
 /* ---------- Vacancies ---------- */

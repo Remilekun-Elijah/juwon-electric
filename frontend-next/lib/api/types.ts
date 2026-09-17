@@ -154,6 +154,46 @@ export type FaqInput = {
   isActive?: boolean;
 };
 
+/** Icons a reason can use; the storefront maps each key to an icon (backend/shared/content.js REASON_ICONS). */
+export const REASON_ICONS = [
+  "wrench",
+  "clipboard",
+  "phone",
+  "badge",
+  "shield",
+  "truck",
+  "battery",
+  "sun",
+  "clock",
+  "users",
+  "spark",
+  "thumbs-up",
+] as const;
+
+export type ReasonIcon = (typeof REASON_ICONS)[number];
+
+/** "Why customers choose us" card: `GET /reasons` (active only) and `/admin/reasons`. */
+export type Reason = {
+  id: string;
+  title: string;
+  /** Plain multiline text. */
+  text: string;
+  icon: ReasonIcon;
+  sortOrder: number;
+  isActive: boolean;
+  sample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ReasonInput = {
+  title?: string;
+  text?: string;
+  icon?: ReasonIcon;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
 export type TestimonialSource = "website" | "whatsapp" | "google" | "facebook" | "in_person";
 
 /** Landing v1 §1.2 `GET /testimonials` and `/admin/testimonials` (called "Reviews" in the UI). */

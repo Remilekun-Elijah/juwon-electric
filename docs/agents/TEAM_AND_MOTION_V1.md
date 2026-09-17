@@ -187,7 +187,7 @@ Rules:
 ### 7.4 Floating action (the WhatsApp button)
 The stack sits bottom-right, respects the safe area, and is hidden on `/cart` and `/checkout`.
 - ~~**"Size your system"** (sub-label "Load calculator")~~ removed 2026-09-17: the load calculator is the header button instead, so only the WhatsApp pill floats.
-- **"Chat on WhatsApp"** (sub-label "We reply during business hours"): a green-free brand pill (`brand-600` background, white text) with a `MessageCircle` icon. Shown only when a WhatsApp number is set.
+- **"Chat on WhatsApp"** (sub-label "We are available"): WhatsApp green (`bg-whatsapp` #25d366, text `whatsapp-deep`) with the WhatsApp mark on a white circle (revised 2026-09-18; was a brand pill with a `MessageCircle`). Shown only when a WhatsApp number is set.
   - No fake "online" status and no fake notification badge.
 - **Behaviour:**
   - On load, the pills slide in from the right after about 1.2 s.

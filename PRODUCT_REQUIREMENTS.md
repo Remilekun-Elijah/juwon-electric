@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Load calculator button in the header (see section 12, Change log)
+Last updated: 2026-09-18, Why choose us managed in the admin (see section 12, Change log)
 
 1. Executive summary
 
@@ -331,7 +331,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   - Glass price card: "Complete packages from ₦…" in gold with an arrow link to the packages, bottom right of the hero. It shows only on wide screens (1280 px and up, so it doesn't cover the stats or the floating buttons) and only when there is a priced package.
   - On load the pill, headline lines, lead, buttons, stats and price card appear one after another (about 100 ms apart). All of it is in the page HTML.
 - Floating action (2026-09-17: ~~a stack of two pills~~ one pill, since the load calculator moved to the header button): bottom right, clear of the phone's safe area.
-  - **Chat on WhatsApp** (sub-label "We reply during business hours"): a brand-red pill opening WhatsApp. Shown only when a WhatsApp number is set.
+  - **Chat on WhatsApp** (sub-label "We are available"): a WhatsApp-green pill with the WhatsApp mark on a white circle (2026-09-18; ~~a brand-red pill with a chat bubble~~), opening WhatsApp. Shown only when a WhatsApp number is set.
   - Hidden on `/cart` and `/checkout`, so it never covers the order buttons. On phones (under 640 px) on the home page it stays hidden while the hero is on screen, so it doesn't cover the hero stats, and appears once the hero scrolls away.
   - It slides in from the right about 1.2 seconds after the page loads. On phones they are 56 px round buttons with an accessible name; on screens 640 px and wider they show the label and sub-label. While the footer is on screen they fade, so footer links stay readable.
   - No "online" status, no notification badge.
@@ -372,7 +372,7 @@ Contract: docs/agents/LANDING_V1.md.
 
 Ground rules
 - Ideas only, nothing copied: the home page follows the *structure and ideas* of a reference solar landing page. None of its wording, images, logos, statistics, reviews, prices, office lists or financing numbers are used. All content is Juwon Electric's own.
-- Honest claims: the "Why choose us" cards state only what the platform already guarantees. No invented warranties, years in business or client counts, except in sample-flagged content that must be replaced before launch.
+- Honest claims: the built-in "Why choose us" cards state only what the platform already guarantees, and the ones written in the admin should do the same. No invented warranties, years in business or client counts, except in sample-flagged content that must be replaced before launch.
 - Everything new is managed in the admin console. Nothing on the new home sections needs a developer to change.
 
 Managed collections
@@ -428,10 +428,10 @@ Settings sections (Super admin and Admin change them; other staff view)
 - Each new section shows a **Sample** badge while it holds sample values.
 
 Home page (section order; updated 2026-09-17 for the home page redesign, §6.10)
-Every section hides itself when it has no data, so an empty collection or unset setting leaves no blank block (the fixed "Why choose us" and "How it works" always show).
+Every section hides itself when it has no data, so an empty collection or unset setting leaves no blank block (the "Why choose us" band and "How it works" always show; "Why choose us" falls back to its built-in cards).
 1. Hero (§6.10), with up to 4 stats from Website stats. ~~Stats band: up to 4 large figures from Website stats.~~ The separate stats band was removed; the stats now show in the hero.
 2. Client logos.
-3. Why choose us: 4 fixed cards stating only verifiable claims: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
+3. Why choose us: cards managed in the admin (**Website → Why choose us**, 2026-09-18; ~~4 fixed cards~~). Each has an icon from a fixed set, a title (3–80 characters) and a sentence (10–300), shown in the saved order; hidden ones are left out. With none saved the four built-in cards show instead: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
 4. Solutions ("Who we power"): the customer segments as cards linking to `/portfolio?category=<segment>`.
 5. Packages ("Find your package"): the existing package finder, with "Shop by battery type" chips in the header; package cards show up to 3 included products and "What it powers".
 6. Shop by category (restored 2026-09-17): top-level catalogue categories.
@@ -568,6 +568,7 @@ Sample content
 - Settings navigation (Settings redesign): at 1280 px each settings page shows the grouped rail with the current section highlighted (`aria-current="page"`); at 375 px and 768 px the rail is replaced by a scrolling row of pills with the current one highlighted, every pill is at least 44 px tall, and the page has no horizontal scroll. After moving to another section, focus is on its heading.
 - Save bar (Settings redesign): on **Settings → Sales → Inventory**, changing Default reorder level from 5 to 8 shows "Unsaved changes" with **Discard** and **Save changes**; **Discard** puts back 5 and hides the bar; **Save changes** sends only the inventory section, shows "Settings updated." and hides the bar. Entering -1 shows "Enter a whole number of 0 or more." and saves nothing. Saving **Homepage & contact** while it shows **Sample** removes the badge.
 - Unsaved-changes guard (Settings redesign): with an unsaved change on **Business profile**, selecting **Payments** in the rail or **Orders** in the sidebar asks "You have unsaved changes. Leave without saving?"; **Keep editing** stays with the change intact and **Leave without saving** opens the page without saving. Reloading the tab shows the browser's leave-page prompt. With no unsaved changes, links open straight away.
+- Why choose us (2026-09-18): with three active reasons saved, the home page band shows those three in their saved order with their chosen icons; hiding one removes it from the website within a minute and keeps it in the admin; deleting every reason brings back the four built-in cards. Sample reasons show the **Sample** badge in the admin and on the website until they are edited.
 - Products on the website (2026-09-17): with **Products on the website** off, the storefront header, mobile menu and footer show no Products link, the home page has no "Shop by category" or "Popular products" section, `/products`, `/products/<slug>` and `/products/category/<slug>` show the storefront 404, the sitemap lists no product or category URL, and the cart, empty cart, packages and 404 pages show no products link. Packages still list their products and specifications, and the admin still shows Products, Categories, Inventory and single-product in-store sales. Switching it back on restores all of it within a minute.
 - Settings view only (Settings redesign): a Sales account opens every settings page and sees the "View only" notice, disabled fields and no save bar. On a server without website settings, **Homepage & contact**, **Financing** and **Load calculator** show "Website, financing and calculator settings aren’t available yet".
 - Header button and floating action (2026-09-17, revised): with the calculator on, the header shows a gold **Load calculator** button linking to `/calculator` (it reads **Get a quote** and links to `/contact?topic=Quote` while the calculator is off), and the phone menu lists both. With a WhatsApp number set, every storefront page except `/cart` and `/checkout` shows one **Chat on WhatsApp** pill at the bottom right (a round button on phones, a labelled pill from 640 px); with no number, none shows. There is no floating calculator button, and nothing shows an "online" status or a badge.
@@ -689,6 +690,12 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (whatsapp button)
+- §6.10: the floating **Chat on WhatsApp** button uses WhatsApp green with the WhatsApp mark instead of brand red and a generic chat bubble, so it is recognisable at a glance. Text on it is the deep WhatsApp green for contrast.
+
+2026-09-18 (why customers choose us)
+- §6.11: new **Website → Why choose us** admin page (collection `reasons`, `content:read`/`content:write`): add, edit, reorder, hide and delete the cards in the home page band, each with an icon from a fixed set of 12, a title and a sentence. Public `GET /reasons`; admin `GET/POST/PUT/DELETE /admin/reasons`. The four cards that were fixed in the code are now the sample seed and the fallback when nothing is saved.
 
 2026-09-17 (load calculator button in the header)
 - §6.10: the header's gold **Get a quote** button is now **Load calculator**, linking to `/calculator` (it falls back to **Get a quote** while the calculator is switched off), and the **Calculator** menu item is removed from the header and the phone menu, which lists **Load calculator** and **Get a quote** as buttons. The floating **Size your system** button at the bottom right is removed; only **Chat on WhatsApp** remains there. The footer keeps its **Load calculator** link.

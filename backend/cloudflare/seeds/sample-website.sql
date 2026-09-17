@@ -171,6 +171,28 @@ INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
 
+-- reasons
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-reason-1', 'reasons', NULL, '{"id":"sample-reason-1","icon":"wrench","title":"Installed and tested by our engineers","text":"Our own team fits your system, tests it on site and shows you how to use it.","sortOrder":1,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:00.000Z","updatedAt":"2026-09-17T08:00:00.000Z"}', 1, 1, '2026-09-17T08:00:00.000Z', '2026-09-17T08:00:00.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'reasons' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-reason-2', 'reasons', NULL, '{"id":"sample-reason-2","icon":"clipboard","title":"Quality equipment, specs shown","text":"Inverters, batteries and panels with the specifications listed on every product page.","sortOrder":2,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:01.000Z","updatedAt":"2026-09-17T08:00:01.000Z"}', 1, 2, '2026-09-17T08:00:01.000Z', '2026-09-17T08:00:01.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'reasons' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-reason-3', 'reasons', NULL, '{"id":"sample-reason-3","icon":"phone","title":"No payment to place an order","text":"Place your order online and we call you to confirm the details before anything is paid.","sortOrder":3,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:02.000Z","updatedAt":"2026-09-17T08:00:02.000Z"}', 1, 3, '2026-09-17T08:00:02.000Z', '2026-09-17T08:00:02.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'reasons' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-reason-4', 'reasons', NULL, '{"id":"sample-reason-4","icon":"badge","title":"Live stock and prices","text":"What you see on the website is what we have and what it costs today.","sortOrder":4,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:03.000Z","updatedAt":"2026-09-17T08:00:03.000Z"}', 1, 4, '2026-09-17T08:00:03.000Z', '2026-09-17T08:00:03.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'reasons' AND json_extract(records.data, '$.sample') = 1;
+
 -- portfolio case-study fields (existing records, by id)
 UPDATE records SET data = json_set(data,
     '$.category', 'academic-institutions', '$.summary', 'Daytime solar for a primary school''s classrooms and staff room, so lessons no longer stop when the grid goes off.', '$.location', 'Ikorodu, Lagos', '$.system', '5kVA inverter, 4 × 200Ah tubular batteries, 4 × 550W panels',

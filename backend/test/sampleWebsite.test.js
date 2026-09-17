@@ -103,12 +103,12 @@ test("Express seed: dry run on a temp JSON store is idempotent and keeps admin e
   const quiet = () => {};
 
   const first = await seedSampleWebsite({ log: quiet });
-  assert.deepEqual([first.created, first.updated, first.kept, first.portfolio], [32, 0, 0, 15]);
+  assert.deepEqual([first.created, first.updated, first.kept, first.portfolio], [36, 0, 0, 15]);
   assert.deepEqual(first.portfolioMissing, []);
   assert.deepEqual(first.sections, ["website", "financing", "calculator"]);
 
   const second = await seedSampleWebsite({ log: quiet });
-  assert.deepEqual([second.created, second.updated, second.kept, second.portfolio], [0, 32, 0, 15]);
+  assert.deepEqual([second.created, second.updated, second.kept, second.portfolio], [0, 36, 0, 15]);
   assert.equal((await store.listCollection("faqs", { includeInactive: true })).length, 8);
   assert.equal((await store.listCollection("teamMembers", { includeInactive: true })).length, 12);
 

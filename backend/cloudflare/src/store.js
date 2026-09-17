@@ -34,6 +34,8 @@ const COLLECTIONS = [
   "clients",
   // Team and motion v1
   "teamMembers",
+  // "Why customers choose us" reasons
+  "reasons",
   // Uploads v1: image records and the system/uploads-usage total
   "uploads",
   "system",

@@ -19,6 +19,7 @@ import type {
   PublicProduct,
   PublicSettings,
   PublicVacancy,
+  Reason,
   SaveCartPayload,
   ServicesData,
   SubscribePayload,
@@ -70,6 +71,9 @@ export const getTestimonials = (init?: ApiRequestInit) => getPublicData<Testimon
 
 /** `GET /clients` (client logos). */
 export const getClients = (init?: ApiRequestInit) => getPublicData<Client[]>("/clients", undefined, init);
+
+/** `GET /reasons`: active "Why customers choose us" cards, sorted by `sortOrder`, then `createdAt`. */
+export const getReasons = (init?: ApiRequestInit) => getPublicData<Reason[]>("/reasons", undefined, init);
 
 /** `GET /team` (TEAM_AND_MOTION_V1 §1): active team members sorted by `sortOrder`, then `createdAt`. */
 export const getTeam = (init?: ApiRequestInit) => getPublicData<TeamMember[]>("/team", undefined, init);

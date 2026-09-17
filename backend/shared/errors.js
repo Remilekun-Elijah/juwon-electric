@@ -32,6 +32,8 @@ export const OPS_NOT_FOUND_LABELS = {
   clients: "Client",
   // Team and motion v1 §1
   teamMembers: "Team member",
+  // "Why customers choose us" reasons
+  reasons: "Reason",
 };
 
 export const notFoundFor = (collection) =>
