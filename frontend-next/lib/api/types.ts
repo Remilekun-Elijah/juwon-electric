@@ -207,6 +207,44 @@ export type ClientInput = {
   isActive?: boolean;
 };
 
+/* ---------- Team and motion v1 §1: team members ---------- */
+
+/**
+ * TEAM_AND_MOTION_V1 §1 `GET /team` (active only, sorted by sortOrder then createdAt) and
+ * `/admin/team`. Groups display in the order they first appear in the sorted list.
+ */
+export type TeamMember = {
+  id: string;
+  /** 1–100 */
+  name: string;
+  /** 1–80, e.g. "Lead installation engineer" */
+  role: string;
+  /** 1–60, e.g. "Leadership", "Engineering & installations" */
+  group: string;
+  /** Plain text, at most 300 characters. */
+  bio: string | null;
+  /** http(s) URL or site path "/..." */
+  photoUrl: string | null;
+  /** https URL */
+  linkedinUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  sample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TeamMemberInput = {
+  name?: string;
+  role?: string;
+  group?: string;
+  bio?: string | null;
+  photoUrl?: string | null;
+  linkedinUrl?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
 /* ---------- Landing v1 §3: website, financing and calculator settings ---------- */
 
 export type WebsiteStat = { label: string; value: string };
