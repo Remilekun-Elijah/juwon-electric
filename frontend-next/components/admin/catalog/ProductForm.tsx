@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Archive, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, Button, ConfirmDialog, Drawer, Field, Input, Select } from "@/components/ui";
+import { ImageListUpload } from "@/components/admin/ImageListUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { saveProduct } from "@/lib/api/admin";
 import type { Category, Product, ProductInput, ProductStatus } from "@/lib/api/types";
@@ -80,7 +81,7 @@ const toModel = (product: Product | null, categories: readonly Category[]): Mode
     costPrice: product?.costPrice != null ? String(product.costPrice) : "",
     reorderLevel: String(product?.reorderLevel ?? 0),
     stockQuantity: "0",
-    images: (product?.images.length ? product.images : [""]).map((value) => ({
+    images: (product?.images ?? []).map((value) => ({
       rowId: nextRowId(),
       value,
     })),
@@ -148,7 +149,7 @@ const build = (model: Model, category: Category | undefined, creating: boolean):
   for (const row of model.images) {
     const value = row.value.trim();
     if (!value) continue;
-    const error = validateUrlField(value, "Image URL");
+    const error = validateUrlField(value, "Image link");
     if (error) imageRows[row.rowId] = error;
     images.push(value);
   }
@@ -242,7 +243,6 @@ export function ProductForm({ open, product, categories, onClose, onSaved, usedI
 
   const options = useMemo(() => [{ value: "", label: "No category" }, ...categoryOptions(categories)], [categories]);
   const category = categories.find((item) => item.id === model.categoryId);
-  const imageCount = model.images.length;
 
   const set = <K extends keyof Model>(key: K, value: Model[K]) => setModel((current) => ({ ...current, [key]: value }));
 
@@ -419,71 +419,17 @@ export function ProductForm({ open, product, categories, onClose, onSaved, usedI
           )}
         </div>
 
-        <div role="group" aria-labelledby="product-images-heading" className="space-y-3">
-          <div className="flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h3 id="product-images-heading" className="text-sm font-medium text-slate-900">
-                Images
-              </h3>
-              <p className="text-xs text-slate-500">
-                https:// links or site paths starting with /. The first image is the main one. Up to{" "}
-                {LIMITS.productImages}.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Plus aria-hidden="true" />}
-              disabled={imageCount >= LIMITS.productImages}
-              onClick={() => set("images", [...model.images, { rowId: nextRowId(), value: "" }])}
-            >
-              Add image
-            </Button>
-          </div>
-          {errors.images && <p className="text-sm text-red-600">{errors.images}</p>}
-          <ul className="space-y-2">
-            {model.images.map((row, index) => (
-              <li key={row.rowId} className="flex items-start gap-2">
-                <Field
-                  label={`Image ${index + 1}`}
-                  labelClassName="sr-only"
-                  error={errors.imageRows?.[row.rowId]}
-                  className="flex-1"
-                >
-                  <Input
-                    type="url"
-                    inputMode="url"
-                    placeholder="https://"
-                    value={row.value}
-                    onChange={(event) =>
-                      set(
-                        "images",
-                        model.images.map((item) =>
-                          item.rowId === row.rowId ? { ...item, value: event.target.value } : item
-                        )
-                      )
-                    }
-                  />
-                </Field>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-red-50 hover:text-red-700"
-                  aria-label={`Remove image ${index + 1}`}
-                  title="Remove"
-                  onClick={() =>
-                    set(
-                      "images",
-                      model.images.filter((item) => item.rowId !== row.rowId)
-                    )
-                  }
-                >
-                  <Trash2 aria-hidden="true" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ImageListUpload
+          label="Images"
+          helper={`The first image is the main one. Up to ${LIMITS.productImages}.`}
+          rows={model.images}
+          onChange={(update) => setModel((current) => ({ ...current, images: update(current.images) }))}
+          newRowId={nextRowId}
+          purpose="products"
+          max={LIMITS.productImages}
+          rowErrors={errors.imageRows}
+          error={errors.images}
+        />
 
         <Field label="Tags" helper={`Separate tags with commas. Up to ${LIMITS.productTags}.`} error={errors.tags}>
           <Input

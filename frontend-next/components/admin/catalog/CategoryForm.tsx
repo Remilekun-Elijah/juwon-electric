@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, Button, Drawer, Field, Input, Select, Switch, Textarea } from "@/components/ui";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { saveCategory } from "@/lib/api/admin";
 import type { Category, CategoryAttribute, CategoryInput } from "@/lib/api/types";
 import { errorMessage } from "@/lib/admin/format";
@@ -67,7 +68,7 @@ const validate = (model: Model): Errors => {
   if (model.description.trim().length > LIMITS.categoryDescription) {
     errors.description = `Description must be ${LIMITS.categoryDescription} characters or fewer.`;
   }
-  const urlError = validateUrlField(model.imageUrl, "Image URL");
+  const urlError = validateUrlField(model.imageUrl, "Image link");
   if (urlError) errors.imageUrl = urlError;
   const sortOrder = Number(model.sortOrder);
   if (model.sortOrder.trim() === "" || !Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 1_000_000) {
@@ -252,15 +253,14 @@ export function CategoryForm({ open, category, categories, onClose, onSaved }: C
           />
         </Field>
 
-        <Field label="Image URL" helper="An https:// link or a site path starting with /." error={errors.imageUrl}>
-          <Input
-            type="url"
-            inputMode="url"
-            value={model.imageUrl}
-            placeholder="https://"
-            onChange={(event) => set("imageUrl", event.target.value)}
-          />
-        </Field>
+        <ImageUpload
+          label="Image"
+          value={model.imageUrl}
+          onChange={(value) => set("imageUrl", value)}
+          purpose="categories"
+          error={errors.imageUrl}
+          previewAlt={model.name ? `${model.name} image` : "Category image"}
+        />
 
         <Switch
           checked={model.isActive}
