@@ -1,4 +1,4 @@
-// Sample website content (LANDING_V1 §4) for local development and review only. Every record
+// Sample website content (LANDING_V1 §4, TEAM_AND_MOTION_V1 §1) for local development and review only. Every record
 // and settings section is `sample: true`, so the admin and the storefront label it, and it must
 // be replaced before launch. Used by backend/scripts/seed-sample-website.mjs (Express store) and
 // backend/cloudflare/scripts/export-sample-website-sql.mjs (local D1). Never wired into
@@ -146,6 +146,50 @@ export const SAMPLE_CLIENTS = records("client", [
   { name: "Northbridge Microfinance", logoUrl: "/samples/client-4.svg", website: null },
   { name: "Unity Court Residents", logoUrl: "/samples/client-5.svg", website: null },
   { name: "Brightpath Logistics", logoUrl: "/samples/client-6.svg", website: null },
+]);
+
+// ---- Team members (12, TEAM_AND_MOTION_V1 §1): fictional names; illustrated placeholder portraits
+// live in frontend-next/public/samples/team. Groups appear on the team page in this order.
+
+const LEADERSHIP = "Leadership";
+const ENGINEERING = "Engineering & installations";
+const SALES = "Sales & customer care";
+const OPERATIONS = "Operations";
+
+const member = (index, name, role, group, bio) => ({
+  name,
+  role,
+  group,
+  bio,
+  photoUrl: `/samples/team/member-${index}.svg`,
+  linkedinUrl: null,
+});
+
+export const SAMPLE_TEAM_MEMBERS = records("team", [
+  member(1, "Adebayo Ogunleye", "Managing director", LEADERSHIP,
+    "Leads the business and signs off every large installation before it is handed over to the customer."),
+  member(2, "Chiamaka Nwosu", "Head of engineering", LEADERSHIP,
+    "Reviews the sizing behind every quote so each customer gets an inverter and battery bank that fits their load."),
+  member(3, "Ifeanyi Obi", "Lead installation engineer", ENGINEERING,
+    "Plans installation days and leads the crew that mounts panels, wires inverters and tests each system."),
+  member(4, "Kehinde Alabi", "Solar design engineer", ENGINEERING,
+    "Sizes systems from customers' appliance lists and site visits, then lays out the panels and batteries."),
+  member(5, "Musa Danjuma", "Installation technician", ENGINEERING,
+    "Installs inverters and batteries and walks customers through their new system before leaving the site."),
+  member(6, "Tolulope Akinwale", "Electrical technician", ENGINEERING,
+    "Handles changeover wiring and earthing so every system switches cleanly between the grid and backup."),
+  member(7, "Blessing Okafor", "Sales lead", SALES,
+    "Helps customers choose the right package and explains what each system can power in their home or office."),
+  member(8, "Yetunde Salami", "Customer care officer", SALES,
+    "Makes the confirmation call after each order and keeps customers updated from processing to delivery."),
+  member(9, "Emmanuel Udoh", "After-sales support officer", SALES,
+    "Books maintenance visits and follows up on battery and inverter questions after installation."),
+  member(10, "Aisha Bello", "Operations manager", OPERATIONS,
+    "Coordinates stock, delivery and installation dates so every order moves through fulfilment on time."),
+  member(11, "Segun Oladipo", "Logistics coordinator", OPERATIONS,
+    "Arranges delivery of panels, inverters and batteries to customers' sites across Lagos and beyond."),
+  member(12, "Halima Yusuf", "Inventory officer", OPERATIONS,
+    "Keeps stock counts accurate so the prices and availability shown on the website stay current."),
 ]);
 
 // ---- Portfolio case-study fields for the existing records ---------------------------------------
@@ -345,6 +389,7 @@ export const SAMPLE_COLLECTIONS = {
   faqs: SAMPLE_FAQS,
   testimonials: SAMPLE_TESTIMONIALS,
   clients: SAMPLE_CLIENTS,
+  teamMembers: SAMPLE_TEAM_MEMBERS,
 };
 
 export const SAMPLE_SEEDED_AT = SEEDED_AT;

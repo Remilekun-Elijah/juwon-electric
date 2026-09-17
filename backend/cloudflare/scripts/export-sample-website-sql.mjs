@@ -3,7 +3,7 @@
 // file to migrations, seed.sql or CI, and never run it with --remote.
 //
 // The SQL is idempotent and mirrors backend/scripts/seed-sample-website.mjs:
-// - FAQs, reviews and client logos are upserted by their fixed `sample-` ids, except records an
+// - FAQs, reviews, client logos and team members are upserted by their fixed `sample-` ids, except records an
 //   admin has saved since (sample: false), which are kept;
 // - existing portfolio records (by id) get the sample case-study fields and sample: true, unless
 //   an admin has saved them since;

@@ -109,6 +109,68 @@ INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'clients' AND json_extract(records.data, '$.sample') = 1;
 
+-- teamMembers
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-1', 'teamMembers', NULL, '{"id":"sample-team-1","name":"Adebayo Ogunleye","role":"Managing director","group":"Leadership","bio":"Leads the business and signs off every large installation before it is handed over to the customer.","photoUrl":"/samples/team/member-1.svg","linkedinUrl":null,"sortOrder":1,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:00.000Z","updatedAt":"2026-09-17T08:00:00.000Z"}', 1, 1, '2026-09-17T08:00:00.000Z', '2026-09-17T08:00:00.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-2', 'teamMembers', NULL, '{"id":"sample-team-2","name":"Chiamaka Nwosu","role":"Head of engineering","group":"Leadership","bio":"Reviews the sizing behind every quote so each customer gets an inverter and battery bank that fits their load.","photoUrl":"/samples/team/member-2.svg","linkedinUrl":null,"sortOrder":2,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:01.000Z","updatedAt":"2026-09-17T08:00:01.000Z"}', 1, 2, '2026-09-17T08:00:01.000Z', '2026-09-17T08:00:01.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-3', 'teamMembers', NULL, '{"id":"sample-team-3","name":"Ifeanyi Obi","role":"Lead installation engineer","group":"Engineering & installations","bio":"Plans installation days and leads the crew that mounts panels, wires inverters and tests each system.","photoUrl":"/samples/team/member-3.svg","linkedinUrl":null,"sortOrder":3,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:02.000Z","updatedAt":"2026-09-17T08:00:02.000Z"}', 1, 3, '2026-09-17T08:00:02.000Z', '2026-09-17T08:00:02.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-4', 'teamMembers', NULL, '{"id":"sample-team-4","name":"Kehinde Alabi","role":"Solar design engineer","group":"Engineering & installations","bio":"Sizes systems from customers'' appliance lists and site visits, then lays out the panels and batteries.","photoUrl":"/samples/team/member-4.svg","linkedinUrl":null,"sortOrder":4,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:03.000Z","updatedAt":"2026-09-17T08:00:03.000Z"}', 1, 4, '2026-09-17T08:00:03.000Z', '2026-09-17T08:00:03.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-5', 'teamMembers', NULL, '{"id":"sample-team-5","name":"Musa Danjuma","role":"Installation technician","group":"Engineering & installations","bio":"Installs inverters and batteries and walks customers through their new system before leaving the site.","photoUrl":"/samples/team/member-5.svg","linkedinUrl":null,"sortOrder":5,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:04.000Z","updatedAt":"2026-09-17T08:00:04.000Z"}', 1, 5, '2026-09-17T08:00:04.000Z', '2026-09-17T08:00:04.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-6', 'teamMembers', NULL, '{"id":"sample-team-6","name":"Tolulope Akinwale","role":"Electrical technician","group":"Engineering & installations","bio":"Handles changeover wiring and earthing so every system switches cleanly between the grid and backup.","photoUrl":"/samples/team/member-6.svg","linkedinUrl":null,"sortOrder":6,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:05.000Z","updatedAt":"2026-09-17T08:00:05.000Z"}', 1, 6, '2026-09-17T08:00:05.000Z', '2026-09-17T08:00:05.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-7', 'teamMembers', NULL, '{"id":"sample-team-7","name":"Blessing Okafor","role":"Sales lead","group":"Sales & customer care","bio":"Helps customers choose the right package and explains what each system can power in their home or office.","photoUrl":"/samples/team/member-7.svg","linkedinUrl":null,"sortOrder":7,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:06.000Z","updatedAt":"2026-09-17T08:00:06.000Z"}', 1, 7, '2026-09-17T08:00:06.000Z', '2026-09-17T08:00:06.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-8', 'teamMembers', NULL, '{"id":"sample-team-8","name":"Yetunde Salami","role":"Customer care officer","group":"Sales & customer care","bio":"Makes the confirmation call after each order and keeps customers updated from processing to delivery.","photoUrl":"/samples/team/member-8.svg","linkedinUrl":null,"sortOrder":8,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:07.000Z","updatedAt":"2026-09-17T08:00:07.000Z"}', 1, 8, '2026-09-17T08:00:07.000Z', '2026-09-17T08:00:07.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-9', 'teamMembers', NULL, '{"id":"sample-team-9","name":"Emmanuel Udoh","role":"After-sales support officer","group":"Sales & customer care","bio":"Books maintenance visits and follows up on battery and inverter questions after installation.","photoUrl":"/samples/team/member-9.svg","linkedinUrl":null,"sortOrder":9,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:08.000Z","updatedAt":"2026-09-17T08:00:08.000Z"}', 1, 9, '2026-09-17T08:00:08.000Z', '2026-09-17T08:00:08.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-10', 'teamMembers', NULL, '{"id":"sample-team-10","name":"Aisha Bello","role":"Operations manager","group":"Operations","bio":"Coordinates stock, delivery and installation dates so every order moves through fulfilment on time.","photoUrl":"/samples/team/member-10.svg","linkedinUrl":null,"sortOrder":10,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:09.000Z","updatedAt":"2026-09-17T08:00:09.000Z"}', 1, 10, '2026-09-17T08:00:09.000Z', '2026-09-17T08:00:09.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-11', 'teamMembers', NULL, '{"id":"sample-team-11","name":"Segun Oladipo","role":"Logistics coordinator","group":"Operations","bio":"Arranges delivery of panels, inverters and batteries to customers'' sites across Lagos and beyond.","photoUrl":"/samples/team/member-11.svg","linkedinUrl":null,"sortOrder":11,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:10.000Z","updatedAt":"2026-09-17T08:00:10.000Z"}', 1, 11, '2026-09-17T08:00:10.000Z', '2026-09-17T08:00:10.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+  VALUES ('sample-team-12', 'teamMembers', NULL, '{"id":"sample-team-12","name":"Halima Yusuf","role":"Inventory officer","group":"Operations","bio":"Keeps stock counts accurate so the prices and availability shown on the website stay current.","photoUrl":"/samples/team/member-12.svg","linkedinUrl":null,"sortOrder":12,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:11.000Z","updatedAt":"2026-09-17T08:00:11.000Z"}', 1, 12, '2026-09-17T08:00:11.000Z', '2026-09-17T08:00:11.000Z')
+  ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
+    is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
+  WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
+
 -- portfolio case-study fields (existing records, by id)
 UPDATE records SET data = json_set(data,
     '$.category', 'academic-institutions', '$.summary', 'Daytime solar for a primary school''s classrooms and staff room, so lessons no longer stop when the grid goes off.', '$.location', 'Ikorodu, Lagos', '$.system', '5kVA inverter, 4 × 200Ah tubular batteries, 4 × 550W panels',

@@ -3,7 +3,7 @@
 //
 //   npm run seed:sample
 //
-// Idempotent: FAQs, reviews and client logos use fixed `sample-` ids and are upserted; the
+// Idempotent: FAQs, reviews, client logos and team members use fixed `sample-` ids and are upserted; the
 // existing portfolio records get sample case-study fields; the website, financing and calculator
 // settings sections are replaced only while they are missing, empty or still sample content.
 // Data: backend/shared/sampleWebsite.js (also exported to D1 SQL for the Worker).
