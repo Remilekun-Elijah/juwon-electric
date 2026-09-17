@@ -244,7 +244,7 @@ The steps are: **Pending → Processing → Out for delivery → Delivered → I
 4. Record payment (chapter 6, story 6.2).
 5. Select **Mark as processing**. This **takes the items out of stock**.
 6. When it leaves the store, select **Mark as out for delivery**, then **Mark as delivered** on arrival.
-7. If it needs installation, turn on **Requires installation** and create a job (chapter 6, story 6.3). When every job is completed, the order becomes **Installed** automatically. If the installation was done without a job, open the delivered order and select **Mark as installed**. If **Requires installation** wasn't on, you'll be asked to confirm and it's turned on for you.
+7. Website orders start with **Requires installation** already on, because packages come with installation. Create a job for it (chapter 6, story 6.3). If the customer doesn't need our installation (for example they have their own installer), turn **Requires installation** off before creating any job. When every job is completed, the order becomes **Installed** automatically. If the installation was done without a job, open the delivered order and select **Mark as installed**. If **Requires installation** wasn't on, you'll be asked to confirm and it's turned on for you.
 8. Add an **Internal note** if needed (only staff see it) and select **Save note**.
 
 **Tips and common mistakes**
@@ -322,7 +322,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 
 *As a sales rep, I want to book an engineer for an installation so that the customer gets a date and the engineer knows what to do.*
 
-1. Open the order and turn on **Requires installation**.
+1. Open the order and make sure **Requires installation** is on (website orders start with it on).
 2. Optionally choose the **Assigned engineer** for the order.
 3. Select **Create job**.
 4. In **Create installation job**, fill in:
@@ -733,6 +733,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (installation default)**
+- Orders: new website orders start with **Requires installation** on; turn it off if the customer doesn't need our installation (story 5.3).
 
 **2026-09-17 (installed step and menu)**
 - Orders: every delivered order now offers **Mark as installed**; confirming turns on **Requires installation** if it was off (story 5.3).

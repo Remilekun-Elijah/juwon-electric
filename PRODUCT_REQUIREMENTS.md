@@ -122,6 +122,7 @@ Persona: HR
 - Order schema storing items, amounts, paymentStatus, fulfillmentStatus
 - Admin order view to change statuses and assign engineers
 - If requiresInstallation, allow assignment of engineers and creation of InstallationJob
+- Installation default (decision 2026-09-17): website orders are for packages, which are sold with installation, so new website orders start with "Requires installation" on. Staff can turn it off (for example, the customer arranges their own installer) unless the order has open installation jobs. Orders placed earlier keep their setting. In-store orders choose it on the sale page.
 - Fulfilment steps: pending → processing → out for delivery → delivered → installed (installed requires the order to be flagged for installation; the admin offers "Mark as installed" on every delivered order and, after confirmation, turns the flag on and moves the order in one update); cancelled from any step before delivery. In-store orders may also be cancelled after delivery (a walk-in customer returns the goods), which restores their committed stock (§6.9). Payment statuses: pending, partial, paid, failed, refunded.
 - Order line snapshot (2026-09-17): every order line stores, at the time the order is placed, the prices and (for package lines) the component products and quantities of the chosen option, plus the products total and adjustment. In-store product lines store product, SKU, quantity, unit price and line total.
 - Stock is committed (moving to processing, or an in-store "collected now" sale) from the snapshot, not from the package's current contents, so recomposing a package never changes stock for orders already placed. Orders placed before snapshots existed fall back to the package's current products.
@@ -276,6 +277,9 @@ Open items for owner review
 - Storefront order confirmation says "Delivery within Lagos is free." This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (installation default)
+- §6.3: new website orders start with "Requires installation" on; staff can turn it off; earlier orders unchanged.
 
 2026-09-17 (installed step and menu)
 - §6.3: delivered orders (website and in-store) can be marked installed from the admin even if installation wasn't flagged; confirming turns the flag on.
