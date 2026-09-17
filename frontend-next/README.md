@@ -33,8 +33,9 @@ deployment, not this app.
 | `NEXT_PUBLIC_SITE_URL` | Yes in production | `https://juwonelectric.com` | Canonical origin for `metadataBase`, Open Graph URLs, `sitemap.xml` and `robots.txt`. Defaults to `https://juwonelectric.com`. Read in `lib/config.ts`. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | `0x4AAAAAAA…` | Cloudflare Turnstile on contact, newsletter and order forms. Unset disables Turnstile (no script, no widget, no token); the API must then also run without Turnstile. Read in `lib/config.ts`. |
 | `NEXT_PUBLIC_ADMIN_PREVIEW` | No — **dev only, never in production** | `true` | When exactly `true`, the admin falls back to contract mocks for API routes that don't exist yet (`404 "Route not found."`). Anything else, including unset, is off. Read in `lib/config.ts` (`config.adminPreview`). |
+| `NEXT_PUBLIC_PUBLIC_UI` | No | `classic` | Which public site to serve. Unset (or any value other than `classic`) serves the new storefront in `app/storefront`; `classic` serves the ported Vite-look site in `app/(public)`. Applied by `proxy.ts` and exposed as `config.publicUi`. Rebuild after changing it. |
 
-Only `lib/config.ts` and `lib/api/client.ts` read `process.env`. Components never do.
+Only `lib/config.ts`, `lib/api/client.ts`, `next.config.ts` and `proxy.ts` read `process.env`. Components never do.
 
 ## Public routes
 
@@ -58,6 +59,57 @@ Only `lib/config.ts` and `lib/api/client.ts` read `process.env`. Components neve
   `backend/shared/richText.js`, and styled by `.prose-je`.
 - `app/admin/**` is client-rendered only and never fetches at build time.
 
+## Public UI switch and near-realtime storefront
+
+Two public sites ship in the same build, and `NEXT_PUBLIC_PUBLIC_UI` picks one:
+
+| Value | Served at `/`, `/packages`, … | Source |
+| --- | --- | --- |
+| unset, or anything but `classic` (default) | New storefront, in the admin console's design language | `app/storefront/**`, `components/storefront/**` |
+| `classic` | Ported Vite-look site | `app/(public)/**`, `components/public/**` |
+
+- `proxy.ts` does the switch. In storefront mode it rewrites every public path `P` to `/storefront` + `P`, keeping
+  the query string. It skips `/admin`, `/api`, `/_next` and any path with a dot, such as `sitemap.xml`, `robots.txt`
+  and files in `public/`.
+- `/storefront/*` always redirects (308) to the path without the prefix, in both modes, so there is only one public
+  URL per page. Storefront pages set `alternates.canonical` to the public path.
+- `sitemap.xml` and `robots.txt` are shared by both modes. The cart and checkout pages are `noindex`.
+- Unknown paths in storefront mode render the storefront 404 (`app/storefront/[...missing]` → `not-found.tsx`).
+- The cart (`localStorage["je/cart"]`) and the `/cart/quote` and `/order` payloads are the same in both modes, so a
+  cart carries over when you switch.
+- The value is inlined at build time: rebuild and redeploy after changing it.
+
+### How admin changes reach the storefront
+
+1. **Every storefront read is cached for 60 seconds** and tagged (`lib/storefront/data.ts`, tags `store`, `packages`,
+   `products`, `categories`, `services`, `portfolio`, `vacancies`, `settings`). Without anything else, a change shows
+   within about a minute.
+2. **Admin writes expire the cache straight away.** After a successful non-GET request, `adminFetch` calls
+   `notifyStorefront` (`lib/storefront/notify.ts`). That posts the affected tags to `POST /api/storefront/revalidate`
+   with the admin session token. The route checks the token against `GET /admin/auth/me` on the API, then calls
+   `revalidateTag(tag, { expire: 0 })`, so the next page view reads fresh data.
+3. **Open storefront tabs refresh themselves.** `LiveRefresh` (mounted in the storefront layout) calls
+   `router.refresh()` every 60 seconds while the tab is visible and when the tab becomes visible again. It also
+   refreshes immediately when the admin console in the same browser broadcasts a change on the `je-storefront`
+   `BroadcastChannel`. It never refreshes while a visitor is typing in a form.
+
+If the API is down **during `next build`**, storefront reads log a warning and use local fallbacks, so the build still
+passes. **At runtime** a failed read is not replaced with fallback data: Next keeps serving the last good cached page,
+and a page with no cached copy shows the storefront error page with a "Try again" button. The header and footer are
+the one exception: if only the settings read fails they show the contact details from `lib/site.ts`.
+
+`POST /api/storefront/revalidate` is safe to call by hand when you need to force a refresh:
+
+```bash
+curl -X POST https://juwonelectric.com/api/storefront/revalidate \
+  -H "Authorization: Bearer <admin session token>" \
+  -H "Content-Type: application/json" \
+  -d '{"tags":["products"]}'
+```
+
+It answers `401` without a valid admin token, `400` for a body that isn't `{ "tags": [...] }` or is over 2 KB, and
+`405` for methods other than POST. Unknown tags are ignored, and `store` (every storefront read) is always included.
+
 ## SEO and accessibility
 
 - Per-page titles, descriptions, canonical URLs and Open Graph data; JSON-LD `JobPosting` on vacancies and `Product` on
@@ -77,5 +129,6 @@ Only `lib/config.ts` and `lib/api/client.ts` read `process.env`. Components neve
    deployments, set `NEXT_PUBLIC_SITE_URL` to the preview origin (or leave the default) so previews aren't indexed as
    production.
 3. Allow the site origin in the API's CORS settings, and add the site hostname to the Turnstile widget if it is enabled.
-4. Deploy. Content edits in the admin appear on public pages within about 5 minutes (ISR), or on the next deploy.
+4. Deploy. On the storefront (the default), admin edits show on the next page view and open pages refresh within about a
+   minute (see "How admin changes reach the storefront"). On the classic site they appear within about 5 minutes (ISR).
    Because `NEXT_PUBLIC_*` values are inlined at build time, redeploy after changing any of them.
