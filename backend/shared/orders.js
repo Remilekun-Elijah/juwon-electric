@@ -3,6 +3,7 @@
 // stock commitment. Pure: storage and atomic writes live in each runtime.
 import { badRequest, conflict } from "./errors.js";
 import { OPS_LIMITS, boolean, dateTime, email, integer, isPlainObject, phone, queryText, text } from "./fields.js";
+import { jobEngineerIds } from "./jobs.js";
 import { formatNaira, normalizeOptions } from "./packagePricing.js";
 
 export const ORDER_CHANNELS = ["website", "in_store"];
@@ -359,7 +360,8 @@ export const orderListFilter = (query) => {
 export const jobSummary = (job) => ({
   id: job.id,
   status: job.status,
-  engineerId: job.engineerId ?? null,
+  engineerId: jobEngineerIds(job)[0] ?? null,
+  engineerIds: jobEngineerIds(job),
   scheduledAt: job.scheduledAt ?? null,
 });
 

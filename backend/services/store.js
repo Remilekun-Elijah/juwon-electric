@@ -1008,6 +1008,8 @@ const ensureOpsIndexes = () =>
     models.inventoryMovements.collection.createIndex({ productId: 1, createdAt: -1 }),
     models.inventoryMovements.collection.createIndex({ referenceId: 1 }),
     models.installationJobs.collection.createIndex({ engineerId: 1, scheduledAt: 1 }),
+    models.installationJobs.collection.createIndex({ engineerIds: 1, scheduledAt: 1 }),
+    models.installationJobs.collection.createIndex({ orderId: 1 }),
     models.notifications.collection.createIndex({ createdAt: -1 }),
     models.notificationReads.collection.createIndex({ adminId: 1 }),
   ]);

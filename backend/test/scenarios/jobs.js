@@ -46,7 +46,7 @@ export const runJobsScenario = async (client) => {
   const survey = (await expect("unassigned job", "POST", jobs, { token: sales.token, body: { orderId: order.id, checklist: ["Site survey"] } }, 201, "Job created.")).body.data;
   assert.deepEqual(Object.keys(survey).sort(), [
     "address", "cancelledAt", "checklist", "completedAt", "completionNotes", "createdAt", "durationEstimateMinutes", "engineer",
-    "engineerId", "id", "notes", "order", "orderId", "photos", "scheduledAt", "startedAt", "status", "updatedAt",
+    "engineerId", "engineerIds", "engineers", "id", "notes", "order", "orderId", "photos", "scheduledAt", "startedAt", "status", "updatedAt",
   ]);
   assert.equal(survey.status, "unassigned");
   assert.equal(survey.address, "Install Customer Street, Lekki");
@@ -54,6 +54,9 @@ export const runJobsScenario = async (client) => {
   assert.deepEqual(survey.checklist.map(({ label, done, doneAt, doneBy }) => ({ label, done, doneAt, doneBy })), [
     { label: "Site survey", done: false, doneAt: null, doneBy: null },
   ]);
+  // One job per order (COMMERCE_V3 §1.2): a cancelled job makes room for a new one.
+  await expect("one job per order", "POST", jobs, { body: { orderId: order.id } }, 409, "This order already has an installation job.");
+  await expect("cancel the survey job", "POST", `${jobs}/${survey.id}/status`, { body: { status: "cancelled", note: "Not needed" } }, 200, "Job status updated.");
 
   const install = (
     await expect("assigned job", "POST", jobs, {
@@ -140,8 +143,7 @@ export const runJobsScenario = async (client) => {
   const fulfil = (id, value) => ["POST", `/admin/orders/${id}/fulfillment`, { body: { status: value }, project: (body) => ({ message: body?.message, status: body?.data?.fulfillmentStatus }) }];
   await expect("order processing", ...fulfil(order.id, "processing"), 200);
   await expect("order delivered", ...fulfil(order.id, "delivered"), 200);
-  await expect("admin cannot move a job to assigned by status", "POST", `${jobs}/${survey.id}/status`, { body: { status: "assigned" } }, 409, "Cannot change job status from unassigned to assigned.");
-  await expect("cancel the survey job", "POST", `${jobs}/${survey.id}/status`, { body: { status: "cancelled", note: "Not needed" } }, 200, "Job status updated.");
+  await expect("admin cannot move a job to assigned by status", "POST", `${jobs}/${install.id}/status`, { body: { status: "assigned" } }, 409, "Cannot change job status from in_progress to assigned.");
   const completed = (await expect("engineer completes", ...status(engineerA.token, install.id, "completed"), 200)).body.data;
   assert.ok(completed.completedAt);
   const installed = (await expect("order installed automatically", "GET", `/admin/orders/${order.id}`, { project: (body) => ({ status: body.data.fulfillmentStatus }) }, 200)).body.data;

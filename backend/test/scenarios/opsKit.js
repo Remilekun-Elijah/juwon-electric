@@ -143,10 +143,12 @@ export const recorder = (client) => {
 };
 
 // Values that differ between runtimes by construction: ids, timestamps and tokens.
-const MASKED = (key) => key === "id" || key === "_id" || key === "doneBy" || key === "token" || /Id$/.test(key) || /At$/.test(key);
+const MASKED = (key) =>
+  key === "id" || key === "_id" || key === "doneBy" || key === "token" || /Id$/.test(key) || /Ids$/.test(key) || /At$/.test(key);
 
 export const maskOps = (value, key = "") => {
-  if (Array.isArray(value)) return value.map((entry) => maskOps(entry));
+  // Id lists (engineerIds): each entry is masked under the list's key.
+  if (Array.isArray(value)) return value.map((entry) => maskOps(entry, /Ids$/.test(key) ? key : ""));
   if (value && typeof value === "object") {
     return Object.fromEntries(Object.entries(value).map(([name, entry]) => [name, maskOps(entry, name)]));
   }

@@ -32,9 +32,73 @@ const STATUS_TRANSITIONS = {
 const ENGINEER_TRANSITIONS = { assigned: ["in_progress"], in_progress: ["completed"] };
 
 export const JOB_NOT_FOUND = "Job not found.";
+export const JOB_ENGINEERS_MAX = 10;
+export const ASSIGNEE_MESSAGE = "Assignee must be an active engineer.";
+export const ORDER_HAS_JOB_MESSAGE = "This order already has an installation job.";
 const jobNotFound = () => notFound(JOB_NOT_FOUND);
 
 const transitionError = (from, to) => conflict(`Cannot change job status from ${from} to ${to}.`);
+
+// ---- crews (COMMERCE_V3 §1) ------------------------------------------------------------------------
+
+/**
+ * The job's engineer ids, lead first. Read-time migration: a job stored before crews has only
+ * `engineerId`, which reads as a crew of one (or none).
+ */
+export const jobEngineerIds = (job) => {
+  if (Array.isArray(job?.engineerIds)) return job.engineerIds.filter((id) => typeof id === "string" && id);
+  return typeof job?.engineerId === "string" && job.engineerId ? [job.engineerId] : [];
+};
+
+/** Fields a stored job is missing (persisted on its next write): `engineerIds` from the legacy `engineerId`. */
+export const jobBackfill = (job) => (Array.isArray(job?.engineerIds) ? {} : crewFields(jobEngineerIds(job)));
+
+/** True when the admin is on the job's crew (lead or member). */
+export const isJobEngineer = (job, adminId) => Boolean(adminId) && jobEngineerIds(job).includes(adminId);
+
+/** Stored crew fields: `engineerIds`, with `engineerId` mirroring the lead for older readers. */
+export const crewFields = (engineerIds) => ({ engineerIds, engineerId: engineerIds[0] ?? null });
+
+const sameIds = (a, b) => a.length === b.length && a.every((id, index) => id === b[index]);
+
+/** Ids in `next` that are not in `previous` (they get a job_assigned notification). */
+export const newlyAddedEngineers = (previous, next) => next.filter((id) => !previous.includes(id));
+
+/**
+ * Crew from a create, update or assign body: `engineerIds` (a list, max 10, unique), else the
+ * legacy `engineerId` (a string, or null/"" for none). Returns undefined when neither is sent.
+ * Existence and role are checked by the runtime (assertActiveEngineer).
+ */
+export const engineerIdsInput = (body) => {
+  const input = isPlainObject(body) ? body : {};
+  if (input.engineerIds !== undefined) {
+    if (!Array.isArray(input.engineerIds)) throw badRequest("Engineers must be a list.");
+    if (input.engineerIds.length > JOB_ENGINEERS_MAX) throw badRequest(`A job can have at most ${JOB_ENGINEERS_MAX} engineers.`);
+    const ids = input.engineerIds.map((raw) => {
+      if (typeof raw !== "string" || !raw.trim() || raw.trim().length > OPS_LIMITS.id) throw badRequest(ASSIGNEE_MESSAGE);
+      return raw.trim();
+    });
+    if (new Set(ids).size !== ids.length) throw badRequest("Each engineer can be added once.");
+    return ids;
+  }
+  if (input.engineerId === undefined) return undefined;
+  if (input.engineerId === null || input.engineerId === "") return [];
+  if (typeof input.engineerId !== "string" || !input.engineerId.trim() || input.engineerId.trim().length > OPS_LIMITS.id) {
+    throw badRequest(ASSIGNEE_MESSAGE);
+  }
+  return [input.engineerId.trim()];
+};
+
+/** 409 when the order already has a job that is not cancelled (one job per order). */
+export const assertOrderHasNoOpenJob = (jobs) => {
+  if (jobs.some((job) => job.status !== "cancelled")) throw conflict(ORDER_HAS_JOB_MESSAGE);
+};
+
+/** "Job for <customer>: engineers a@x, b@y" (or "no engineers"), for assignment audits. */
+export const crewAuditSummary = (order, engineers) =>
+  `Job for ${order?.name || order?.id || "an order"}: ${
+    engineers.length ? `engineers ${engineers.map((engineer) => engineer.email).join(", ")}` : "no engineers"
+  }`;
 
 // ---- fields ------------------------------------------------------------------------------------
 
@@ -71,18 +135,19 @@ const adminChecklist = (body, existing, newId) =>
     },
   });
 
-/** POST /admin/jobs body. */
+/**
+ * POST /admin/jobs body. `engineerIds` is undefined when the body names no engineers (neither
+ * `engineerIds` nor a non-empty legacy `engineerId`): the runtime then starts the job with the
+ * order's assigned engineer, if any.
+ */
 export const jobCreatePayload = (body, newId) => {
   const input = isPlainObject(body) ? body : {};
   const orderId = text(input, "orderId", { label: "Order", required: true, max: OPS_LIMITS.id });
-  const rawEngineer = input.engineerId;
-  const engineerId =
-    rawEngineer === undefined || rawEngineer === null || rawEngineer === ""
-      ? null
-      : text(input, "engineerId", { label: "Engineer", max: OPS_LIMITS.id });
+  const crew = engineerIdsInput(input);
+  const named = input.engineerIds !== undefined || (crew !== undefined && crew.length > 0);
   return {
     orderId,
-    engineerId,
+    engineerIds: named ? crew : undefined,
     scheduledAt: scheduledAtField(input) ?? null,
     durationEstimateMinutes: durationField(input) ?? null,
     address: nullableText(input, "address", "Address", 500),
@@ -91,16 +156,21 @@ export const jobCreatePayload = (body, newId) => {
   };
 };
 
-/** PUT /admin/jobs/:id body (partial). */
+/**
+ * PUT /admin/jobs/:id body (partial). A sent crew that differs from the stored one is applied
+ * with the reassignment rules (planJobAssignment); the same crew is a no-op.
+ */
 export const jobUpdatePayload = (body, job, newId) => {
   const input = isPlainObject(body) ? body : {};
   const patch = {};
+  const crew = engineerIdsInput(input);
   if (input.scheduledAt !== undefined) patch.scheduledAt = scheduledAtField(input) ?? null;
   if (input.durationEstimateMinutes !== undefined) patch.durationEstimateMinutes = durationField(input) ?? null;
   if (input.address !== undefined) patch.address = nullableText(input, "address", "Address", 500);
   if (input.notes !== undefined) patch.notes = nullableText(input, "notes", "Notes", 2000);
   if (input.checklist !== undefined) patch.checklist = adminChecklist(input, job.checklist || [], newId);
   if (CLOSED_JOB_STATUSES.includes(job.status)) throw conflict("Job is closed.");
+  if (crew !== undefined && !sameIds(crew, jobEngineerIds(job))) Object.assign(patch, planJobAssignment(job, crew));
   return patch;
 };
 
@@ -127,11 +197,18 @@ export const planJobStatus = (job, to, { timestamp, engineer = false }) => {
   return patch;
 };
 
-/** Assignment move: engineerId null unassigns. Only open, not-started jobs can be (re)assigned. */
-export const planJobAssignment = (job, engineerId) => {
-  const to = engineerId ? "assigned" : "unassigned";
+/** Assignment move: an empty crew unassigns. Only open, not-started jobs can be (re)assigned. */
+export const planJobAssignment = (job, engineerIds) => {
+  const to = engineerIds.length ? "assigned" : "unassigned";
   if (!["unassigned", "assigned"].includes(job.status)) throw transitionError(job.status, to);
-  return { engineerId: engineerId || null, status: to };
+  return { ...crewFields(engineerIds), status: to };
+};
+
+/** POST /admin/jobs/:id/assign body: { engineerIds } or legacy { engineerId }. */
+export const jobAssignPayload = (body) => {
+  const crew = engineerIdsInput(body);
+  if (crew === undefined) throw badRequest(ASSIGNEE_MESSAGE);
+  return crew;
 };
 
 /** PUT /admin/me/jobs/:id body: { checklist?: [{ id, done }], photos?, completionNotes? }. */
@@ -184,24 +261,27 @@ export const orderReadyForInstalled = (order, jobs) =>
 
 // ---- shapes and lists ----------------------------------------------------------------------------
 
+const engineerRef = (engineer) => ({
+  id: engineer.id,
+  name: engineer.name ?? "",
+  email: engineer.email ?? "",
+  phone: typeof engineer.phone === "string" && engineer.phone ? engineer.phone : null,
+});
+
 export const serializeJob = (job, ordersById = new Map(), adminsById = new Map()) => {
   const order = ordersById.get(job.orderId);
-  const engineer = job.engineerId ? adminsById.get(job.engineerId) : null;
+  const engineerIds = jobEngineerIds(job);
+  const lead = engineerIds.length ? adminsById.get(engineerIds[0]) : null;
   return {
     id: job.id,
     orderId: job.orderId,
     order: order
       ? { id: order.id, name: order.name ?? "", phoneNumber: order.phoneNumber ?? "", deliveryAddress: order.deliveryAddress ?? "" }
       : null,
-    engineerId: job.engineerId ?? null,
-    engineer: engineer
-      ? {
-          id: engineer.id,
-          name: engineer.name ?? "",
-          email: engineer.email ?? "",
-          phone: typeof engineer.phone === "string" && engineer.phone ? engineer.phone : null,
-        }
-      : null,
+    engineerId: engineerIds[0] ?? null,
+    engineerIds,
+    engineer: lead ? engineerRef(lead) : null,
+    engineers: engineerIds.flatMap((id) => (adminsById.has(id) ? [engineerRef(adminsById.get(id))] : [])),
     scheduledAt: job.scheduledAt ?? null,
     durationEstimateMinutes: job.durationEstimateMinutes ?? null,
     address: job.address ?? null,
@@ -254,7 +334,7 @@ export const adminJobPage = (jobs, query, page) => {
     .filter(
       (job) =>
         (!status || job.status === status) &&
-        (!engineerId || job.engineerId === engineerId) &&
+        (!engineerId || isJobEngineer(job, engineerId)) &&
         (!orderId || job.orderId === orderId) &&
         (!from || (job.scheduledAt && job.scheduledAt >= from)) &&
         (!to || (job.scheduledAt && job.scheduledAt <= to))
@@ -263,18 +343,18 @@ export const adminJobPage = (jobs, query, page) => {
   return paginate(items, page);
 };
 
-/** GET /admin/me/jobs: the engineer's jobs, open ones unless `status` is given. */
+/** GET /admin/me/jobs: the jobs whose crew includes the engineer, open ones unless `status` is given. */
 export const myJobPage = (jobs, engineerId, query, page) => {
   const status = statusFilter(query);
   const items = jobs
-    .filter((job) => job.engineerId === engineerId && (status ? job.status === status : !CLOSED_JOB_STATUSES.includes(job.status)))
+    .filter((job) => isJobEngineer(job, engineerId) && (status ? job.status === status : !CLOSED_JOB_STATUSES.includes(job.status)))
     .sort(jobOrder);
   return paginate(items, page);
 };
 
-/** An engineer's own job, or 404 (never 403, so other job ids cannot be probed). */
+/** A job the engineer is on (lead or crew), or 404 (never 403, so other job ids cannot be probed). */
 export const ownJob = (job, engineerId) => {
-  if (!job || job.engineerId !== engineerId) throw jobNotFound();
+  if (!job || !isJobEngineer(job, engineerId)) throw jobNotFound();
   return job;
 };
 
@@ -330,4 +410,4 @@ export const staffPage = (admins, query, page) => {
 };
 
 export const openJobCount = (jobs, engineerId) =>
-  jobs.filter((job) => job.engineerId === engineerId && !CLOSED_JOB_STATUSES.includes(job.status)).length;
+  jobs.filter((job) => isJobEngineer(job, engineerId) && !CLOSED_JOB_STATUSES.includes(job.status)).length;

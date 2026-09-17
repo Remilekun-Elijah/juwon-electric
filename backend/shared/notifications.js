@@ -139,11 +139,12 @@ export const vacancyPostedNotification = (vacancy) => ({
   entityId: vacancy.id,
 });
 
-export const jobAssignedNotification = (job, order) => ({
+/** job_assigned for one crew member (`recipientId`, default the lead). */
+export const jobAssignedNotification = (job, order, recipientId = job.engineerIds?.[0] ?? job.engineerId) => ({
   type: "job_assigned",
   title: "Installation job assigned",
   message: `You have been assigned an installation job${order?.name ? ` for ${order.name}` : ""}${job.scheduledAt ? ` on ${job.scheduledAt.slice(0, 10)}` : ""}.`,
   entity: "job",
   entityId: job.id,
-  recipientId: job.engineerId,
+  recipientId,
 });
