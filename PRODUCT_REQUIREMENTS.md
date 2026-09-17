@@ -231,6 +231,22 @@ Persona: HR
 - Notifications: low-stock, new order, vacancy posted (optional)
 - Settings sections: Business (name, email, phone, address, website; shown on the public site), Notifications (email lists for new orders, low stock and vacancies, up to 10 each), Payments (accept online payments; Paystack or Flutterwave), Inventory (default reorder level; low-stock alerts on/off), ~~Uploads (image URLs)~~ (the Uploads card was removed on 2026-09-17: images are uploaded or linked in each form, §6.1). Landing v1 adds Website, Financing and Calculator (§6.11).
 - Settings never show any upload or storage section (Image uploads, 2026-09-17).
+- Settings layout (Settings redesign, 2026-09-17): ~~one long Settings page with a card and a Save button per section~~ replaced by an overview and a separate page per section. The sidebar keeps a single **Settings** item, highlighted on every settings page.
+  - **Settings overview** (`/admin/settings`): the last-updated line, then cards grouped under **Business**, **Communication**, **Sales** and **Website**. Each card has an icon, the section name, a one-line description, a short live summary of what is set (for example "Online payments off", "Default reorder level 5 · Alerts on", "Calculator on · 12 appliances") and a link (**Edit …**, or **View …** for view-only roles). Website, Financing and Load calculator cards show the **Sample** badge while sample, and **Not available yet** when the server doesn't return those settings. No card shows upload or storage information.
+  - Section pages and the cards on each:
+    - Business → **Business profile** (`/admin/settings/business`): **Company details** (Business name, Website) and **Contact details** (Email address, Phone, Address).
+    - Communication → **Notification emails** (`/admin/settings/notifications`): one card each for **New orders**, **Low stock** and **Vacancies**, up to 10 addresses per list; an empty list uses the server's default recipients.
+    - Sales → **Payments** (`/admin/settings/payments`): **Online payments** (Accept online payments) and **Provider** (None, Paystack or Flutterwave).
+    - Sales → **Inventory** (`/admin/settings/inventory`): **Reorder level** (Default reorder level) and **Low-stock alerts** (Send low-stock alerts).
+    - Website → **Homepage & contact** (`/admin/settings/website`): **Homepage stats** and **WhatsApp & business hours**.
+    - Website → **Financing** (`/admin/settings/financing`): **Show on website**, **Terms** (Deposit, Monthly rate, Terms (months), Approval time) and **Note**.
+    - Website → **Load calculator** (`/admin/settings/calculator`): **Show on website**, **Appliances**, **Sizing assumptions** and **Generator costs**.
+  - Page layout: **Back to settings**, a header with the eyebrow "Settings", the section name, one sentence of description and, for Homepage & contact, Financing and Load calculator while sample, the **Sample** badge and the sample banner. From 1024 px a left rail beside the content lists the sections under the same four groups, with icons and the current page highlighted; on phones and tablets a scrolling row of pills does the same without making the page scroll sideways.
+  - Save bar: each page saves only its own section. When a field changes, a bar sticks to the bottom of the content with "Unsaved changes", **Discard** (puts the saved values back) and **Save changes** (shows "Saving…"). It disappears after a successful save. Validation messages, the server error alert and the rule that saving a sample section clears its Sample badge are unchanged, as are the settings API calls and payloads.
+  - Unsaved-changes guard: with unsaved changes, following any link in the admin (the settings rail or pills, **Back to settings**, the sidebar) asks "You have unsaved changes. Leave without saving?" with **Keep editing** and **Leave without saving**; closing or reloading the tab shows the browser's leave-page prompt.
+  - View only: roles with `settings:read` but not `settings:write` see the same pages with disabled fields, the "View only" notice and no save bar.
+  - If the server doesn't return Website, Financing or Calculator settings, those pages show "Website, financing and calculator settings aren’t available yet".
+  - Settings load once for all settings pages, so moving between sections is instant; the overview and each page show loading placeholders, and an error with **Try again** if loading fails.
 - In-store orders raise the same new-order notification as website orders, with the channel recorded.
 
 6.8 Non-functional requirements
@@ -394,16 +410,16 @@ Portfolio case-study fields
 
 Settings sections (Super admin and Admin change them; other staff view)
 - Website:
-  - Stats: up to 4 rows (**Add stat**), each a Label (1–40 characters) and a Figure (the value, 1–20, for example "500+"). Saved with **Save website**.
+  - Stats: up to 4 rows (**Add stat**), each a Label (1–40 characters) and a Figure (the value, 1–20, for example "500+"). Saved with ~~**Save website**~~ **Save changes** on **Settings → Website → Homepage & contact** (Settings redesign, §6.7).
   - WhatsApp number: optional, same phone rule as the business phone.
   - Business hours: optional, up to 200 characters, several lines (for example "Mon–Fri 8am–6pm" on one line and "Sat 9am–3pm" on the next).
   - Public: all of it. Stats appear in the home hero (the separate stats band was removed on 2026-09-17, §6.10); WhatsApp and business hours in the footer; WhatsApp also drives the floating **Chat on WhatsApp** button, the hero button and the final call to action.
 - Financing (off by default):
-  - Fields: Enabled switch (**Show financing on the website**); Deposit (%) (whole number 0–100); Terms (months) (up to 6 different month counts, 1–60, shown in ascending order as chips); Monthly rate (%) (0–20, up to 2 decimals); Approval time (up to 60 characters, for example "24–48 hours"); Note (up to 300 characters). Saved with **Save financing**.
+  - Fields: Enabled switch (**Show financing on the website**); Deposit (%) (whole number 0–100); Terms (months) (up to 6 different month counts, 1–60, shown in ascending order as chips); Monthly rate (%) (0–20, up to 2 decimals); Approval time (up to 60 characters, for example "24–48 hours"); Note (up to 300 characters). Saved with ~~**Save financing**~~ **Save changes** on **Settings → Website → Financing**.
   - Public: every field only when Enabled is on. When off, the website receives nothing but "not enabled" and the financing section is hidden.
   - Financing on the website describes terms only. Customers can't apply or be approved online; they talk to the team.
 - Calculator (off by default):
-  - Enabled switch (**Show the calculator on the website**). Saved with **Save calculator**.
+  - Enabled switch (**Show the calculator on the website**). Saved with ~~**Save calculator**~~ **Save changes** on **Settings → Website → Load calculator**.
   - Appliances: up to 40 rows (**Add appliance**), each with a Key (lower-case letters, numbers and `-`, up to 40, unique; not typed by staff in the admin), Label (admin label **Appliance**, 1–40), Watts (whole number 1–10,000), Default hours a day (**Hours a day**, 0–24 in half-hour steps) and Default quantity (**Quantity**, whole number 0–20). Rows can be added, removed and reordered.
   - Parameters (admin group **Sizing assumptions**; defaults in brackets): Inverter headroom (%) (25; whole number 0–100), Battery depth of discharge (%) (80; 10–100), Battery voltage (48 V; 12 V, 24 V or 48 V), Panel watts (W) (550; 100–1000), Peak sun hours (4.5; 1–10, one decimal).
   - Generator costs: Fuel price per litre (₦) (whole number 0–100,000), Litres per kVA-hour (0–2, two decimals), Maintenance per month (₦) (whole number 0–10,000,000).
@@ -548,6 +564,11 @@ Sample content
 - Staff profile photo upload (Upload follow-ups): an HR account opens a staff profile, selects **Edit profile**, uploads a photo under **Photo** with **Choose image** and selects **Save profile**; the profile shows the new round photo and `profile.avatarUrl` holds the uploaded image URL. A Sales account sending `POST /admin/uploads?purpose=staff` gets `403`. A saved staff photo is never removed by the daily cleanup.
 - Too many uploads (Upload follow-ups): after 60 uploads in 10 minutes from one account, the 61st is refused with `429` and the field shows exactly "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again."; another account can still upload.
 - No storage information in the admin (Image uploads): with usage at, near or over any limit, no admin screen, Settings section, notification, activity log summary or API response for the admin (including `GET /admin/uploads/config`) shows storage usage, a limit, a percentage or an alert; Settings has no Uploads card; the storage alert email goes only to `STORAGE_ALERT_EMAIL` and never to an admin address.
+- Settings overview (Settings redesign, 2026-09-17): a Super admin opens **Settings** and sees cards under Business, Communication, Sales and Website with live summaries; with online payments off the Payments card reads "Online payments off", and with reorder level 5 and alerts on the Inventory card reads "Default reorder level 5 · Alerts on". No card mentions uploads or storage. Selecting **Edit payments** opens `/admin/settings/payments` with **Settings** still highlighted in the sidebar.
+- Settings navigation (Settings redesign): at 1280 px each settings page shows the grouped rail with the current section highlighted (`aria-current="page"`); at 375 px and 768 px the rail is replaced by a scrolling row of pills with the current one highlighted, every pill and **Back to settings** is at least 44 px tall, and the page has no horizontal scroll. After moving to another section, focus is on its heading.
+- Save bar (Settings redesign): on **Settings → Sales → Inventory**, changing Default reorder level from 5 to 8 shows "Unsaved changes" with **Discard** and **Save changes**; **Discard** puts back 5 and hides the bar; **Save changes** sends only the inventory section, shows "Settings updated." and hides the bar. Entering -1 shows "Enter a whole number of 0 or more." and saves nothing. Saving **Homepage & contact** while it shows **Sample** removes the badge.
+- Unsaved-changes guard (Settings redesign): with an unsaved change on **Business profile**, selecting **Payments** in the rail, **Back to settings** or **Orders** in the sidebar asks "You have unsaved changes. Leave without saving?"; **Keep editing** stays with the change intact and **Leave without saving** opens the page without saving. Reloading the tab shows the browser's leave-page prompt. With no unsaved changes, links open straight away.
+- Settings view only (Settings redesign): a Sales account opens every settings page and sees the "View only" notice, disabled fields and no save bar; the overview links read **View …**. On a server without website settings, **Homepage & contact**, **Financing** and **Load calculator** show "Website, financing and calculator settings aren’t available yet" and their overview cards show **Not available yet**.
 - Floating actions (2026-09-17): with the calculator on and a WhatsApp number set, every storefront page except the calculator page shows **Size your system** and **Chat on WhatsApp** at the bottom right (round buttons on phones, labelled pills from 640 px); the calculator page shows only WhatsApp; `/cart` and `/checkout` show neither. With the calculator off and no WhatsApp number, no floating buttons show. Neither button shows an "online" status or a badge.
 
 8. Metrics & success criteria
@@ -645,13 +666,13 @@ Complete every item before the website goes live. The local seed never runs in p
 - [ ] Client logos (6 sample, fictional clients using `/samples/client-1.svg` to `/samples/client-6.svg`): delete all; add only real clients who gave permission, with their own logo files or links.
 - [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo (upload or link) with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
 - [ ] Portfolio case-study details: for each portfolio item marked Sample, replace Category, Summary, Location and System with the real project details, or clear them.
-- [ ] Settings → Website:
+- [ ] Settings → Website → Homepage & contact:
   - [ ] Stats (4 sample: Installations, Years in Lagos, Engineers, Average install time): enter true figures or remove the rows.
   - [ ] WhatsApp number (sample `+2348000000000`): enter the real business WhatsApp number or clear it.
   - [ ] Business hours (sample "Mon–Sat 8am–6pm"): enter the real hours or clear them.
-  - [ ] Save the section.
-- [ ] Settings → Financing (sample: enabled, 40% deposit, 3/6/12 months, 3.5% a month, "48 hours", note "Sample terms — not an offer."): enter real, approved terms and save, or switch **Show financing on the website** off and save.
-- [ ] Settings → Calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
+  - [ ] Select **Save changes**.
+- [ ] Settings → Website → Financing (sample: enabled, 40% deposit, 3/6/12 months, 3.5% a month, "48 hours", note "Sample terms — not an offer."): enter real, approved terms and select **Save changes**, or switch **Show financing on the website** off and select **Save changes**.
+- [ ] Settings → Website → Load calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then select **Save changes**; or switch **Show the calculator on the website** off and select **Save changes**.
 - [ ] Walk through the website (home, `/calculator`, `/faq`, `/portfolio`, `/team`, footer) on a phone and a computer and confirm no "Sample" label remains.
 
 Before deploying image uploads (developer steps; Image uploads, 2026-09-17)
@@ -667,6 +688,12 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (Settings redesign)
+- §6.7: Settings is split into a **Settings overview** (cards grouped under Business, Communication, Sales and Website, each with a live summary) and separate pages: Business profile, Notification emails, Payments, Inventory, Homepage & contact, Financing and Load calculator, each with titled cards. Added the settings rail (desktop) and pills (phones and tablets), **Back to settings**, the sticky save bar (**Discard**, **Save changes**), the unsaved-changes guard, view-only and not-available states, and loading and error states. Settings API calls and payloads are unchanged.
+- §6.11: the Website, Financing and Calculator sections are saved with **Save changes** on their own pages (was **Save website**, **Save financing**, **Save calculator**).
+- §7: added acceptance criteria for the Settings overview, settings navigation, save bar, unsaved-changes guard and view-only pages.
+- §11: Before launch checklist uses the new Settings paths and **Save changes**.
 
 2026-09-17 (Upload follow-ups)
 - §4: job photos and staff profile photos moved in scope (struck through the remaining out-of-scope note).
