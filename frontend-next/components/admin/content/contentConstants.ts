@@ -3,7 +3,7 @@
  * Ported from the Vite admin (`constants/adminConstants.js` and `components/ContentManager.jsx`); the server is the
  * source of truth for every rule (backend/docs/API.md).
  */
-import type { PackageOptionInput } from "@/lib/api/types";
+import type { PackageCategoryRef, PackageOptionInput } from "@/lib/api/types";
 import type { PackageOptionRecord } from "@/lib/admin/packageOptions";
 import { LIMITS, validateUrlField } from "@/lib/validation";
 
@@ -25,6 +25,9 @@ export type ContentItem = {
   kva?: string | number;
   volt?: string | number | null;
   legacyId?: string | number | null;
+  /** Commerce v3 §4: catalogue category (`categoryRef` is read only). */
+  categoryId?: string | null;
+  categoryRef?: PackageCategoryRef | null;
   /** Admin responses (composed or legacy options); edited through `PackageOptionsEditor`. */
   options?: PackageOptionRecord[];
   /** Deprecated top-level package items (Commerce v2 §1.1). Read only; never sent back. */
@@ -43,6 +46,9 @@ export type ContentItem = {
 
 export type FieldErrors = Partial<Record<keyof ContentItem, string>>;
 
+/** The package's category name for lists: the reference from the response, if any. */
+export const packageCategoryName = (item: ContentItem) => item.categoryRef?.name || "";
+
 export const packageTypeOptions = [
   { value: "tubular", label: "Tubular" },
   { value: "lithium", label: "Lithium" },
@@ -55,6 +61,7 @@ export const emptyPackage: ContentItem = {
   load: "",
   kva: "",
   volt: "",
+  categoryId: null,
   options: [],
   isActive: true,
 };
@@ -116,14 +123,15 @@ const legacyIdError = (value: unknown) => {
 };
 
 /**
- * Package payload in the shape the API validates: blank volt clears it, a blank shop id is left unchanged. Options go
+ * Package payload in the shape the API validates: blank volt clears it, a blank shop id is left unchanged, "No category"
+ * sends `categoryId: null` and the read-only `categoryRef` is dropped. Options go
  * in the stored shape and the deprecated top-level `items` is dropped (Commerce v2 §1.1).
  */
 export const toPackagePayload = (model: ContentItem, options: PackageOptionInput[]) => {
   const trimmed = <V>(value: V) => (typeof value === "string" ? value.trim() : value);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { options: _responseOptions, items: _deprecatedItems, ...rest } = model;
-  const payload = { ...rest, options, kva: trimmed(model.kva) };
+  const { options: _responseOptions, items: _deprecatedItems, categoryRef: _categoryRef, ...rest } = model;
+  const payload = { ...rest, options, kva: trimmed(model.kva), categoryId: model.categoryId || null };
   payload.volt = isBlank(model.volt) ? null : trimmed(model.volt);
   if (isBlank(model.legacyId)) delete payload.legacyId;
   else payload.legacyId = Number(trimmed(model.legacyId));

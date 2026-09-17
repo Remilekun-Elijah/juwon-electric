@@ -48,6 +48,7 @@ import {
   emptyPortfolio,
   emptyService,
   getTitle,
+  packageCategoryName,
   packageTypeOptions,
   toPackagePayload,
   validateModel,
@@ -149,6 +150,18 @@ function PackageCells({ item }: CellsProps) {
         <p className="truncate font-medium text-slate-900">{getTitle(item)}</p>
         <p className="truncate text-sm text-slate-500">{item.load}</p>
         <p className="truncate text-xs tabular-nums text-slate-500 lg:hidden">{getPriceRange(item.options)}</p>
+        {packageCategoryName(item) && (
+          <Badge tone="neutral" className="mt-1 max-w-full md:hidden">
+            <span className="truncate">{packageCategoryName(item)}</span>
+          </Badge>
+        )}
+      </TD>
+      <TD className="hidden max-w-[180px] md:table-cell">
+        {packageCategoryName(item) ? (
+          <span className="block truncate text-slate-700">{packageCategoryName(item)}</span>
+        ) : (
+          <span className="text-slate-400">No category</span>
+        )}
       </TD>
       <TD className="hidden whitespace-nowrap md:table-cell">{capitalize(item.type)}</TD>
       <TD className="hidden whitespace-nowrap tabular-nums sm:table-cell">
@@ -212,6 +225,7 @@ const columns: Record<ContentType, { Cells: (props: CellsProps) => ReactNode; he
     Cells: PackageCells,
     headers: [
       { label: "Package" },
+      { label: "Category", className: "hidden md:table-cell" },
       { label: "Battery type", className: "hidden md:table-cell" },
       { label: "Size", className: "hidden sm:table-cell" },
       { label: "Options and prices", className: "hidden lg:table-cell" },
@@ -286,7 +300,7 @@ export function ContentManager({ type, children }: ContentManagerProps) {
         }
         if (statusFilter === "active" && item.isActive === false) return false;
         if (statusFilter === "hidden" && item.isActive !== false) return false;
-        return matchesQuery(query, item.name, item.title, item.subtitle, item.load, item.type, item.image, item.kva);
+        return matchesQuery(query, item.name, item.title, item.subtitle, item.load, item.type, item.image, item.kva, item.categoryRef?.name);
       }),
     [items, packageTypeFilter, statusFilter, query, type]
   );
@@ -384,6 +398,8 @@ export function ContentManager({ type, children }: ContentManagerProps) {
         packages && error instanceof ApiError && error.status === 400
           ? placeServerOptionError(error.message, optionDrafts)
           : null;
+      const categoryMissing = packages && error instanceof ApiError && error.status === 400 && /category/i.test(error.message);
+      if (categoryMissing) setFieldErrors({ categoryId: error.message });
       if (placed?.rowId) setOptionErrors({ [placed.rowId]: placed.errors });
       else if (placed?.general) setOptionsError(placed.general);
       setFormError(placed ? "Check the price options below." : errorText(error));

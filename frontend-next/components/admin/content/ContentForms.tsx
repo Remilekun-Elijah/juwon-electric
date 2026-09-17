@@ -1,7 +1,10 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import { useAdminQuery } from "@/components/admin/AdminContext";
+import { categoryOptions } from "@/components/admin/catalog/categoryTree";
 import { Field, Input, Select, Switch, Textarea } from "@/components/ui";
+import { getCategories } from "@/lib/api/admin";
 import { LIMITS } from "@/lib/validation";
 import { packageTypeOptions, type ContentItem, type FieldErrors } from "./contentConstants";
 import { PackageOptionsEditor, type PackageOptionsState } from "./PackageOptionsEditor";
@@ -22,11 +25,38 @@ const text = (value: unknown) => (value === null || value === undefined ? "" : S
 
 export function PackageForm({ model, setModel, packageOptions, errors = {} }: ContentFormProps) {
   const set = (key: keyof ContentItem) => (event: ControlEvent) => setModel({ ...model, [key]: event.target.value });
+  const categories = useAdminQuery("package-form:categories", getCategories);
+  const categoryId = model.categoryId || "";
+  const categorySelectOptions = [{ value: "", label: "No category" }, ...categoryOptions(categories.data ?? [])];
+  if (categoryId && categories.data && !categories.data.some((item) => item.id === categoryId)) {
+    categorySelectOptions.push({ value: categoryId, label: model.categoryRef?.name || "Current category (not found)" });
+  }
   return (
     <div className="space-y-5">
       <div className={grid}>
         <Field label="Name" required className="sm:col-span-2" error={errors.name}>
           <Input value={text(model.name)} onChange={set("name")} placeholder="Basic" maxLength={LIMITS.packageName} />
+        </Field>
+        <Field
+          label="Category"
+          className="sm:col-span-2"
+          error={errors.categoryId}
+          helper={
+            categories.error && !categories.data
+              ? `Couldn’t load categories. ${categories.error}`
+              : "From the product catalogue. Customers can browse packages by category."
+          }
+        >
+          <Select
+            value={categoryId}
+            disabled={categories.initialLoading && Boolean(categoryId)}
+            options={
+              categories.initialLoading && categoryId
+                ? [{ value: categoryId, label: model.categoryRef?.name || "Loading categories…" }]
+                : categorySelectOptions
+            }
+            onChange={(event) => setModel({ ...model, categoryId: event.target.value || null })}
+          />
         </Field>
         <Field label="Battery type" required error={errors.type}>
           <Select value={text(model.type)} onChange={set("type")} options={packageTypeOptions} />
