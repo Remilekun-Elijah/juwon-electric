@@ -388,7 +388,7 @@ export function Dashboard() {
                 <TR key={order.id}>
                   <TD className="max-w-[220px]">
                     <p className="truncate font-medium text-slate-900">{order.name}</p>
-                    <p className="truncate text-sm text-slate-500">{order.phoneNumber || order.deliveryAddress}</p>
+                    <p className="truncate text-sm text-slate-500">{order.phoneNumber || "No phone"}</p>
                   </TD>
                   <TD className="hidden whitespace-nowrap md:table-cell">{formatDate(order.receivedAt)}</TD>
                   <TD align="right" className="whitespace-nowrap font-medium tabular-nums text-slate-900">

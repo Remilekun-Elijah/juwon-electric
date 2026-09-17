@@ -129,7 +129,7 @@ export function OrderDetails({ order, loading, error, onChange, onReload, onDele
                   {order.phoneNumber}
                 </a>
               ) : (
-                "Not provided"
+                "No phone"
               ),
             },
             {

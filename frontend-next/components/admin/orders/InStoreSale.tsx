@@ -138,11 +138,9 @@ export function InStoreSale() {
 
   const validate = (): Errors => {
     const next: Errors = {};
-    const trimmedName = name.trim();
-    if (!trimmedName) next.name = "Customer name is required.";
-    else if (trimmedName.length > LIMITS.personName) next.name = `Name must be ${LIMITS.personName} characters or fewer.`;
-    if (!phone.trim()) next.phone = "Phone number is required.";
-    else if (!isValidPhone(phone)) next.phone = PHONE_MESSAGE;
+    // Commerce v3 §2: name and phone are optional (walk-in customers); when given they follow the usual rules.
+    if (name.trim().length > LIMITS.personName) next.name = `Name must be ${LIMITS.personName} characters or fewer.`;
+    if (phone.trim() && !isValidPhone(phone)) next.phone = PHONE_MESSAGE;
     if (email.trim() && !isValidEmail(email)) next.email = "Enter a valid email address.";
 
     if (!lines.length) next.lines = "Add at least one product.";
@@ -181,13 +179,15 @@ export function InStoreSale() {
       return;
     }
 
+    // Blank fields are left out rather than sent as empty strings.
+    const customer: NonNullable<InStoreOrderInput["customer"]> = {};
+    if (name.trim()) customer.name = name.trim();
+    if (phone.trim()) customer.phoneNumber = phone.trim();
+    if (email.trim()) customer.emailAddress = email.trim();
+    if (later) customer.deliveryAddress = address.trim();
+
     const input: InStoreOrderInput = {
-      customer: {
-        name: name.trim(),
-        phoneNumber: phone.trim(),
-        emailAddress: email.trim() || null,
-        deliveryAddress: later ? address.trim() : null,
-      },
+      ...(Object.keys(customer).length ? { customer } : {}),
       lines: lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })),
       discount: discount > 0 ? { amount: discount, reason: reason.trim() } : null,
       fulfilment,
@@ -252,7 +252,7 @@ export function InStoreSale() {
           )}
 
           <Section id="sale-customer" title="Customer">
-            <Field label="Name" required error={errors.name}>
+            <Field label="Name" helper="Leave blank for walk-in customers." error={errors.name}>
               <Input
                 size="lg"
                 autoComplete="off"
@@ -265,7 +265,7 @@ export function InStoreSale() {
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone number" required error={errors.phone}>
+              <Field label="Phone number" helper="Leave blank for walk-in customers." error={errors.phone}>
                 <Input
                   size="lg"
                   type="tel"
@@ -464,6 +464,12 @@ export function InStoreSale() {
           <h2 className="hidden text-base font-semibold text-slate-900 lg:block">Summary</h2>
           <dl className="hidden space-y-2 text-sm lg:mt-4 lg:block">
             <div className="flex justify-between gap-3">
+              <dt className="text-slate-600">Customer</dt>
+              <dd className={cn("min-w-0 truncate text-right", name.trim() ? "text-slate-900" : "text-slate-500")}>
+                {name.trim() || "Walk-in customer"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
               <dt className="text-slate-600">Items</dt>
               <dd className="tabular-nums text-slate-900">{units}</dd>
             </div>
@@ -488,8 +494,8 @@ export function InStoreSale() {
               <p className="text-lg font-bold tabular-nums text-slate-900 lg:text-xl" aria-live="polite">
                 {formatCurrency(total)}
               </p>
-              <p className="text-xs text-slate-500 lg:hidden">
-                {units} item{units === 1 ? "" : "s"}
+              <p className="truncate text-xs text-slate-500 lg:hidden">
+                {name.trim() || "Walk-in customer"} · {units} item{units === 1 ? "" : "s"}
                 {discount ? ` · −${formatCurrency(discount)}` : ""}
               </p>
             </div>
