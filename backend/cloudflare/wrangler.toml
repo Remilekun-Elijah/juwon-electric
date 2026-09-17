@@ -2,6 +2,9 @@ name = "juwon-electric-api"
 main = "src/index.js"
 # Newest date supported by the installed wrangler 4.132.0 / workerd 1.20260915.1.
 compatibility_date = "2026-09-15"
+# Plain-text vars are set in the Cloudflare dashboard (docs/DEPLOYMENT.md). Keep them on deploy instead
+# of listing them under [vars], so private values stay out of git.
+keep_vars = true
 
 [observability]
 enabled = true
