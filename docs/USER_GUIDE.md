@@ -1138,7 +1138,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 1. Select **Chat on WhatsApp** at the bottom right of the page (a round red button on phones; see story 11.13), or the **Chat on WhatsApp** button in the home page hero, the WhatsApp link in the footer, or the button at the end of the home page.
 2. WhatsApp opens with the message "Hello Juwon Electric" ready. Add your question and send.
 
-**Tip:** the buttons only show when Juwon Electric has set a WhatsApp number. The floating button doesn't show on the cart and checkout pages.
+**Tip:** the button only shows when Juwon Electric has set a WhatsApp number, and never on the cart and checkout pages.
 
 ### Story 11.11: Browse case studies by category
 
