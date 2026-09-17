@@ -7,6 +7,9 @@ import {
   alertAllowed,
   alertRecipients,
   bytesSetting,
+  canUploadPurpose,
+  UPLOAD_CAPABILITIES,
+  UPLOAD_MESSAGES,
   isReferenced,
   isUploadKey,
   matchesSignature,
@@ -14,11 +17,42 @@ import {
   storageAlertEmail,
   storageLimitBytes,
   sweepCandidates,
+  uploadPurpose,
   uploadKey,
   uploadUrl,
 } from "../shared/uploads.js";
 
 const UUID = "0b7a1e0c-3c55-4d7e-9a53-2c3f4f6f7a10";
+
+test("purposes: jobs and staff have their own capabilities", async () => {
+  const { hasCapability } = await import("../shared/capabilities.js");
+  const allowed = (role, purpose) => canUploadPurpose((capability) => hasCapability(role, capability), purpose);
+  assert.equal(uploadPurpose("jobs"), "jobs");
+  assert.equal(uploadPurpose("staff"), "staff");
+  assert.deepEqual(
+    [...UPLOAD_CAPABILITIES].sort(),
+    ["content:write", "jobs:assign", "jobs:update-own", "products:write", "staff:write"]
+  );
+  assert.deepEqual(
+    ["engineer", "sales", "admin", "hr", "inventory", "support"].map((role) => [role, allowed(role, "jobs"), allowed(role, "staff"), allowed(role, "products")]),
+    [
+      ["engineer", true, false, false],
+      ["sales", true, false, true],
+      ["admin", true, true, true],
+      ["hr", false, true, true],
+      ["inventory", false, false, true],
+      ["support", false, false, false],
+    ]
+  );
+  assert.equal(allowed("superadmin", "staff"), true);
+  const key = uploadKey("jobs", "image/jpeg", UUID, new Date("2026-09-17T00:00:00Z"));
+  assert.equal(isUploadKey(key), true);
+  assert.equal(isUploadKey(key.replace(/^jobs/, "staff")), true);
+});
+
+test("the upload rate limit message uses a curly apostrophe", () => {
+  assert.equal(UPLOAD_MESSAGES.tooMany, "You\u2019ve uploaded a lot of images in a short time. Wait a few minutes, then try again.");
+});
 
 test("signatures match only the declared type", () => {
   const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d]);

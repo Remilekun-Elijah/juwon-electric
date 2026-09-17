@@ -10,6 +10,7 @@ const FORBIDDEN = "You do not have permission to perform this action.";
 const TOO_LARGE = "Image must be 2 MB or smaller.";
 const BAD_TYPE = "Upload a JPEG, PNG or WebP image.";
 const UNAVAILABLE = "Image uploads are unavailable right now. Please use an image link or try again later.";
+const TOO_MANY = "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again.";
 export const DEVELOPER_MAILBOX = "developer@juwon.test";
 
 /** Env for the scenario: the alert goes to the developer plus an admin mailbox that must be dropped. */
@@ -86,10 +87,24 @@ export const runUploadsScenario = async (client) => {
   // ---- capabilities --------------------------------------------------------------------------
   await upload("anonymous cannot upload", { bytes: png(), type: "image/png", token: null }, 401);
   await upload("support cannot upload", { bytes: png(), type: "image/png", token: support.token }, 403, FORBIDDEN);
-  await upload("engineer cannot upload", { bytes: png(), type: "image/png", token: engineer.token }, 403, FORBIDDEN);
+  await upload("engineer cannot upload site images", { bytes: png(), type: "image/png", token: engineer.token }, 403, FORBIDDEN);
+  await upload("engineer cannot upload for products", { bytes: png(), type: "image/png", purpose: "products", token: engineer.token }, 403, FORBIDDEN);
+  await upload("engineer cannot upload staff photos", { bytes: png(), type: "image/png", purpose: "staff", token: engineer.token }, 403, FORBIDDEN);
   await upload("content:write uploads", { bytes: jpeg(), type: "image/jpeg", purpose: "services", token: sales.token }, 201, "Image uploaded.");
   await upload("products:write uploads", { bytes: webp(), type: "image/webp", purpose: "products", token: inventory.token }, 201);
   const byHr = (await upload("staff:write uploads", { bytes: png(), type: "image/png", purpose: "team", token: hr.token }, 201)).body.data;
+
+  // Job photos: jobs:update-own (engineers) or jobs:assign. Staff photos: staff:write.
+  const jobPhoto = (await upload("jobs:update-own uploads a job photo", { bytes: jpeg(), type: "image/jpeg", purpose: "jobs", token: engineer.token }, 201, "Image uploaded.")).body.data;
+  assert.match(jobPhoto.key, /^jobs\//);
+  await upload("jobs:assign uploads a job photo", { bytes: webp(), type: "image/webp", purpose: "jobs", token: sales.token }, 201);
+  await upload("products:write cannot upload job photos", { bytes: png(), type: "image/png", purpose: "jobs", token: inventory.token }, 403, FORBIDDEN);
+  await upload("staff:write cannot upload job photos", { bytes: png(), type: "image/png", purpose: "jobs", token: hr.token }, 403, FORBIDDEN);
+  await upload("support cannot upload job photos", { bytes: png(), type: "image/png", purpose: "jobs", token: support.token }, 403, FORBIDDEN);
+  const staffPhoto = (await upload("staff:write uploads a staff photo", { bytes: png(), type: "image/png", purpose: "staff", token: hr.token }, 201)).body.data;
+  assert.match(staffPhoto.key, /^staff\//);
+  await upload("content:write cannot upload staff photos", { bytes: png(), type: "image/png", purpose: "staff", token: sales.token }, 403, FORBIDDEN);
+  await upload("products:write cannot upload staff photos", { bytes: png(), type: "image/png", purpose: "staff", token: inventory.token }, 403, FORBIDDEN);
 
   // ---- upload OK: shape, key, record, audit ------------------------------------------------------
   const logo = png(321, 2);
@@ -114,7 +129,7 @@ export const runUploadsScenario = async (client) => {
   const other = (await upload("purpose defaults to other", { bytes: jpeg(200), type: "image/jpeg" }, 201)).body.data;
   assert.match(other.key, new RegExp(`^other/${yearMonth}/${UUID}\\.jpg$`));
   await upload("unknown purpose", { bytes: png(), type: "image/png", purpose: "avatars" }, 400,
-    "Purpose must be one of: products, categories, packages, services, portfolio, segments, reviews, clients, team, other.");
+    "Purpose must be one of: products, categories, packages, services, portfolio, segments, reviews, clients, team, jobs, staff, other.");
   const viaApi = (
     await expect("the /api prefix works too", "POST", "/api/admin/uploads?purpose=reviews", {
       rawBody: webp(), headers: { "content-type": "image/webp" }, project: maskUpload,
@@ -127,7 +142,7 @@ export const runUploadsScenario = async (client) => {
       project: (body) => ({ total: body.data.total, entries: body.data.items.map((item) => `${item.entity} ${maskKey(item.summary)}`).sort() }),
     }, 200)
   ).body.data;
-  assert.equal(audits.total, 6);
+  assert.equal(audits.total, 9);
   const audited = audits.items.find((item) => item.entityId === first.id);
   assert.deepEqual({ entity: audited.entity, summary: audited.summary }, { entity: "upload", summary: `Uploaded image ${first.key}` });
 
@@ -188,7 +203,7 @@ export const runUploadsScenario = async (client) => {
   const exact = (await upload("exactly 2 MB", { bytes: png(2_000_000), type: "image/png", purpose: "portfolio" }, 201)).body.data;
   assert.equal(exact.size, 2_000_000);
   const records = await client.listRecords("uploads");
-  assert.equal(records.length, 7, "rejected uploads store nothing");
+  assert.equal(records.length, 10, "rejected uploads store nothing");
 
   // ---- usage total ----------------------------------------------------------------------------------
   let usage = await client.getRecord("system", "uploads-usage");
@@ -203,8 +218,7 @@ export const runUploadsScenario = async (client) => {
     });
     assert.equal(response.status, 201, `burst upload ${index + 1}`);
   }
-  const limited = await upload("61st upload in 10 minutes", { bytes: png(16), type: "image/png", token: burst.token }, 429);
-  assert.match(limited.body.message, /^Too many requests\. Please try again in \d+ minutes?\.$/);
+  await upload("61st upload in 10 minutes", { bytes: png(16), type: "image/png", token: burst.token }, 429, TOO_MANY);
   await upload("other admins are not limited", { bytes: png(16), type: "image/png", token: sales.token }, 201);
 
   // ---- storage cap (§2): 507, neutral message, nothing stored, private alert ----------------------
@@ -253,6 +267,8 @@ export const runUploadsScenario = async (client) => {
   const inCategory = await make("image for a category", png(114, 6), "categories");
   const abandoned = await make("abandoned image", png(115, 7), "services");
   const recent = await make("recent unreferenced image", png(116, 8), "services");
+  const onJob = await make("photo for an installation job", png(117, 9), "jobs");
+  const onStaff = await make("photo for a staff profile", png(118, 10), "staff");
 
   await expect("product references its image", "POST", "/admin/products", {
     project: (response) => response.message,
@@ -270,6 +286,29 @@ export const runUploadsScenario = async (client) => {
     project: (response) => response.message,
     body: { name: "Solar panels", imageUrl: inCategory.url },
   }, 201);
+  await expect("staff profile references its photo", "PUT", `/admin/staff/${engineer.id}`, {
+    token: hr.token,
+    project: (response) => response.message,
+    body: { profile: { avatarUrl: onStaff.url } },
+  }, 200);
+  await expect("install package", "POST", "/admin/packages", {
+    project: (response) => response.message,
+    body: { legacyId: 9301, type: "tubular", name: "Upload Kit", kva: 3, load: "Lights", options: [{ name: "Standard", price: 300000, kits: "1 battery" }] },
+  }, 201);
+  const order = (await expect("order that needs installation", "POST", "/order", {
+    token: null,
+    project: (response) => response.message,
+    body: { name: "Photo Customer", phoneNumber: "08011112222", deliveryAddress: "Photo Street, Lekki", order: [{ id: 9301, quantity: 1, optionName: "Standard" }] },
+  }, 201)).body.data;
+  const job = (await expect("job for the engineer", "POST", "/admin/jobs", {
+    project: (response) => response.message,
+    body: { orderId: order.id, engineerId: engineer.id },
+  }, 201)).body.data;
+  await expect("engineer saves the job photo", "PUT", `/admin/me/jobs/${job.id}`, {
+    token: engineer.token,
+    project: (response) => ({ message: response.message, photos: response.data.photos.map(maskKey) }),
+    body: { photos: [onJob.url] },
+  }, 200);
 
   // Everything uploaded so far becomes older than 24 hours, except `recent`.
   const old = new Date(Date.now() - DAY_MS - 60_000).toISOString();
@@ -277,7 +316,7 @@ export const runUploadsScenario = async (client) => {
   for (const item of everything) {
     if (item.id !== recent.id) await client.patchRecord("uploads", item.id, { createdAt: old });
   }
-  const kept = new Set([inProduct.id, inTeam.id, inFaq.id, inCategory.id, recent.id]);
+  const kept = new Set([inProduct.id, inTeam.id, inFaq.id, inCategory.id, onJob.id, onStaff.id, recent.id]);
   client.emails.length = 0;
   await client.runScheduled();
 
@@ -286,6 +325,9 @@ export const runUploadsScenario = async (client) => {
   assert.equal(await client.hasStoredImage(abandoned.key), false, "abandoned file deleted");
   assert.equal(await client.hasStoredImage(first.key), false);
   assert.equal(await client.hasStoredImage(inProduct.key), true, "referenced file kept");
+  assert.equal(await client.hasStoredImage(onJob.key), true, "job photo kept");
+  assert.equal(await client.hasStoredImage(onStaff.key), true, "staff photo kept");
+  assert.equal(await client.hasStoredImage(jobPhoto.key), false, "unsaved job photo swept");
   assert.equal(await client.hasStoredImage(recent.key), true, "recent file kept");
   assert.equal((await fetchImage("swept image is gone", `/uploads/${abandoned.key}`, null)).step.status, 404);
   assert.equal((await fetchImage("referenced image still served", `/uploads/${inTeam.key}`, png(112, 4))).step.sameBytes, true);
