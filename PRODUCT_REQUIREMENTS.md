@@ -331,7 +331,7 @@ Commerce v3 round (2026-09-17)
 - Staff user guide: docs/USER_GUIDE.md
 
 Open items for owner review
-- Storefront order confirmation says "Delivery within Lagos is free." This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
+- Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
 

@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Your cart",
-  description: "Review your packages, choose with or without solar, and check out.",
+  description: "Review the packages and products in your cart, then check out.",
   alternates: { canonical: "/cart" },
   robots: { index: false, follow: true },
 };
@@ -18,7 +18,7 @@ export default function Page() {
       <PageIntro
         eyebrow="Cart"
         title="Your cart"
-        description="Review your packages, choose with or without solar, and check out. We’ll call you to confirm before anything is delivered."
+        description="Review the packages and products in your cart, then check out. We’ll call you to confirm before anything is delivered."
       />
       <CartView />
     </>
