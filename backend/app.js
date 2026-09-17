@@ -20,6 +20,7 @@ import { isMongoMode, waitForPending } from "./services/runtime.js";
 import { backupJsonStore, ensureSecurityIndexes, ensureUniqueIndexes } from "./services/store.js";
 import mongoose from "mongoose";
 import { runLowStockCheck } from "./controllers/inventory.js";
+import { runUploadsMaintenance } from "./controllers/uploads.js";
 
 const app = express();
 if (app.get("env") === "development") env.config();
@@ -166,9 +167,11 @@ const start = async () => {
 
   const server = app.listen(config.port, () => console.log("App started on port", config.port));
 
-  // Daily low-stock digest (the Worker uses a cron trigger instead; see wrangler.toml).
-  const digestTimer = setInterval(() => {
-    runLowStockCheck().catch((error) => console.error("Low-stock digest failed:", describeError(error)));
+  // Daily low-stock digest and upload maintenance: sweep, usage reconcile and the private
+  // storage alert (the Worker uses a cron trigger instead; see wrangler.toml).
+  const digestTimer = setInterval(async () => {
+    await runLowStockCheck().catch((error) => console.error("Low-stock digest failed:", describeError(error)));
+    await runUploadsMaintenance().catch((error) => console.error("Upload maintenance failed:", describeError(error)));
   }, 24 * 60 * 60 * 1000);
   digestTimer.unref();
 

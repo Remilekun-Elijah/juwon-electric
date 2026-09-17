@@ -102,6 +102,9 @@ const models = {
   clients: mongoose.models.Client || mongoose.model("Client", flexibleSchema, "clients"),
   // Team and motion v1 team members.
   teamMembers: mongoose.models.TeamMember || mongoose.model("TeamMember", flexibleSchema, "teamMembers"),
+  // Uploads v1: image records and the system/uploads-usage total.
+  uploads: mongoose.models.Upload || mongoose.model("Upload", flexibleSchema, "uploads"),
+  system: mongoose.models.SystemRecord || mongoose.model("SystemRecord", flexibleSchema, "system"),
 };
 
 // Non-catalog collections whose writers keep slugs unique through `prepare`.
@@ -297,6 +300,8 @@ const defaultDb = async () => {
     testimonials: [],
     clients: [],
     teamMembers: [],
+    uploads: [],
+    system: [],
   };
 };
 
@@ -673,6 +678,137 @@ export const deleteCollectionItemsBefore = async (collection, field, cutoffIso) 
     const items = db[collection] || [];
     db[collection] = items.filter((item) => !isStale(item));
     return items.length - db[collection].length;
+  });
+};
+
+// ---- upload usage (UPLOADS_V1 §2) ------------------------------------------------------
+// system/uploads-usage { totalBytes, lastAlertAt }: every change is atomic (JSON store lock,
+// conditional Mongo updates) so concurrent uploads cannot pass the cap or lose bytes.
+
+const USAGE_ID = "uploads-usage";
+
+const jsonUsage = (db) => {
+  db.system = db.system || [];
+  let usage = db.system.find((item) => item.id === USAGE_ID);
+  if (!usage) {
+    const timestamp = now();
+    usage = { id: USAGE_ID, totalBytes: 0, lastAlertAt: null, isActive: true, createdAt: timestamp, updatedAt: timestamp };
+    db.system.push(usage);
+  }
+  return usage;
+};
+
+const ensureMongoUsage = () => {
+  const timestamp = now();
+  return upsertWithRetry(() =>
+    models.system.collection.updateOne(
+      { id: USAGE_ID },
+      { $setOnInsert: { totalBytes: 0, lastAlertAt: null, isActive: true, createdAt: timestamp, updatedAt: timestamp } },
+      { upsert: true }
+    )
+  );
+};
+
+/** { totalBytes, lastAlertAt } (zero when nothing was uploaded yet). */
+export const getUploadUsage = async () => {
+  if (useMongo()) {
+    const usage = await models.system.collection.findOne({ id: USAGE_ID });
+    return usage ? stripMongoId(usage) : { id: USAGE_ID, totalBytes: 0, lastAlertAt: null };
+  }
+  const db = await readDb();
+  return (db.system || []).find((item) => item.id === USAGE_ID) || { id: USAGE_ID, totalBytes: 0, lastAlertAt: null };
+};
+
+/** Adds `size` bytes when the total stays within `limit`. Resolves to false when it would not. */
+export const reserveUploadBytes = async (size, limit) => {
+  if (useMongo()) {
+    await ensureMongoUsage();
+    const result = await models.system.collection.updateOne(
+      { id: USAGE_ID, totalBytes: { $lte: limit - size } },
+      { $inc: { totalBytes: size }, $set: { updatedAt: now() } }
+    );
+    return result.modifiedCount === 1;
+  }
+  return mutateDb((db) => {
+    const usage = jsonUsage(db);
+    if ((Number(usage.totalBytes) || 0) + size > limit) return { skipWrite: true, result: false };
+    usage.totalBytes = (Number(usage.totalBytes) || 0) + size;
+    usage.updatedAt = now();
+    return true;
+  });
+};
+
+/** Gives back reserved bytes (a failed store), never below zero. */
+export const releaseUploadBytes = async (size) => {
+  if (useMongo()) {
+    await models.system.collection.updateOne({ id: USAGE_ID }, [
+      { $set: { totalBytes: { $max: [{ $subtract: [{ $ifNull: ["$totalBytes", 0] }, size] }, 0] }, updatedAt: now() } },
+    ]);
+    return;
+  }
+  await mutateDb((db) => {
+    const usage = jsonUsage(db);
+    usage.totalBytes = Math.max((Number(usage.totalBytes) || 0) - size, 0);
+    usage.updatedAt = now();
+  });
+};
+
+/** Deletes an upload record and subtracts its size in one step. Resolves to false when it was already gone. */
+export const deleteUploadRecord = async (id) => {
+  if (useMongo()) {
+    const removed = await models.uploads.findOneAndDelete({ id }).lean();
+    if (!removed) return false;
+    await releaseUploadBytes(Number(removed.size) || 0);
+    return true;
+  }
+  return mutateDb((db) => {
+    const uploads = db.uploads || [];
+    const record = uploads.find((item) => item.id === id);
+    if (!record) return { skipWrite: true, result: false };
+    db.uploads = uploads.filter((item) => item !== record);
+    const usage = jsonUsage(db);
+    usage.totalBytes = Math.max((Number(usage.totalBytes) || 0) - (Number(record.size) || 0), 0);
+    usage.updatedAt = now();
+    return true;
+  });
+};
+
+/** Recomputes totalBytes from the upload records. Resolves to the total. */
+export const reconcileUploadUsage = async () => {
+  if (useMongo()) {
+    await ensureMongoUsage();
+    const [row] = await models.uploads.collection
+      .aggregate([{ $group: { _id: null, total: { $sum: { $ifNull: ["$size", 0] } } } }])
+      .toArray();
+    const total = Number(row?.total) || 0;
+    await models.system.collection.updateOne({ id: USAGE_ID }, { $set: { totalBytes: total, updatedAt: now() } });
+    return total;
+  }
+  return mutateDb((db) => {
+    const total = (db.uploads || []).reduce((sum, item) => sum + (Number(item.size) || 0), 0);
+    const usage = jsonUsage(db);
+    usage.totalBytes = total;
+    usage.updatedAt = now();
+    return total;
+  });
+};
+
+/** Claims the 7-day alert slot: records lastAlertAt unless an alert was sent after `cutoffIso`. */
+export const claimStorageAlert = async (timestampIso, cutoffIso) => {
+  if (useMongo()) {
+    await ensureMongoUsage();
+    const result = await models.system.collection.updateOne(
+      { id: USAGE_ID, $or: [{ lastAlertAt: null }, { lastAlertAt: { $lte: cutoffIso } }] },
+      { $set: { lastAlertAt: timestampIso, updatedAt: timestampIso } }
+    );
+    return result.modifiedCount === 1;
+  }
+  return mutateDb((db) => {
+    const usage = jsonUsage(db);
+    if (usage.lastAlertAt && usage.lastAlertAt > cutoffIso) return { skipWrite: true, result: false };
+    usage.lastAlertAt = timestampIso;
+    usage.updatedAt = timestampIso;
+    return true;
   });
 };
 

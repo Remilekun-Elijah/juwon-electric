@@ -70,6 +70,7 @@ import {
   adminUnpublishVacancy,
   adminUpdateVacancy,
 } from "../controllers/vacancies.js";
+import { adminUploadConfig, adminUploadImage, canUpload } from "../controllers/uploads.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 import { opsAdminRouter } from "./ops.js";
 
@@ -90,6 +91,11 @@ router.post("/auth/logout", logout);
 router.get("/auth/me", me);
 
 router.get("/dashboard", can("dashboard:read"), adminDashboard);
+
+// Image uploads (UPLOADS_V1 §2): config for any admin; raw image bytes need content:write,
+// products:write or staff:write.
+router.get("/uploads/config", adminUploadConfig);
+router.post("/uploads", canUpload, adminUploadImage);
 router.get("/audit-logs", can("audit:read"), adminListAuditLogs);
 
 // Per-admin read status (not audited, not rate limited). No capability, but

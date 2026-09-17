@@ -90,6 +90,7 @@ import { requireCapability } from "./capabilities.js";
 import { adminSelf } from "../../shared/capabilities.js";
 import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
 import { sendNotification } from "./email.js";
+import { UPLOAD_PATH, handleUploadCreate, handleUploadGet, handleUploadsAdmin, isPublicUploadPath } from "./uploads.js";
 import { notify } from "./notifications.js";
 import { newOrderNotification } from "../../shared/notifications.js";
 import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
@@ -1583,8 +1584,23 @@ const route = async (incoming, env, ctx, path) => {
   const url = new URL(request.url);
 
   if (request.method === "GET" && path === "/health") return handleHealth(env);
+  // Public uploaded images (UPLOADS_V1 §1).
+  if (isPublicUploadPath(request.method, path)) return handleUploadGet(env, path);
 
   const isWebhook = request.method === "POST" && path === WEBHOOK_PATH;
+  // Raw image bytes: exempt from the JSON-only rule, read by the upload handler with its own cap.
+  if (request.method === "POST" && path === UPLOAD_PATH) {
+    const { admin } = await requireAdmin(request, env, ctx);
+    return handleUploadCreate({
+      request,
+      env,
+      ctx,
+      admin,
+      url,
+      audit: (entry) => recordAudit(env, ctx, request, admin, entry),
+      sendNotification: (message) => sendNotification(env, message),
+    });
+  }
   if (!isWebhook) assertJsonContentType(request);
   const rawBytes = await readBodyBytes(request);
 
@@ -1612,6 +1628,8 @@ const route = async (incoming, env, ctx, path) => {
       sendNotification: (message) => sendNotification(env, message),
     });
     if (opsResponse) return opsResponse;
+    const uploadsResponse = await handleUploadsAdmin({ request, env, path });
+    if (uploadsResponse) return uploadsResponse;
     const response = await handleAdmin(request, env, ctx, path, body, admin, url);
     if (response) return response;
   }
@@ -1659,12 +1677,8 @@ export default {
     return finalizeResponse(response, request, env, path, requestId);
   },
 
-  // Cron triggers (wrangler.toml): daily low-stock digest.
+  // Cron triggers (wrangler.toml): daily low-stock digest and upload maintenance.
   async scheduled(_controller, env, ctx) {
-    ctx.waitUntil(
-      handleOpsScheduled(env, (message) => sendNotification(env, message)).catch((error) =>
-        console.error("Scheduled low-stock digest failed:", describeError(error))
-      )
-    );
+    ctx.waitUntil(handleOpsScheduled(env, (message) => sendNotification(env, message)));
   },
 };

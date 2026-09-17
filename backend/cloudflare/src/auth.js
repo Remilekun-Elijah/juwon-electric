@@ -95,6 +95,8 @@ const RATE_LIMITS = {
   resetConfirmIp: { limit: 10, windowMs: 60 * MINUTE_MS },
   publicWrite: { limit: 30, windowMs: 10 * MINUTE_MS },
   quote: { limit: 60, windowMs: 10 * MINUTE_MS },
+  // Per admin (UPLOADS_V1 §2).
+  upload: { limit: 60, windowMs: 10 * MINUTE_MS },
 };
 
 // Fixed-window counter stored in D1. The single UPSERT ... RETURNING statement is

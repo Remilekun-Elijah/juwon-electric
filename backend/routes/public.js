@@ -9,12 +9,15 @@ import { getPackage, listPackages } from "../controllers/packages.js";
 import { getPortfolioItem, listPortfolio } from "../controllers/portfolio.js";
 import { listServices } from "../controllers/services.js";
 import { getVacancy, listVacancies } from "../controllers/vacancies.js";
+import { getUploadedImage } from "../controllers/uploads.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 import { opsPublicRouter } from "./ops.js";
 
 const router = Router();
 
 router.get("/health", asyncHandler(health));
+// Uploaded images (UPLOADS_V1 §1); the key is checked against the fixed upload key shape.
+router.get(/^\/uploads\/(.*)$/, getUploadedImage);
 router.get("/packages", asyncHandler(listPackages));
 router.get("/packages/:id", asyncHandler(getPackage));
 router.get("/services", asyncHandler(listServices));

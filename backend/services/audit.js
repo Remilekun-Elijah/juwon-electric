@@ -22,6 +22,7 @@ export const AUDIT_ENTITIES = [
   "testimonial",
   "client",
   "team_member",
+  "upload",
 ];
 
 const truncate = (value, max) =>

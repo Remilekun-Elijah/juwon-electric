@@ -34,6 +34,9 @@ const COLLECTIONS = [
   "clients",
   // Team and motion v1
   "teamMembers",
+  // Uploads v1: image records and the system/uploads-usage total
+  "uploads",
+  "system",
 ];
 
 // Catalog collections (public catalog records with admin-controlled sortOrder).

@@ -207,6 +207,8 @@ export const securityHeaders = (request, path) => {
     // CORP is only enforced for no-cors requests; the frontend's CORS fetches are unaffected.
     "Cross-Origin-Resource-Policy": "same-site",
   };
+  // Uploaded images are embedded by the storefront, which can be on another site.
+  if (path !== null && /^\/(api\/)?uploads\//.test(path)) headers["Cross-Origin-Resource-Policy"] = "cross-origin";
   let protocol = "";
   try {
     protocol = new URL(request.url).protocol;

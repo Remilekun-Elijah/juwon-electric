@@ -9,6 +9,9 @@ export const SETTINGS_ID = "global";
 
 export const PAYMENT_PROVIDERS = ["paystack", "flutterwave"];
 
+// UPLOADS_V1 §7: stored only; never shown in the admin. Uploads depend on server configuration.
+export const UPLOAD_PROVIDERS = ["url", "r2"];
+
 export const DEFAULT_SETTINGS = Object.freeze({
   business: { name: "Juwon Electric", email: null, phone: null, address: null, website: null },
   notifications: { orderEmails: [], lowStockEmails: [], vacancyEmails: [] },
@@ -143,8 +146,8 @@ const SECTION_FIELDS = {
   },
   uploads: {
     provider: (source) => {
-      if (source.provider !== "url") throw badRequest("Upload provider is not valid.");
-      return "url";
+      if (!UPLOAD_PROVIDERS.includes(source.provider)) throw badRequest("Upload provider is not valid.");
+      return source.provider;
     },
   },
   website: {

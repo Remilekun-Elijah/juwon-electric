@@ -43,7 +43,8 @@ export const sendMail = async function (message, template) {
       from,
       to: message.to || deliveryAddress,
       // BCC is opt-in via MAIL_BCC (comma-separated); none by default.
-      ...(config.mail_bcc?.length ? { bcc: config.mail_bcc } : {}),
+      // `bcc: false` opts a message out (the private storage alert).
+      ...(config.mail_bcc?.length && message.bcc !== false ? { bcc: config.mail_bcc } : {}),
       replyTo: message.replyTo || deliveryAddress,
       subject: message.subject,
       html: template(message.data),
