@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17 (see section 12, Change log)
+Last updated: 2026-09-17, Commerce v3 (see section 12, Change log)
 
 1. Executive summary
 
@@ -45,13 +45,17 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Composed package pricing: package options built from products and quantities, with a computed products total, a fixed ₦ price adjustment and a public price (§6.1)
 - New public storefront in the admin design language, on by default, with an environment switch back to the classic public UI (§6.10)
 - Near-realtime catalogue updates: admin changes appear on the storefront on the next page view, and open pages refresh within about a minute (§6.10)
+- Online product purchase (added in Commerce v3, 2026-09-17): customers add individual active, in-stock products to the same cart as packages and order them on the website (§6.10)
+- Installation crews: up to 10 engineers per installation job, one of them the lead, with one installation job per order (§6.3, §6.4)
+- Package categories: a package can belong to a catalogue category and is listed on that category's storefront page (§6.1, §6.10)
 
 Out of scope (initial release)
 - Complex promotions engine, loyalty, multi-currency pricing, advanced analytics
 - Full-featured CI/CD beyond simple deployment pipeline
 - Customer accounts and customer sign-in (website orders are placed without an account)
 - Selling packages through in-store orders (in-store orders sell individual products only)
-- Buying individual products on the website (products are a catalogue with specs and stock status; customers enquire or buy a package that includes them)
+- ~~Buying individual products on the website~~: moved in scope in Commerce v3 (2026-09-17). Customers can now buy active, in-stock products online (§4, §6.10).
+- Customer-facing stock reservation: placing a website order does not hold stock; stock is taken when staff move the order to processing
 - File uploads (images and job photos are added as links)
 
 5. User personas & user stories
@@ -60,6 +64,7 @@ Persona: Customer
 - As a customer, I want to browse product packages and add items to a cart so I can buy a solar package.
 - As a customer, I want to view package details and product specs so I can compare offerings.
 - As a customer, I want to see exactly which products are included in each package option so I know what I am paying for.
+- As a customer, I want to buy a single product (for example a replacement battery) online, on its own or together with a package, so I don't have to visit the store or buy a whole package. (Commerce v3)
 
 Persona: Sales/Admin
 - As an admin, I want to create and manage products and categories so the catalog stays accurate.
@@ -70,6 +75,7 @@ Persona: Sales rep (in-store sale)
 - As a sales rep, I want to mark a sale as collected now so stock is deducted immediately and the order is closed as delivered.
 - As a sales rep, I want to record a sale for later delivery or installation so it follows the normal fulfilment steps and can be assigned to an engineer.
 - As a sales rep, I want to give a discount with a written reason so the owner can see why the price was reduced.
+- As a sales rep, I want to record a sale for a walk-in customer who doesn't give a name or phone number so the sale and stock are still recorded without inventing details. (Commerce v3)
 
 Persona: Inventory manager (composes packages from products)
 - As an inventory manager, I want to build each package option from products and quantities so its price and contents always match the catalogue.
@@ -88,6 +94,11 @@ Persona: Owner (sets package markup)
 
 Persona: Engineer
 - As an engineer, I want to see assigned installation jobs and update status so the business can track progress.
+- As an engineer on a crew, I want to see who else is on the job and update it myself so the crew doesn't wait for the lead. (Commerce v3)
+
+Persona: Admin (installation crews)
+- As an admin, I want to assign a crew of engineers to an installation job and choose the lead so large installations are staffed and everyone on the crew knows the job. (Commerce v3)
+- As an admin, I want an order to have only one active installation job so the same installation isn't booked twice. (Commerce v3)
 
 Persona: HR
 - As an HR admin, I want to create job vacancies with formatted descriptions and publish them so candidates can apply.
@@ -96,6 +107,8 @@ Persona: HR
 
 6.1 Core commerce
 - Products & Categories: CRUD, images, sanitized rich descriptions, attributes per category
+  - A category can't be deleted while it has subcategories, products or packages ("Category has subcategories, products or packages."). (Packages added in Commerce v3.)
+  - Products with status Active are sold on the website when in stock (§6.10). Hidden products are not sold online but can still be package components and in-store sale lines. Archived products are not sold anywhere.
 - Packages (composed pricing; replaces "group multiple products as bundles with a single price", 2026-09-17):
   - Each package has up to 10 options (for example "Without solar" and "With solar"). Each option has its own list of products and quantities (up to 50 lines, quantity 1–1000, optional note) and its own adjustment.
   - Products total = Σ (current product price × quantity). It is computed at read time and cannot be edited.
@@ -107,11 +120,12 @@ Persona: HR
   - Each option reports whether all its products are in stock for one package ("In stock" / "Available to order" on the storefront).
   - Legacy manual-price options (no products) stay supported, with their manual price and contents text, until they are composed. Existing packages keep working unchanged.
   - Package-level product lists are deprecated in favour of per-option products.
+  - Category (Commerce v3): a package can optionally belong to one catalogue category, chosen in the package editor's Category select (the category tree, indented, with a "No category" option). The category must exist ("Category not found."). The package list shows the category name. On the storefront the package page shows the category, and the category's page lists its packages (including packages in its subcategories) above its products. The older free-text package category field is kept unchanged.
   - Public package responses never reveal the markup: products total, price adjustment and per-product unit prices are admin-only. Customers see the option price, availability, stock hint and the included products with their specs.
-  - Admin editor per option: product picker (name, SKU, price, stock, status), rows of product/quantity/note, a read-only Products total, a Price adjustment (₦) input, the resulting Public price, and an "In stock" or "Short: <sku>" hint. The package list shows the public price per option and a "Composed" or "Manual price" badge.
+  - Admin editor per option: product picker (name, SKU, price, stock, status; focusing the empty search lists the first 20 products by name straight away, and typing filters), rows of product/quantity/note, a read-only Products total, a Price adjustment (₦) input, the resulting Public price, and an "In stock" or "Short: <sku>" hint. The package list shows the public price per option and a "Composed" or "Manual price" badge.
   - Editing the price of a product used in packages shows "Used in N package options. Their prices will update."
   - Decision (2026-09-17): package editing stays with the `content:write` capability (Super admin, Admin and Sales). The inventory role does not compose or edit packages; inventory managers keep products, categories and stock accurate, and package prices follow those products automatically.
-- Cart & Checkout: cart persistence, basic validation, toggle payment gateway visibility
+- Cart & Checkout: cart persistence, basic validation, toggle payment gateway visibility. Since Commerce v3 one cart holds packages and products together (§6.10).
 
 6.2 Inventory
 - Track stockQuantity per product
@@ -122,9 +136,11 @@ Persona: HR
 - Order schema storing items, amounts, paymentStatus, fulfillmentStatus
 - Admin order view to change statuses and assign engineers
 - If requiresInstallation, allow assignment of engineers and creation of InstallationJob
-- Installation default (decision 2026-09-17): website orders are for packages, which are sold with installation, so new website orders start with "Requires installation" on. Staff can turn it off (for example, the customer arranges their own installer) unless the order has open installation jobs. Orders placed earlier keep their setting. In-store orders choose it on the sale page.
+- One installation job per order (Commerce v3): an order can have only one installation job that isn't cancelled. Creating a second is refused with "This order already has an installation job." and nothing is created. Once the existing job is cancelled, a new job can be created. In order details the admin hides "Create job" while a job exists, shows the note "This order already has an installation job." and links to the job.
+- Order details list every engineer on the order's job, lead first. The order-level "Assigned engineer" is unchanged; a job created without engineers on an order that has an assigned engineer starts with that engineer as its crew.
+- Installation default (decision 2026-09-17, refined in Commerce v3): packages are sold with installation, so a new website order starts with "Requires installation" on when it contains at least one package. A website order containing only products starts with it off. Staff can turn it off (for example, the customer arranges their own installer) unless the order has open installation jobs. Orders placed earlier keep their setting. In-store orders choose it on the sale page.
 - Fulfilment steps: pending → processing → out for delivery → delivered → installed (installed requires the order to be flagged for installation; the admin offers "Mark as installed" on every delivered order and, after confirmation, turns the flag on and moves the order in one update); cancelled from any step before delivery. In-store orders may also be cancelled after delivery (a walk-in customer returns the goods), which restores their committed stock (§6.9). Payment statuses: pending, partial, paid, failed, refunded.
-- Order line snapshot (2026-09-17): every order line stores, at the time the order is placed, the prices and (for package lines) the component products and quantities of the chosen option, plus the products total and adjustment. In-store product lines store product, SKU, quantity, unit price and line total.
+- Order line snapshot (2026-09-17): every order line stores, at the time the order is placed, the prices and (for package lines) the component products and quantities of the chosen option, plus the products total and adjustment. In-store product lines, and website product lines since Commerce v3, store product, SKU, quantity, unit price and line total.
 - Stock is committed (moving to processing, or an in-store "collected now" sale) from the snapshot, not from the package's current contents, so recomposing a package never changes stock for orders already placed. Orders placed before snapshots existed fall back to the package's current products.
 - Stock commit is all-or-nothing: if any product would go below zero, nothing changes and staff see the shortfall per product.
 - Cancelling an order whose stock was committed restores stock through reversal movements. If a product has since been deleted, its restore is skipped, the cancellation still succeeds, and the activity log notes "stock not restored for deleted product <sku>".
@@ -133,6 +149,17 @@ Persona: HR
 6.4 Installation jobs
 - Job assignment, scheduling, checklist, photo uploads, completion notes
 - Engineer mobile-friendly UI showing assigned jobs and ability to update
+- Crews (Commerce v3):
+  - A job has a crew of 0 to 10 engineers, each listed once. Every crew member must be an active account with the Engineer role ("Assignee must be an active engineer."). Adding the same engineer twice is refused ("Each engineer can be added once."), and more than 10 is refused ("A job can have at most 10 engineers.").
+  - The first engineer in the crew is the **lead**. Staff can make any crew member the lead.
+  - A job with at least one engineer that hasn't started is Assigned; a job with no engineers is Unassigned. Only open jobs that haven't started can be reassigned; to change the crew of a started job, cancel it and create a new one.
+  - Every crew member sees the job in My jobs and can update it (start, checklist, photos, notes, complete), not only the lead. My jobs shows the other crew members ("With: Name, Name").
+  - The job-assigned notification goes to each engineer newly added to the crew (on create, edit or reassign). Engineers already on the job are not notified again.
+  - The Installations list and job drawer show the crew, lead first, and the engineer filter matches any crew member. The activity log lists the crew's emails.
+  - Jobs created before crews read as a crew of their single engineer (or none).
+- Job dialog pickers (Commerce v3):
+  - Scheduled for: a date-and-time picker with a month calendar (previous and next month, today highlighted, past dates allowed but marked as past), times in 15-minute steps shown in Lagos time (for example 9:00 AM), a display like "Thu 18 Sep 2026, 10:30 AM" and a Clear button. Keyboard accessible.
+  - Estimated duration: an hours (0–24) and minutes (0, 15, 30, 45) picker shown as, for example, "2 h 30 min", with a Clear option. When set it must be at least 15 minutes.
 
 6.5 Vacancies (Jobs) module — HR
 - Admin CRUD for vacancies with fields: title, department, location, employmentType, salaryRange, description (rich-text), requirements[], responsibilities[], status (draft/open/closed)
@@ -153,11 +180,11 @@ Persona: HR
 | admin | Everything except the engineer "My jobs" view; cannot manage Super admin or Admin accounts |
 | inventory | Dashboard; view settings; view packages, services and portfolio; create and edit products and categories; view and adjust stock and run the low-stock check; view orders and carts |
 | sales | Dashboard; view settings; create and edit packages, services, portfolio and customer segments; view products and stock; view orders and carts; create in-store orders (`orders:create`); update order payment, fulfilment and engineer; read and reply to messages and newsletter; view and assign installation jobs; view staff |
-| engineer | "My jobs" only: see own assigned jobs, start them, tick the checklist, add photos and completion notes, complete them |
+| engineer | "My jobs" only: see jobs where they are on the crew (Commerce v3), start them, tick the checklist, add photos and completion notes, complete them |
 | hr | Dashboard; view settings; view and edit staff profiles; create, edit, publish, close and delete vacancies |
 | support | Dashboard; view settings; view packages, services, portfolio and products; view orders and carts; read and reply to messages and manage newsletter subscribers; view installation jobs |
 
-- All roles receive the admin notifications relevant to them (new orders for roles that can see orders, low stock for roles that can see inventory, vacancy posted for HR/admin, job assigned for the assigned engineer). Only superadmin and admin can see the activity log, manage accounts and change settings.
+- All roles receive the admin notifications relevant to them (new orders for roles that can see orders, low stock for roles that can see inventory, vacancy posted for HR/admin, job assigned for each engineer newly added to a job's crew). Only superadmin and admin can see the activity log, manage accounts and change settings.
 
 6.7 Settings & Notifications
 - System settings for payment gate toggles, notification emails, upload provider
@@ -175,7 +202,11 @@ Persona: HR
 6.9 In-store sales (added 2026-09-17)
 - Who: accounts with the `orders:create` capability (superadmin, admin, sales). The Orders screen shows a "New in-store sale" button that opens a full, mobile-friendly page.
 - What is sold: products only (active or hidden; archived products cannot be sold). 1–50 lines, each product once, quantity 1–1000.
-- Customer details: name and phone required (same rules as website orders); email optional; delivery address required when fulfilment is "later".
+- Product search (Commerce v3): focusing the empty search field lists the first 20 products by name straight away (name, SKU, price, stock and status); typing filters. The list works with arrow keys, Enter and Esc, shows a loading state and doesn't take over the whole screen on phones.
+- Customer details (changed in Commerce v3): name, phone and email are all optional; delivery address is still required when fulfilment is "later". The fields show the helper text "Leave blank for walk-in customers."
+  - A blank name is saved as "Walk-in customer", and the sale summary, order details, activity log and notifications use that name (for example "In-store order for Walk-in customer: …").
+  - A blank phone is saved as no phone, and the admin shows "No phone".
+  - A name that is given must be 1–100 characters; a phone number that is given must pass the usual phone check.
 - Pricing: each line is priced from the catalogue (current product price × quantity); reps cannot type prices. Subtotal = Σ line totals.
 - Discount: optional whole-naira amount from ₦0 up to the subtotal. A discount above ₦0 requires a reason (3–200 characters). Total = subtotal − discount. The discount and reason are stored on the order, shown in order details, and written to the activity log ("In-store order for <name>: <n> items, ₦<total>; discount ₦<amount> (<reason>)").
 - Fulfilment, chosen by the rep:
@@ -189,10 +220,20 @@ Persona: HR
 - Dashboard revenue uses order totals, so discounts are reflected.
 
 6.10 Public storefront (added 2026-09-17)
-- Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with type and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product"), buy (cart and checkout with the payment note), trust (services, customer segments, portfolio), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
+- Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with type and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product", and since Commerce v3 "Add to cart"), buy (one cart for packages and products, and checkout with the payment note), trust (services, customer segments, portfolio), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
 - Design: matches the admin console (same font, colours, cards, badges and components); plain everyday icons only; mobile-first and checked at phone, tablet and desktop widths.
 - Default and switch: the new storefront is the default public site. Setting the environment variable `NEXT_PUBLIC_PUBLIC_UI=classic` serves the classic public UI instead. Both share the same public URLs, cart storage and order payloads, so a cart started in one works in the other.
-- Only packages are purchasable online; products show price and stock status ("In stock" / "Out of stock"; low stock is never shown publicly) and lead to an enquiry or to packages that include them.
+- ~~Only packages are purchasable online~~ (replaced in Commerce v3). Products show price and stock status ("In stock" / "Out of stock"; low stock is never shown publicly), an enquiry link and the packages that include them, and can be bought online:
+  - Product page: a quantity stepper (1 up to 10, or the stock if lower) and **Add to cart**. When the product is out of stock the page shows **Out of stock** and the button is disabled; "Ask about this product" stays. After adding, a message offers **View cart**.
+  - Product cards (catalogue grid and the home page's popular products) show a compact **Add to cart** button when the product is in stock.
+  - Only products with status Active and enough stock are sold online. Hidden and archived products are not.
+  - One cart: package lines and product lines share the cart, the header cart count and the 50-line limit. Product lines show image, name, SKU, quantity stepper (1–100), remove and line total. Product lines are stored separately in the browser, so the classic public UI keeps working with package lines and ignores product lines.
+  - Prices: product lines are quoted at the product's current price. A product that is no longer active or doesn't have enough stock for the quantity is flagged as unavailable in the cart, like package lines, and checkout rejects the order with "Some items in your cart are no longer available. Please refresh your cart."
+  - Stock: placing an order doesn't change stock. Stock is taken when staff move the order to processing, from the order's recorded lines.
+  - Orders: product lines are recorded with product, SKU, name, quantity, unit price and line total, and count in the order total. Orders with only products start with "Requires installation" off; orders with any package start with it on (§6.3).
+  - Emails: order confirmation emails list product lines as "<quantity> × <name> (<SKU>)" with prices.
+  - A cart with only packages sends exactly the same order as before this change.
+- Package categories (Commerce v3): the package page shows the package's category in the breadcrumb and above the title when it has one. A category page lists "Packages in <category>" above its products when that category (or its subcategories) has packages. Package cards may show the category name.
 - Realtime and revalidation:
   - Every successful admin change to packages, products, categories, inventory, orders, services, portfolio, vacancies or settings triggers on-demand revalidation of the affected storefront data, so the change appears on the next page view.
   - Open storefront pages refresh every 60 seconds while visible and when the tab regains focus (after at least 15 seconds), without interrupting a customer who is typing.
@@ -219,6 +260,13 @@ Persona: HR
 - Discount reason: a discount above ₦0 without a reason (or with fewer than 3 characters) is rejected; a discount greater than the subtotal is rejected; a valid discount reduces the total and appears with its reason on the order and in the activity log.
 - Capability: an inventory, engineer, HR or support account cannot create an in-store order (no button, and the server returns "You do not have permission to perform this action.").
 - Storefront toggle: with `NEXT_PUBLIC_PUBLIC_UI` unset the new storefront is served at the public URLs; with `NEXT_PUBLIC_PUBLIC_UI=classic` the classic site is served at the same URLs; `/storefront/...` URLs redirect to the public path in both modes.
+- Crew assignment (Commerce v3): an admin creates a job with engineers A, B and C; the job shows A as Lead and all three in Installations and order details; A, B and C each see it in My jobs with "With:" listing the other two, and each can start it and tick the checklist; each of A, B and C gets the job-assigned notification. Making C the lead and adding D sends the notification to D only. Adding an 11th engineer, the same engineer twice, or a non-engineer account is rejected with the matching message.
+- One job per order (Commerce v3): with a job on the order that isn't cancelled, "Create job" is hidden in order details with the note "This order already has an installation job.", and a create request is refused with "This order already has an installation job."; after that job is cancelled, a new job can be created.
+- Job pickers (Commerce v3): Scheduled for offers a calendar and times in 15-minute steps in Lagos time, shows for example "Thu 18 Sep 2026, 10:30 AM", and Clear empties it; Estimated duration set to 2 hours 30 minutes saves 150 minutes and shows "2 h 30 min", and a duration under 15 minutes is not accepted.
+- In-store walk-in (Commerce v3): a sales rep records a collected-now sale with name and phone left blank; the order is created with customer "Walk-in customer", order details show "No phone", and the activity log reads "In-store order for Walk-in customer: …". A phone number that is given but invalid is still rejected. "Deliver or install later" without a delivery address is still rejected.
+- Product search on focus (Commerce v3): on the in-store sale page and in the package option editor, clicking into the empty product search lists up to 20 products by name before anything is typed; typing filters the list.
+- Online product purchase (Commerce v3): a customer adds 2 × an active product with 5 in stock from its product page and checks out; the order records a product line at the current price, the total includes it, "Requires installation" is off, stock stays 5 until the order is moved to processing (then 3), and the confirmation email lists "2 × <name> (<SKU>)". A product with 0 stock shows Out of stock with Add to cart disabled and no card button. If the product is hidden or its stock drops below the cart quantity before checkout, the cart flags the line and the order is rejected with "Some items in your cart are no longer available. Please refresh your cart." A cart with a package and a product creates one order with both lines and "Requires installation" on; a package-only cart sends the same order as before.
+- Package category (Commerce v3): assigning a package to the category Inverters shows "Inverters" on the package page and lists the package under "Packages in Inverters" above the products on that category page (and on its parent category's page); deleting Inverters is refused with "Category has subcategories, products or packages."; a package with "No category" appears on no category page.
 - Admin edit reflected on the storefront: changing a product price (or a package adjustment) in the admin console shows the new price on the next storefront page view; an already open storefront page in the same browser updates immediately, and in another browser within about a minute.
 
 8. Metrics & success criteria
@@ -258,6 +306,13 @@ Commerce v2 round (2026-09-17)
 - New public storefront with classic switch and near-realtime updates
 - PRD and user guide (docs/USER_GUIDE.md) updated with every feature change
 
+Commerce v3 round (2026-09-17)
+- Installation crews and one installation job per order
+- Date-and-time and duration pickers in the job dialogs
+- Optional customer name and phone for in-store sales; product search lists products on focus
+- Online product purchase with one cart for packages and products
+- Package categories on the storefront
+
 10. Risks & mitigation
 
 - Rich-text security: sanitize server-side and limit allowed tags/attributes. Use `sanitize-html` and disallow scripts.
@@ -266,17 +321,31 @@ Commerce v2 round (2026-09-17)
 - Package prices change when product prices change: staff are warned when editing a product used in packages, and every price change is audited.
 - Discount misuse: discounts require a reason and are recorded against the staff member in the activity log.
 - Storefront regressions: the classic public UI stays available behind `NEXT_PUBLIC_PUBLIC_UI=classic`.
+- Online product orders for stock that runs out before processing: checkout checks current stock, and processing is all-or-nothing with a per-product shortfall, so staff call the customer before moving the order on.
+- Walk-in sales without contact details can't be followed up: reps are encouraged to take a phone number for delivered or installed sales, and a delivery address is still required for "later" fulfilment.
 
 11. Appendix
 - Link to technical plan: /PLATFORM_PLAN.md
 - Vacancy schema example and sanitization guidance included in PLATFORM_PLAN.md
-- API contract: docs/agents/API_CONTRACT_V3.md; commerce addendum: docs/agents/COMMERCE_V2.md; storefront spec: docs/agents/fe-storefront.md
+- API contract: docs/agents/API_CONTRACT_V3.md; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md
 - Staff user guide: docs/USER_GUIDE.md
 
 Open items for owner review
 - Storefront order confirmation says "Delivery within Lagos is free." This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (Commerce v3)
+- §4: online product purchase, installation crews and package categories are now in scope; buying individual products on the website moved out of "Out of scope"; noted that placing a website order doesn't hold stock.
+- §5: added stories for a customer buying a single product online, a sales rep recording a sale for an anonymous walk-in, an admin assigning a crew and one job per order, and an engineer on a crew.
+- §6.1: categories can't be deleted while packages use them; which product statuses are sold online; packages can belong to a catalogue category; product search lists the first 20 products on focus; one cart for packages and products.
+- §6.3: one installation job per order (a cancelled job allows a new one; "Create job" hidden while a job exists); order details show the crew; website orders with only products start with "Requires installation" off; website product lines are snapshotted.
+- §6.4: crews of up to 10 engineers with a lead, crew-wide My jobs access and updates, notifications to newly added engineers, and the date-and-time and duration pickers.
+- §6.9: customer name, phone and email are optional ("Walk-in customer", "No phone", helper text); product search on focus.
+- §6.10: customers buy products online (product page stepper and Add to cart, card button, one cart, availability checks, stock at processing, emails); package categories on the package and category pages.
+- §7: added acceptance criteria for crews, one job per order, job pickers, walk-in sales, product search on focus, online product purchase and package categories.
+- §6.6: engineers see jobs where they are on the crew; the job-assigned notification goes to each newly added crew member.
+- §9–§11: added the Commerce v3 milestone, two risks and the link to the Commerce v3 contract.
 
 2026-09-17 (installation default)
 - §6.3: new website orders start with "Requires installation" on; staff can turn it off; earlier orders unchanged.
