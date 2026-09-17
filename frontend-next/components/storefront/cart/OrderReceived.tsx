@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
-import { CheckCircle2, Mail, Package, Phone, ShoppingCart, Truck, Wrench, type LucideIcon } from "lucide-react";
+import { Box, CheckCircle2, Mail, Package, Phone, ShoppingCart, Truck, Wrench, type LucideIcon } from "lucide-react";
 import { Badge, Skeleton, buttonClasses } from "@/components/ui";
 import PageIntro from "@/components/storefront/PageIntro";
 import { cn } from "@/lib/cn";
@@ -30,19 +30,24 @@ const serverSnapshot = () => undefined;
 
 type Step = { title: string; description: string; icon: LucideIcon };
 
-/** Mirrors the backend fulfilment statuses: pending (confirmation call) → processing → out_for_delivery → delivered → installed. */
-const steps = (gatewayEnabled: boolean): Step[] => [
+/**
+ * Mirrors the backend fulfilment statuses: pending (confirmation call) → processing → out_for_delivery → delivered →
+ * installed. Orders without a package don't need installation (Commerce v3 §3.3), so that step is left out.
+ */
+const steps = (gatewayEnabled: boolean, installation: boolean): Step[] => [
   {
     title: "Confirmation call",
     description: gatewayEnabled
-      ? "We call you to confirm your package and delivery address, then send a secure payment link."
-      : "We call you to confirm your package and delivery address, and arrange payment.",
+      ? "We call you to confirm your order and delivery address, then send a secure payment link."
+      : "We call you to confirm your order and delivery address, and arrange payment.",
     icon: Phone,
   },
   { title: "Processing", description: "We prepare your inverter, batteries and any solar panels from stock.", icon: Package },
   { title: "Out for delivery", description: "Our team brings your order to your address. Delivery within Lagos is free.", icon: Truck },
   { title: "Delivered", description: "Your order arrives and we check that everything is complete.", icon: CheckCircle2 },
-  { title: "Installation", description: "Our engineers install and test the system, and show you how to use it.", icon: Wrench },
+  ...(installation
+    ? [{ title: "Installation", description: "Our engineers install and test the system, and show you how to use it.", icon: Wrench }]
+    : []),
 ];
 
 const formatPlacedAt = (value: string) => {
@@ -166,10 +171,10 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
             </div>
 
             <ul className="mt-4 divide-y divide-slate-100 rounded-xl border border-slate-200">
-              {order.items.map(([label, quantity], index) => (
+              {order.items.map(([label, quantity, kind], index) => (
                 <li key={`${label}-${index}`} className="flex items-start gap-3 px-4 py-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                    <Package aria-hidden="true" className="h-4 w-4" />
+                    {kind === "product" ? <Box aria-hidden="true" className="h-4 w-4" /> : <Package aria-hidden="true" className="h-4 w-4" />}
                   </span>
                   <p className="min-w-0 flex-1 break-words pt-2 text-sm font-medium text-slate-900">{label}</p>
                   <p className="shrink-0 pt-2 text-sm tabular-nums text-slate-500">× {quantity}</p>
@@ -187,7 +192,7 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
               What happens next
             </h2>
             <ol className="mt-5">
-              {steps(gatewayEnabled).map((step, index, all) => {
+              {steps(gatewayEnabled, order.items.some((item) => item[2] !== "product")).map((step, index, all) => {
                 const Icon = step.icon;
                 const current = index === 0;
                 const last = index === all.length - 1;

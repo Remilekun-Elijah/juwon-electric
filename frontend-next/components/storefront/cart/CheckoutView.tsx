@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, Phone } from "lucide-react";
 import { Spinner } from "@/components/ui";
+import { cartLineCount, clearProductCart, useProductCart } from "@/lib/cart/productStore";
 import { clearCart, useCart } from "@/lib/cart/store";
 import { useCartQuote } from "@/lib/cart/useCartQuote";
 import { cn } from "@/lib/cn";
@@ -27,14 +28,15 @@ export type CheckoutViewProps = {
 /**
  * `/checkout` client island: delivery form and a sticky order summary with the server quote (stacked on mobile, the
  * summary first so the total is visible before the form). An empty cart links back to /cart. After a successful order
- * it stores the summary for /checkout/success, clears the cart and navigates there.
+ * it stores the summary for /checkout/success, clears the package and product carts and navigates there.
  */
 export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProps) {
   const router = useRouter();
   const hydrated = useHydrated();
   const cart = useCart();
+  const products = useProductCart();
   const [placed, setPlaced] = useState(false);
-  const quote = useCartQuote({ open: hydrated && !placed, cart });
+  const quote = useCartQuote({ open: hydrated && !placed, cart, products });
   const callNumber = primaryPhone(phone);
 
   const handlePlaced = (order: LastOrder) => {
@@ -45,6 +47,7 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
       // Storage may be unavailable (private mode); the success page then shows its generic message.
     }
     clearCart();
+    clearProductCart();
     router.push(storeRoutes.checkoutSuccess);
   };
 
@@ -61,11 +64,11 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
     );
   }
 
-  if (!cart.length) {
+  if (!cartLineCount(cart.length, products.length)) {
     return (
       <CartEmpty
         title="There’s nothing to check out"
-        description="Your cart is empty. Add a package to your cart, then come back here to enter your delivery details."
+        description="Your cart is empty. Add a package or product to your cart, then come back here to enter your delivery details."
         backToCart
       />
     );
@@ -77,6 +80,7 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
         <div className="lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
           <OrderSummary
             cart={cart}
+            products={products}
             quote={quote}
             showItems
             footer={
@@ -104,6 +108,7 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
         <div className={cn(storeCard, storeCardPadding, "lg:col-start-1 lg:row-start-1")}>
           <CheckoutForm
             cart={cart}
+            products={products}
             quote={quote}
             onPlaced={handlePlaced}
             beforeSubmit={<PaymentNote gatewayEnabled={gatewayEnabled} />}

@@ -15,7 +15,7 @@ export type CartEmptyProps = {
 /** Empty cart card with links to shop. Uses an h2 so the page heading order stays h1 → h2. Server-safe. */
 export default function CartEmpty({
   title = "Your cart is empty",
-  description = "Choose an inverter package to keep your lights on through NEPA outages. You can switch between with and without solar in your cart.",
+  description = "Choose an inverter package to keep your lights on through NEPA outages, or add batteries, panels and parts from our products.",
   backToCart = false,
 }: CartEmptyProps) {
   return (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { ArrowRight, Package, ShieldCheck, Truck } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui";
+import { cartLineCount, useProductCart } from "@/lib/cart/productStore";
 import { useCart } from "@/lib/cart/store";
 import { useCartQuote } from "@/lib/cart/useCartQuote";
 import { cn } from "@/lib/cn";
@@ -14,25 +15,29 @@ import CartEmpty from "./CartEmpty";
 import CartLines from "./CartLines";
 import CartSkeleton from "./CartSkeleton";
 import OrderSummary from "./OrderSummary";
+import ProductCartLines from "./ProductCartLines";
 
 /**
- * `/cart` client island: stored cart lines with a server quote and the order summary. The cart is empty on the server
- * and during hydration, so a skeleton shows until the stored cart is read.
+ * `/cart` client island: stored package and product lines with one server quote (packages first, then products) and
+ * the order summary. The cart is empty on the server and during hydration, so a skeleton shows until the stored cart is
+ * read. The empty state only shows when both kinds of line are empty.
  */
 export default function CartView() {
   const hydrated = useHydrated();
   const cart = useCart();
-  const quote = useCartQuote({ open: hydrated, cart });
+  const products = useProductCart();
+  const quote = useCartQuote({ open: hydrated, cart, products });
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const count = cartLineCount(cart.length, products.length);
 
   if (!hydrated) return <CartSkeleton />;
-  if (!cart.length) return <CartEmpty />;
+  if (!count) return <CartEmpty />;
 
   const blockedReason =
     quote.status === "loading"
       ? "Checking current prices…"
       : quote.unavailableKeys.length
-        ? "Remove unavailable packages to check out."
+        ? "Remove unavailable items to check out."
         : "";
 
   const action = quote.blocked ? (
@@ -57,17 +62,30 @@ export default function CartView() {
         <section aria-labelledby="cart-items-heading" className={cn(storeCard, storeCardPadding)}>
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <h2 id="cart-items-heading" ref={headingRef} tabIndex={-1} className="text-base font-semibold text-slate-900 focus:outline-hidden">
-              Packages <span className="font-normal text-slate-500">({cart.length})</span>
+              Your cart <span className="font-normal text-slate-500">({count})</span>
             </h2>
-            <Link href={storeRoutes.packages} className={cn(storeLink, "inline-flex min-h-11 items-center text-sm")}>
-              Add another package
-            </Link>
+            <div className="flex flex-wrap justify-end gap-x-4">
+              <Link href={storeRoutes.packages} className={cn(storeLink, "inline-flex min-h-11 items-center text-sm")}>
+                Add a package
+              </Link>
+              <Link href={storeRoutes.products} className={cn(storeLink, "inline-flex min-h-11 items-center text-sm")}>
+                Browse products
+              </Link>
+            </div>
           </div>
-          <CartLines cart={cart} quote={quote} focusAfterRemoveRef={headingRef} />
+          {cart.length > 0 && <CartLines cart={cart} quote={quote} focusAfterRemoveRef={headingRef} />}
+          {products.length > 0 && (
+            <ProductCartLines
+              products={products}
+              quote={quote}
+              focusAfterRemoveRef={headingRef}
+              className={cn(cart.length > 0 && "mt-5 border-t border-slate-100 pt-5")}
+            />
+          )}
         </section>
 
         <div className="space-y-4 lg:sticky lg:top-24">
-          <OrderSummary cart={cart} quote={quote} action={action} />
+          <OrderSummary cart={cart} products={products} quote={quote} action={action} />
           <ul className={cn(storeCard, storeCardPadding, "space-y-3 text-sm text-slate-600")}>
             <li className="flex gap-3">
               <Truck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
@@ -79,7 +97,7 @@ export default function CartView() {
             </li>
             <li className="flex gap-3">
               <Package aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
-              Installation by our engineers after delivery.
+              {cart.length > 0 ? "Installation by our engineers after delivery." : "Need it installed? Ask when we call to confirm."}
             </li>
           </ul>
         </div>

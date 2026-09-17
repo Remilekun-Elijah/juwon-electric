@@ -6,6 +6,7 @@ import TurnstileWidget from "@/components/public/TurnstileWidget";
 import { Alert, Button, Field, Input, Textarea } from "@/components/ui";
 import { ApiError } from "@/lib/api/client";
 import { placeOrder } from "@/lib/api/public";
+import type { ProductCartItem } from "@/lib/cart/productStore";
 import type { CartItem } from "@/lib/cart/store";
 import type { CartQuoteState } from "@/lib/cart/useCartQuote";
 import { useTurnstile } from "@/lib/turnstile/useTurnstile";
@@ -22,6 +23,8 @@ import {
 
 export type CheckoutFormProps = {
   cart: CartItem[];
+  /** Catalogue product lines (Commerce v3), sent after the package items. */
+  products?: ProductCartItem[];
   quote: CartQuoteState;
   /** Called once the order is accepted, with the summary for /checkout/success. */
   onPlaced: (order: LastOrder) => void;
@@ -35,6 +38,7 @@ type Errors = Partial<Record<FieldName, string>>;
 const EMPTY: CheckoutValues = { name: "", phoneNumber: "", emailAddress: "", deliveryAddress: "" };
 const FIELD_ORDER: FieldName[] = ["name", "phoneNumber", "emailAddress", "deliveryAddress"];
 const fieldId = (name: FieldName) => `checkout-${name}`;
+const NO_PRODUCTS: ProductCartItem[] = [];
 
 /**
  * Same rules as the classic checkout (components/public/cart/CheckoutForm.tsx): name, phone and address required,
@@ -63,7 +67,7 @@ const errorMessage = (error: unknown) => {
  * `buildOrderPayload`), with Turnstile action `order`. Guards against double submits, shows field errors inline and
  * request errors in an alert, and refreshes the quote after a failure because prices or stock may have changed.
  */
-export default function CheckoutForm({ cart, quote, onPlaced, beforeSubmit }: CheckoutFormProps) {
+export default function CheckoutForm({ cart, products = NO_PRODUCTS, quote, onPlaced, beforeSubmit }: CheckoutFormProps) {
   const [values, setValues] = useState<CheckoutValues>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
@@ -91,8 +95,8 @@ export default function CheckoutForm({ cart, quote, onPlaced, beforeSubmit }: Ch
       return;
     }
 
-    if (cart.length > LIMITS.cartItems) {
-      setFormError(`An order can include up to ${LIMITS.cartItems} packages. Remove some and try again.`);
+    if (cart.length + products.length > LIMITS.cartItems) {
+      setFormError(`An order can include up to ${LIMITS.cartItems} items. Remove some and try again.`);
       return;
     }
     if (quote.unavailableKeys.length) {
@@ -108,18 +112,22 @@ export default function CheckoutForm({ cart, quote, onPlaced, beforeSubmit }: Ch
       return;
     }
 
-    const payload = buildOrderPayload(values, cart, resolveOrderTotal(cart, quote));
+    const payload = buildOrderPayload(values, cart, resolveOrderTotal(cart, quote, products), products);
 
     inFlight.current = true;
     setSubmitting(true);
     try {
       const response = await placeOrder(turnstile.withToken(payload));
       onPlaced(
-        toLastOrder(cart, {
-          total: readOrderTotal(response.data) || payload.total,
-          name: payload.name.trim(),
-          placedAt: new Date().toISOString(),
-        })
+        toLastOrder(
+          cart,
+          {
+            total: readOrderTotal(response.data) || payload.total,
+            name: payload.name.trim(),
+            placedAt: new Date().toISOString(),
+          },
+          products
+        )
       );
     } catch (error) {
       setFormError(errorMessage(error));

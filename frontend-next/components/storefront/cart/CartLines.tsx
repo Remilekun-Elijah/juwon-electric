@@ -15,6 +15,7 @@ import {
   updateCart,
   type CartItem,
 } from "@/lib/cart/store";
+import { getProductCartItems, isCombinedCartFull } from "@/lib/cart/productStore";
 import type { CartQuoteState } from "@/lib/cart/useCartQuote";
 import { formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
@@ -52,7 +53,7 @@ export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLine
     const cartKey = getCartItemKey(item);
     const current = latestCart.current;
     if (current.some((line) => getCartItemKey(line) === cartKey)) return;
-    if (isCartFull(current)) {
+    if (isCartFull(current) || isCombinedCartFull(current.length, getProductCartItems().length)) {
       toast.error("Your cart is full, so we couldn’t put that package back. Remove another package first.");
       return;
     }
