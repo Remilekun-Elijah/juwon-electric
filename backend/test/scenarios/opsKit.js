@@ -104,7 +104,8 @@ export const workerOpsClient = async () => {
     close: async () => {
       globalThis.fetch.sinks = globalThis.fetch.sinks.filter((sink) => sink !== emails);
     },
-    seedRecord: (collection, record) => store.createCollectionItem(client.env, collection, record),
+    // A record's own id is kept (as the Express store does).
+    seedRecord: (collection, record) => store.createCollectionItem(client.env, collection, record, { id: record.id }),
     async seedAdmin(role, extra = {}) {
       const email = seedEmail(role);
       const admin = await store.createCollectionItem(client.env, "admins", {
