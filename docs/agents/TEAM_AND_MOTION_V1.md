@@ -106,3 +106,128 @@ Build it with CSS transitions and keyframes plus a tiny `IntersectionObserver` h
 | Team backend+admin | `backend/**`; `frontend-next/lib/api/types.ts` (TeamMember types, commit first); `frontend-next/{app,components,lib}/admin/**`; `lib/api/admin.ts` |
 | Storefront team+motion (starts after the Landing storefront agent finishes) | `frontend-next/{app,components,lib}/storefront/**` (including the `team` tag in `data.ts` and `notify.ts`); `lib/api/public.ts`; `app/sitemap.ts`; `public/samples/team/**` |
 | Docs | `PRODUCT_REQUIREMENTS.md`, `docs/USER_GUIDE.md` (after the two agents above) |
+
+## 7. Addendum (owner, 2026-09-17): immersive hero, header and a darker, less white home page
+
+The owner shared a screenshot of the reference hero and asked for: "the homepage of the storefront is too white. the header area also needs work, make it look like the attached image with animations. make the sections that can animate do it."
+
+We match the **look and motion**, not the content. Don't copy the reference's registration number, founding year, customer counts, city list, wording or photos.
+
+### 7.1 Colour tokens
+Add a gold accent scale in `app/globals.css` `@theme`. Gold comes from the Juwon logo, and `--gold #dfc638` already exists in the Vite `App.css`:
+- `--color-gold-300: #ecd873`
+- `--color-gold-400: #dfc638`
+- `--color-gold-500: #c9ad1f`
+- `--color-gold-600: #a48c16`
+
+Rules:
+- Gold is for accents on **dark** surfaces only: highlighted headline words, stat numbers, primary buttons on dark.
+- Dark surfaces use `slate-950`, `slate-900` or `brand-950`.
+- Text on gold buttons is `slate-950`.
+- Keep contrast at 4.5:1 or better for body text.
+
+### 7.2 Header (`StoreHeader`)
+- **Home page at the top (scrollY < 24):**
+  - The header is transparent and overlays the hero.
+  - Nav links are white/90, with a gold underline (2px) on the active item.
+  - The logo sits on a small white rounded chip, so the multicolour logo stays legible.
+  - The phone link is white.
+  - The cart button is a glass button (`bg-white/10 border-white/20`).
+  - A gold pill CTA reads **"Get a quote"** and links to `/contact?topic=Quote`.
+- **After scrolling, and on every other page:** the solid white header with its bottom border and `shadow-elev-2`, as today. It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
+- **Mobile:** the same transparent-then-solid behaviour. The menu button is a glass button while transparent.
+- The header must not shift layout. The hero reserves the header height at the top.
+
+### 7.3 Hero (`HomeHero`), full-bleed and immersive
+- **Size and placement:**
+  - Edge to edge, not the rounded panel.
+  - `min-h-[640px] h-[100svh] max-h-[920px]`.
+  - It sits under the transparent header.
+- **Background slideshow:**
+  - Up to 4 installation photos from `public/panel-1.webp`…`panel-6.webp`, `next/image` with `fill`.
+  - The first image has `priority`; the others load lazily.
+  - Crossfade every 7 s (opacity, 1 s).
+  - The active image slowly zooms in, Ken Burns style (scale 1 → 1.08 over 8 s).
+- **Overlay:**
+  - A left-to-right gradient from `slate-950/90` to `slate-950/40`, plus a bottom gradient to `slate-950/80`.
+  - Text contrast must pass on every photo.
+- **Slide indicators:**
+  - 4 thin bars, bottom centre.
+  - The active bar fills with a gold progress animation over 7 s.
+  - Clicking or pressing a bar jumps to that slide.
+  - Autoplay pauses on hover and on focus-within.
+  - A small visible **pause/play** button sits next to the bars, for accessibility.
+  - Under `prefers-reduced-motion`: no autoplay and no zoom. The first image is static and the bars still work.
+- **Content** (left, `max-w-3xl`):
+  1. **Status pill (glass):** a green dot with a soft pulse and the text "Inverter, battery & solar systems in Lagos". No invented registration or founding year.
+  2. **h1:** "Reliable power for Lagos homes and **businesses**", sized `text-4xl sm:text-6xl lg:text-7xl`, white. The last word uses a gold gradient text fill.
+     - Entrance: each line slides up from a clipped mask, staggered.
+  3. **Lead paragraph:** the existing copy, white/80, `text-lg sm:text-xl`.
+  4. **Buttons:**
+     - Primary gold pill "Shop packages" with an arrow.
+     - Secondary glass pill "Chat on WhatsApp" with the WhatsApp brand glyph in lucide (`MessageCircle`) when `website.whatsappNumber` is set; otherwise "Talk to an engineer" (tel).
+     - Both are 56 px tall with a hover lift.
+  5. **Divider:** a thin `white/15` line.
+  6. **Stats row:** from `settings.website.stats`, up to 4.
+     - Gold numbers `text-4xl sm:text-5xl`, with CountUp when revealed.
+     - Uppercase white/70 labels, tracking-wide, small.
+     - The Sample pill shows when the stats are sample.
+     - The separate "Juwon Electric in numbers" band is removed from the home page.
+  7. **If there are no stats:** show the reassurance ticks row (existing) instead.
+- **Floating price card:** bottom-right of the hero on `lg+`, glass (`bg-white/10 backdrop-blur border-white/20`).
+  - Text: "Complete packages from ₦…" in gold, with an arrow link.
+  - It floats in after the content.
+  - Hidden on mobile.
+- **"Shop by battery type" chips:** move them to the "Find your package" section header, as tabs or chips.
+- **Scroll cue:** bottom-left, "SCROLL" in small tracking-wide type beside a vertical line with a gold dot sliding down (loop, 2 s). Hidden under reduced motion. It's a button that scrolls to the next section.
+- **Load animations:** the background zooms in; then the pill, the h1 lines, the lead, the buttons, the stats (count-up) and the price card appear in sequence (about 80–120 ms steps). Content must still be in the HTML and visible without JavaScript.
+
+### 7.4 Floating actions (replace the current WhatsApp button)
+The stack sits bottom-right, respects the safe area, and is hidden on `/cart` and `/checkout`.
+- **"Size your system"** (sub-label "Load calculator"): a gold pill with a `Calculator` icon on a darker circle. Links to `/calculator`. Shown only when the calculator is enabled.
+- **"Chat on WhatsApp"** (sub-label "We reply during business hours"): a green-free brand pill (`brand-600` background, white text) with a `MessageCircle` icon. Shown only when a WhatsApp number is set.
+  - No fake "online" status and no fake notification badge.
+- **Behaviour:**
+  - On load, the pills slide in from the right after about 1.2 s.
+  - On phones they collapse to 56 px circles with an aria-label.
+  - When the footer is in view, they fade their background so they don't cover footer links.
+
+### 7.5 Less white: section rhythm on the home page
+Alternate surfaces so no two adjacent sections share the same white background:
+
+| # | Section | Surface |
+|---|---|---|
+| 1 | hero | dark photo |
+| 2 | client logos | white, marquee |
+| 3 | why choose us | **dark `slate-950`**: white text, cards `bg-white/5 border-white/10`, icons in gold circles, hover glow |
+| 4 | solutions (who we power) | `slate-50`: image-led cards with a dark gradient overlay, title on the image, zoom on hover |
+| 5 | find your package | white, with battery-type chips in the header |
+| 6 | shop by category | `slate-50` |
+| 7 | popular products | white |
+| 8 | calculator teaser | **brand panel**: `brand-900` with a gold accent, animated numbers preview |
+| 9 | case studies | white: image cards with overlay badges, zoom on hover |
+| 10 | reviews | `brand-50` tint: quote cards, star fill animation on reveal |
+| 11 | how it works | **dark `slate-950`**: gold step numbers, connector line draw |
+| 12 | financing | white |
+| 13 | FAQ | `slate-50` |
+| 14 | careers teaser | white, compact |
+| 15 | final CTA | brand red panel with a background photo overlay and gold primary button |
+
+- The **footer** turns dark `slate-950` with white/70 text and gold hover links, on every storefront page.
+- Section eyebrows are gold on dark and brand-700 on light.
+
+### 7.6 Animation checklist (everything that can animate)
+- Reveal on scroll for every section heading and card grid (staggered).
+- CountUp: hero stats, team stats, the calculator teaser preview.
+- Marquee: client logos.
+- Hover: card lift and glow; image zoom; arrow nudge; button press.
+- How it works: the line draws and steps appear in sequence.
+- Reviews: the stars fill one by one on reveal.
+- Solutions and case studies: the image overlay text slides up on hover.
+- Financing: the worked-example numbers count up when revealed.
+- FAQ: smooth height and opacity when an answer opens (CSS `details` transition via `grid-template-rows` trick or JS measure), with the chevron rotating.
+- Calculator page: the results tween.
+- Team page: as in §4.
+- Header: the transparent→solid transition.
+- Floating actions: slide in.
+- `prefers-reduced-motion` turns off all movement: no autoplay, marquee, count-up or zoom. Content still shows instantly.
