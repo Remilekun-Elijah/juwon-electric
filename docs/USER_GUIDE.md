@@ -1243,6 +1243,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-17 (mobile and footer motion)**
+- Customer: on phones, sections now slide in from the left, the right and below as you scroll, and the footer animates in too.
+
 **2026-09-17 (lifted scrolled header)**
 - Customer: when you scroll the website, the top bar lifts into a floating, see-through dark bar so the logo and menu stay easy to read.
 
