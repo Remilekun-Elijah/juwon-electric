@@ -156,7 +156,7 @@ npx wrangler d1 migrations apply juwon-electric --remote
 npx wrangler deploy
 ```
 
-Set Worker secrets with `npx wrangler secret put <NAME>` (in `backend/cloudflare`). Plain vars can go in the Cloudflare dashboard or under `[vars]` in `wrangler.toml` (never secrets).
+Set Worker secrets with `npx wrangler secret put <NAME>` (in `backend/cloudflare`). Set plain vars in the Cloudflare dashboard (Worker → Settings → Variables and Secrets), not under `[vars]` in `wrangler.toml`: `wrangler.toml` sets `keep_vars = true`, so deploys keep dashboard vars, and private values such as `STORAGE_ALERT_EMAIL` stay out of git. Ignore the dashboard prompt to copy them into the Wrangler config.
 
 ### Migrations that can stop a deploy
 
