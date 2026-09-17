@@ -18,6 +18,7 @@ import {
   ReceiptText,
   Settings,
   ShoppingCart,
+  Store,
   UserCog,
   Wrench,
   type LucideIcon,
@@ -28,6 +29,7 @@ export type ModuleId =
   | "dashboard"
   | "my-jobs"
   | "orders"
+  | "new-sale"
   | "installations"
   | "carts"
   | "products"
@@ -90,6 +92,17 @@ export const modules: AdminModule[] = [
     eyebrow: "Sales",
     title: "Orders",
     description: "Review orders, record payments, move them through fulfilment and assign engineers.",
+  },
+  {
+    id: "new-sale",
+    href: "/admin/orders/new",
+    capability: "orders:create",
+    label: "New sale",
+    icon: Store,
+    group: "sales",
+    eyebrow: "Sales",
+    title: "New in-store sale",
+    description: "Record a sale made in the store. Prices come from the products.",
   },
   {
     id: "installations",

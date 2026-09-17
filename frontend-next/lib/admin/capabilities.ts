@@ -3,6 +3,7 @@
  *
  * UI only: the portal hides navigation and actions with these, and the server enforces every one.
  * Gating always uses the session's `capabilities` array (login / `GET /admin/auth/me`), never the role.
+ * Commerce v2 §2.1: `orders:create` (in-store sales) belongs to superadmin, admin and sales.
  */
 
 export const ROLES = ["superadmin", "admin", "inventory", "sales", "engineer", "hr", "support"] as const;
@@ -22,6 +23,7 @@ export const CAPABILITIES = [
   "inventory:read",
   "inventory:adjust",
   "orders:read",
+  "orders:create",
   "orders:update",
   "orders:delete",
   "leads:read",

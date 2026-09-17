@@ -15,6 +15,7 @@ import { notifyStorefront } from "@/lib/storefront/notify";
 import { ApiError, apiRequest, toQuery, type ApiEnvelope, type ApiRequestInit, type QueryParams } from "./client";
 import type {
   AdminNotification,
+  AdminPackage,
   AdminUser,
   AuditLogEntry,
   Cart,
@@ -23,6 +24,7 @@ import type {
   CustomerSegment,
   Dashboard,
   FulfillmentStatus,
+  InStoreOrderInput,
   InstallationJob,
   InventoryItem,
   InventoryMovement,
@@ -33,6 +35,8 @@ import type {
   MyJobUpdateInput,
   NotificationsPage,
   Order,
+  OrderChannel,
+  PackageOptionInput,
   Paged,
   PaymentStatus,
   Product,
@@ -281,9 +285,33 @@ export const saveCustomerSegment = (segmentId: string | null, input: CustomerSeg
 export const deleteCustomerSegment = (segmentId: string) =>
   del<CustomerSegment>(`/services/customer-segments/${id(segmentId)}`);
 
+/* ---------- Packages (Commerce v2 §1) ---------- */
+
+/** Admin package rows, with `productsTotal`, `priceAdjustment` and per-item prices on each option. */
+export const getAdminPackages = async () => (await adminFetch<AdminPackage[]>("/packages")).data || [];
+
+/** Package write body. `options` is always sent in the stored shape (Commerce v2 §1.1); top-level `items` is never sent. */
+export type PackageInput = {
+  name?: string;
+  type?: string;
+  load?: string;
+  kva?: string | number;
+  volt?: string | number | null;
+  legacyId?: string | number | null;
+  isActive?: boolean;
+  slug?: string;
+  sortOrder?: number;
+  options: PackageOptionInput[];
+};
+
+export const savePackage = <T = AdminPackage>(packageId: string | null, input: PackageInput) =>
+  packageId ? put<T>(`/packages/${id(packageId)}`, input) : post<T>("/packages", input);
+
 /* ---------- Orders and fulfilment (contract §6) ---------- */
 
 export type OrderFilters = {
+  /** Commerce v2 §2.2: `website` or `in_store`. */
+  channel?: OrderChannel | "";
   fulfillmentStatus?: FulfillmentStatus | "";
   paymentStatus?: PaymentStatus | "";
   engineerId?: string;
@@ -305,6 +333,19 @@ export const getOrder = async (orderId: string) => {
   mock.markMocked("orders");
   const order = mock.applyOrderOverlay(response.data);
   return { ...response, data: { ...order, jobs: mock.mockOrderJobs(order.id) } };
+};
+
+/**
+ * Commerce v2 §2.2: `POST /admin/orders` (cap `orders:create`). A 409 carries `details` per short product.
+ * Not mocked: a backend without the route answers with `FeatureUnavailableError`.
+ */
+export const createInStoreOrder = async (input: InStoreOrderInput) => {
+  try {
+    return await post<Order>("/orders", input);
+  } catch (error) {
+    if (isMissingRoute(error)) throw new FeatureUnavailableError(error instanceof ApiError ? error.data : null);
+    throw error;
+  }
 };
 
 export const setFulfillmentStatus = (order: Order, status: FulfillmentStatus, note?: string) =>
