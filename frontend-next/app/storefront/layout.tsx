@@ -26,7 +26,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/store
         {children}
       </main>
       <StoreFooter settings={settings} />
-      <FloatingActions whatsappNumber={settings.website.whatsappNumber} calculatorEnabled={Boolean(settings.calculator)} />
+      <FloatingActions whatsappNumber={settings.website.whatsappNumber} />
       <LiveRefresh />
     </div>
   );

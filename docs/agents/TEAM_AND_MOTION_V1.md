@@ -135,7 +135,7 @@ Rules:
   - The logo has no chip (revised 2026-09-17: the gold logo reads better on dark).
   - The phone link is white.
   - The cart button is a glass button (`bg-white/10 border-white/20`).
-  - A gold pill CTA reads **"Get a quote"** and links to `/contact?topic=Quote`.
+  - A gold pill CTA reads **"Load calculator"** and links to `/calculator` (revised 2026-09-17; **"Get a quote"** → `/contact?topic=Quote` while the calculator is off).
 - **After scrolling, and on pages without a hero:** the bar lifts: same white nav, glass cart and gold quote pill, in a rounded (`rounded-2xl`) dark glass bar (`bg-brand-950/70`, `backdrop-blur-md`, `border-white/10`, `shadow-elev-4`) inset from the page edges and moved down 8-12 px with a transform (revised 2026-09-17; was the solid white header). Reduced motion skips the movement. It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
 - **Mobile:** the same transparent-then-lifted behaviour. The menu button is a glass button while transparent.
 - The header must not shift layout. The hero reserves the header height at the top.
@@ -184,9 +184,9 @@ Rules:
 - **Scroll cue:** removed 2026-09-17 (was a bottom-left "SCROLL" button with a gold dot sliding down a line).
 - **Load animations:** the background zooms in; then the pill, the h1 lines, the lead, the buttons, the stats (count-up) and the price card appear in sequence (about 80–120 ms steps). Content must still be in the HTML and visible without JavaScript.
 
-### 7.4 Floating actions (replace the current WhatsApp button)
+### 7.4 Floating action (the WhatsApp button)
 The stack sits bottom-right, respects the safe area, and is hidden on `/cart` and `/checkout`.
-- **"Size your system"** (sub-label "Load calculator"): a gold pill with a `Calculator` icon on a darker circle. Links to `/calculator`. Shown only when the calculator is enabled.
+- ~~**"Size your system"** (sub-label "Load calculator")~~ removed 2026-09-17: the load calculator is the header button instead, so only the WhatsApp pill floats.
 - **"Chat on WhatsApp"** (sub-label "We reply during business hours"): a green-free brand pill (`brand-600` background, white text) with a `MessageCircle` icon. Shown only when a WhatsApp number is set.
   - No fake "online" status and no fake notification badge.
 - **Behaviour:**

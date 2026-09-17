@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calculator, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { enterDelay } from "@/lib/storefront/styles";
 import { isActivePath, publicPathname, storeRoutes, whatsappHref } from "@/lib/storefront/routes";
@@ -11,8 +10,6 @@ import { isActivePath, publicPathname, storeRoutes, whatsappHref } from "@/lib/s
 export type FloatingActionsProps = {
   /** `settings.website.whatsappNumber`: the WhatsApp pill shows only with digits. */
   whatsappNumber: string | null | undefined;
-  /** `settings.calculator` is enabled: the "Size your system" pill shows. */
-  calculatorEnabled: boolean;
 };
 
 /** Pages whose order buttons sit at the bottom of the screen on mobile: the stack stays off them. */
@@ -27,26 +24,24 @@ const pillBase = cn(
 const iconCircle = "flex h-10 w-10 shrink-0 items-center justify-center rounded-full";
 
 /**
- * Floating actions (TEAM_AND_MOTION_V1 §7.4), bottom right above the safe area: "Size your system" (gold, when the
- * calculator is on and you're not on it) and "Chat on WhatsApp" (brand, when a number is set). No online status or
- * badges.
+ * Floating action (TEAM_AND_MOTION_V1 §7.4), bottom right above the safe area: "Chat on WhatsApp" (brand, when a
+ * number is set). No online status or badges. The load calculator moved to the header button (2026-09-17).
  *
- * - The pills slide in from the right about 1.2 s after load (CSS; none under reduced motion).
- * - On phones they are 56 px circles with an accessible name; from `sm` they show a label and sub-label.
- * - While the footer is on screen their background fades, so footer links underneath stay readable; hover or focus
+ * - The pill slides in from the right about 1.2 s after load (CSS; none under reduced motion).
+ * - On phones it is a 56 px circle with an accessible name; from `sm` it shows a label and sub-label.
+ * - While the footer is on screen its background fades, so footer links underneath stay readable; hover or focus
  *   brings it back.
  * - Hidden on the cart and checkout. On phones on the home page, hidden while the hero is on screen so it does not
  *   cover the hero stats.
  */
-export default function FloatingActions({ whatsappNumber, calculatorEnabled }: FloatingActionsProps) {
+export default function FloatingActions({ whatsappNumber }: FloatingActionsProps) {
   const pathname = usePathname();
   const [overFooter, setOverFooter] = useState(false);
   const [overHero, setOverHero] = useState(false);
   const whatsapp = whatsappHref(whatsappNumber);
   const hidden = HIDDEN_ON.some((path) => isActivePath(pathname, path));
   const onHome = publicPathname(pathname) === "/";
-  const showCalculator = calculatorEnabled && !isActivePath(pathname, storeRoutes.calculator);
-  const hasActions = !hidden && (showCalculator || Boolean(whatsapp));
+  const hasActions = !hidden && Boolean(whatsapp);
 
   useEffect(() => {
     const footer = document.querySelector("footer");
@@ -79,25 +74,8 @@ export default function FloatingActions({ whatsappNumber, calculatorEnabled }: F
         "bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
       )}
     >
-      {showCalculator && (
-        <div style={enterDelay(1200)} className="je-fab-in">
-          <Link
-            href={storeRoutes.calculator}
-            aria-label="Size your system with the load calculator"
-            className={cn(pillBase, "bg-gold-400 text-slate-950 hover:bg-gold-300 focus-visible:ring-gold-500", faded)}
-          >
-            <span className={cn(iconCircle, "bg-brand-950 text-gold-400")}>
-              <Calculator aria-hidden="true" className="h-5 w-5" />
-            </span>
-            <span aria-hidden="true" className="hidden text-left sm:block">
-              <span className="block text-sm font-semibold leading-tight">Size your system</span>
-              <span className="block text-xs leading-tight text-slate-800">Load calculator</span>
-            </span>
-          </Link>
-        </div>
-      )}
       {whatsapp && (
-        <div style={enterDelay(showCalculator ? 1320 : 1200)} className="je-fab-in">
+        <div style={enterDelay(1200)} className="je-fab-in">
           <a
             href={whatsapp}
             target="_blank"
