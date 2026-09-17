@@ -91,7 +91,22 @@ Put both in the repository (or the `production` environment) secrets. The deploy
 
 ### 1.7 Image uploads (R2)
 
-Admins upload images from the product, category, content, team and staff forms (contract: `docs/agents/UPLOADS_V1.md`; endpoints: `backend/docs/API.md` → Image uploads). The Worker stores files in R2; Express stores them on disk (`UPLOADS_DIR`). Every image field still accepts a typed link, so the site keeps working when uploads are off.
+Admins upload images from these forms (contract: `docs/agents/UPLOADS_V1.md`; endpoints: `backend/docs/API.md` → Image uploads):
+
+| Form | Field | Upload purpose | Capability |
+|---|---|---|---|
+| Product | Images (up to 10) | `products` | `content:write`, `products:write` or `staff:write` |
+| Category | Image | `categories` | same |
+| Services | Image | `services` | same |
+| Portfolio | Image | `portfolio` | same |
+| Customer segments | Image | `segments` | same |
+| Reviews | Photo | `reviews` | same |
+| Client logos | Logo | `clients` | same |
+| Team (Website) | Photo | `team` | same |
+| Staff profile | Photo (`profile.avatarUrl`) | `staff` | `staff:write` |
+| My jobs (engineers) | Job photos | `jobs` | `jobs:update-own` or `jobs:assign` |
+
+ The Worker stores files in R2; Express stores them on disk (`UPLOADS_DIR`). Every image field still accepts a typed link, so the site keeps working when uploads are off.
 
 **Before the first deploy with uploads:**
 
@@ -112,7 +127,7 @@ Changing `IMAGES_PUBLIC_BASE_URL` later does not break stored images: records ke
 **Storage safeguards (developer-facing; never shown in the admin or the user guide):**
 
 - **Cap:** each upload reserves its bytes against `IMAGE_STORAGE_LIMIT_BYTES` in one atomic write (`system/uploads-usage`). Over the cap the upload returns `507` "Image uploads are unavailable right now. Please use an image link or try again later." and nothing is stored.
-- **Limits per file and admin:** JPEG, PNG or WebP only (checked by magic bytes; SVG is refused), 2 MB, 60 uploads per admin per 10 minutes. The admin resizes images in the browser (longest side 1600 px) before sending.
+- **Limits per file and admin:** JPEG, PNG or WebP only (checked by magic bytes; SVG is refused), 2 MB, 60 uploads per admin per 10 minutes (then `429` "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again."). The admin resizes images in the browser (longest side 1600 px) before sending.
 - **Daily cleanup** (Worker cron `0 7 * * *`; Express daily timer): deletes uploads that no record references and that are older than 24 hours, at most 500 per run, then recomputes the usage total from the upload records.
 - **Private alert:** an email goes to `STORAGE_ALERT_EMAIL` after the daily cleanup when usage is at or over `STORAGE_ALERT_BYTES`, and whenever an upload is refused at the cap, at most once every 7 days in total. Worker: Resend (`RESEND_API_KEY`, `MAIL_FROM`); Express: SMTP.
 - To check usage by hand: `npx wrangler d1 execute juwon-electric --remote --command "SELECT data FROM records WHERE collection='system' AND id='uploads-usage'"`, or the bucket's metrics in the dashboard.

@@ -949,18 +949,29 @@ Every image field keeps accepting a typed URL. An upload only returns a URL for 
 
   `enabled` is `false` on a Worker without the `IMAGES` binding (the admin then shows only the link field). It never includes usage or limits.
 
-- `POST /admin/uploads?purpose=<purpose>` (`content:write`, `products:write` or `staff:write`). The body is the raw image bytes (not multipart) with `Content-Type: image/jpeg`, `image/png` or `image/webp`. `purpose` is one of `products`, `categories`, `packages`, `services`, `portfolio`, `segments`, `reviews`, `clients`, `team`, `other`; missing or blank means `other`. Checks, in order:
+- `POST /admin/uploads?purpose=<purpose>` (capability depends on the purpose, see the table). The body is the raw image bytes (not multipart) with `Content-Type: image/jpeg`, `image/png` or `image/webp`. `purpose` is one of `products`, `categories`, `packages`, `services`, `portfolio`, `segments`, `reviews`, `clients`, `team`, `jobs`, `staff`, `other`; missing or blank means `other`.
 
-  1. `401` without a session; `403` `"You do not have permission to perform this action."` without one of the capabilities.
-  2. `400` `"Purpose must be one of: products, categories, packages, services, portfolio, segments, reviews, clients, team, other."`.
-  3. `415` `"Upload a JPEG, PNG or WebP image."` for any other `Content-Type` (parameters such as `; charset` are ignored).
-  4. `413` `"Image must be 2 MB or smaller."` when `Content-Length` declares more than 2,000,000 bytes.
-  5. Worker only: `507` (neutral message below) when the `IMAGES` binding is missing.
-  6. `429` `"Too many requests. Please try again in N minutes."` + `Retry-After` after 60 uploads by the same admin in 10 minutes.
-  7. The body is read up to the limit: `413` when it is longer or empty.
-  8. `415` when the bytes do not start with the declared type's signature (JPEG `FF D8 FF`, PNG `89 50 4E 47 0D 0A 1A 0A`, WebP `RIFF....WEBP`). SVG, GIF and anything else are refused.
-  9. `507` `"Image uploads are unavailable right now. Please use an image link or try again later."` when storing the file would pass `IMAGE_STORAGE_LIMIT_BYTES`. Nothing is stored. The message never mentions storage or limits.
-  10. The file is stored, the record written and `201` `"Image uploaded."` returned with `{ id, url, key, size, contentType }`. If storing fails the response is `503` with the same neutral message and the reserved bytes are released.
+  | Purpose | Any one of these capabilities | Used by |
+  |---|---|---|
+  | `jobs` | `jobs:update-own`, `jobs:assign` | Engineer job photos (My jobs); staff who manage jobs |
+  | `staff` | `staff:write` | Staff profile photos (`profile.avatarUrl`) |
+  | every other purpose | `content:write`, `products:write`, `staff:write` | Catalogue and website images |
+
+  An upload doesn't check that the admin can edit the record it's meant for (for example an engineer who isn't on the job). Saving the URL to a record is scoped as usual, and an unsaved upload is removed by the daily sweep after 24 hours.
+
+  Checks, in order:
+
+  1. `401` without a session; `403` `"You do not have permission to perform this action."` without any upload capability (`content:write`, `products:write`, `staff:write`, `jobs:update-own` or `jobs:assign`).
+  2. `400` `"Purpose must be one of: products, categories, packages, services, portfolio, segments, reviews, clients, team, jobs, staff, other."`.
+  3. `403` `"You do not have permission to perform this action."` when none of the admin's capabilities matches the purpose (for example an engineer with `purpose=products`, or `content:write` only with `purpose=staff`).
+  4. `415` `"Upload a JPEG, PNG or WebP image."` for any other `Content-Type` (parameters such as `; charset` are ignored).
+  5. `413` `"Image must be 2 MB or smaller."` when `Content-Length` declares more than 2,000,000 bytes.
+  6. Worker only: `507` (neutral message below) when the `IMAGES` binding is missing.
+  7. `429` `"You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again."` (curly apostrophe) + `Retry-After` after 60 uploads by the same admin in 10 minutes. The admin console shows the same text when the response has no message.
+  8. The body is read up to the limit: `413` when it is longer or empty.
+  9. `415` when the bytes do not start with the declared type's signature (JPEG `FF D8 FF`, PNG `89 50 4E 47 0D 0A 1A 0A`, WebP `RIFF....WEBP`). SVG, GIF and anything else are refused.
+  10. `507` `"Image uploads are unavailable right now. Please use an image link or try again later."` when storing the file would pass `IMAGE_STORAGE_LIMIT_BYTES`. Nothing is stored. The message never mentions storage or limits.
+  11. The file is stored, the record written and `201` `"Image uploaded."` returned with `{ id, url, key, size, contentType }`. If storing fails the response is `503` with the same neutral message and the reserved bytes are released.
 
   Audited as `upload.create` (entity `upload`, summary `Uploaded image <key>`).
 
