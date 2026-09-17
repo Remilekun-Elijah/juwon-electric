@@ -13,8 +13,11 @@ export type SectionProps = {
   description?: ReactNode;
   /** Right-aligned slot next to the heading, e.g. a "See all" link. */
   actions?: ReactNode;
-  /** `slate` (default) sits on the page background; `white` is a white band with top and bottom borders. */
-  tone?: "slate" | "white";
+  /**
+   * Surface (TEAM_AND_MOTION_V1 §7.5): `slate` (default) sits on the page background; `white` is a white band with top
+   * and bottom borders; `dark` is a slate-950 band with white text and a gold eyebrow; `tint` is a brand-50 band.
+   */
+  tone?: "slate" | "white" | "dark" | "tint";
   className?: string;
   containerClassName?: string;
   children?: ReactNode;
@@ -39,24 +42,34 @@ export default function Section({
 }: SectionProps) {
   const headingId = useId();
   const hasHeader = Boolean(eyebrow || title || description || actions);
+  const dark = tone === "dark";
 
   return (
     <section
       id={id}
       aria-labelledby={title ? headingId : undefined}
-      className={cn(storeSection, tone === "white" && "border-y border-slate-200 bg-white", className)}
+      className={cn(
+        storeSection,
+        tone === "white" && "border-y border-slate-200 bg-white",
+        tone === "dark" && "bg-slate-950 text-white",
+        tone === "tint" && "border-y border-brand-100 bg-brand-50",
+        className
+      )}
     >
       <div className={cn(storeContainer, containerClassName)}>
         {hasHeader && (
           <Reveal className="mb-8 flex flex-col gap-4 sm:mb-10 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
-              {eyebrow && <p className={storeEyebrow}>{eyebrow}</p>}
+              {eyebrow && <p className={cn(storeEyebrow, dark && "text-gold-400")}>{eyebrow}</p>}
               {title && (
-                <Title id={headingId} className={cn(Title === "h2" ? storeH2 : "text-xl font-semibold tracking-tight text-slate-900", eyebrow && "mt-2")}>
+                <Title
+                  id={headingId}
+                  className={cn(Title === "h2" ? storeH2 : "text-xl font-semibold tracking-tight text-slate-900", dark && "text-white", eyebrow && "mt-2")}
+                >
                   {title}
                 </Title>
               )}
-              {description && <p className={cn(storeBody, "mt-3 text-base leading-relaxed")}>{description}</p>}
+              {description && <p className={cn(storeBody, "mt-3 text-base leading-relaxed", dark && "text-white/70")}>{description}</p>}
             </div>
             {actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
           </Reveal>

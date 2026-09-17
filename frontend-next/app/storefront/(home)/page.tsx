@@ -171,7 +171,7 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {calculator && <CalculatorTeaser />}
+      {calculator && <CalculatorTeaser calculator={calculator} />}
 
       {studies.length > 0 && (
         <Section
@@ -188,7 +188,7 @@ export default async function HomePage() {
       <Reviews testimonials={testimonials} />
 
       <Section
-        tone="white"
+        tone="dark"
         eyebrow="How it works"
         title="From your first call to after-sales support"
         description="Every order is confirmed by phone before anything is delivered, and our own engineers do the installation."

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, MessageSquare, Wallet } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
+import CountUp from "@/components/storefront/motion/CountUp";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
@@ -37,6 +38,7 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
 
   return (
     <Section
+      tone="white"
       eyebrow="Financing"
       title="Spread the cost of your system"
       description="Pay a deposit, get your system installed, and pay the balance in monthly instalments."
@@ -93,11 +95,15 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
             <dl className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-slate-50 p-4">
                 <dt className="text-xs font-medium text-slate-500">Deposit today</dt>
-                <dd className="mt-1 text-lg font-semibold tabular-nums text-slate-900">{formatPrice(example.deposit)}</dd>
+                <dd className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
+                  <CountUp value={formatPrice(example.deposit)} />
+                </dd>
               </div>
               <div className="rounded-xl bg-slate-50 p-4">
                 <dt className="text-xs font-medium text-slate-500">Balance</dt>
-                <dd className="mt-1 text-lg font-semibold tabular-nums text-slate-900">{formatPrice(example.balance)}</dd>
+                <dd className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
+                  <CountUp value={formatPrice(example.balance)} />
+                </dd>
               </div>
             </dl>
             <div className="mt-4 overflow-x-auto">
@@ -122,7 +128,9 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
                       <th scope="row" className="py-3 pr-3 font-medium text-slate-700">
                         {monthsLabel(plan.months)}
                       </th>
-                      <td className="py-3 pr-3 text-right font-semibold tabular-nums text-slate-900">{formatPrice(plan.monthly)}</td>
+                      <td className="py-3 pr-3 text-right font-semibold tabular-nums text-slate-900">
+                        <CountUp value={formatPrice(plan.monthly)} />
+                      </td>
                       <td className="py-3 text-right tabular-nums text-slate-600">{formatPrice(plan.total)}</td>
                     </tr>
                   ))}

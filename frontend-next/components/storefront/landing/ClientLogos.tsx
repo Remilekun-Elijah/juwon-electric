@@ -103,7 +103,8 @@ export default function ClientLogos({ clients }: { clients: Client[] }) {
       eyebrow="Our clients"
       title="Trusted by homes and businesses across Lagos"
       actions={allSample ? <SampleBadge /> : undefined}
-      className="pt-6 sm:pt-10"
+      tone="white"
+      className="border-t-0"
     >
       <Reveal>
         {marquee ? (

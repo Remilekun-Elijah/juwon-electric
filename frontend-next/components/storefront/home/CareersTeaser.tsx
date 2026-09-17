@@ -5,7 +5,7 @@ import { buttonClasses } from "@/components/ui";
 import type { PublicVacancy } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeArrowNudge, storeCard, storeContainer, storePress, storeSection } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeContainer, storePress } from "@/lib/storefront/styles";
 
 /** "We're hiring" strip with the open roles count and up to three role titles. Render only when there are roles. */
 export default function CareersTeaser({ vacancies }: { vacancies: PublicVacancy[] }) {
@@ -13,9 +13,9 @@ export default function CareersTeaser({ vacancies }: { vacancies: PublicVacancy[
   const roles = vacancies.slice(0, 3).map((vacancy) => vacancy.title);
 
   return (
-    <section aria-labelledby="careers-teaser-heading" className={storeSection}>
+    <section aria-labelledby="careers-teaser-heading" className="border-y border-slate-200 bg-white py-10 sm:py-12">
       <Reveal className={storeContainer}>
-        <div className={cn(storeCard, "flex flex-col gap-6 p-5 sm:p-8 md:flex-row md:items-center md:justify-between")}>
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
               <Briefcase aria-hidden="true" className="h-6 w-6" />

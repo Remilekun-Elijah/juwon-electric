@@ -17,7 +17,7 @@ export default function FaqPreview({ faqs }: { faqs: Faq[] }) {
   const shown = faqs.slice(0, HOME_FAQS);
 
   return (
-    <Section tone="white" eyebrow="FAQ" title="Questions customers ask">
+    <Section eyebrow="FAQ" title="Questions customers ask">
       <Reveal className="mx-auto max-w-3xl">
         <FaqList faqs={shown} />
         <Link href={storeRoutes.faq} className={cn(storeLink, "group mt-6 inline-flex min-h-11 items-center gap-1.5 md:min-h-0")}>

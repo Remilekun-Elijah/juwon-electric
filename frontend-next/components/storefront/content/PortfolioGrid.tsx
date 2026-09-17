@@ -37,7 +37,9 @@ export type PortfolioGridProps = {
 /**
  * Responsive installation grid: 1 column at 375 px, 2 from `sm`, 3 from `lg`. Each tile is a full-width block with an
  * aspect-ratio image frame, so tiles always have real width and height (FP-01). Case-study fields (category, location,
- * system, summary) show when present, with a Sample label on seeded details. Server component.
+ * system, summary) show when present, with a Sample label on seeded details. The category and Sample badges sit on the
+ * photo, which zooms on hover while the system line slides up over it (TEAM_AND_MOTION_V1 §7.5, §7.6). Tiles reveal in a
+ * stagger. Server component.
  */
 export default function PortfolioGrid({
   items,
@@ -63,21 +65,39 @@ export default function PortfolioGrid({
         return (
           <li key={portfolioKey(item, index)} className="min-w-0">
             <article className={cn(storeCard, storeHoverLift, "group relative flex h-full flex-col overflow-hidden")}>
-              <ContentImage
-                src={item.image}
-                alt={item.name}
-                sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
-                className="aspect-[4/3]"
-                imageClassName={storeImageZoom}
-                priority={index < priorityCount}
-              />
-              <div className="flex flex-1 flex-col p-4 sm:p-5">
+              <div className="relative">
+                <ContentImage
+                  src={item.image}
+                  alt={item.name}
+                  sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+                  className="aspect-[4/3]"
+                  imageClassName={storeImageZoom}
+                  priority={index < priorityCount}
+                />
                 {((showCategory && category) || (details && item.sample)) && (
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    {showCategory && category && <Badge tone="brand">{categoryLabel(category, categoryTitles)}</Badge>}
-                    {details && <SampleBadge show={item.sample === true} />}
+                  <div className="absolute inset-x-3 top-3 flex flex-wrap items-center gap-2">
+                    {showCategory && category && (
+                      <Badge tone="brand" className="bg-white/95 shadow-elev-2 backdrop-blur-sm">
+                        {categoryLabel(category, categoryTitles)}
+                      </Badge>
+                    )}
+                    {details && <SampleBadge show={item.sample === true} className="bg-white/90 backdrop-blur-sm" />}
                   </div>
                 )}
+                {system && (
+                  <div
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute inset-x-0 bottom-0 hidden items-end gap-2 bg-gradient-to-t from-slate-950/85 to-transparent px-4 pb-3 pt-10 text-sm font-medium text-white",
+                      "[@media(hover:hover)]:flex translate-y-2 opacity-0 transition-[opacity,translate] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
+                    )}
+                  >
+                    <Zap className="mb-0.5 h-4 w-4 shrink-0 text-gold-400" />
+                    <span className="line-clamp-2">{system}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-1 flex-col p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Heading className="text-base font-semibold tracking-tight text-slate-900">
