@@ -36,7 +36,18 @@ Base: `v3-agents-base` @ `d48b482`.
 ## Review environment note
 Turbopack refuses a symlinked `node_modules` that points outside the project root. Review worktrees are placed under this worktree's `frontend-next/` with an uncommitted `turbopack.root` override, and deleted after the build.
 
+- Review 4: FE-1 @ 00ab5c3 accepted; FE-2 @ 6b8b544 (FE2-9 fixed).
+  - Findings: FE4-1 stale sanitiser port (re-port `richText.js` @ ae917b4 before release) and FE4-2 contrast shades (ruled in FE_CONVENTIONS §2).
+  - Follow-up FE4-3: CSP.
+  - Open product issue FE4-5: the solar toggle doesn't update the kits text.
+
+## Phase 3: integration (done)
+- `agents/fe-integration` @ 28e0e1d = base + FE-1 00ab5c3 + FE-2 6b8b544.
+- 5 conflicts resolved (see `docs/agents/fe-integration.md` on that branch).
+- `tsc` 0, lint 0/0, build green.
+- Smoke against BE-1 Express: HTTP routes plus 13/13 headless Chrome checks.
+
 ## Next
-- Review FE-1's page ports (`f88de22` onward) and the vacancies SSG conversion.
-- Build `agents/fe-integration` once FE-1 is done, using the FE2-8 resolutions.
+- Re-check FE4-1 and FE4-2 when FE-1 lands them (on `agents/fe-public`, then re-merge into `agents/fe-integration`).
+- Live checks with `agents/be-integration` once BE-2 is merged.
 - Phase 3: integration branch.

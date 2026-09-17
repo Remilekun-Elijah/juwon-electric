@@ -3,7 +3,7 @@
 Owner: SUP-FE. SUP-FE uses this list to review FE-1 (`agents/fe-public`) and FE-2 (`agents/fe-admin`) and to sign off `agents/fe-integration`. Rules are in `FE_CONVENTIONS.md`. Endpoint shapes come from `agents/be-supervisor:docs/agents/API_CONTRACT_V3.md`.
 An item passes only with evidence: a command output, a file and line reference, or a checked page. Implementers should self-check before asking for review.
 
-**Status legend** (last updated in review 4, 2026-09-17: FE-1 `00ab5c3`, FE-2 `6b8b544`; details in `review-fe.md`):
+**Status legend** (last updated after integration, 2026-09-17: FE-1 `00ab5c3`, FE-2 `6b8b544`, `agents/fe-integration` `28e0e1d`; details in `review-fe.md`):
 - `[x]` verified on every branch the item applies to.
 - `[~]` partly verified; the note says what is missing.
 - `[ ]` not started, or not yet verifiable.
@@ -83,7 +83,7 @@ Check side by side at 375 px, 768 px, and 1280 px against `cd frontend && npm ru
 
 ## G. Integration sign-off (`agents/fe-integration`, SUP-FE)
 
-- [ ] Merge `agents/fe-public` and then `agents/fe-admin` into a branch from `v3-agents-base`. Conflicts are resolved, the lockfile is regenerated, and FE-2 kit files are added to the `components/ui` barrel. *Status: trial merge done in review 2. Expected resolutions are listed in `review-fe.md` FE2-8.*
-- [ ] Sections A–F re-checked on the merged tree.
-- [ ] Smoke run against local Express (`backend`, port 9000) with `next build && next start`: landing → package detail → add to cart → checkout quote; contact submit; vacancies list → detail; admin login → dashboard → vacancy create/publish → logout.
-- [ ] Findings and residual risks recorded in `docs/agents/review-fe.md`.
+- [x] Merge `agents/fe-public` and then `agents/fe-admin` into a branch from `v3-agents-base`. Conflicts are resolved, the lockfile is regenerated, and FE-2 kit files are added to the `components/ui` barrel. *Status: `agents/fe-integration` @ `28e0e1d` (FE-1 `00ab5c3` + FE-2 `6b8b544`); resolutions are in `docs/agents/fe-integration.md` on that branch. The lockfile needed no regeneration because it is identical on both branches. The kit barrel is FE-1's, which already exports every kit file.*
+- [~] Sections A–F re-checked on the merged tree. *Status: A re-checked on the merged tree: `tsc` 0, lint 0/0, build green. B–F carry their review statuses. The visual pass and live BE-2 checks are pending.*
+- [~] Smoke run against local Express (`backend`, port 9000) with `next build && next start`: landing → package detail → add to cart → checkout quote; contact submit; vacancies list → detail; admin login → dashboard → vacancy create/publish → logout. *Status: done against BE-1 Express @ `ae917b4`: 20 routes by HTTP, and 13/13 headless Chrome checks (vacancy render and XSS, login redirect, sign-in, session keys, vacancies list, unavailable module state, sign-out). `/cart/quote` checked at the API level. Package → cart → checkout in a browser, contact submit, and the BE-2 modules wait for `agents/be-integration`.*
+- [x] Findings and residual risks recorded in `docs/agents/review-fe.md`. *Status: reviews 1–4, plus follow-ups in `fe-integration.md`.*
