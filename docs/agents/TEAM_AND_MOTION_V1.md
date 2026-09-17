@@ -159,8 +159,8 @@ Rules:
   - A small visible **pause/play** button sits next to the bars, for accessibility.
   - Under `prefers-reduced-motion`: no autoplay and no zoom. The first image is static and the bars still work.
 - **Content** (left, `max-w-3xl`):
-  1. **Status pill (glass):** a green dot with a soft pulse and the text "Inverter, battery & solar systems in Lagos". No invented registration or founding year.
-  2. **h1:** "Reliable power for Lagos homes and **businesses**", sized `text-4xl sm:text-6xl lg:text-7xl`, white. The last word uses a gold gradient text fill.
+  1. **Status pill (glass):** a green dot with a soft pulse and the text "Inverter, battery & solar systems across Nigeria". No invented registration or founding year.
+  2. **h1:** "Reliable power for Nigerian homes and **businesses**", sized `text-4xl sm:text-6xl lg:text-7xl`, white. The last word uses a gold gradient text fill.
      - Entrance: each line slides up from a clipped mask, staggered.
   3. **Lead paragraph:** the existing copy, white/80, `text-lg sm:text-xl`.
   4. **Buttons:**

@@ -101,7 +101,7 @@ export default function ClientLogos({ clients }: { clients: Client[] }) {
   return (
     <Section
       eyebrow="Our clients"
-      title="Trusted by homes and businesses across Lagos"
+      title="Trusted by homes and businesses across Nigeria"
       actions={allSample ? <SampleBadge /> : undefined}
       tone="white"
       className="border-t-0"

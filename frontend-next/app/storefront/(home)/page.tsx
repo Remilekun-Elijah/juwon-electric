@@ -41,7 +41,7 @@ import { storeArrowNudge, storeFocus, storeLink, storePress } from "@/lib/storef
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: { absolute: "Juwon Electric | Inverter, battery and solar packages in Lagos" },
+  title: { absolute: "Juwon Electric | Inverter, battery and solar packages across Nigeria" },
   description: "Inverter, battery and solar packages designed, delivered and installed by our engineers, so NEPA outages don’t stop your day.",
   alternates: { canonical: "/" },
 };

@@ -325,7 +325,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   - Edge to edge, about one screen tall (at least 640 px, at most 920 px), under the transparent header.
   - Background slideshow of 4 of our own installation photos. The first loads straight away; the others load later. Photos crossfade every 7 seconds, and the photo on screen zooms in slowly. Dark gradients keep the text readable on every photo.
   - Progress bars: 4 thin bars at the bottom centre. The current bar fills in gold over 7 seconds. Selecting a bar shows that photo. A visible pause/play button sits next to the bars ("Pause the photo slideshow" / "Play the photo slideshow"). The slideshow also pauses while the mouse is over the hero or keyboard focus is inside it.
-  - Content: a glass pill "Inverter, battery & solar systems in Lagos" with a softly pulsing green dot; the headline "Reliable power for Lagos homes and **businesses**" with the last word in a gold gradient, each line rising into view; the lead paragraph; a gold **Shop packages** button and a glass **Chat on WhatsApp** button (when a WhatsApp number is set; otherwise **Talk to an engineer**, which calls).
+  - Content: a glass pill "Inverter, battery & solar systems across Nigeria" with a softly pulsing green dot; the headline "Reliable power for Nigerian homes and **businesses**" with the last word in a gold gradient, each line rising into view; the lead paragraph; a gold **Shop packages** button and a glass **Chat on WhatsApp** button (when a WhatsApp number is set; otherwise **Talk to an engineer**, which calls).
   - Stats: up to 4 figures from Settings → Website stats, in large gold numbers that count up, with uppercase labels. A Sample label shows while the stats are sample. With no stats, the three reassurance ticks show instead (no payment to place an order, we call to confirm, installation included). The separate stats band below the hero is removed.
   - Glass price card: "Complete packages from ₦…" in gold with an arrow link to the packages, bottom right of the hero. It shows only on wide screens (1280 px and up, so it doesn't cover the stats or the floating buttons) and only when there is a priced package.
   - Scroll cue: "Scroll" with a gold dot sliding down a line, bottom left, on screens 640 px and wider. It scrolls to the next section. Hidden under reduced motion.
@@ -657,7 +657,7 @@ Complete every item before the website goes live. The local seed never runs in p
   - "How long does installation take?"
   - "Can I buy a single battery or inverter?"
   - "What's the difference between tubular and lithium batteries?"
-  - "Do you install outside Lagos?"
+  - "Which states do you cover?"
   - "What happens after I order?"
   - "Can I add solar panels later?"
   - "How do I choose a package size?"
@@ -667,7 +667,7 @@ Complete every item before the website goes live. The local seed never runs in p
 - [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo (upload or link) with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
 - [ ] Portfolio case-study details: for each portfolio item marked Sample, replace Category, Summary, Location and System with the real project details, or clear them.
 - [ ] Settings → Website → Homepage & contact:
-  - [ ] Stats (4 sample: Installations, Years in Lagos, Engineers, Average install time): enter true figures or remove the rows.
+  - [ ] Stats (4 sample: Installations, Years in business, Engineers, Average install time): enter true figures or remove the rows.
   - [ ] WhatsApp number (sample `+2348000000000`): enter the real business WhatsApp number or clear it.
   - [ ] Business hours (sample "Mon–Sat 8am–6pm"): enter the real hours or clear them.
   - [ ] Select **Save changes**.
@@ -688,6 +688,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (nationwide wording)
+- Juwon Electric serves customers across Nigeria, not only Lagos: the home hero pill and headline, the client logos heading, the footer description, the home page title and the sample content (a stat, an FAQ, a team bio and case-study locations) no longer limit the business to Lagos. The Lagos business address, Lagos time for schedules, and the "Delivery within Lagos is free" open item are unchanged.
 
 2026-09-17 (checkout wording)
 - §6.10: removed the "secure payment link" wording from checkout, order confirmation and How it works; order steps describe the items in the order rather than assuming inverter, batteries and panels.

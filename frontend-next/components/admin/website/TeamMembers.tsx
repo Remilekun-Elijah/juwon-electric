@@ -388,7 +388,7 @@ function TeamMemberForm({
           rows={3}
           value={bio}
           maxLength={WEBSITE_LIMITS.teamBio}
-          placeholder="Sizes systems and leads installations across Lagos."
+          placeholder="Sizes systems and leads installations across Nigeria."
           onChange={(event) => setBio(oneLine(event.target.value))}
         />
       </Field>

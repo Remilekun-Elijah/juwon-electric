@@ -25,7 +25,7 @@ INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'faqs' AND json_extract(records.data, '$.sample') = 1;
 INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
-  VALUES ('sample-faq-5', 'faqs', NULL, '{"id":"sample-faq-5","question":"Do you install outside Lagos?","answer":"Yes. We deliver and install in other states too. Delivery and installation costs depend on your location, and we confirm them with you on the confirmation call.","category":"Installation","sortOrder":5,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:04.000Z","updatedAt":"2026-09-17T08:00:04.000Z"}', 1, 5, '2026-09-17T08:00:04.000Z', '2026-09-17T08:00:04.000Z')
+  VALUES ('sample-faq-5', 'faqs', NULL, '{"id":"sample-faq-5","question":"Which states do you cover?","answer":"We deliver and install across Nigeria. Delivery and installation costs depend on your location, and we confirm them with you on the confirmation call.","category":"Installation","sortOrder":5,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:04.000Z","updatedAt":"2026-09-17T08:00:04.000Z"}', 1, 5, '2026-09-17T08:00:04.000Z', '2026-09-17T08:00:04.000Z')
   ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'faqs' AND json_extract(records.data, '$.sample') = 1;
@@ -72,7 +72,7 @@ INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'testimonials' AND json_extract(records.data, '$.sample') = 1;
 INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
-  VALUES ('sample-review-6', 'testimonials', NULL, '{"id":"sample-review-6","name":"Emeka N.","context":"Single lithium battery, Yaba","quote":"I only needed one extra battery for my existing inverter. I found it on the Products page, ordered it, and they called within the hour to confirm.","rating":5,"source":"website","imageUrl":null,"sortOrder":6,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:05.000Z","updatedAt":"2026-09-17T08:00:05.000Z"}', 1, 6, '2026-09-17T08:00:05.000Z', '2026-09-17T08:00:05.000Z')
+  VALUES ('sample-review-6', 'testimonials', NULL, '{"id":"sample-review-6","name":"Emeka N.","context":"Single lithium battery, Kano","quote":"I only needed one extra battery for my existing inverter. I found it on the Products page, ordered it, and they called within the hour to confirm.","rating":5,"source":"website","imageUrl":null,"sortOrder":6,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:05.000Z","updatedAt":"2026-09-17T08:00:05.000Z"}', 1, 6, '2026-09-17T08:00:05.000Z', '2026-09-17T08:00:05.000Z')
   ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'testimonials' AND json_extract(records.data, '$.sample') = 1;
@@ -161,7 +161,7 @@ INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
 INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
-  VALUES ('sample-team-11', 'teamMembers', NULL, '{"id":"sample-team-11","name":"Segun Oladipo","role":"Logistics coordinator","group":"Operations","bio":"Arranges delivery of panels, inverters and batteries to customers'' sites across Lagos and beyond.","photoUrl":"/samples/team/member-11.svg","linkedinUrl":null,"sortOrder":11,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:10.000Z","updatedAt":"2026-09-17T08:00:10.000Z"}', 1, 11, '2026-09-17T08:00:10.000Z', '2026-09-17T08:00:10.000Z')
+  VALUES ('sample-team-11', 'teamMembers', NULL, '{"id":"sample-team-11","name":"Segun Oladipo","role":"Logistics coordinator","group":"Operations","bio":"Arranges delivery of panels, inverters and batteries to customers'' sites across Nigeria.","photoUrl":"/samples/team/member-11.svg","linkedinUrl":null,"sortOrder":11,"isActive":true,"sample":true,"createdAt":"2026-09-17T08:00:10.000Z","updatedAt":"2026-09-17T08:00:10.000Z"}', 1, 11, '2026-09-17T08:00:10.000Z', '2026-09-17T08:00:10.000Z')
   ON CONFLICT (id) DO UPDATE SET data = json_set(excluded.data, '$.createdAt', json_extract(records.data, '$.createdAt')),
     is_active = excluded.is_active, sort_order = excluded.sort_order, updated_at = excluded.updated_at
   WHERE records.collection = 'teamMembers' AND json_extract(records.data, '$.sample') = 1;
@@ -185,7 +185,7 @@ UPDATE records SET data = json_set(data,
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = '7566f276-5fc8-43aa-b043-3e6193c94558' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
-    '$.category', 'farms', '$.summary', 'Solar power for a poultry farm''s lighting and water pump, cutting daily generator use.', '$.location', 'Epe, Lagos', '$.system', '3kVA inverter, 2 × 200Ah tubular batteries, 3 × 400W panels',
+    '$.category', 'farms', '$.summary', 'Solar power for a poultry farm''s lighting and water pump, cutting daily generator use.', '$.location', 'Wuse, Abuja', '$.system', '3kVA inverter, 2 × 200Ah tubular batteries, 3 × 400W panels',
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = '27148cbc-5fb8-4beb-92f4-4448b9689f06' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
@@ -193,7 +193,7 @@ UPDATE records SET data = json_set(data,
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = '5ae9fa72-1d40-4eb2-90ba-855523897bbc' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
-    '$.category', 'government-institutions', '$.summary', 'Solar and storage for a local government records office, keeping computers and air conditioning running in office hours.', '$.location', 'Alausa, Lagos', '$.system', '15kVA inverter, 4 × 10kWh lithium batteries, 16 × 550W panels',
+    '$.category', 'government-institutions', '$.summary', 'Solar and storage for a local government records office, keeping computers and air conditioning running in office hours.', '$.location', 'Port Harcourt, Rivers', '$.system', '15kVA inverter, 4 × 10kWh lithium batteries, 16 × 550W panels',
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = '63e34b6b-7830-4053-ba14-6cb01f4ee089' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
@@ -209,7 +209,7 @@ UPDATE records SET data = json_set(data,
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = 'b1cf5bed-e8aa-454d-b498-52ef888a9bbb' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
-    '$.category', 'community', '$.summary', 'Evening lighting and phone charging for a neighbourhood association''s meeting hall.', '$.location', 'Mushin, Lagos', '$.system', '2.5kVA inverter, 2 × 200Ah tubular batteries',
+    '$.category', 'community', '$.summary', 'Evening lighting and phone charging for a neighbourhood association''s meeting hall.', '$.location', 'Enugu, Enugu', '$.system', '2.5kVA inverter, 2 × 200Ah tubular batteries',
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = 'e937f944-5e9e-4cea-93be-0c2d7f27ba4f' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
@@ -229,7 +229,7 @@ UPDATE records SET data = json_set(data,
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = 'c173b02d-6f84-4630-b1d1-d789ce92fe9a' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 UPDATE records SET data = json_set(data,
-    '$.category', 'farms', '$.summary', 'Solar power for a fish farm''s aerators and water circulation pumps.', '$.location', 'Badagry, Lagos', '$.system', '3kVA inverter, 2 × 200Ah tubular batteries, 4 × 550W panels',
+    '$.category', 'farms', '$.summary', 'Solar power for a fish farm''s aerators and water circulation pumps.', '$.location', 'Benin City, Edo', '$.system', '3kVA inverter, 2 × 200Ah tubular batteries, 4 × 550W panels',
     '$.sample', json('true'))
   WHERE collection = 'portfolio' AND id = '318ec7db-aac4-4e95-b07c-1e28241acfe6' AND COALESCE(json_extract(data, '$.sample'), 1) = 1;
 
@@ -238,7 +238,7 @@ UPDATE records SET data = json_set(data,
 INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
   VALUES ('global', 'settings', NULL, '{"id":"global","updatedAt":"2026-09-17T08:00:00.000Z","updatedBy":null}', 1, 0, '2026-09-17T08:00:00.000Z', '2026-09-17T08:00:00.000Z')
   ON CONFLICT (id) DO NOTHING;
-UPDATE records SET data = json_set(data, '$.website', json('{"stats":[{"label":"Installations","value":"500+"},{"label":"Years in Lagos","value":"10+"},{"label":"Engineers","value":"25"},{"label":"Average install time","value":"1 day"}],"whatsappNumber":"+2348000000000","businessHours":"Mon–Sat 8am–6pm","sample":true}'))
+UPDATE records SET data = json_set(data, '$.website', json('{"stats":[{"label":"Installations","value":"500+"},{"label":"Years in business","value":"10+"},{"label":"Engineers","value":"25"},{"label":"Average install time","value":"1 day"}],"whatsappNumber":"+2348000000000","businessHours":"Mon–Sat 8am–6pm","sample":true}'))
   WHERE collection = 'settings' AND id = 'global' AND (
     json_type(data, '$.website') IS NOT 'object'
     OR json_extract(data, '$.website.sample') = 1

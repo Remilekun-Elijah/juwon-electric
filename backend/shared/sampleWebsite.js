@@ -53,9 +53,9 @@ export const SAMPLE_FAQS = records("faq", [
     category: "Products",
   },
   {
-    question: "Do you install outside Lagos?",
+    question: "Which states do you cover?",
     answer:
-      "Yes. We deliver and install in other states too. Delivery and installation costs depend on your location, and we confirm them with you on the confirmation call.",
+      "We deliver and install across Nigeria. Delivery and installation costs depend on your location, and we confirm them with you on the confirmation call.",
     category: "Installation",
   },
   {
@@ -128,7 +128,7 @@ export const SAMPLE_TESTIMONIALS = records("review", [
   },
   {
     name: "Emeka N.",
-    context: "Single lithium battery, Yaba",
+    context: "Single lithium battery, Kano",
     quote:
       "I only needed one extra battery for my existing inverter. I found it on the Products page, ordered it, and they called within the hour to confirm.",
     rating: 5,
@@ -187,7 +187,7 @@ export const SAMPLE_TEAM_MEMBERS = records("team", [
   member(10, "Aisha Bello", "Operations manager", OPERATIONS,
     "Coordinates stock, delivery and installation dates so every order moves through fulfilment on time."),
   member(11, "Segun Oladipo", "Logistics coordinator", OPERATIONS,
-    "Arranges delivery of panels, inverters and batteries to customers' sites across Lagos and beyond."),
+    "Arranges delivery of panels, inverters and batteries to customers' sites across Nigeria."),
   member(12, "Halima Yusuf", "Inventory officer", OPERATIONS,
     "Keeps stock counts accurate so the prices and availability shown on the website stay current."),
 ]);
@@ -230,7 +230,7 @@ export const SAMPLE_PORTFOLIO = [
     slug: "1-2kwp-canadian-solar-panel",
     sortOrder: 4,
     category: "farms",
-    location: "Epe, Lagos",
+    location: "Wuse, Abuja",
     system: "3kVA inverter, 2 × 200Ah tubular batteries, 3 × 400W panels",
     summary: "Solar power for a poultry farm's lighting and water pump, cutting daily generator use.",
   },
@@ -248,7 +248,7 @@ export const SAMPLE_PORTFOLIO = [
     slug: "8-8kwp-canadian-solar-panel",
     sortOrder: 6,
     category: "government-institutions",
-    location: "Alausa, Lagos",
+    location: "Port Harcourt, Rivers",
     system: "15kVA inverter, 4 × 10kWh lithium batteries, 16 × 550W panels",
     summary: "Solar and storage for a local government records office, keeping computers and air conditioning running in office hours.",
   },
@@ -284,7 +284,7 @@ export const SAMPLE_PORTFOLIO = [
     slug: "2-5kva-tubular-battery-energy",
     sortOrder: 10,
     category: "community",
-    location: "Mushin, Lagos",
+    location: "Enugu, Enugu",
     system: "2.5kVA inverter, 2 × 200Ah tubular batteries",
     summary: "Evening lighting and phone charging for a neighbourhood association's meeting hall.",
   },
@@ -329,7 +329,7 @@ export const SAMPLE_PORTFOLIO = [
     slug: "550w-mono-crystalline-solar-panel",
     sortOrder: 15,
     category: "farms",
-    location: "Badagry, Lagos",
+    location: "Benin City, Edo",
     system: "3kVA inverter, 2 × 200Ah tubular batteries, 4 × 550W panels",
     summary: "Solar power for a fish farm's aerators and water circulation pumps.",
   },
@@ -341,7 +341,7 @@ export const SAMPLE_SETTINGS = {
   website: {
     stats: [
       { label: "Installations", value: "500+" },
-      { label: "Years in Lagos", value: "10+" },
+      { label: "Years in business", value: "10+" },
       { label: "Engineers", value: "25" },
       { label: "Average install time", value: "1 day" },
     ],

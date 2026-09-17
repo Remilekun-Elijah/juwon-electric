@@ -12,7 +12,7 @@ import ScrollCue from "./ScrollCue";
 
 /** Our own installation photos (public/panel-*.webp). The first is the eagerly loaded, server-rendered background. */
 const HERO_SLIDES: HeroSlide[] = [
-  { src: "/panel-3.webp", alt: "Solar panels installed by Juwon Electric on a flat commercial rooftop in Lagos" },
+  { src: "/panel-3.webp", alt: "Solar panels installed by Juwon Electric on a flat commercial rooftop" },
   { src: "/panel-1.webp", alt: "Rows of solar panels on a rooftop at sunset" },
   { src: "/panel-5.webp", alt: "Solar panels fitted along the roof of a family home" },
   { src: "/panel-2.webp", alt: "Solar panels installed on the roof of a commercial building" },
@@ -21,7 +21,7 @@ const HERO_SLIDES: HeroSlide[] = [
 const reassurances = ["No payment to place an order", "We call to confirm", "Installation included"];
 
 /** Headline lines; the last word gets the gold gradient. */
-const HEADLINE = ["Reliable power for", "Lagos homes and"];
+const HEADLINE = ["Reliable power for", "Nigerian homes and"];
 const HEADLINE_ACCENT = "businesses";
 
 const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
@@ -72,7 +72,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
               <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
               <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            Inverter, battery &amp; solar systems in Lagos
+            Inverter, battery &amp; solar systems across Nigeria
           </p>
 
           <h1 id="home-hero-heading" className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">

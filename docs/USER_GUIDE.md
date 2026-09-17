@@ -1243,6 +1243,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-17 (nationwide wording)**
+- Customer: the website now describes Juwon Electric as serving homes and businesses across Nigeria.
+
 **2026-09-17 (checkout wording)**
 - Customer: checkout and the order confirmation no longer mention a payment link; payment is agreed on the confirmation call. Order steps now describe "the items in your order", which can be a package, single products or both.
 

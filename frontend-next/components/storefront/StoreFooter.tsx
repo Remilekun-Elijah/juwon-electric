@@ -63,7 +63,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
               <Image src="/logo.svg" alt={`${SITE_NAME} home`} width={88} height={62} className="h-10 w-auto" />
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
-              Inverters, lithium and tubular batteries and solar panels, designed and installed by our engineers in Lagos,
+              Inverters, lithium and tubular batteries and solar panels, designed and installed by our engineers across Nigeria,
               so NEPA outages don’t stop your home or business.
             </p>
             <div className="mt-6 max-w-md">

@@ -120,14 +120,14 @@ Notification emails and anything else sensitive stay private.
   - How long does installation take? (sample wording)
   - Can I buy a single battery or inverter? Yes, from Products.
   - What's the difference between tubular and lithium batteries?
-  - Do you install outside Lagos? (sample)
+  - Which states do you cover? (sample; the business serves all of Nigeria)
   - What happens after I order? The fulfilment steps.
   - Can I add solar panels later?
   - How do I choose a package size? The calculator, or talk to an engineer.
 - **Reviews (6):** name like "Adaeze O." with context such as "3.5kVA lithium, Ikeja". Mixed sources, ratings 4–5, quotes tied to real features: call to confirm, installation, NEPA outages.
 - **Clients (6):** fictional names with neutral text-logo SVGs, which the storefront agent adds at `frontend-next/public/samples/client-1.svg … client-6.svg`. Logo paths are `/samples/client-N.svg`.
 - **Portfolio:** add sample `summary`, `location`, `system` and `category` (segment slugs from the existing customer segments) to the existing portfolio records by id, and set `sample: true` on them. Other fields stay unchanged.
-- **`website.stats`:** 4 sample stats ("Installations", "Years in Lagos", "Engineers", "Average install time"), plus a sample WhatsApp number `+2348000000000` and hours "Mon–Sat 8am–6pm".
+- **`website.stats`:** 4 sample stats ("Installations", "Years in business", "Engineers", "Average install time"), plus a sample WhatsApp number `+2348000000000` and hours "Mon–Sat 8am–6pm".
 - **`financing`:** enabled, with a 40% deposit, terms `[3, 6, 12]`, a 3.5% monthly rate, approval in "48 hours", and the note "Sample terms — not an offer."
 - **`calculator`:** enabled, with 12 common appliances at typical wattages (fan 75W, LED bulb 10W, TV 120W, decoder 25W, laptop 65W, phone charging 10W, fridge 150W, freezer 200W, washing machine 500W, microwave 1000W, 1hp AC 900W, pumping machine 750W) and default parameters. The generator settings are fuel ₦1,000 per litre, 0.25 litres per kVA-hour, and ₦20,000 maintenance a month.
 
