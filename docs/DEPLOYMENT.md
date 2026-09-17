@@ -4,7 +4,7 @@ This file covers the three deployable parts, their environment variables and sec
 
 | Part | Source | Runtime | Role |
 | --- | --- | --- | --- |
-| Worker API | `backend/cloudflare` | Cloudflare Workers + D1 | **Production API** (ledger D1) |
+| Worker API | `backend/cloudflare` | Cloudflare Workers + D1 + R2 | **Production API** (ledger D1, uploaded images in R2) |
 | Express API | `backend` | Node 22 + MongoDB (or JSON file store) | Local development and self-hosting, kept at route and response parity with the Worker |
 | Frontend | `frontend-next` | Next.js (App Router) on Vercel | Public site and admin portal |
 
@@ -51,6 +51,11 @@ Legend:
 | `MONGODB_URI` / `MONGODB_DIRECT_URI` | Req (self-host) | n/a | Secret | `MONGODB_DIRECT_URI` wins. Without either, Express uses the JSON file store (development). |
 | `MONGODB_REQUIRED` | Opt | n/a | Var | `true` exits on a failed connection outside production too. |
 | `JSON_STORE_PATH` | Dev | n/a | Var | JSON store location (tests and throwaway copies). |
+| `IMAGES` (R2 binding) | n/a | Req | Binding | `wrangler.toml` → `[[r2_buckets]] binding = "IMAGES"`, bucket `juwon-electric-images`. **Create the bucket before the first deploy** (§1.7): deploying with a binding to a missing bucket fails. |
+| `IMAGES_PUBLIC_BASE_URL` | Opt | Opt | Var | Public origin that serves the bucket, for example `https://images.example.com` (§1.7). Uploaded image URLs become `<base>/<key>`. Unset: URLs point at the API itself (`<API origin>/uploads/<key>`), which also works but costs a Worker request per image view. |
+| `IMAGE_STORAGE_LIMIT_BYTES` | Opt | Opt | Var | Hard cap on the total size of stored uploads. Default `9000000000` (9 GB, under the 10 GB R2 free tier). Unset, `0` or not a number means the default. At the cap, uploads return `507` with a neutral message and admins use image links instead. |
+| `STORAGE_ALERT_BYTES` | Opt | Opt | Var | Usage that triggers the private storage alert (§1.7). Default `8000000000` (8 GB); `0` or invalid means the default. |
+| `UPLOADS_DIR` | Dev | n/a | Var | Express upload directory. Default `backend/data/uploads/` (gitignored). Express keeps uploads on local disk, so a self-hosted Express needs a persistent volume there. |
 
 ### 1.4 Email
 
@@ -62,6 +67,7 @@ Legend:
 | `MAIL_FROM` | n/a | Req for email | Var | The Worker sender, for example `Name <address>`. |
 | `MAIL_REPLY_TO` | n/a | Opt | Var | Must be the inbound address for contact reply threading. |
 | `ADMIN_NOTIFY_EMAIL` | n/a | Opt | Var | Recipient of new order, contact and subscriber notifications. |
+| `STORAGE_ALERT_EMAIL` | Opt | Opt | Var | Comma-separated developer mailbox(es) for the private image storage alert (§1.7). Unset: no alert is sent. Addresses that belong to the business admins (`ADMIN_NOTIFY_EMAIL`, `SMTP_FROM`, admin accounts, the Settings notification lists) are dropped, and `MAIL_BCC` is never added. |
 | `INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET` | Opt | Opt | Secret | Svix/Resend `whsec_…` secret for `POST /webhooks/contact-reply` (preferred). |
 | `INBOUND_EMAIL_WEBHOOK_SECRET` | Opt | Opt | Secret | Legacy shared secret (`x-webhook-secret`), used only when the signing secret is empty. With neither set, the webhook returns 401. |
 
@@ -78,10 +84,40 @@ Set the Vercel project root to `frontend-next` and deploy it through Vercel's re
 
 | Name | Used by | Notes |
 | --- | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | `deploy-worker` job | API token scoped to Workers Scripts:Edit and D1:Edit on the account. |
+| `CLOUDFLARE_API_TOKEN` | `deploy-worker` job | API token scoped to Workers Scripts:Edit, D1:Edit and Workers R2 Storage:Edit on the account. |
 | `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker` job | Cloudflare account id. |
 
 Put both in the repository (or the `production` environment) secrets. The deploy job runs in the `production` environment, so required reviewers can be added there.
+
+### 1.7 Image uploads (R2)
+
+Admins upload images from the product, category, content, team and staff forms (contract: `docs/agents/UPLOADS_V1.md`; endpoints: `backend/docs/API.md` → Image uploads). The Worker stores files in R2; Express stores them on disk (`UPLOADS_DIR`). Every image field still accepts a typed link, so the site keeps working when uploads are off.
+
+**Before the first deploy with uploads:**
+
+1. Create the bucket (the name must match `wrangler.toml`):
+
+   ```bash
+   cd backend/cloudflare
+   npx wrangler r2 bucket create juwon-electric-images
+   ```
+
+   **Deploying without the bucket fails**: `wrangler deploy` (and the CI `deploy-worker` job) stops with a binding error, and the previous Worker version keeps serving. Create the bucket, then re-run the job.
+2. Optional but recommended, a public domain for images: in the Cloudflare dashboard, R2 → `juwon-electric-images` → Settings → Custom Domains, connect a subdomain such as `images.<your domain>` (the zone must be on Cloudflare). Then set `IMAGES_PUBLIC_BASE_URL=https://images.<your domain>` on the Worker. Do not use the rate-limited `r2.dev` URL in production. Without a public domain, leave `IMAGES_PUBLIC_BASE_URL` unset: the Worker serves images at `/uploads/<key>` with a one-year immutable cache header.
+3. Set `STORAGE_ALERT_EMAIL` to a developer mailbox. Adjust `IMAGE_STORAGE_LIMIT_BYTES` and `STORAGE_ALERT_BYTES` only if the plan changes.
+4. The frontend needs no new variables: `SiteImage` renders CMS image URLs `unoptimized`, so the image domain needs no `remotePatterns` entry in `next.config.ts`.
+
+Changing `IMAGES_PUBLIC_BASE_URL` later does not break stored images: records keep the URL they were saved with, the API keeps serving `/uploads/<key>`, and cleanup matches images by key whatever the origin.
+
+**Storage safeguards (developer-facing; never shown in the admin or the user guide):**
+
+- **Cap:** each upload reserves its bytes against `IMAGE_STORAGE_LIMIT_BYTES` in one atomic write (`system/uploads-usage`). Over the cap the upload returns `507` "Image uploads are unavailable right now. Please use an image link or try again later." and nothing is stored.
+- **Limits per file and admin:** JPEG, PNG or WebP only (checked by magic bytes; SVG is refused), 2 MB, 60 uploads per admin per 10 minutes. The admin resizes images in the browser (longest side 1600 px) before sending.
+- **Daily cleanup** (Worker cron `0 7 * * *`; Express daily timer): deletes uploads that no record references and that are older than 24 hours, at most 500 per run, then recomputes the usage total from the upload records.
+- **Private alert:** an email goes to `STORAGE_ALERT_EMAIL` after the daily cleanup when usage is at or over `STORAGE_ALERT_BYTES`, and whenever an upload is refused at the cap, at most once every 7 days in total. Worker: Resend (`RESEND_API_KEY`, `MAIL_FROM`); Express: SMTP.
+- To check usage by hand: `npx wrangler d1 execute juwon-electric --remote --command "SELECT data FROM records WHERE collection='system' AND id='uploads-usage'"`, or the bucket's metrics in the dashboard.
+
+**Local development:** `wrangler dev` simulates the bucket locally (restart it after adding the binding). Express writes to `backend/data/uploads/`. Image fields accept `http://localhost` and `http://127.0.0.1` URLs so local uploads work; every other `http://` image URL is still refused.
 
 ---
 
@@ -130,7 +166,7 @@ npx wrangler d1 execute juwon-electric --remote --command \
 
 ## 3. First production setup checklist
 
-1. Cloudflare: create the D1 database (`wrangler d1 create juwon-electric`), put its id in `backend/cloudflare/wrangler.toml`, and set the Worker secrets from §1.1-1.4 (`ADMIN_AUTH_SECRET`, `SUPERADMIN_PASSWORD`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, the webhook secret) and the vars (`SUPERADMIN_EMAIL`, `ALLOWED_ORIGINS`, `MAIL_FROM`, `ADMIN_NOTIFY_EMAIL`, `ADMIN_APP_URL`).
+1. Cloudflare: create the D1 database (`wrangler d1 create juwon-electric`), put its id in `backend/cloudflare/wrangler.toml`, create the R2 bucket (`wrangler r2 bucket create juwon-electric-images`, §1.7), and set the Worker secrets from §1.1-1.4 (`ADMIN_AUTH_SECRET`, `SUPERADMIN_PASSWORD`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, the webhook secret) and the vars (`SUPERADMIN_EMAIL`, `ALLOWED_ORIGINS`, `MAIL_FROM`, `ADMIN_NOTIFY_EMAIL`, `ADMIN_APP_URL`, `STORAGE_ALERT_EMAIL`, and `IMAGES_PUBLIC_BASE_URL` once the image domain is connected).
 2. GitHub: add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, and create the `production` environment.
 3. Push to `v3` or `main`: CI applies migrations and deploys.
 4. Vercel: import `frontend-next` and set `NEXT_PUBLIC_BACKEND_URL` to the Worker URL.
