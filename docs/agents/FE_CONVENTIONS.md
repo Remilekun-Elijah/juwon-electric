@@ -47,8 +47,8 @@ frontend-next/
 FE-1 ported the **whole** kit, all 25 files, in `b6e901d`. SUP-FE reviewed it as faithful to Vite, so the original split (FE-2 porting the admin-leaning files) is withdrawn to avoid duplicate ports.
 
 - **FE-2 does not port any kit file.** Bring FE-1's kit and shared lib into your branch without merging, so both branches add identical content:
-  `git checkout agents/fe-public -- frontend-next/components/ui frontend-next/lib/cn.ts frontend-next/lib/api/client.ts frontend-next/lib/api/index.ts frontend-next/lib/api/public.ts frontend-next/lib/api/admin.ts frontend-next/package.json frontend-next/package-lock.json`
-  Then run `npm ci`. Repeat when FE-1 changes those paths. Never edit them on your branch except `lib/api/admin.ts` (§3.5).
+  `git checkout agents/fe-public -- frontend-next/components/ui frontend-next/lib/cn.ts frontend-next/lib/api/client.ts frontend-next/lib/api/index.ts frontend-next/lib/api/public.ts frontend-next/package.json frontend-next/package-lock.json`
+  Then run `npm ci`. Repeat when FE-1 changes those paths. Never edit them on your branch. FE-1 no longer ships `lib/api/admin.ts`, which is FE-2's own file (§3.5).
 - Tailwind v3 → v4 renames apply to ported markup (Vite is on Tailwind 3.4): `shadow-sm`→`shadow-xs`, `shadow`→`shadow-sm`, `rounded-sm`→`rounded-xs`, `rounded`→`rounded-sm`, `blur`→`blur-sm`, `ring`→`ring-3`, `outline-none`→`outline-hidden`, `flex-shrink-*`→`shrink-*`. Parity means the same **rendered** result, not the same class string.
 - Kit changes needed by admin (new props, variants) are requested in `docs/agents/fe-admin.md`. FE-1 makes them. If FE-1 is blocked, FE-2 wraps the component in `components/admin/*` instead of editing it.
 - The barrel is `components/ui/index.js` (FE-1).
@@ -63,6 +63,28 @@ FE-1 ported the **whole** kit, all 25 files, in `b6e901d`. SUP-FE reviewed it as
 ## 2. Design tokens and styling
 
 - **Tailwind v4 CSS-first.** FE-1 moves every token from `frontend-next/tailwind.config.js` into `@theme` in `app/globals.css` and then deletes `tailwind.config.js`. Until that lands, FE-2 uses the same class names (`bg-brand-700`, `shadow-elev-3`, `animate-fade-up`), and they will resolve after the merge.
+- **Accessibility outranks pixel parity (PRD §6.8, review 4 ruling).**
+  - **Thresholds:** normal text and text buttons need a contrast ratio of at least 4.5:1, and large text (≥24 px, or ≥18.66 px bold) and non-text UI need at least 3:1, measured against the actual background (white **and** `offWhite`).
+  - **Required replacements for Vite colours:**
+
+    | Vite colour | Use | Replacement |
+    | --- | --- | --- |
+    | `brand-500`/`brand-600` `#DB464C` | token value | `#CC4147` |
+    | `faint` `#85793E` | token value | `#7D723A` |
+    | footer `#E67E82` | on `deep_red` | `#EA9598` |
+    | `#878787` | labels | `#767676` |
+    | `#e26767` | load text | `#BD5656` |
+    | `#EDA4A6` | "In Cart" | `#BD5656`, with white text on it |
+
+  - `#D24349` is not enough, because it is 4.32:1 on `offWhite`.
+  - Token *names* stay fixed; only these values change.
+  - Record every such change as an "a11y deviation from Vite" in `fe-public.md`.
+  - Decorative shapes and disabled states are exempt.
+- **Parity decisions (review 4):**
+  - The Navbar keeps the Vite items, with no Products or Careers link. Both pages are linked from the footer and the sitemap.
+  - Checkout stays a dialog on `/cart`.
+  - The Vite solar-toggle kits-text bug is kept for payload parity and is tracked as an open product issue (review-fe FE4-5).
+  - There is no CSP yet. The follow-up is a report-only policy first (FE4-3).
 - Token names are fixed. Use the Vite config's names:
   - Colours: `brand-50…950`, `navbar_color`, `header_color`, `deep_red`, `offWhite`, `faint`, `milk`, `diamond`.
   - Shadows: `elev-1…5`, `auth`.
@@ -77,7 +99,10 @@ FE-1 ported the **whole** kit, all 25 files, in `b6e901d`. SUP-FE reviewed it as
   - JetBrains Mono is not loaded by Vite (the fallback stack is used). Loading it is fine.
 - **Dark mode:** Vite uses `darkMode: "class"`. Keep class-based dark mode (`@custom-variant dark (&:where(.dark, .dark *));`). Remove the create-next-app `prefers-color-scheme` block and Arial `body` font.
 - **Styles:** use `cn()` for conditional classes, and use no CSS-in-JS. Global CSS only in `globals.css`. Scoped third-party overrides (such as `app/admin/vacancies/quill-overrides.css`) are imported by the page that needs them.
-- **Rich HTML** (vacancy descriptions) renders inside one `.prose-je` scoped style defined in `globals.css` (FE-1). The server sanitises the HTML (D6), and the client additionally strips `<script>`, `<style>`, `on*` attributes, and `javascript:` URLs before `dangerouslySetInnerHTML`. Use one shared helper, `lib/sanitize.ts` (FE-1). FE-2 uses the same helper for admin previews.
+- **Rich HTML** (vacancy and product descriptions) renders inside one `.prose-je` scoped style defined in `globals.css` (FE-1). The server sanitises the HTML (D6), and that is the security boundary. The client runs `lib/sanitize.ts` (FE-1) before `dangerouslySetInnerHTML` as defence in depth. FE-2 uses the same helper for admin previews.
+  - **`lib/sanitize.ts` is an exact TypeScript port of `backend/shared/richText.js`** (review 4, FE4-1). Its header names the backend commit it mirrors.
+  - Every change to `richText.js` or its fixtures must be re-ported in the same round.
+  - The port must pass `backend/shared/__fixtures__/richText.json` and stay linear-time on pathological input.
 
 ---
 

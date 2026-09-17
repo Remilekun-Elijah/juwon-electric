@@ -3,7 +3,7 @@
 Owner: SUP-FE. SUP-FE uses this list to review FE-1 (`agents/fe-public`) and FE-2 (`agents/fe-admin`) and to sign off `agents/fe-integration`. Rules are in `FE_CONVENTIONS.md`. Endpoint shapes come from `agents/be-supervisor:docs/agents/API_CONTRACT_V3.md`.
 An item passes only with evidence: a command output, a file and line reference, or a checked page. Implementers should self-check before asking for review.
 
-**Status legend** (last updated in review 3, 2026-09-16: FE-1 `14f0b00`, FE-2 `2cf7074`; details in `review-fe.md`):
+**Status legend** (last updated in review 4, 2026-09-17: FE-1 `00ab5c3`, FE-2 `6b8b544`; details in `review-fe.md`):
 - `[x]` verified on every branch the item applies to.
 - `[~]` partly verified; the note says what is missing.
 - `[ ]` not started, or not yet verifiable.
@@ -12,12 +12,12 @@ An item passes only with evidence: a command output, a file and line reference, 
 
 - [x] `cd frontend-next && npm ci && npm run build` succeeds with no type errors. *Status: green on FE-2 `2cf7074` (23 routes) and on the trial merge with FE-1 `14f0b00`, after the FE2-8 resolutions.*
 - [x] `npm run lint` passes with no new `eslint-disable` or `@ts-nocheck`. *Status: 0 errors on FE-2 `2cf7074` and on the trial merge. The 1 warning is FE-1's `app/vacancies/[slug]`.*
-- [ ] `next build` succeeds **with the backend unreachable** (`NEXT_PUBLIC_BACKEND_URL` pointing at a closed port). Public pages fall back, and nothing crashes. *Status: not yet run; no data-fetching public pages exist yet.*
+- [x] `next build` succeeds **with the backend unreachable** (`NEXT_PUBLIC_BACKEND_URL` pointing at a closed port). Public pages fall back, and nothing crashes. *Status: FE-1 `00ab5c3` builds with `NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:9`, and every read falls back.*
 - [x] No create-next-app leftovers: template `page.tsx`, "Create Next App" metadata, `public/{next,vercel,file,globe,window}.svg`, Geist font vars, Arial body. *Status: none on FE-1 or in the trial merge.*
-- [~] `tailwind.config.js` removed, and all tokens live in `@theme`. *Status: removed on FE-1. It is still on FE-2, and FE-1's deletion applies at merge.*
+- [x] `tailwind.config.js` removed, and all tokens live in `@theme`. *Status: removed on FE-1. The merge applies the deletion to FE-2.*
 - [~] Shared originals (`lib/cn.ts`, `lib/api/*`, `components/ui/*`, `package.json`, `package-lock.json`) on `agents/fe-admin` are identical to `agents/fe-public` (`git diff agents/fe-public agents/fe-admin -- <paths>` is empty, except `lib/api/admin.ts`). *Status: FE-2 `2cf7074` matches FE-1 `0e03b90` for the kit, `globals.css`, `layout.tsx`, `cn.ts`, `client.ts`, `site.ts`, and the package files. `lib/config.ts` differs only in a comment (FE2-8). `lib/api/types.ts`, `lib/validation.ts`, and `lib/api/index.ts` are resolved at merge.*
 - [x] The UI kit type-checks when consumed from `.tsx` without passing optional props (for example, `<Card>`, `<Button>`, `<Badge>` with only children). *Status: FE-1 `.d.ts` files plus `kit.typecheck.tsx`, which is compiled in the build (FE1-1 fixed).*
-- [~] No `fetch(` outside `lib/api/**`. No `process.env` outside `lib/config.ts` and `next.config.ts`. *Status: admin code is clean. The only violations are FE-1's `app/vacancies/*.jsx` (pending SSG conversion).*
+- [x] No `fetch(` outside `lib/api/**`. No `process.env` outside `lib/config.ts` and `next.config.ts`. *Status: FE-1 `00ab5c3` has `fetch(` only in `lib/api/client.ts`, and `process.env` only in `lib/config.ts`, `client.ts` and `next.config.ts`. The old vacancies `.jsx` files are deleted.*
 - [x] Ownership respected (§1.1): no duplicate ports of the other agent's files, and stand-ins are flagged in the status file. *Status: FE-2 took FE-1's kit and declared `components/admin/kit.ts` as a temporary adapter.*
 - [x] New dependencies are justified in the status file, and the lockfile is committed with them.
 - [x] Status file `docs/agents/<agent-id>.md` is current. *Status: `fe-admin.md` updated in `2cf7074`.*
@@ -26,27 +26,27 @@ An item passes only with evidence: a command output, a file and line reference, 
 
 Check side by side at 375 px, 768 px, and 1280 px against `cd frontend && npm run dev`.
 
-- [~] Navbar, Header, and Footer: same links, socials (`config.socials`), mobile menu behaviour, and active state. *Status: ported in `0e03b90`. Side-by-side visual check still pending.*
-- [ ] Landing: all Home sections (Header, About, Benefits, Portfolio, Testimonials) present in order, with the same copy and imagery.
-- [ ] Services, Portfolio, Packages list and detail, and Contact match layout, copy, and states (loading, empty, error).
-- [ ] Cart: add, remove, and quantity updates persist in `localStorage["je/cart"]` in the Vite shape. A cart saved by the Vite site loads in Next.
-- [ ] Checkout: server quote via `/cart/quote`, fallback behaviour per `frontend/FRONTENDS.md`, Turnstile `order` action, and `/order` payload identical to Vite (diff the request body).
-- [ ] Contact and newsletter submit with Turnstile when a site key is set, and without it when unset.
-- [ ] Local fallbacks for packages, services, and portfolio still render when the API fails.
+- [x] Navbar, Header, and Footer: same links, socials (`config.socials`), mobile menu behaviour, and active state. *Status: ported. Navbar items match Vite (review 4 ruling); FE-1's headless checks pass.*
+- [~] Landing: all Home sections (Header, About, Benefits, Portfolio, Testimonials) present in order, with the same copy and imagery. *Status: ported (`f88de22`), with FE-1 evidence. SUP-FE's side-by-side visual pass happens at integration.*
+- [~] Services, Portfolio, Packages list and detail, and Contact match layout, copy, and states (loading, empty, error). *Status: ported with loading, empty and error states. Side-by-side visual pass at integration.*
+- [x] Cart: add, remove, and quantity updates persist in `localStorage["je/cart"]` in the Vite shape. A cart saved by the Vite site loads in Next. *Status: FE-1 headless 22/22, including a cart saved in the Vite shape. The store uses `je/cart`.*
+- [x] Checkout: server quote via `/cart/quote`, fallback behaviour per `frontend/FRONTENDS.md`, Turnstile `order` action, and `/order` payload identical to Vite (diff the request body). *Status: review 4 code check matches `FRONTENDS.md` and Vite (quote, split on unavailable, fallback note, Turnstile `order`, server total). FE-1 captured byte-identical bodies. The solar kits-text bug is kept (FE4-5).*
+- [~] Contact and newsletter submit with Turnstile when a site key is set, and without it when unset. *Status: same `useTurnstile` contract as Vite. A live run with a site key is still pending.*
+- [x] Local fallbacks for packages, services, and portfolio still render when the API fails. *Status: verified by the backend-down build.*
 - [~] Admin: the login, dashboard, content manager, orders and order details, contacts and reply, newsletter, activity log, and notifications screens match the Vite admin in layout and flows. *Status: code ported. Side-by-side visual check still pending.*
 - [x] Ported UI-kit components keep Vite prop APIs. *Status: review 1 diff, and the `.d.ts` files add types without changing props.*
 
 ## C. PRD §7 rendering criteria (FE-1)
 
-- [ ] Public marketing pages are server components. `next build` output marks them static (`○`) or ISR, not dynamic (`ƒ`).
-- [ ] `packages/[id]` and `vacancies/[slug]` use `generateStaticParams` + `revalidate`. An unknown slug returns 404 via `notFound()`.
-- [ ] Vacancy list and detail pages are SSG/ISR (no `useEffect` fetch). The list shows only `open` roles and is keyed by `id ?? _id ?? slug`. The page shows employment type, requirements, and responsibilities.
-- [ ] View-source of a public page contains the rendered content (not an empty client shell).
-- [ ] Vacancy HTML renders inside `.prose-je` through `lib/sanitize.ts`. A test payload containing `<script>`, `onerror=`, and `javascript:` renders inert.
-- [ ] Per-page `metadata`/`generateMetadata` (title, description, OG), `sitemap.ts` including packages and open vacancies, and `robots.ts` disallowing `/admin`.
+- [x] Public marketing pages are server components. `next build` output marks them static (`○`) or ISR, not dynamic (`ƒ`). *Status: static with a 5-minute revalidate in the build output.*
+- [x] `packages/[id]` and `vacancies/[slug]` use `generateStaticParams` + `revalidate`. An unknown slug returns 404 via `notFound()`. *Status: 66 package paths SSG, and vacancies SSG with `dynamicParams`. Unknown IDs return 404 with the backend up (review 4). During an outage an unknown vacancy or product returns 500 on purpose.*
+- [x] Vacancy list and detail pages are SSG/ISR (no `useEffect` fetch). The list shows only `open` roles and is keyed by `id ?? _id ?? slug`. The page shows employment type, requirements, and responsibilities. *Status: `233d036`: server pages, open-only, full field set. Verified end to end against BE-1 (review 4).*
+- [x] View-source of a public page contains the rendered content (not an empty client shell). *Status: vacancy detail HTML contains the title, requirements and JSON-LD.*
+- [~] Vacancy HTML renders inside `.prose-je` through `lib/sanitize.ts`. A test payload containing `<script>`, `onerror=`, and `javascript:` renders inert. *Status: renders inside `.prose-je`, and the XSS payload is inert end to end. `lib/sanitize.ts` is a stale port of `richText.js` (FE4-1) and must be re-ported before release.*
+- [x] Per-page `metadata`/`generateMetadata` (title, description, OG), `sitemap.ts` including packages and open vacancies, and `robots.ts` disallowing `/admin`. *Status: `00ab5c3`: sitemap, robots (disallow `/admin` and `/cart`), canonicals, and JobPosting and Product JSON-LD.*
 - [x] Real favicon and brand metadata. Fonts load through `next/font` (no layout shift from font swap). *Status: FE-1.*
 - [x] Font parity: the public body renders in Inter. `inter-*`, `sora-*`, and `manrope-*` helper classes exist. Admin renders in Plus Jakarta Sans (`font-sans`). `--diamond`/`--gold` CSS variables are defined. *Status: FE-1 `8d2117b` (FE1-2). Admin `font-sans` is set in `app/admin/layout.tsx` (FE-2).*
-- [~] `frontend-next/README.md` documents env vars and Vercel setup. *Status: env vars are documented, plus `.env.example` (FE-1). Vercel section not yet checked.*
+- [x] `frontend-next/README.md` documents env vars and Vercel setup. *Status: `00ab5c3` README plus `.env.example`.*
 
 ## D. Admin security and session (FE-2)
 
@@ -74,12 +74,12 @@ Check side by side at 375 px, 768 px, and 1280 px against `cd frontend && npm ru
 
 ## F. Accessibility basics (both)
 
-- [~] Landmarks: one `<main>` per page, plus `<nav>`, `<header>`, and `<footer>`. Skip link to main content. *Status: the public layout has a skip link and `main#main` (FE-1 `0e03b90`). Admin landmarks are not yet checked.*
+- [~] Landmarks: one `<main>` per page, plus `<nav>`, `<header>`, and `<footer>`. Skip link to main content. *Status: public side verified by FE-1 headless checks (33/33) and the skip link. Admin landmarks are checked at integration.*
 - [~] Every input has an associated label (`Field` wiring). Errors use `aria-describedby`/`aria-invalid`. *Status: admin rich-text is fixed (FE2-4). A full a11y pass is due at integration.*
 - [ ] Visible focus states on all interactive elements. Everything is keyboard-operable (menus, dialogs, drawers, tabs). Dialogs and drawers trap and restore focus and close on `Esc`.
-- [ ] Images have meaningful `alt` text, or `alt=""` if decorative. Icon-only buttons have `aria-label`.
-- [ ] Text contrast is at least 4.5:1 on brand colours (check `brand-500` and `brand-600` on white).
-- [ ] Heading order has no skipped levels, and pages have unique `<title>` values.
+- [~] Images have meaningful `alt` text, or `alt=""` if decorative. Icon-only buttons have `aria-label`. *Status: public side passes FE-1's checks. Admin is checked at integration.*
+- [~] Text contrast is at least 4.5:1 on brand colours (check `brand-500` and `brand-600` on white). *Status: ruling in FE_CONVENTIONS §2 (review 4). FE-1 still has to apply the replacement shades (FE4-2).*
+- [~] Heading order has no skipped levels, and pages have unique `<title>` values. *Status: public side passes FE-1's checks, and titles are per page. Admin is checked at integration.*
 
 ## G. Integration sign-off (`agents/fe-integration`, SUP-FE)
 

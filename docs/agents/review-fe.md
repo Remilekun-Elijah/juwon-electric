@@ -314,3 +314,94 @@ After those resolutions the merged tree builds and lints with 0 errors.
 
 ### FE-2 verdict
 **Accepted for integration.** All review-2 findings are fixed, and the new modules gate correctly and match the contract. FE2-9 is a small follow-up that doesn't block. FE2-10 and FE2-11 are tracking notes. Remaining sign-off items are live checks that need BE-1 and BE-2: section D live 401/expiry/reset runs, server-side refusal with limited accounts, and vacancies end to end. They happen during `agents/fe-integration` (section G).
+
+---
+
+## Review 4 — FE-1 `agents/fe-public` @ `00ab5c3`, plus FE-2 `6b8b544` (2026-09-17)
+
+FE-1 commits since review 2:
+- `0e03b90` layout
+- `f88de22` pages
+- `14f0b00` and `a2b053c` `adminPreview` and 44 px close buttons
+- `233d036` vacancies in `(public)` with ISR and sanitiser
+- `8fa3773` `PublicCustomerSegment` rename
+- `afa1173` catalog
+- `00ab5c3` SEO, security headers and README
+
+FE-2 `6b8b544` fixes FE2-9: the invite and reset expiry hints are now in `UserDialogs.tsx` and `AdminLogin.tsx`.
+
+### Method
+- **Build:** a detached worktree of `00ab5c3` under the supervisor's `frontend-next/`, reusing its single install and the uncommitted `turbopack.root` override. Ran `next build` with `NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:9` (unreachable), then lint and `tsc`.
+- **Live checks against a local backend:**
+  - Rebuilt against a local Express backend: BE-1 `agents/be-platform` @ `ae917b4`, a throwaway JSON store and a seeded superadmin, on port 9217.
+  - Ran `next start` on port 3217 and used `curl` for headers, status codes and rendered HTML.
+  - Created an open vacancy through `POST /admin/vacancies` with an XSS payload and rendered its ISR page.
+- **Sanitiser differential:** ran `lib/sanitize.ts` against `agents/be-platform:backend/shared/richText.js` @ `ae917b4`. The test covered the 30 fixtures, a 20,000-case random differential, nesting deeper than 100, and pathological timing inputs.
+- **Checkout:** read `useCartQuote.ts`, `CheckoutForm.tsx` and `useTurnstile.ts` against the Vite `Checkout/*`, `utils/useTurnstile.js` and `frontend/FRONTENDS.md`.
+- **Contrast:** computed WCAG ratios for the palette FE-1 reported.
+- **Cleanup:** deleted the review worktree and `.next` afterwards.
+
+### Results
+| Check | Result |
+| --- | --- |
+| `next build` with the backend unreachable | **Pass.** Every read logs `unavailable (network) … using fallback`. Home, services, portfolio, packages, contact and vacancies are static with a 5-minute revalidate. `/packages/[id]` builds 66 SSG paths; `/vacancies/[slug]` and `/products/*` are SSG with `dynamicParams`. `robots.txt` and `sitemap.xml` are generated. |
+| Lint and `tsc` | `tsc` is clean. Lint shows only the 5 old errors in `app/admin/vacancies/page.jsx`, which FE-2 deletes; FE-1's own files have 0 errors. |
+| Security headers | Every route sends `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: SAMEORIGIN` and a `Permissions-Policy` that blocks camera, microphone, geolocation and payment. `X-Powered-By` is removed. There is no CSP (see FE4-3). HSTS is left to Vercel, which sends it on production domains. |
+| 404 behaviour (backend up) | `/does-not-exist` → 404; `/vacancies/nope` → 404, with `noindex` and "Page not found"; `/packages/999999` → 404; `/products/nope` → 404, because BE-1 has no products route yet and `readOr` maps it to `notFound()`. `/`, `/vacancies`, `/packages/0`, `/cart` and `/contact` → 200. |
+| 404 behaviour (backend down) | `/vacancies/nope` and `/products/nope` → **500** through the error boundary. This is deliberate and correct: an outage is not cached as a 404 for a real record. Unknown packages still 404 from the fallback. |
+| Vacancy page, end to end | BE-1 stored `<p>Hi <a rel="noopener noreferrer nofollow" target="_blank">x</a></p>`. The page renders exactly that inside `.prose-je`, and the HTML has 0 hits for `onerror`, `javascript:alert` or `<script>alert`. Employment type, requirements, responsibilities and JobPosting JSON-LD are all in the server HTML. |
+| Checkout parity | **Matches `FRONTENDS.md` and Vite.** Details below. |
+| Robots | `Disallow: /admin`, `/admin/` and `/cart`; the sitemap is linked. |
+
+Checkout parity in detail:
+- **Quote:** `POST /cart/quote` runs when the dialog opens and whenever the cart signature changes. It has a 15-second timeout, and quoting binary-splits the cart on the "no longer available" 400 to find the unavailable lines. Those lines block ordering and get a Remove button.
+- **Fallback:** a network error, 5xx, 429 or timeout falls back to the stored prices with the Vite note, and the order is still allowed.
+- **Confirmation:** it shows the server `total`, or `₦`+`totalAmount`.
+- **Turnstile:** the `order` action uses the same `ready` and `withToken` contract as Vite. When no key is set it is disabled and no token is sent. Submit is blocked until Turnstile is ready, and the token resets after every attempt.
+- **Payload:** field-for-field the Vite `Form.jsx` payload (`name`, `phoneNumber`, `emailAddress`, `deliveryAddress`, `order: cart.map(toOrderItem)`, `total`). FE-1's recorded byte-identical capture is consistent with this code.
+
+### Findings
+
+**FE4-1 — Minor (fix before release, not blocking integration) — the frontend sanitiser is a stale port.**
+- **Which version:** `lib/sanitize.ts` says it was ported from `agents/be-platform @ 01b22f3`. It still uses the sticky `TAG_PATTERN` regex scan. It does **not** include `ae917b4` (a linear-time memoised scanner and `MAX_DEPTH = 100`).
+- **Output:** identical on all 30 fixtures and on 20,000 random mixed-markup cases. It differs on nesting deeper than 100: BE-1 unwraps tags past depth 100 and the frontend does not.
+- **Timing (100 KB pathological input), frontend vs BE-1:**
+  - `"<a"×50000`: 295 ms vs 13 ms
+  - `'<a "'×25000`: 356 ms vs 3 ms
+  - `"<b '"×25000`: 345 ms vs 3 ms
+- **Why it doesn't block integration:**
+  - The frontend only sanitises `descriptionHtml` that the API already sanitised with the current `richText.js`.
+  - That stored output is well-formed, already capped at depth 100, and escapes stray `<`.
+  - So neither the depth difference nor the slow path can be reached from real data, and the server-side sanitiser remains the security boundary (D6).
+- **Fix (FE-1):** re-port `backend/shared/richText.js` @ `ae917b4` exactly (`attributesEnd` memo, `readTag`, `MAX_DEPTH`). Update the source commit in the header comment and add a timing assertion next to the fixture check.
+- **Rule going forward:** any change to `backend/shared/richText.js` must be mirrored in the frontend. This is now recorded in FE_CONVENTIONS §2.
+
+**FE4-2 — Minor (rule, implementation follow-up) — colour contrast.** See the contrast ruling below. The Vite palette fails WCAG AA in several places. FE-1 applies the new shades as a follow-up commit (on `agents/fe-public` or on top of `agents/fe-integration`). It is required before release sign-off (FE_ACCEPTANCE §F) and does not block the integration merge.
+
+**FE4-3 — Follow-up — no Content-Security-Policy.** The baseline headers are in place. A CSP needs a reviewed policy covering Turnstile (`challenges.cloudflare.com` script and frame), `next/font` (self-hosted), inline JSON-LD and Next's inline bootstrap (nonce or hash), the Quill editor styles in admin, and CMS `https:` images. Plan: add it in report-only mode first, then enforce.
+
+**FE4-4 — Note — on-demand 404s stream.** For a dynamic-param 404 generated at request time, the status is 404 and the head carries `noindex` and the "Page not found" title, but the body fills in through the RSC payload. This is acceptable in Next 16 and has no SEO impact, since the status and `noindex` are correct.
+
+**FE4-5 — Open product issue (not fixed this round) — solar toggle doesn't update the kits text in `/order`.** Carried over from Vite on purpose, for payload parity. Toggling "With solar" in the cart changes `price` but not the `package` kits text sent in `POST /order`. The order record can therefore describe the wrong kit. Fixing it changes the order payload, so the coordinator is raising it with the product owner.
+
+### Rulings on FE-1's open decisions
+1. **Contrast (PRD §6.8 outranks pixel parity).** Normal text and text buttons need at least 4.5:1, and large text (≥24 px, or ≥18.66 px bold) and non-text UI need at least 3:1, measured against the **actual background**. `#D24349` passes on white (4.53) but **fails on `offWhite` #FDFAEC (4.32)**, which the public pages use. So the ruling picks shades that pass on both:
+
+| Vite colour (use) | Ratio | Replace with | New ratio |
+| --- | --- | --- | --- |
+| `#DB464C` = `brand-500`/`brand-600` (buttons, links, white-on-red buttons) | 4.21 on white / 4.02 on offWhite | `#CC4147` (token value change; names unchanged) | 4.76 / 4.54, white text on it 4.76 |
+| `faint` `#85793E` | 4.37 / 4.18 | `#7D723A` | 4.84 / 4.62 |
+| Footer `#E67E82` on `deep_red` | 3.75 | `#EA9598` | 4.52 |
+| Checkout labels `#878787` | 3.59 | `#767676` | 4.54 |
+| Package load text `#e26767` | 3.30 | `#BD5656` | 4.54 |
+| "In Cart" `#EDA4A6` (white text on it, and as text) | 2.01 | `#BD5656` background with white text; `#BD5656` as text | 4.54 |
+
+Decorative-only uses (large illustrative shapes, disabled states) are exempt. Record each change as "a11y deviation from Vite" in `fe-public.md`.
+
+2. **Navbar without Products and Careers, and checkout as a dialog on `/cart`:** accepted as Vite parity. Both pages are linked from the footer and the sitemap. Adding navbar items is a product decision.
+3. **Solar kits-text bug:** not fixed this round (FE4-5).
+4. **No CSP:** follow-up (FE4-3).
+
+### Verdict
+**FE-1 `00ab5c3` is accepted for integration.** No major findings. Before release sign-off: FE4-1 (sanitiser re-port) and FE4-2 (contrast shades). Follow-ups: FE4-3 (CSP) and FE4-5 (product decision).
+FE-2 `6b8b544`: FE2-9 is fixed, so FE-2 has no open findings.
