@@ -14,13 +14,13 @@ export const storeRoutes = {
 export type StoreNavItem = { label: string; href: string };
 
 /**
- * Header navigation, in order. Seven items fit at 1024 px; Careers moved to the mobile drawer and the footer when Team
- * was added (TEAM_AND_MOTION_V1 §4).
+ * Header navigation, in order. Careers moved to the mobile drawer and the footer when Team was added
+ * (TEAM_AND_MOTION_V1 §4); Calculator left the list on 2026-09-17, when the gold header button became **Load
+ * calculator** (the drawer keeps its own button).
  */
 export const storeNav: StoreNavItem[] = [
   { label: "Packages", href: storeRoutes.packages },
   { label: "Products", href: storeRoutes.products },
-  { label: "Calculator", href: storeRoutes.calculator },
   { label: "Services", href: storeRoutes.services },
   { label: "Our work", href: storeRoutes.portfolio },
   { label: "Team", href: storeRoutes.team },
