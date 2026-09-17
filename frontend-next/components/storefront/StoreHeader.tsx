@@ -7,11 +7,11 @@ import { usePathname } from "next/navigation";
 import { ArrowRight, Menu, Phone } from "lucide-react";
 import { Drawer, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { isActivePath, primaryPhone, storeNav, storeRoutes, telHref } from "@/lib/storefront/routes";
+import { isActivePath, primaryPhone, storeDrawerNav, storeNav, storeRoutes, telHref } from "@/lib/storefront/routes";
 import { storeContainer, storeFocus } from "@/lib/storefront/styles";
 import CartButton from "./cart/CartButton";
 
-const drawerLinks = [{ label: "Home", href: storeRoutes.home }, ...storeNav, { label: "Cart", href: storeRoutes.cart }];
+const drawerLinks = [{ label: "Home", href: storeRoutes.home }, ...storeDrawerNav, { label: "Cart", href: storeRoutes.cart }];
 
 export type StoreHeaderProps = {
   /** Business phone from settings (may hold several numbers; the first is shown). */

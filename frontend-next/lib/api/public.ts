@@ -22,6 +22,7 @@ import type {
   SaveCartPayload,
   ServicesData,
   SubscribePayload,
+  TeamMember,
   Testimonial,
 } from "./types";
 
@@ -69,6 +70,9 @@ export const getTestimonials = (init?: ApiRequestInit) => getPublicData<Testimon
 
 /** `GET /clients` (client logos). */
 export const getClients = (init?: ApiRequestInit) => getPublicData<Client[]>("/clients", undefined, init);
+
+/** `GET /team` (TEAM_AND_MOTION_V1 §1): active team members sorted by `sortOrder`, then `createdAt`. */
+export const getTeam = (init?: ApiRequestInit) => getPublicData<TeamMember[]>("/team", undefined, init);
 
 /* ---------- Products & categories (contract §4) ---------- */
 

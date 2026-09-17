@@ -24,6 +24,7 @@ import {
   getProducts,
   getPublicSettings,
   getServices,
+  getTeam,
   getTestimonials,
   getVacancies,
   getVacancy,
@@ -41,6 +42,7 @@ import type {
   PublicSettings,
   PublicVacancy,
   ServicesData,
+  TeamMember,
   Testimonial,
   WebsiteStat,
 } from "@/lib/api/types";
@@ -71,6 +73,7 @@ export const STORE_TAGS = [
   "faqs",
   "testimonials",
   "clients",
+  "team",
 ] as const;
 
 export type StoreTag = (typeof STORE_TAGS)[number];
@@ -234,6 +237,12 @@ export const getStoreTestimonials = cache(
 export const getStoreClients = cache(
   async (): Promise<Client[]> => (await storeRead<Client[]>("GET /clients", (init) => getClients(init), { tags: ["clients"], fallback: [] })) ?? []
 );
+
+/** `GET /team`: active team members in display order (TEAM_AND_MOTION_V1 §1). Empty when the route is missing. */
+export const getStoreTeam = cache(async (): Promise<TeamMember[]> => {
+  const team = await storeRead<TeamMember[]>("GET /team", (init) => getTeam(init), { tags: ["team"], fallback: [] });
+  return (team ?? []).filter((member) => member.isActive !== false && member.name?.trim());
+});
 
 /* ---------- Vacancies ---------- */
 

@@ -8,20 +8,29 @@ export const storeRoutes = {
   checkoutSuccess: "/checkout/success",
   calculator: "/calculator",
   faq: "/faq",
+  team: "/team",
 } as const;
 
 export type StoreNavItem = { label: string; href: string };
 
-/** Header and mobile drawer navigation, in order. */
+/**
+ * Header navigation, in order. Seven items fit at 1024 px; Careers moved to the mobile drawer and the footer when Team
+ * was added (TEAM_AND_MOTION_V1 §4).
+ */
 export const storeNav: StoreNavItem[] = [
   { label: "Packages", href: storeRoutes.packages },
   { label: "Products", href: storeRoutes.products },
   { label: "Calculator", href: storeRoutes.calculator },
   { label: "Services", href: storeRoutes.services },
   { label: "Our work", href: storeRoutes.portfolio },
-  { label: "Careers", href: storeRoutes.vacancies },
+  { label: "Team", href: storeRoutes.team },
   { label: "Contact", href: storeRoutes.contact },
 ];
+
+/** Mobile drawer navigation: the header items plus Careers, placed after Team. */
+export const storeDrawerNav: StoreNavItem[] = storeNav.flatMap((item) =>
+  item.href === storeRoutes.team ? [item, { label: "Careers", href: storeRoutes.vacancies }] : [item]
+);
 
 /** sessionStorage key for the last placed order summary (written by checkout, read by /checkout/success). */
 export const LAST_ORDER_KEY = "je/last-order";
