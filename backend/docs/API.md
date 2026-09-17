@@ -112,6 +112,7 @@ Request limits:
 
 - Order items: at most 50 (`"An order can have at most 50 items."`). Cart items: at most 50 (`"A cart can have at most 50 items."`). Package options: at most 10 (`"A package can have at most 10 options."`).
 - Order/cart/quote items are shape-checked before any matching: `kva`, `volt`, `type`, `name`, `optionName`, `option` must be strings or numbers of at most 50 characters; `package` at most 600; `id`, `packageId`, `legacyId` at most 64; `withSolar` a boolean or `"true"`/`"false"`. Otherwise `400` `"Invalid order item."` / `"Invalid cart item."`.
+- Product items (COMMERCE_V3 §3.1) are items with `type: "product"`: `{ "type": "product", "productId": "<id>", "quantity": 1 }`. Only `productId` (a non-empty string of at most 64 characters, otherwise the same `"Invalid order item."` / `"Invalid cart item."`) and `quantity` are read; other fields are ignored. Every other item (`type` absent or not `"product"`) is a package item and is checked as above.
 - Item `quantity`: a JSON integer or a digits-only string from 1 to 100 (1 when omitted); otherwise `400` `"Quantity must be a whole number from 1 to 100."` (`""` included).
 - Numeric admin fields (`kva`, `volt`, `sortOrder`, `legacyId`, option `price`) accept a JSON number or a string of digits with an optional decimal part (`"12"`, `"12.5"`). Hex, exponents, blanks and padded strings return `"<Label> must be a number."` (labels `kVA`, `Volt`, `Sort order`, `legacyId`, `Option price`).
   - `kva` is required and must be > 0; `volt` must be > 0 when present (send `null` to clear it).
@@ -190,8 +191,10 @@ Cloudflare Workers runtime:
 
 ### Packages
 
-- `GET /packages`
+- `GET /packages?category=<id|slug>`
 - `GET /packages/:id` (`:id` is the id, slug or public `legacyId`; inactive packages return `404` `"Package not found."`)
+
+`category` (COMMERCE_V3 §4) keeps the packages whose `categoryId` is that active category or one of its active descendants. An unknown or inactive category returns `[]`. Without the parameter the list is unchanged.
 
 Returns package plans in the shape the existing React packages/cart UI expects, with computed options (COMMERCE_V2 §1.2):
 
@@ -206,6 +209,8 @@ Returns package plans in the shape the existing React packages/cart UI expects, 
       "slug": "basic",
       "type": "tubular",
       "category": "tubular",
+      "categoryId": "uuid",
+      "categoryRef": { "id": "uuid", "slug": "inverters", "name": "Inverters" },
       "name": "Basic",
       "load": "2 fans...",
       "kva": 1.1,
@@ -234,6 +239,7 @@ Returns package plans in the shape the existing React packages/cart UI expects, 
 - The markup is internal: public responses never include `productsTotal`, `priceAdjustment`, or item `unitPrice`/`lineTotal`, and the deprecated top-level `items` is not returned.
 - Read-time migration: when a stored package still has top-level `items`, an option without items uses them (the next admin write persists this).
 - Product price changes are reflected immediately, because prices are computed on every read.
+- `categoryId` is the catalogue category the package references (`null` when none). `categoryRef` is `{ id, slug, name }` of that category, or `null` when there is none or the category is inactive. The legacy text `category` is unchanged.
 
 ### Services
 
@@ -347,11 +353,13 @@ Quote body:
 }
 ```
 
-Package lines are priced with the option's computed `price` (see Packages); an option with `available: false` can't be priced. Request payloads are unchanged.
+Package lines are priced with the option's computed `price` (see Packages); an option with `available: false` can't be priced. Package item payloads are unchanged.
 
-Quote response (`200`): `data: { "items", "total", "unavailable" }`. `items` has the same length and order as the request. A line that can be priced has `packageId`, `legacyId`, `name`, `type`, `kva`, `volt`, `optionName`, `kits`, numeric `price`, `unitPrice`, `quantity`, `lineTotal` and `available: true`. A line that can't (inactive, removed or unmatched package/option) is `{ "available": false, "message": "This item is no longer available." }`. `total` sums the available lines and `unavailable` lists the indexes of the others. Validation errors (types, lengths, quantity, more than 50 items) still return `400`.
+Items may also be catalogue products (COMMERCE_V3 §3), mixed with package items in any order: `{ "type": "product", "productId": "uuid", "quantity": 2 }`. A product line is priced at the product's current `price` only when the product exists, its `status` is `active` (hidden and archived products are not sold online) and `stockQuantity >= quantity`; otherwise it is unavailable.
 
-Saved cart (`POST /cart`) also requires a `sessionId` and a `turnstileToken` (action `cart`). A cart with the same `sessionId` is updated (items, total, and name/phone/email when sent) and returns `200` `"Cart saved."`; otherwise a new cart is created with `201` `"Cart saved."`. Any unavailable item returns `400` `"Some items in your cart are no longer available. Please refresh your cart."`. Carts not updated for 30 days are deleted opportunistically. Cart items may also reference a package by its internal `packageId`.
+Quote response (`200`): `data: { "items", "total", "unavailable" }`. `items` has the same length and order as the request. A line that can be priced has `packageId`, `legacyId`, `name`, `type`, `kva`, `volt`, `optionName`, `kits`, numeric `price`, `unitPrice`, `quantity`, `lineTotal` and `available: true`. A priced product line is `{ type: "product", productId, sku, slug, name, price, unitPrice, quantity, lineTotal, available: true }`. A line that can't be priced (inactive, removed or unmatched package/option; missing, hidden, archived or short product) is `{ "available": false, "message": "This item is no longer available." }`. `total` sums the available lines and `unavailable` lists the indexes of the others. Validation errors (types, lengths, quantity, more than 50 items) still return `400`.
+
+Saved cart (`POST /cart`) also requires a `sessionId` and a `turnstileToken` (action `cart`). A cart with the same `sessionId` is updated (items, total, and name/phone/email when sent) and returns `200` `"Cart saved."`; otherwise a new cart is created with `201` `"Cart saved."`. Any unavailable item returns `400` `"Some items in your cart are no longer available. Please refresh your cart."`. Carts not updated for 30 days are deleted opportunistically. Cart items may also reference a package by its internal `packageId`. Saved carts store product lines in the quote shape.
 
 Prices are always computed on the server from the active package catalog (see "Package resolution" below); any client-sent `price` is ignored.
 
@@ -390,7 +398,10 @@ Client-sent `price` and `total` are ignored. The server resolves each item to an
 
 - per item: `package`, `typeLabel`, `kva` (display strings), `volt`, `price` (`"₦1,150,000"`), `quantity`, plus `name`, `packageId`, `legacyId`, `optionName`, numeric `unitPrice` and `lineTotal`;
 - the line snapshot (COMMERCE_V2 §1.3): `type: "package"`, `components: [{ productId, sku, name, quantity, unitPrice }]` (per 1 package; `[]` for manual-price options), `productsTotal` (`null` for manual-price options) and `priceAdjustment`;
-- on the order: `total` (`"₦…"` string), numeric `totalAmount` and `channel: "website"`.
+- per product item (COMMERCE_V3 §3.3): `{ type: "product", productId, sku, name, quantity, unitPrice, lineTotal, typeLabel: "Product" }`, the in-store line shape plus `typeLabel`;
+- on the order: `total` (`"₦…"` string) and numeric `totalAmount` over every line (packages and products), and `channel: "website"`.
+
+The `order` array keeps the request order. A product item that is missing, not `active` or short of stock fails the whole order with the unavailable message below. The order email lists product lines as `<quantity> × <name> (<SKU>)` with `₦<unit> x <quantity> = ₦<line total>`.
 
 Lines stored before this change carry the display label in `type` (`"Inverter + tubular"`); new lines carry it in `typeLabel`. A line is a product line only when `type` is `"product"`; any other value (or none) is a package line. The order email shows `typeLabel`, falling back to `type`.
 
@@ -403,7 +414,7 @@ Package resolution (identical in the Node backend and the Cloudflare Worker):
 
 Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With solar", otherwise "Without solar") → the kits text at the end of `package`. An explicit option name that doesn't exist falls back to `withSolar` and then the kits text; if neither is given or matches, the item is unavailable. With none of the three given, the first option is used.
 
-The order is persisted in `orders` with `channel: "website"`, `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: true` (packages are sold installed; staff can turn it off) and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
+The order is persisted in `orders` with `channel: "website"`, `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: true` when the order has at least one package line and `false` for product-only orders (COMMERCE_V3 §3.3; staff can change it) and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
 
 ### Vacancies
 
@@ -540,7 +551,7 @@ Packages:
 - `PUT /admin/packages/:id`
 - `DELETE /admin/packages/:id`
 
-Admin package responses (list, create, update, delete) are the stored record with computed `options` (the public option fields plus `productsTotal`, `priceAdjustment`, and per item `unitPrice` and `lineTotal`), without the deprecated top-level `items`. Package writes are described under "Package options" in the Commerce section.
+Admin package responses (list, create, update, delete) are the stored record with computed `options` (the public option fields plus `productsTotal`, `priceAdjustment`, and per item `unitPrice` and `lineTotal`), without the deprecated top-level `items`, plus `categoryId` and `categoryRef` (`{ id, slug, name }` also for inactive categories, `null` when none). Package writes are described under "Package options" in the Commerce section.
 
 Services:
 
@@ -594,7 +605,7 @@ Public:
 Admin:
 
 - `GET /admin/categories` (`products:read`): array.
-- `POST /admin/categories`, `PUT /admin/categories/:id` (partial), `DELETE /admin/categories/:id` (`products:write`). Delete answers `409` `"Category has subcategories or products."` when the category is referenced.
+- `POST /admin/categories`, `PUT /admin/categories/:id` (partial), `DELETE /admin/categories/:id` (`products:write`). Delete answers `409` `"Category has subcategories, products or packages."` when a subcategory, product or package (`categoryId`) references the category.
 - `GET /admin/products?category&status&stock=low|out&q&page&limit` (`products:read`, paged): ordered by `updatedAt` descending.
 - `GET /admin/products/:id` (`products:read`): by id, slug or SKU.
 - `POST /admin/products`, `PUT /admin/products/:id` (partial), `DELETE /admin/products/:id` (`products:write`). Delete answers `409` `"Product is used by a package."`.
@@ -622,6 +633,7 @@ Package options (COMMERCE_V2 §1.1). `POST/PUT /admin/packages` take `options[]`
 - Errors (all `400`): `"At least one package option is required."`, `"Option names must be unique."`, `"Each product can appear once per option."`, `"Product not found."`, `"Archived products can't be added to a package."`, `"Option <name> price must be greater than 0."`, `"Price adjustment must be a whole number from -1,000,000,000 to 1,000,000,000."`, `"An option can have at most 50 products."`.
 - Top-level `items` is deprecated: sent together with any option without items it answers `400` `"Add products to each option instead of the package."`; otherwise it is ignored. Every update clears a stored top-level `items`.
 - `DELETE /admin/products/:id` answers `409` `"Product is used by a package."` when any option (or a stored top-level `items`) uses the product. Archiving such a product is allowed and makes those options unavailable.
+- `categoryId` (COMMERCE_V3 §4): optional id of a catalogue category (active or not). An unknown id answers `400` `"Category not found."`; a non-string answers `400` `"Category must be text."`. On create a missing value stores `null`; on update a missing value keeps the stored one and `null` (or `""`) clears it.
 
 Audit actions: `category.create|update|delete`, `product.create|update|delete`.
 
@@ -654,7 +666,7 @@ Enums, transitions and stock rules: contract §6. Every admin order response is 
 
 - **Legacy payment status:** `unpaid` reads as `pending` with `legacyPaymentStatus: "unpaid"`. A missing or unknown value reads as `pending` with `legacyPaymentStatus` set to the original value or `null`.
 - **Legacy status:** `completed` reads as `fulfillmentStatus: "delivered"`, `cancelled` as `cancelled`, and anything else as `pending`.
-- **Defaults:** new website orders store `requiresInstallation: true`; older orders without the field read as `false`. `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
+- **Defaults:** new website orders store `requiresInstallation: true` when they have a package line and `false` when they only have product lines; older orders without the field read as `false`. `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
 - **`status`:** always derived from `fulfillmentStatus`.
 - **Persistence:** D1 migration `0011_orders_fulfilment.sql` writes the same values, and Express writes them on the next change.
 - **Removed field:** the internal `sortOrder` is no longer part of order responses.
@@ -664,7 +676,7 @@ Endpoints:
 
 - `GET /admin/orders?fulfillmentStatus&paymentStatus&channel&engineerId&requiresInstallation&from&to` (`orders:read`): array. `from` and `to` filter on `receivedAt`, falling back to `createdAt`. `channel` is `website` or `in_store` (otherwise `400` `"Channel is not valid."`).
 - `POST /admin/orders` (`orders:create`): an in-store sale of products. See "In-store orders" below.
-- `GET /admin/orders/:id` (`orders:read`): the order plus `jobs: [{ id, status, engineerId, scheduledAt }]`.
+- `GET /admin/orders/:id` (`orders:read`): the order plus `jobs: [{ id, status, engineerId, engineerIds, scheduledAt }]` (`engineerId` is the lead, `engineerIds[0]`).
 - `PUT /admin/orders/:id` (`orders:update`): `200` `"Order updated."`. Body `{ note?, isActive?, requiresInstallation?, paymentStatus?, fulfillmentStatus?, status? }`.
   - `status` must equal the current derived value, otherwise `400` `"Use fulfillmentStatus to change the order status."`.
   - Setting `requiresInstallation: false` while non-cancelled jobs exist answers `409` `"Order has installation jobs."`.
@@ -693,7 +705,7 @@ Audit actions:
 
 #### In-store orders
 
-`POST /admin/orders` (`orders:create`: superadmin, admin, sales) → `201` `"Order created."` with the order.
+`POST /admin/orders` (`orders:create`: superadmin, admin, sales) → `201` `"Order created."` with the order. `customer` and its fields are optional (see Validation).
 
 ```json
 {
@@ -709,7 +721,7 @@ Audit actions:
 
 Validation (`400`):
 
-- Customer: `name` required (≤100), `phoneNumber` required (the public order rule, `"Enter a valid phone number."`), `emailAddress` optional (`"A valid email address is required."`), `deliveryAddress` optional (≤500). A missing `customer` answers `"Name is required."`.
+- Customer (COMMERCE_V3 §2): `customer` is optional (a non-object answers `"Customer is not valid."`). `name` is optional (≤100); a blank or missing name is stored as `"Walk-in customer"`. `phoneNumber` is optional; when given it must pass the public order rule (`"Enter a valid phone number."`), and a blank or missing one is stored as `null`. `emailAddress` optional (`"A valid email address is required."`), `deliveryAddress` optional (≤500).
 - `lines`: 1–50 (`"Add at least one product."`, `"An order can have at most 50 lines."`), unique `productId` (`"Each product can appear once per order."`), `quantity` a whole number from 1 to 1,000. Products must exist (`"Product not found."`) and not be archived (`"Archived products can't be sold."`); hidden products are allowed.
 - `discount` (optional): `amount` a whole number ≥ 0 (`"Discount amount must be a whole number..."`) and not more than the subtotal (`"Discount can't be more than the subtotal."`). When `amount > 0`, `reason` is required (`"Discount reason is required."`), 3–200 characters (`"Discount reason must be at least 3 characters."`).
 - `fulfilment`: `collected` or `later` (`"Fulfilment is not valid."`). `paymentStatus`: `pending`, `partial` or `paid` (`"Payment status is not valid."`).
@@ -723,28 +735,43 @@ Stored order: the customer fields (absent email or address stored as `null`), `o
 
 Returns: an in-store order (`channel: "in_store"`) may also move `delivered → cancelled` through `POST /admin/orders/:id/fulfillment` or `PUT /admin/orders/:id`. Cancelling restores committed stock with `sale_reversal` movements and clears `stockCommittedAt`; payment status is not changed. Website orders keep `delivered → installed` only (`409` otherwise).
 
-Audit: `order.create` with summary `In-store order for <name>: <n> items, ₦<total>` (n = total quantity), plus `; discount ₦<amount> (<reason>)` when discounted. Collected orders also log `order.fulfillment_change` `pending → delivered`. Notification: `new_order` with `data: { channel: "in_store" }`.
+Audit: `order.create` with summary `In-store order for <name>: <n> items, ₦<total>` (n = total quantity; `<name>` is the stored name, e.g. `Walk-in customer`), plus `; discount ₦<amount> (<reason>)` when discounted. Collected orders also log `order.fulfillment_change` `pending → delivered`. Notification: `new_order` with `data: { channel: "in_store" }`.
 
 ### Installation jobs, engineer endpoints and staff
 
-Job shape and transitions: contract §7.1. `order` and `engineer` (including `engineer.phone`) are joined at read time. `address` defaults to the order's `deliveryAddress`.
+Job shape and transitions: contract §7.1, with crews (COMMERCE_V3 §1):
+
+- **Crew:** a job stores `engineerIds: string[]` (at most 10 unique ids, in order). The first id is the **lead**. `engineerId` is also stored and returned as the lead (`engineerIds[0]`, or `null`).
+- **Read-time migration:** a job stored without `engineerIds` reads as `[engineerId]` (or `[]`), and its next write stores `engineerIds`.
+- **Responses:** `order`, `engineer` (the lead, including `engineer.phone`, or `null`) and `engineers: [{ id, name, email, phone }]` (in `engineerIds` order; unknown or deleted admins are skipped) are joined at read time. `address` defaults to the order's `deliveryAddress`.
+- **Status:** `assigned` when the crew is not empty and the job hasn't started, `unassigned` when it is empty. Only `unassigned` or `assigned` jobs can change their crew.
+
+Crew input (create, update, assign): `engineerIds: string[]`, or the legacy `engineerId: string | null`, which is only read when `engineerIds` is absent. Errors: `400` `"Engineers must be a list."`, `"A job can have at most 10 engineers."`, `"Each engineer can be added once."`, and `"Assignee must be an active engineer."` (a blank id, or an id that is not an active admin with role `engineer`).
+
+Every crew change (create, update or assign):
+
+- sends `job_assigned` to each **newly added** engineer only (engineers already on the job are not notified again);
+- sets the order's `assignedEngineerId` to the lead when it is empty;
+- is audited as `job.assign` with summary `Job for <customer>: engineers <email>, <email>` (or `Job for <customer>: no engineers`).
 
 Admin jobs:
 
-- `GET /admin/jobs?status&engineerId&orderId&from&to&page&limit` (`jobs:read`, paged): `"Jobs retrieved."`. Ordered by `scheduledAt` ascending with unscheduled jobs last, then `createdAt` descending. `from` and `to` filter `scheduledAt`.
+- `GET /admin/jobs?status&engineerId&orderId&from&to&page&limit` (`jobs:read`, paged): `"Jobs retrieved."`. Ordered by `scheduledAt` ascending with unscheduled jobs last, then `createdAt` descending. `from` and `to` filter `scheduledAt`. `engineerId` matches jobs whose crew includes that id.
 - `GET /admin/jobs/:id` (`jobs:read`): `"Job retrieved."`, or `404` `"Job not found."`.
-- `POST /admin/jobs` (`jobs:assign`), body `{ orderId, engineerId?, scheduledAt?, durationEstimateMinutes?, address?, checklist?: string[], notes? }`: `201` `"Job created."`.
-  - Checks run in this order: body validation (`"Order is required."`, `"Scheduled time must be a valid date."`, duration 15–10,080), then `404` `"Order not found."`, then `400` `"Assignee must be an active engineer."`, then `409` `"Order does not require installation."` or `"Order is cancelled."`.
-  - The job starts `assigned` when an engineer is given, otherwise `unassigned`.
-  - Assigning an engineer also sets the order's `assignedEngineerId` when it is empty.
-- `PUT /admin/jobs/:id` (`jobs:assign`), body `{ scheduledAt?, durationEstimateMinutes?, address?, checklist?, notes? }`: `"Job updated."`. Only the sent fields change.
+- `POST /admin/jobs` (`jobs:assign`), body `{ orderId, engineerIds?, engineerId?, scheduledAt?, durationEstimateMinutes?, address?, checklist?: string[], notes? }`: `201` `"Job created."`.
+  - Checks run in this order: body validation (`"Order is required."`, crew errors, `"Scheduled time must be a valid date."`, duration 15–10,080), then `404` `"Order not found."`, then `400` `"Assignee must be an active engineer."`, then `409` `"Order does not require installation."` or `"Order is cancelled."`, then `409` `"This order already has an installation job."`.
+  - **One job per order:** an order can have one job whose status is not `cancelled`. A cancelled job makes room for a new one.
+  - Without `engineerIds` and without a non-empty `engineerId`, the job starts with the order's `assignedEngineerId` when that admin is still an active engineer (otherwise with no crew). An explicit `engineerIds: []` starts it unassigned.
+  - The job starts `assigned` when the crew is not empty, otherwise `unassigned`.
+- `PUT /admin/jobs/:id` (`jobs:assign`), body `{ engineerIds?, engineerId?, scheduledAt?, durationEstimateMinutes?, address?, checklist?, notes? }`: `"Job updated."`. Only the sent fields change.
   - The checklist is replaced. String entries become new items; `{ id, label }` entries with a known id keep `done`, `doneAt` and `doneBy`.
   - A closed job answers `409` `"Job is closed."`.
-- `POST /admin/jobs/:id/assign` (`jobs:assign`), body `{ engineerId | null }`: `"Job assigned."` (status `assigned`) or `"Job unassigned."` (status `unassigned`). Only unassigned or assigned jobs can be assigned; any other status answers `409` `"Cannot change job status from <from> to <to>."`.
+  - A crew that differs from the stored one follows the assign rules (`409` `"Cannot change job status from <from> to <to>."` once started). Sending the stored crew again changes nothing.
+- `POST /admin/jobs/:id/assign` (`jobs:assign`), body `{ engineerIds: string[] }` or legacy `{ engineerId: string | null }` (neither answers `400` `"Assignee must be an active engineer."`): `"Job assigned."` (status `assigned`) or `"Job unassigned."` (empty crew, status `unassigned`). Only unassigned or assigned jobs can be assigned; any other status answers `409` `"Cannot change job status from <from> to <to>."`.
 - `POST /admin/jobs/:id/status` (`jobs:assign`), body `{ status, note? }`: `"Job status updated."`. The allowed moves are `unassigned → cancelled`, `assigned → in_progress | cancelled` and `in_progress → completed | cancelled`. `assigned` and `unassigned` only come from assign. The same status is a no-op. The status sets `startedAt`, `completedAt` or `cancelledAt`, and the note goes into the audit summary.
 - `DELETE /admin/jobs/:id` (`jobs:assign`): `"Job deleted."`. Only for `unassigned`, `assigned` or `cancelled` jobs; otherwise `409` `"Job cannot be deleted once started."`.
 
-Engineer endpoints (`jobs:update-own`). Every lookup is scoped to the signed-in admin's id, and another engineer's job answers `404` `"Job not found."`:
+Engineer endpoints (`jobs:update-own`). Every lookup is scoped to the signed-in admin: a job is theirs when its `engineerIds` includes their id (lead or crew member). Any other job answers `404` `"Job not found."`:
 
 - `GET /admin/me/jobs?status&page&limit`: open jobs only, unless `status` is given.
 - `GET /admin/me/jobs/:id`.
@@ -762,7 +789,7 @@ When a job becomes `completed` and its order is `delivered`, and every non-cance
 Staff:
 
 - `GET /admin/staff?role&area&isActive&q&page&limit` (`staff:read`, paged `AdminUser`, ordered by name). `area` matches an `areaCoverage` entry regardless of case. An invalid role answers `400` `"Role is not valid."`.
-- `GET /admin/staff/:id` (`staff:read`): `"Staff member retrieved."`, with `AdminUser` plus `openJobs` (the engineer's jobs that are not completed or cancelled). `404` `"User not found."`.
+- `GET /admin/staff/:id` (`staff:read`): `"Staff member retrieved."`, with `AdminUser` plus `openJobs` (jobs whose crew includes the engineer and that are not completed or cancelled). `404` `"User not found."`.
 - `PUT /admin/staff/:id` (`staff:write`), body `{ phone?, profile?: { areaCoverage?, certifications?, bio?, avatarUrl? } }`: `"Staff member updated."`. Sent profile keys replace the stored ones, and the other keys are kept. Role and activation are ignored here. Audited as `user.update`.
 
 Audit actions: `job.create`, `job.update`, `job.assign`, `job.status_change`, `job.delete` (entity `job`).
@@ -787,7 +814,7 @@ Notifications (contract §8.2). Types and when they are created:
 - `low_stock`: a product crosses its reorder level. Created even when low-stock emails are disabled.
 - `new_order`: a public order is placed or an in-store order is created. `data: { channel }`.
 - `vacancy_posted`: a vacancy's first publish.
-- `job_assigned`: a job is created with an engineer or assigned. `recipientId` is the engineer.
+- `job_assigned`: an engineer is added to a job's crew (create, update or assign). One notification per newly added engineer; `recipientId` is that engineer.
 
 Audience: `low_stock` needs `inventory:read`, `new_order` needs `orders:read`, `vacancy_posted` needs `vacancies:read`, and `job_assigned` is visible only to its recipient. `read` is computed per admin. Records older than 90 days are removed opportunistically.
 
