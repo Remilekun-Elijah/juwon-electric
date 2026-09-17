@@ -2,6 +2,16 @@ import { catalogHandlers } from "./_catalog.js";
 import { badRequest, notFound } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { getCollectionItem, listCollection } from "../services/store.js";
+import { assertCategoryExists, packagesInCategory } from "../shared/catalog.js";
+import { idRef } from "../shared/fields.js";
+import {
+  assertOptionProducts,
+  packageOptionsPayload,
+  packagesNeedCategories,
+  packagesNeedProducts,
+  serializeAdminPackage,
+  serializePublicPackage,
+} from "../shared/packagePricing.js";
 import {
   LIMITS,
   deriveSlug,
@@ -12,21 +22,7 @@ import {
   optionalString,
   requiredString,
   sortOrderField,
-  validateOptions,
 } from "../services/validators.js";
-
-const serializeForClient = (item) => ({
-  id: item.legacyId ?? item.id,
-  _id: item.id,
-  slug: item.slug,
-  type: item.type,
-  category: item.category || item.type,
-  name: item.name,
-  load: item.load,
-  kva: item.kva,
-  volt: item.volt,
-  options: item.options,
-});
 
 const positive = (value, label) => {
   if (value !== undefined && value !== null && !(value > 0)) {
@@ -52,9 +48,12 @@ const packagePayload = (body, { isUpdate }) => {
     max: LIMITS.packageType,
   });
   const legacyId = legacyIdField(body);
+  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update.
+  const categoryId = idRef(body, "categoryId", { label: "Category" });
   const slug = optionalSlug(body);
   const load = requiredString(body, "load", "Load", { max: LIMITS.packageLoad, multiline: true });
-  const options = validateOptions(body.options);
+  // Options carry their own products (COMMERCE_V2 §1.1); top-level items are deprecated.
+  const options = packageOptionsPayload(body);
   const isActive = optionalBoolean(body, "isActive", undefined);
   const sortOrder = sortOrderField(body);
 
@@ -62,6 +61,7 @@ const packagePayload = (body, { isUpdate }) => {
     legacyId,
     type,
     category: category || type,
+    categoryId: isUpdate ? categoryId : categoryId ?? null,
     name,
     slug: slug ?? (isUpdate ? undefined : deriveSlug(`${name}-${type}-${kva}`)),
     load,
@@ -70,31 +70,55 @@ const packagePayload = (body, { isUpdate }) => {
     options,
     isActive: isUpdate ? isActive : isActive ?? true,
     sortOrder,
+    // Persists the read-time migration: an update clears the deprecated top-level items.
+    items: isUpdate ? [] : undefined,
   };
 };
+
+const allProducts = async () =>
+  new Map((await listCollection("products", { includeInactive: true })).map((product) => [product.id, product]));
+
+/** Products by id when any of the packages has a composed option (prices are computed on read). */
+export const productsForPackages = async (packages) => (packagesNeedProducts(packages) ? allProducts() : new Map());
+
+const allCategories = () => listCollection("categories", { includeInactive: true });
+
+/** Categories by id when any of the packages references one (for `categoryRef`). */
+const categoriesForPackages = async (packages) =>
+  packagesNeedCategories(packages) ? new Map((await allCategories()).map((category) => [category.id, category])) : new Map();
 
 const handlers = catalogHandlers({
   collection: "packages",
   entity: "package",
   buildPayload: packagePayload,
   slugSource: (item) => `${item.name}-${item.type}-${item.kva}`,
+  validate: async (payload) => {
+    if (payload.categoryId) assertCategoryExists(await allCategories(), payload.categoryId);
+    if (packagesNeedProducts([payload])) assertOptionProducts(payload.options, await allProducts());
+  },
+  serialize: async (item) =>
+    serializeAdminPackage(item, await productsForPackages([item]), await categoriesForPackages([item])),
   messages: { create: "Package created.", update: "Package updated.", delete: "Package deleted." },
 });
 
-export const listPackages = async (_req, res) => {
-  const packages = await listCollection("packages");
-  ok(res, "Packages retrieved.", packages.map(serializeForClient));
+/** GET /packages; `?category=<id|slug>` keeps packages in that category or its descendants. */
+export const listPackages = async (req, res) => {
+  const active = await listCollection("packages");
+  const packages = req.query?.category !== undefined ? packagesInCategory(active, await allCategories(), req.query) : active;
+  const [products, categories] = await Promise.all([productsForPackages(packages), categoriesForPackages(packages)]);
+  ok(res, "Packages retrieved.", packages.map((pack) => serializePublicPackage(pack, products, categories)));
 };
 
 export const getPackage = async (req, res) => {
   const item = await getCollectionItem("packages", req.params.id);
   if (item.isActive === false) throw notFound("packages");
-  ok(res, "Package retrieved.", serializeForClient(item));
+  ok(res, "Package retrieved.", serializePublicPackage(item, await productsForPackages([item]), await categoriesForPackages([item])));
 };
 
 export const adminListPackages = async (req, res) => {
   const packages = await listCollection("packages", { includeInactive: true });
-  ok(res, "Packages retrieved.", packages);
+  const [products, categories] = await Promise.all([productsForPackages(packages), categoriesForPackages(packages)]);
+  ok(res, "Packages retrieved.", packages.map((pack) => serializeAdminPackage(pack, products, categories)));
 };
 
 export const adminCreatePackage = handlers.create;

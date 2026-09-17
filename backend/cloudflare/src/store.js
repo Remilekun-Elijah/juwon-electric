@@ -6,6 +6,7 @@
 // - deletes and updates target the resolved record id, and an update of a row that
 //   has gone away is a 404 (never an insert).
 import { ApiError, badRequest, notFound } from "./http.js";
+import { OPS_NOT_FOUND_LABELS } from "../../shared/errors.js";
 
 const COLLECTIONS = [
   "packages",
@@ -18,10 +19,30 @@ const COLLECTIONS = [
   "orders",
   "admins",
   "passwordResets",
+  "vacancies",
+  // v3 commerce and operations modules
+  "categories",
+  "products",
+  "inventoryMovements",
+  "installationJobs",
+  "settings",
+  "notifications",
+  "notificationReads",
+  // Landing v1 website content
+  "faqs",
+  "testimonials",
+  "clients",
+  // Team and motion v1
+  "teamMembers",
+  // Uploads v1: image records and the system/uploads-usage total
+  "uploads",
+  "system",
 ];
 
-// Only catalog collections carry slugs.
-export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments"];
+// Catalog collections (public catalog records with admin-controlled sortOrder).
+export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments", "categories", "products"];
+// Collections whose records carry a unique slug (catalog plus vacancies, migrations/0008).
+const SLUGGED_COLLECTIONS = [...CATALOG_COLLECTIONS, "vacancies"];
 
 const NOT_FOUND_LABELS = {
   packages: "Package",
@@ -31,8 +52,10 @@ const NOT_FOUND_LABELS = {
   orders: "Order",
   contacts: "Contact",
   newsletters: "Subscriber",
-  admins: "Admin",
+  admins: "User",
   carts: "Cart",
+  vacancies: "Vacancy",
+  ...OPS_NOT_FOUND_LABELS,
 };
 
 const CAS_ATTEMPTS = 5;
@@ -65,7 +88,8 @@ const assertField = (field) => {
   if (!FIELD_NAME.test(field)) throw new Error(`Invalid field name: ${field}`);
 };
 
-const rowValues = (item) => [
+// [slug, is_active, sort_order] column values for a record document.
+export const rowValues = (item) => [
   item.slug || null,
   item.isActive === false ? 0 : 1,
   Number(item.sortOrder) || 0,
@@ -146,7 +170,7 @@ export const findByField = async (env, collection, field, value) => {
 // Slugs and ordering
 // ---------------------------------------------------------------------------
 
-const nextSortOrder = async (env, collection) => {
+export const nextSortOrder = async (env, collection) => {
   const row = await env.DB.prepare(
     "SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM records WHERE collection = ?"
   )
@@ -184,6 +208,19 @@ export const resolveSlug = async (env, collection, { input, fallback, excludeId 
 // Writes
 // ---------------------------------------------------------------------------
 
+export const isUniqueViolation = (error) => /UNIQUE constraint failed/i.test(String(error?.message || error));
+
+// Unique indexes (migrations/0010): product SKU, category/product slug. The handlers
+// check first; the index only catches concurrent writes. Other collections keep the raw
+// constraint error, which their handlers catch (vacancy slug retry, admin email 409).
+const OPS_UNIQUE_COLLECTIONS = ["categories", "products"];
+const rethrowUnique = (collection) => (error) => {
+  if (OPS_UNIQUE_COLLECTIONS.includes(collection) && isUniqueViolation(error)) {
+    throw new ApiError(409, "Another record was saved with the same value. Please try again.");
+  }
+  throw error;
+};
+
 const withoutUndefined = (payload) =>
   Object.fromEntries(Object.entries(payload || {}).filter(([, value]) => value !== undefined));
 
@@ -201,7 +238,7 @@ export const createCollectionItem = async (env, collection, payload, { slugFallb
     id: id || crypto.randomUUID(),
   };
   delete item.slug;
-  if (CATALOG_COLLECTIONS.includes(collection)) {
+  if (SLUGGED_COLLECTIONS.includes(collection)) {
     item.slug = await resolveSlug(env, collection, { input: input.slug, fallback: slugFallback });
   }
   if (item.sortOrder === undefined || item.sortOrder === null) item.sortOrder = await nextSortOrder(env, collection);
@@ -212,7 +249,8 @@ export const createCollectionItem = async (env, collection, payload, { slugFallb
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(item.id, collection, slug, JSON.stringify(item), isActive, sortOrder, item.createdAt, item.updatedAt)
-    .run();
+    .run()
+    .catch(rethrowUnique(collection));
   return item;
 };
 
@@ -236,7 +274,8 @@ export const updateCollectionItem = async (env, collection, id, patch) => {
         WHERE collection = ? AND id = ? AND data = ?`
     )
       .bind(JSON.stringify(item), slug, isActive, sortOrder, item.updatedAt, collection, fresh.id, row.data)
-      .run();
+      .run()
+      .catch(rethrowUnique(collection));
     if (changesOf(result) === 1) return item;
   }
   throw new ApiError(409, "This record was changed by another request. Please try again.");

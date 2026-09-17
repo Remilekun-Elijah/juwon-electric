@@ -1,0 +1,20 @@
+/* Quill editor overrides to match public brand tokens */
+.ql-toolbar {
+  background: #FEF2F2; /* brand.50 */
+  border: 1px solid #DB464C; /* brand.500 */
+}
+.ql-container {
+  border: 1px solid #DB464C;
+  background: #FDFAEC; /* offWhite */
+}
+.ql-editor {
+  min-height: 200px;
+  color: #2b2b2b;
+}
+.ql-toolbar .ql-picker .ql-picker-label,
+.ql-toolbar .ql-tooltip {
+  color: #94161B; /* brand.700 */
+}
+.ql-toolbar button {
+  color: #811418; /* brand.800 */
+}

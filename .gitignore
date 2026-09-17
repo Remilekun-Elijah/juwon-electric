@@ -142,3 +142,6 @@ backend/cloudflare/.wrangler/
 # OS / tool artefacts
 .DS_Store
 .kilo/
+
+# Local image uploads (Express; UPLOADS_V1)
+backend/data/uploads/

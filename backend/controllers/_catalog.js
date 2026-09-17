@@ -1,6 +1,7 @@
 // Shared create/update/delete flow for the catalog collections (packages,
 // services, portfolio, customerSegments).
 import { auditCreate, auditDelete, auditUpdate } from "../services/audit.js";
+import { keepSampleUnlessEdited } from "../shared/content.js";
 import { ApiError } from "../services/errors.js";
 import { created, ok } from "../services/http.js";
 import {
@@ -37,10 +38,15 @@ const assertLegacyIdFree = (items, legacyId, selfId) => {
 
 const definedKeys = (payload) => Object.keys(payload).filter((key) => payload[key] !== undefined);
 
-/** Express handlers for one catalog collection. `buildPayload(body, { isUpdate })`. */
-export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource }) => ({
+/**
+ * Express handlers for one catalog collection. `buildPayload(body, { isUpdate })`;
+ * optional async `validate(payload)` runs before any write (e.g. reference checks);
+ * optional async `serialize(item)` shapes the response record.
+ */
+export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource, validate, serialize = (item) => item }) => ({
   create: async (req, res) => {
     const payload = buildPayload(req.body || {}, { isUpdate: false });
+    if (validate) await validate(payload);
     const item = await createCollectionItem(collection, payload, {
       prepare: (items, draft) => {
         if (collection === "packages") assertLegacyIdFree(items, draft.legacyId);
@@ -48,12 +54,15 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
       },
     });
     auditCreate(req, entity, item, definedKeys(payload));
-    created(res, messages.create, item);
+    created(res, messages.create, await serialize(item));
   },
 
   update: async (req, res) => {
     const existing = await getCollectionItem(collection, req.params.id);
-    const payload = buildPayload(req.body || {}, { isUpdate: true });
+    // Portfolio sample records stay samples unless a content field changed (LANDING_V1 §0).
+    const built = buildPayload(req.body || {}, { isUpdate: true });
+    const payload = collection === "portfolio" ? keepSampleUnlessEdited(existing, built) : built;
+    if (validate) await validate(payload);
     // Written strictly by the resolved id, with only the sent fields, against
     // the fresh stored record.
     const item = await updateCollectionItem(collection, existing.id, payload, {
@@ -64,13 +73,13 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
       },
     });
     auditUpdate(req, entity, existing, item, definedKeys(payload));
-    ok(res, messages.update, item);
+    ok(res, messages.update, await serialize(item));
   },
 
   remove: async (req, res) => {
     const existing = await getCollectionItem(collection, req.params.id);
     const item = await deleteCollectionItem(collection, existing.id);
     auditDelete(req, entity, item);
-    ok(res, messages.delete, item);
+    ok(res, messages.delete, await serialize(item));
   },
 });

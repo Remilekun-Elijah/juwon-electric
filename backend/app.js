@@ -1,5 +1,7 @@
 import env from "dotenv";
 import express from "express";
+import { realpathSync } from "fs";
+import { pathToFileURL } from "url";
 import config from "./config.js";
 import { requireJsonBody } from "./middleware/contentType.js";
 import { warnIfStaticAdminToken } from "./middleware/adminAuth.js";
@@ -15,8 +17,10 @@ import { announceCounterStore, ensureCounterIndexes } from "./services/counterSt
 import { connectDatabase } from "./services/database.js";
 import { ApiError, SERVICE_UNAVAILABLE_MESSAGE } from "./services/errors.js";
 import { isMongoMode, waitForPending } from "./services/runtime.js";
-import { backupJsonStore, ensureSecurityIndexes } from "./services/store.js";
+import { backupJsonStore, ensureSecurityIndexes, ensureUniqueIndexes } from "./services/store.js";
 import mongoose from "mongoose";
+import { runLowStockCheck } from "./controllers/inventory.js";
+import { runUploadsMaintenance } from "./controllers/uploads.js";
 
 const app = express();
 if (app.get("env") === "development") env.config();
@@ -77,7 +81,7 @@ app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
 
-app.get("/", (req, res, next) => {
+app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
     message: "Juwon Electric API",
@@ -89,6 +93,7 @@ app.get("/", (req, res, next) => {
       "contact",
       "cart",
       "orders",
+      "vacancies",
     ],
   });
 });
@@ -145,6 +150,15 @@ const start = async () => {
   } catch (error) {
     console.warn("Failed to create security indexes:", error.message);
   }
+  try {
+    await ensureUniqueIndexes();
+  } catch (error) {
+    // Admin email and vacancy slug uniqueness depend on these indexes in MongoDB.
+    // Production refuses to start without them; fix the listed duplicates and restart.
+    console.error(`MongoDB unique indexes are missing. ${error.message}`);
+    if (process.env.NODE_ENV === "production") throw error;
+    console.error("Continuing because NODE_ENV is not production: uniqueness is only pre-checked.");
+  }
   announceCounterStore();
   warnIfCorsOpen();
   warnIfTurnstileDisabled();
@@ -153,11 +167,20 @@ const start = async () => {
 
   const server = app.listen(config.port, () => console.log("App started on port", config.port));
 
+  // Daily low-stock digest and upload maintenance: sweep, usage reconcile and the private
+  // storage alert (the Worker uses a cron trigger instead; see wrangler.toml).
+  const digestTimer = setInterval(async () => {
+    await runLowStockCheck().catch((error) => console.error("Low-stock digest failed:", describeError(error)));
+    await runUploadsMaintenance().catch((error) => console.error("Upload maintenance failed:", describeError(error)));
+  }, 24 * 60 * 60 * 1000);
+  digestTimer.unref();
+
   // Graceful shutdown: stop accepting connections, let in-flight requests and
   // tracked background writes (audit, store, email) finish, up to 10 s.
   const shutdown = async (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
+    clearInterval(digestTimer);
     console.log(`${signal} received: shutting down.`);
     const deadline = Date.now() + SHUTDOWN_TIMEOUT_MS;
     const forceExit = setTimeout(() => {
@@ -181,7 +204,15 @@ const start = async () => {
   process.once("SIGINT", () => shutdown("SIGINT"));
 };
 
-start().catch((error) => {
-  console.error("Failed to start application:", error.message);
-  process.exit(1);
-});
+export default app;
+
+// Only `node app.js` (or nodemon) starts the server; tests import `app`.
+const isEntryPoint =
+  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+
+if (isEntryPoint) {
+  start().catch((error) => {
+    console.error("Failed to start application:", error.message);
+    process.exit(1);
+  });
+}

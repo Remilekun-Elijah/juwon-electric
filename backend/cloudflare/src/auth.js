@@ -14,6 +14,8 @@ import {
   textEncoder,
   timingSafeEqualStrings,
 } from "./security.js";
+import { STATIC_ADMIN as STATIC_IDENTITY } from "../../shared/capabilities.js";
+import { UPLOAD_MESSAGES } from "../../shared/uploads.js";
 import { isUsableSecret, isValidEmail, passwordMeetsPolicy } from "./validation.js";
 
 const MINUTE_MS = 60 * 1000;
@@ -94,6 +96,8 @@ const RATE_LIMITS = {
   resetConfirmIp: { limit: 10, windowMs: 60 * MINUTE_MS },
   publicWrite: { limit: 30, windowMs: 10 * MINUTE_MS },
   quote: { limit: 60, windowMs: 10 * MINUTE_MS },
+  // Per admin (UPLOADS_V1 §2). `fullMessage` replaces the "<message> N minutes." wording.
+  upload: { limit: 60, windowMs: 10 * MINUTE_MS, fullMessage: UPLOAD_MESSAGES.tooMany },
 };
 
 // Fixed-window counter stored in D1. The single UPSERT ... RETURNING statement is
@@ -141,8 +145,8 @@ export const enforceRateLimit = async (env, ctx, name, identity) => {
   const outcome = await hitRateLimit(env, ctx, name, identity);
   if (!outcome?.limited) return;
   const remainingMs = Math.max(outcome.remainingMs, 1000);
-  const prefix = RATE_LIMITS[name].message || "Too many requests. Please try again in";
-  throw new ApiError(429, `${prefix} ${minutesText(remainingMs)}.`, undefined, {
+  const { fullMessage, message: prefix = "Too many requests. Please try again in" } = RATE_LIMITS[name];
+  throw new ApiError(429, fullMessage || `${prefix} ${minutesText(remainingMs)}.`, undefined, {
     "Retry-After": retryAfterSeconds(remainingMs),
   });
 };
@@ -285,6 +289,12 @@ export const revokeSession = (env, sessionId) =>
     .bind(Date.now(), sessionId)
     .run();
 
+// Deactivation: every live session of the admin ends.
+export const revokeAdminSessions = (env, adminId) =>
+  env.DB.prepare("UPDATE admin_sessions SET revoked_at = ? WHERE admin_id = ? AND revoked_at IS NULL")
+    .bind(Date.now(), adminId)
+    .run();
+
 const verifyAdminToken = async (env, ctx, token = "") => {
   const secret = getSigningSecret(env);
   const [payload, signature, extra] = token.split(".");
@@ -339,7 +349,8 @@ const verifyAdminToken = async (env, ctx, token = "") => {
   return { admin, sessionId: decoded.sid, isStatic: false };
 };
 
-export const STATIC_ADMIN = { id: "static-token", email: "static-token", role: "super_admin" };
+// The static ADMIN_TOKEN acts as a superadmin (shared/capabilities.js).
+export const STATIC_ADMIN = STATIC_IDENTITY;
 
 const extractToken = (request) =>
   request.headers.get("x-admin-token") || request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") || "";
@@ -392,7 +403,7 @@ export const seedSuperAdmin = async (env) => {
         name: String(env.SUPERADMIN_NAME || "Super Admin").slice(0, 100),
         email,
         passwordHash: await hashPassword(password),
-        role: "super_admin",
+        role: "superadmin",
         isActive: true,
         passwordChangedAt: now(),
       },

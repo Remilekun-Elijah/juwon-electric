@@ -1,7 +1,11 @@
 // Server-side package resolution and pricing for carts and orders.
 // Client-sent prices/totals are never trusted; everything is recomputed from
-// the active package catalog.
+// the active package catalog and, for composed options, current product prices
+// (COMMERCE_V2 §1.2, shared/packagePricing.js).
 import { badRequest } from "../services/errors.js";
+import { listCollection } from "../services/store.js";
+import { isProductOrderItem, priceProductItem, productItemIds } from "../shared/orders.js";
+import { packagesNeedProducts, withComposedOptions } from "../shared/packagePricing.js";
 
 export const UNAVAILABLE_ITEMS_MESSAGE =
   "Some items in your cart are no longer available. Please refresh your cart.";
@@ -126,9 +130,22 @@ export const selectPackageOption = (pack, item) => {
 };
 
 /**
- * Resolves and prices one shape-checked item; null when the package or option
- * can't be priced (inactive, removed or unmatched). Carts may also reference a
- * package by its internal `packageId`.
+ * Active packages with computed options (ComposedOption[]), the catalog priceItem
+ * works on. Products are loaded only when some package has a composed option.
+ */
+export const loadPricingPackages = async () => {
+  const packages = await listCollection("packages");
+  const products = packagesNeedProducts(packages)
+    ? new Map((await listCollection("products", { includeInactive: true })).map((product) => [product.id, product]))
+    : new Map();
+  return packages.map((pack) => withComposedOptions(pack, products));
+};
+
+/**
+ * Resolves and prices one shape-checked item against loadPricingPackages()
+ * output; null when the package or option can't be priced (inactive, removed,
+ * unmatched, or an unavailable option). Carts may also reference a package by
+ * its internal `packageId`.
  */
 export const priceItem = (packages, { item, quantity }, { kind = "order" } = {}) => {
   const pack =
@@ -137,18 +154,39 @@ export const priceItem = (packages, { item, quantity }, { kind = "order" } = {})
       packages.find((entry) => entry.id === String(item.packageId))) ||
     resolvePackage(packages, item);
   const option = pack && selectPackageOption(pack, item);
-  const unitPrice = option ? parseMoney(option.price) : 0;
-  if (!pack || !option || unitPrice <= 0) return null;
+  const unitPrice = option ? Number(option.price) || 0 : 0;
+  if (!pack || !option || option.available === false || unitPrice <= 0) return null;
   return { pack, option, unitPrice, quantity, lineTotal: unitPrice * quantity };
 };
 
 /**
- * Prices every item (validatePricingItems output) against the active catalog.
+ * What a cart or order is priced against: active packages (only loaded when some item is a
+ * package) and the products referenced by product items (COMMERCE_V3 §3), by id.
+ */
+export const loadPricingCatalog = async (validated) => {
+  const needsPackages = validated.some((entry) => !isProductOrderItem(entry.item));
+  const needsProducts = productItemIds(validated).length > 0;
+  const [packages, products] = await Promise.all([
+    needsPackages ? loadPricingPackages() : [],
+    needsProducts ? listCollection("products", { includeInactive: true }) : [],
+  ]);
+  return { packages, products: new Map(products.map((product) => [product.id, product])) };
+};
+
+/**
+ * Prices one validated entry: a product item gives { product, unitPrice, quantity, lineTotal },
+ * a package item { pack, option, unitPrice, quantity, lineTotal }; null when it can't be sold.
+ */
+export const priceEntry = (catalog, entry, options = {}) =>
+  isProductOrderItem(entry.item) ? priceProductItem(catalog.products, entry) : priceItem(catalog.packages, entry, options);
+
+/**
+ * Prices every item (validatePricingItems output) against loadPricingCatalog() output.
  * Throws 400 UNAVAILABLE_ITEMS_MESSAGE if any item cannot be priced.
  */
-export const priceItems = (packages, validated, options = {}) =>
+export const priceItems = (catalog, validated, options = {}) =>
   validated.map((entry) => {
-    const priced = priceItem(packages, entry, options);
+    const priced = priceEntry(catalog, entry, options);
     if (!priced) throw badRequest(UNAVAILABLE_ITEMS_MESSAGE);
     return priced;
   });

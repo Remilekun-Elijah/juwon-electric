@@ -1,5 +1,19 @@
 import config from "../config.js";
 import { escapeHtml } from "./_contactReply.js";
+import { formatNaira } from "../shared/packagePricing.js";
+
+// Product lines (COMMERCE_V3 §3.3) read "2 × Name (SKU)"; package lines keep the classic text.
+const lineDetails = (a) =>
+  a?.type === "product"
+    ? `<p>Product: ${escapeHtml(a.quantity)} × ${escapeHtml(a.name)} (${escapeHtml(a.sku)})</p>
+                            <p>
+                              Price: <span style='color: #DB464C'>${escapeHtml(formatNaira(Number(a.unitPrice) || 0))} x ${escapeHtml(a.quantity)} = ${escapeHtml(formatNaira(Number(a.lineTotal) || 0))}</span>
+                            </p>`
+    : `<p>Package: ${escapeHtml(a.package)} </p>
+                            <p>Type: ${escapeHtml(a.typeLabel || a.type)} battery </p>
+                            <p>
+                              Price: <span style='color: #DB464C'>${escapeHtml(a.price)} x ${escapeHtml(a.quantity)}</span>
+                            </p>`;
 
 export default function orderTemplate({
   phoneNumber,
@@ -257,11 +271,7 @@ export default function orderTemplate({
                             style="font-size:0px;padding:5px 40px 0 40px;word-break:break-word;"
                           >
                             <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
-                            <p>Package: ${escapeHtml(a.package)} </p>
-                            <p>Type: ${escapeHtml(a.type)} battery </p>
-                            <p>
-                              Price: <span style='color: #DB464C'>${escapeHtml(a.price)} x ${escapeHtml(a.quantity)}</span>
-                            </p>
+                            ${lineDetails(a)}
                             </div>
                           </td>
                         </tr>`

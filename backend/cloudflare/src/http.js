@@ -27,8 +27,8 @@ export const json = (data, status = 200, extraHeaders = {}) =>
     headers: { ...extraHeaders, "Content-Type": "application/json" },
   });
 
-export const ok = (message, data) => json({ success: true, message, data });
-export const created = (message, data) => json({ success: true, message, data }, 201);
+export const ok = (message, data = null) => json({ success: true, message, data });
+export const created = (message, data = null) => json({ success: true, message, data }, 201);
 
 const warned = new Set();
 export const warnOnce = (key, message) => {
@@ -207,6 +207,8 @@ export const securityHeaders = (request, path) => {
     // CORP is only enforced for no-cors requests; the frontend's CORS fetches are unaffected.
     "Cross-Origin-Resource-Policy": "same-site",
   };
+  // Uploaded images are embedded by the storefront, which can be on another site.
+  if (path !== null && /^\/(api\/)?uploads\//.test(path)) headers["Cross-Origin-Resource-Policy"] = "cross-origin";
   let protocol = "";
   try {
     protocol = new URL(request.url).protocol;

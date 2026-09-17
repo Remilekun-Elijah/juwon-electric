@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import { ApiError, badRequest } from "./errors.js";
+import { isImageUrl } from "../shared/fields.js";
 
 // Shared email rule (same regex in the Worker and the frontend), plus: total
 // length <= 254 and no leading/trailing/consecutive dots in the local part.
@@ -218,6 +219,14 @@ const checkUrl = (value, label) => {
 export const requiredUrl = (body, field, label) =>
   checkUrl(requiredString(body, field, label, { max: LIMITS.url }), label);
 
+/** Image fields: also http:// on localhost / 127.0.0.1 (shared/fields.js isImageUrl). */
+export const requiredImageUrl = (body, field, label) => {
+  const value = requiredString(body, field, label, { max: LIMITS.url });
+  checkMax(value, label, LIMITS.url);
+  if (!isImageUrl(value)) throw badRequest(`${label} must be an https:// URL or a path starting with /.`);
+  return value;
+};
+
 export const optionalUrl = (body, field, label) => {
   const value = optionalString(body, field, { label, max: LIMITS.url });
   return value ? checkUrl(value, label) : "";
@@ -286,34 +295,6 @@ export const validatePassword = (password, email = "") => {
   return password;
 };
 
-export const validateOptions = (options) => {
-  if (!Array.isArray(options) || options.length === 0) {
-    throw badRequest("At least one package option is required.");
-  }
-  if (options.length > LIMITS.packageOptions) {
-    throw badRequest(`A package can have at most ${LIMITS.packageOptions} options.`);
-  }
-
-  return options.map((option) => {
-    if (!option || typeof option !== "object" || Array.isArray(option)) {
-      throw badRequest("Invalid package option.");
-    }
-    const name = requiredString(option, "name", "Option name", { max: LIMITS.optionName });
-    const price = numberField(option, "price", "Option price", { required: true });
-    if (!(price > 0) || price > LIMITS.optionPriceMax) {
-      throw badRequest("Option price must be greater than 0 and at most 1,000,000,000.");
-    }
-    return {
-      name,
-      price,
-      kits: requiredString(option, "kits", "Option kits", {
-        max: LIMITS.optionKits,
-        multiline: true,
-      }),
-    };
-  });
-};
-
 // ---- pricing items (orders, carts, quotes) --------------------------------
 
 const isPlainObject = (value) =>
@@ -357,6 +338,12 @@ export const validatePricingItems = (items, kind = "order") => {
   const invalid = () => badRequest(isOrder ? "Invalid order item." : "Invalid cart item.");
   return items.map((item) => {
     if (!isPlainObject(item)) throw invalid();
+    // Product item (COMMERCE_V3 §3.1): only productId and quantity are read.
+    if (item.type === "product") {
+      const productId = typeof item.productId === "string" ? item.productId.trim() : "";
+      if (!productId || productId.length > LIMITS.itemId) throw invalid();
+      return { item, quantity: quantityField(item), productId };
+    }
     if (
       !ITEM_TEXT_FIELDS.every((field) => scalarWithin(item[field], LIMITS.itemText)) ||
       !ITEM_ID_FIELDS.every((field) => scalarWithin(item[field], LIMITS.itemId)) ||

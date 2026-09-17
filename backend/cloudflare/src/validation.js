@@ -1,6 +1,7 @@
 // Input validation helpers. Every limit and message here mirrors the Express backend
 // so both reject the same payloads with the same responses.
 import { badRequest } from "./http.js";
+import { isImageUrl } from "../../shared/fields.js";
 
 export const LIMITS = {
   personName: 100,
@@ -147,7 +148,7 @@ export const quantityField = (item, label = "Quantity") => {
 
 // Shared with the Express backend and the frontend (fix plan B4).
 export const EMAIL_PATTERN =
-  /^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$/;
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$/;
 
 export const isValidEmail = (email) => {
   if (typeof email !== "string" || email.length > LIMITS.email || !EMAIL_PATTERN.test(email)) return false;
@@ -200,6 +201,13 @@ export const isSafeUrl = (value) => {
   } catch {
     return false;
   }
+};
+
+/** Image fields: also http:// on localhost / 127.0.0.1 (shared/fields.js isImageUrl). */
+export const imageUrlField = (body, key, { label, required = false } = {}) => {
+  const value = stringField(body, key, { label, required, max: LIMITS.url });
+  if (value && !isImageUrl(value)) badRequest(`${label} must be an https:// URL or a path starting with /.`);
+  return value;
 };
 
 export const urlField = (body, key, { label, required = false } = {}) => {
@@ -261,6 +269,12 @@ export const validateItems = (items, kind) => {
   }
   return items.map((item) => {
     if (!item || typeof item !== "object" || Array.isArray(item)) badRequest(invalid);
+    // Product item (COMMERCE_V3 §3.1): only productId and quantity are read.
+    if (item.type === "product") {
+      const productId = typeof item.productId === "string" ? item.productId.trim() : "";
+      if (!productId || productId.length > LIMITS.itemId) badRequest(invalid);
+      return { item, quantity: quantityField(item), productId };
+    }
     for (const key of ITEM_TEXT_FIELDS) {
       if (!isMissing(item[key]) && !isTextOrNumber(item[key], LIMITS.itemText)) badRequest(invalid);
     }

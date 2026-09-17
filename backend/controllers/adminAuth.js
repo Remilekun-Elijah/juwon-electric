@@ -7,6 +7,7 @@ import { audit, requestIp, requestUserAgent } from "../services/audit.js";
 import { ApiError, tooManyRequests } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { requestIpPrefix } from "../services/ip.js";
+import { STATIC_ADMIN, adminSelf } from "../shared/capabilities.js";
 import { runInBackground } from "../services/runtime.js";
 import {
   AUTH_NOT_CONFIGURED_MESSAGE,
@@ -77,6 +78,14 @@ export const login = asyncHandler(async (req, res) => {
   });
 
   ok(res, "Login successful.", { token: result.token, admin: result.admin });
+});
+
+// GET /admin/auth/me - the signed-in admin with role and capabilities.
+export const me = asyncHandler(async (req, res) => {
+  const admin = req.adminStaticToken
+    ? adminSelf(STATIC_ADMIN, { isStatic: true })
+    : adminSelf(req.admin);
+  ok(res, "Session retrieved.", { admin });
 });
 
 export const logout = asyncHandler(async (req, res) => {

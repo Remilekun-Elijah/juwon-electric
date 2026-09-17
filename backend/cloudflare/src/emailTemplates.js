@@ -193,18 +193,21 @@ export const orderNotificationTemplate = ({
   total,
   order = [],
 }) => {
-  const itemRows = order
-    .map(
-      (item) =>
-        contentRow(
+  const naira = (amount) => `₦${new Intl.NumberFormat("en-US").format(Number(amount) || 0)}`;
+  // Product lines (COMMERCE_V3 §3.3) read "2 × Name (SKU)"; package lines keep the classic text.
+  const lineDetails = (item) =>
+    item?.type === "product"
+      ? `
+            <p style="display:block;margin:13px 0;">Product: ${escapeHtml(item.quantity)} × ${escapeHtml(item.name)} (${escapeHtml(item.sku)})</p>
+            <p style="display:block;margin:13px 0;">Price: <span style="color:#DB464C;">${escapeHtml(naira(item.unitPrice))} x ${escapeHtml(item.quantity)} = ${escapeHtml(naira(item.lineTotal))}</span></p>
           `
+      : `
             <p style="display:block;margin:13px 0;">Package: ${escapeHtml(item.package)}</p>
-            <p style="display:block;margin:13px 0;">Type: ${escapeHtml(item.type)} battery</p>
+            <p style="display:block;margin:13px 0;">Type: ${escapeHtml(item.typeLabel || item.type)} battery</p>
             <p style="display:block;margin:13px 0;">Price: <span style="color:#DB464C;">${escapeHtml(item.price)} x ${escapeHtml(item.quantity)}</span></p>
-          `,
-          "5px 40px 0 40px"
-        )
-    )
+          `;
+  const itemRows = order
+    .map((item) => contentRow(lineDetails(item), "5px 40px 0 40px"))
     .join("");
 
   return shell({

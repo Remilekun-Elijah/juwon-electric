@@ -45,8 +45,6 @@ import {
   CONTACT_STATUSES,
   LIMITS,
   NEWSLETTER_STATUSES,
-  ORDER_STATUSES,
-  PAYMENT_STATUSES,
   emailField,
   enumField,
   numericField,
@@ -55,6 +53,7 @@ import {
   slugField,
   stringField,
   stripInvalidChars,
+  imageUrlField,
   urlField,
   validateEmail,
   validateItems,
@@ -85,6 +84,39 @@ import {
   verifyPassword,
 } from "./auth.js";
 import { changedFields, listAuditLogs, providedFields, recordAudit } from "./audit.js";
+import { handleAdminUsers } from "./adminUsers.js";
+import { handleAdminVacancies, handlePublicVacancies } from "./vacancies.js";
+import { requireCapability } from "./capabilities.js";
+import { adminSelf } from "../../shared/capabilities.js";
+import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
+import { sendNotification } from "./email.js";
+import { UPLOAD_PATH, handleUploadCreate, handleUploadGet, handleUploadsAdmin, isPublicUploadPath } from "./uploads.js";
+import { notify } from "./notifications.js";
+import { newOrderNotification } from "../../shared/notifications.js";
+import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
+import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
+import { assertCategoryExists, packagesInCategory } from "../../shared/catalog.js";
+import { idRef } from "../../shared/fields.js";
+import { filterPortfolio, keepSampleUnlessEdited, portfolioCaseStudyPayload, serializePortfolio } from "../../shared/content.js";
+import {
+  assertOptionProducts,
+  packageLineSnapshot,
+  packageOptionsPayload,
+  packagesNeedCategories,
+  packagesNeedProducts,
+  serializeAdminPackage,
+  serializePublicPackage,
+  withComposedOptions,
+} from "../../shared/packagePricing.js";
+import {
+  NEW_ORDER_FIELDS,
+  isProductOrderItem,
+  priceProductItem,
+  productCartLine,
+  productItemIds,
+  productOrderLine,
+  websiteRequiresInstallation,
+} from "../../shared/orders.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
 const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
@@ -125,25 +157,6 @@ const isActiveField = (body, existing) =>
       : true
     : optionalBoolean(body, "isActive", true, "isActive");
 
-const validateOptions = (options) => {
-  if (!Array.isArray(options) || options.length === 0) badRequest("At least one package option is required.");
-  if (options.length > LIMITS.packageOptions) {
-    badRequest(`A package can have at most ${LIMITS.packageOptions} options.`);
-  }
-  return options.map((option) => {
-    if (!option || typeof option !== "object" || Array.isArray(option)) badRequest("Invalid package option.");
-    const price = numericField(option, "price", { label: "Option price", required: true });
-    if (!(price > 0) || price > LIMITS.optionPriceMax) {
-      badRequest("Option price must be greater than 0 and at most 1,000,000,000.");
-    }
-    return {
-      name: stringField(option, "name", { label: "Option name", required: true, max: LIMITS.optionName }),
-      price,
-      kits: stringField(option, "kits", { label: "Option kits", required: true, max: LIMITS.optionKits, multiline: true }),
-    };
-  });
-};
-
 const legacyIdField = (body) => {
   const value = numericField(body, "legacyId", { label: "legacyId" });
   if (value !== undefined && (!Number.isInteger(value) || value < 0 || value > LIMITS.legacyIdMax)) {
@@ -183,13 +196,18 @@ const packagePayload = async (env, body, existing = null) => {
   if (!(kva > 0)) badRequest("kVA must be greater than 0.");
   const category = stringField(body, "category", { label: "Category", max: LIMITS.packageType });
   const legacyId = legacyIdField(body);
+  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update.
+  const categoryId = idRef(body, "categoryId", { label: "Category" });
   const load = stringField(body, "load", { label: "Load", required: true, max: LIMITS.packageLoad, multiline: true });
   const volt = numericField(body, "volt", { label: "Volt", maxLength: LIMITS.packageVolt });
   if (volt !== undefined && !(volt > 0)) badRequest("Volt must be greater than 0.");
-  const options = validateOptions(body.options);
+  // Options carry their own products (COMMERCE_V2 §1.1); top-level items are deprecated.
+  const options = packageOptionsPayload(body);
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   slugField(body);
+  if (categoryId) assertCategoryExists(await listCollection(env, "categories", { includeInactive: true }), categoryId);
+  if (packagesNeedProducts([{ options }])) assertOptionProducts(options, await allProductsById(env));
 
   await assertLegacyIdUnique(env, legacyId, existing?.id);
   return {
@@ -197,6 +215,7 @@ const packagePayload = async (env, body, existing = null) => {
     type,
     // Blank optional text is not written on update.
     category: category || (existing ? undefined : type),
+    categoryId: existing ? categoryId : categoryId ?? null,
     name,
     slug: await slugPatch(env, "packages", body, existing, `${name}-${type}-${kva}`),
     load,
@@ -206,21 +225,27 @@ const packagePayload = async (env, body, existing = null) => {
     options,
     isActive,
     sortOrder,
+    // Persists the read-time migration: an update clears the deprecated top-level items.
+    items: existing ? [] : undefined,
   };
 };
 
-const serializePackage = (item) => ({
-  id: item.legacyId ?? item.id,
-  _id: item.id,
-  slug: item.slug,
-  type: item.type,
-  category: item.category || item.type,
-  name: item.name,
-  load: item.load,
-  kva: item.kva,
-  volt: item.volt,
-  options: item.options,
-});
+const allProductsById = async (env) =>
+  new Map((await listCollection(env, "products", { includeInactive: true })).map((product) => [product.id, product]));
+
+// Products by id when any of the packages has a composed option (prices are computed on read).
+const productsForPackages = async (env, packages) => (packagesNeedProducts(packages) ? allProductsById(env) : new Map());
+
+// Categories by id when any of the packages references one (for `categoryRef`, COMMERCE_V3 §4).
+const categoriesForPackages = async (env, packages) =>
+  packagesNeedCategories(packages)
+    ? new Map((await listCollection(env, "categories", { includeInactive: true })).map((category) => [category.id, category]))
+    : new Map();
+
+const serializeAdminPackages = async (env, packages) => {
+  const [products, categories] = await Promise.all([productsForPackages(env, packages), categoriesForPackages(env, packages)]);
+  return packages.map((pack) => serializeAdminPackage(pack, products, categories));
+};
 
 const contentPayload = async (env, body, existing, kind) => {
   const isPortfolio = kind === "portfolio";
@@ -232,7 +257,7 @@ const contentPayload = async (env, body, existing, kind) => {
     max: isPortfolio ? LIMITS.portfolioName : LIMITS.serviceTitle,
   });
   slugField(body);
-  const image = urlField(body, "image", { label: "Image", required: true });
+  const image = imageUrlField(body, "image", { label: "Image", required: true });
   let extra;
   if (isPortfolio) {
     const link = urlField(body, "link", { label: "Link" });
@@ -240,6 +265,8 @@ const contentPayload = async (env, body, existing, kind) => {
       link: link || (existing ? undefined : ""),
       featured: body.featured === undefined || body.featured === null ? (existing ? undefined : false) : optionalBoolean(body, "featured", false, "featured"),
       mobile: body.mobile === undefined || body.mobile === null ? (existing ? undefined : true) : optionalBoolean(body, "mobile", true, "mobile"),
+      // LANDING_V1 §2: category, summary, location, system; every save stores sample: false.
+      ...portfolioCaseStudyPayload(body, { isUpdate: Boolean(existing) }),
     };
   } else {
     const subtitle = stringField(body, "subtitle", { label: "Subtitle", required: true, max: LIMITS.serviceSubtitle });
@@ -253,7 +280,7 @@ const contentPayload = async (env, body, existing, kind) => {
   }
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
-  return {
+  const payload = {
     [nameKey]: name,
     slug: await slugPatch(env, collection, body, existing, name),
     image,
@@ -261,13 +288,15 @@ const contentPayload = async (env, body, existing, kind) => {
     isActive,
     sortOrder,
   };
+  // Portfolio sample records stay samples unless a content field changed (LANDING_V1 §0).
+  return isPortfolio && existing ? keepSampleUnlessEdited(existing, payload) : payload;
 };
 
 const segmentPayload = async (env, body, existing = null) => {
   const title = stringField(body, "title", { label: "Title", required: true, max: LIMITS.serviceTitle });
   slugField(body);
   const subtitle = stringField(body, "subtitle", { label: "Subtitle", required: true, max: LIMITS.serviceSubtitle });
-  const image = urlField(body, "image", { label: "Image", required: true });
+  const image = imageUrlField(body, "image", { label: "Image", required: true });
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   return {
@@ -428,7 +457,24 @@ const selectPackageOption = (pack, item) => {
   return byKits() || options[0] || null;
 };
 
-const loadActivePackages = (env) => listCollection(env, "packages");
+// Active packages with computed options (COMMERCE_V2 §1.2): what carts and orders are priced on.
+const loadActivePackages = async (env) => {
+  const packages = await listCollection(env, "packages");
+  const products = await productsForPackages(env, packages);
+  return packages.map((pack) => withComposedOptions(pack, products));
+};
+
+// Packages (only when some item is a package) and the products named by product items
+// (COMMERCE_V3 §3), at parity with loadPricingCatalog in backend/controllers/_pricing.js.
+const loadPricingCatalog = async (env, validated) => {
+  const needsPackages = validated.some((entry) => !isProductOrderItem(entry.item));
+  const needsProducts = productItemIds(validated).length > 0;
+  const [packages, products] = await Promise.all([
+    needsPackages ? loadActivePackages(env) : [],
+    needsProducts ? allProductsById(env) : new Map(),
+  ]);
+  return { packages, products };
+};
 
 const formatNaira = (amount) => `₦${new Intl.NumberFormat("en-US").format(amount)}`;
 
@@ -437,17 +483,26 @@ const describeType = (pack) =>
   matchText(pack.type) === "hybrid lithium" ? "Hybrid inverter + lithium" : `Inverter + ${pack.type}`;
 
 const priceOrderItems = async (env, validated) => {
-  const packages = await loadActivePackages(env);
-  const priced = validated.map(({ item, quantity }) => {
+  const { packages, products } = await loadPricingCatalog(env, validated);
+  const priced = validated.map((entry) => {
+    const { item, quantity } = entry;
+    if (isProductOrderItem(item)) {
+      const product = priceProductItem(products, entry);
+      if (!product) badRequest(UNAVAILABLE_ITEMS_MESSAGE);
+      return productOrderLine(product);
+    }
     const pack = resolvePackage(packages, item);
     const option = pack && selectPackageOption(pack, item);
-    const unitPrice = option ? parseMoney(option.price) : 0;
-    if (!pack || !option || unitPrice <= 0) badRequest(UNAVAILABLE_ITEMS_MESSAGE);
+    const unitPrice = option ? Number(option.price) || 0 : 0;
+    if (!pack || !option || option.available === false || unitPrice <= 0) badRequest(UNAVAILABLE_ITEMS_MESSAGE);
     const kva = describeKva(pack);
+    // Snapshot fields (COMMERCE_V2 §1.3); the display type label moves to typeLabel.
     return {
       package: option.kits ? `${kva} inverter with ${option.kits}` : `${kva} ${pack.name}`,
-      type: describeType(pack),
+      ...packageLineSnapshot(option),
+      typeLabel: describeType(pack),
       kva,
+      volt: pack.volt ?? null,
       price: formatNaira(unitPrice),
       quantity,
       name: pack.name,
@@ -467,14 +522,21 @@ const ITEM_UNAVAILABLE_MESSAGE = "This item is no longer available.";
 // Prices each validated cart line. Lines that cannot be priced (inactive, removed or
 // unmatched package/option) come back as { available: false, message }.
 const quoteLines = async (env, validated) => {
-  const packages = await loadActivePackages(env);
-  return validated.map(({ item, quantity }) => {
+  const { packages, products } = await loadPricingCatalog(env, validated);
+  return validated.map((entry) => {
+    const { item, quantity } = entry;
+    if (isProductOrderItem(item)) {
+      const product = priceProductItem(products, entry);
+      return product ? { ...productCartLine(product), available: true } : { available: false, message: ITEM_UNAVAILABLE_MESSAGE };
+    }
     const pack =
       (hasValue(item.packageId) && packages.find((entry) => entry.id === String(item.packageId))) ||
       resolvePackage(packages, item);
     const option = pack && selectPackageOption(pack, item);
-    const unitPrice = option ? parseMoney(option.price) : 0;
-    if (!pack || !option || unitPrice <= 0) return { available: false, message: ITEM_UNAVAILABLE_MESSAGE };
+    const unitPrice = option ? Number(option.price) || 0 : 0;
+    if (!pack || !option || option.available === false || unitPrice <= 0) {
+      return { available: false, message: ITEM_UNAVAILABLE_MESSAGE };
+    }
     return {
       packageId: pack.id,
       legacyId: pack.legacyId,
@@ -498,44 +560,6 @@ const quoteValidatedItems = async (env, validated) => {
   const lines = await quoteLines(env, validated);
   if (lines.some((line) => !line.available)) badRequest(UNAVAILABLE_ITEMS_MESSAGE);
   return lines;
-};
-
-// ---------------------------------------------------------------------------
-// Email (Resend)
-// ---------------------------------------------------------------------------
-
-const sendNotification = async (env, { to, subject, text, html }) => {
-  if (!env.RESEND_API_KEY || !env.MAIL_FROM || !to) return { skipped: true };
-
-  let response;
-  try {
-    response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: env.MAIL_FROM,
-        to,
-        subject,
-        text,
-        html,
-        reply_to: env.MAIL_REPLY_TO || env.MAIL_FROM,
-      }),
-    });
-  } catch (error) {
-    console.error("Email provider request failed:", describeError(error));
-    return { skipped: false, failed: true };
-  }
-
-  if (!response.ok) {
-    response.body?.cancel?.().catch?.(() => {});
-    console.error(`Email provider failed with HTTP ${response.status}`);
-    return { skipped: false, failed: true };
-  }
-
-  return { skipped: false };
 };
 
 const sourceField = (body) => stringField(body, "source", { label: "Source", max: LIMITS.source }) || "client";
@@ -813,16 +837,27 @@ const pruneCarts = (env, ctx) => {
 };
 
 const handlePublic = async (request, env, ctx, path, body, url) => {
+  const vacancyResponse = await handlePublicVacancies(request, env, path, url);
+  if (vacancyResponse) return vacancyResponse;
+
   if (request.method === "GET" && path === "/packages") {
-    const packages = await listCollection(env, "packages");
-    return ok("Packages retrieved.", packages.map(serializePackage));
+    const active = await listCollection(env, "packages");
+    // ?category=<id|slug>: packages in that category or its descendants (COMMERCE_V3 §4).
+    const query = Object.fromEntries(url.searchParams);
+    const packages =
+      query.category !== undefined
+        ? packagesInCategory(active, await listCollection(env, "categories", { includeInactive: true }), query)
+        : active;
+    const [products, categories] = await Promise.all([productsForPackages(env, packages), categoriesForPackages(env, packages)]);
+    return ok("Packages retrieved.", packages.map((pack) => serializePublicPackage(pack, products, categories)));
   }
 
   const packageId = request.method === "GET" ? idAfter(path, "/packages") : null;
   if (packageId) {
     const item = await getCollectionItem(env, "packages", packageId);
     if (item.isActive === false) notFound("Package not found.");
-    return ok("Package retrieved.", serializePackage(item));
+    const [products, categories] = await Promise.all([productsForPackages(env, [item]), categoriesForPackages(env, [item])]);
+    return ok("Package retrieved.", serializePublicPackage(item, products, categories));
   }
 
   if (request.method === "GET" && path === "/services") {
@@ -835,15 +870,14 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
 
   if (request.method === "GET" && path === "/portfolio") {
     const items = await listCollection(env, "portfolio");
-    const data = url.searchParams.get("featured") === "true" ? items.filter((item) => item.featured) : items;
-    return ok("Portfolio retrieved.", data);
+    return ok("Portfolio retrieved.", filterPortfolio(items, Object.fromEntries(url.searchParams)));
   }
 
   const portfolioId = request.method === "GET" ? idAfter(path, "/portfolio") : null;
   if (portfolioId) {
     const item = await getCollectionItem(env, "portfolio", portfolioId);
     if (item.isActive === false) notFound("Portfolio item not found.");
-    return ok("Portfolio item retrieved.", item);
+    return ok("Portfolio item retrieved.", serializePortfolio(item));
   }
 
   if (request.method === "POST" && path === "/cart/quote") {
@@ -972,14 +1006,16 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
       order: pricing.items,
       total: pricing.total,
       totalAmount: pricing.totalAmount,
-      status: "pending",
-      paymentStatus: "unpaid",
+      ...NEW_ORDER_FIELDS,
+      requiresInstallation: websiteRequiresInstallation(pricing.items),
       source,
       receivedAt: now(),
     });
+    notify(env, ctx, newOrderNotification(order));
+    const orderEmails = mergeSettings(await getById(env, "settings", SETTINGS_ID)).notifications.orderEmails;
     ctx.waitUntil(
       sendNotification(env, {
-        to: env.ADMIN_NOTIFY_EMAIL,
+        to: recipientsOr(orderEmails, env.ADMIN_NOTIFY_EMAIL),
         subject: "You have a new order",
         text: `${order.name}\n${order.phoneNumber}\n${order.deliveryAddress}\nTotal: ${order.total}`,
         html: orderNotificationTemplate(order),
@@ -1028,7 +1064,9 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     await seedSuperAdmin(env);
     const admin = await findByField(env, "admins", "email", email);
     const valid =
-      admin && admin.isActive !== false ? await verifyPassword(password, admin.passwordHash) : await burnPasswordCheck(password);
+      admin && admin.isActive !== false && typeof admin.passwordHash === "string" && admin.passwordHash
+        ? await verifyPassword(password, admin.passwordHash)
+        : await burnPasswordCheck(password);
     if (!valid) {
       ctx.waitUntil(
         (async () => {
@@ -1060,7 +1098,7 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     });
     return ok("Login successful.", {
       token: await createAdminToken(env, admin, session),
-      admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role },
+      admin: adminSelf(admin),
     });
   }
 
@@ -1115,6 +1153,11 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     return ok("Password reset successful.");
   }
 
+  if (request.method === "GET" && path === "/admin/auth/me") {
+    const { admin, isStatic } = await requireAdmin(request, env, ctx);
+    return ok("Session retrieved.", { admin: adminSelf(admin, { isStatic }) });
+  }
+
   if (request.method === "POST" && path === "/admin/auth/logout") {
     const { admin, sessionId, isStatic } = await requireAdmin(request, env, ctx);
     if (isStatic) {
@@ -1159,6 +1202,7 @@ const forgetRecordReads = async (env, type, id) => {
 };
 
 const MAX_READ_ID_LENGTH = 64;
+const READ_TYPE_CAPABILITY = { contacts: "leads:read", orders: "orders:read" };
 
 const handleReads = async (env, method, path, body, admin) => {
   if (method === "GET" && path === "/admin/reads") {
@@ -1166,6 +1210,9 @@ const handleReads = async (env, method, path, body, admin) => {
   }
   if (method === "POST" && path === "/admin/reads") {
     const { type, id } = body;
+    if (typeof type === "string" && Object.hasOwn(READ_TYPE_CAPABILITY, type)) {
+      requireCapability(admin, READ_TYPE_CAPABILITY[type]);
+    }
     if (typeof type !== "string" || !READ_TYPES.includes(type)) badRequest("Type must be contacts or orders.");
     if (typeof id !== "string" || !id.trim() || id.length > MAX_READ_ID_LENGTH) badRequest("Id is required.");
     const record = await getCollectionItem(env, type, id);
@@ -1188,8 +1235,11 @@ const handleReads = async (env, method, path, body, admin) => {
 const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   const audit = (entry) => recordAudit(env, ctx, request, admin, entry);
   const { method } = request;
+  // Capability guard (API_CONTRACT_V3 §1.2); mirrors backend/routes/admin.js.
+  const can = (...capabilities) => requireCapability(admin, ...capabilities);
 
-  const crud = async ({ entity, collection, id, payloadFor, messages }) => {
+  const crud = async ({ entity, collection, id, payloadFor, messages, serialize = async (item) => item }) => {
+    if (method === "PUT" || method === "DELETE") can("content:write");
     if (method === "PUT") {
       const existing = await getCollectionItem(env, collection, id);
       const payload = await payloadFor(body, existing);
@@ -1201,7 +1251,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
         summary: `Updated ${ENTITY_LABELS[entity]} "${labelOf(item)}"`,
         changes: changedFields(normalizeForAudit(existing), payload),
       });
-      return ok(messages.update, item);
+      return ok(messages.update, await serialize(item));
     }
     if (method === "DELETE") {
       const existing = await getCollectionItem(env, collection, id);
@@ -1212,12 +1262,13 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
         entityId: item.id,
         summary: `Deleted ${ENTITY_LABELS[entity]} "${labelOf(item)}"`,
       });
-      return ok(messages.delete, item);
+      return ok(messages.delete, await serialize(item));
     }
     return null;
   };
 
-  const create = async ({ entity, collection, payload, message, slugFallback }) => {
+  const create = async ({ entity, collection, payload, message, slugFallback, serialize = async (item) => item }) => {
+    can("content:write");
     const item = await createCollectionItem(env, collection, payload, { slugFallback });
     audit({
       action: `${entity}.create`,
@@ -1226,22 +1277,35 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       summary: `Created ${ENTITY_LABELS[entity]} "${labelOf(item)}"`,
       changes: providedFields(payload),
     });
-    return created(message, item);
+    return created(message, await serialize(item));
   };
 
   // Read status: not audited (it never changes records).
   const readsResponse = await handleReads(env, method, path, body, admin);
   if (readsResponse) return readsResponse;
 
+  const usersResponse = await handleAdminUsers(request, env, ctx, path, body, admin, url, { sendNotification });
+  if (usersResponse) return usersResponse;
+
+  const vacanciesResponse = await handleAdminVacancies(request, env, ctx, path, body, admin, url);
+  if (vacanciesResponse) return vacanciesResponse;
+
   if (method === "GET" && path === "/admin/audit-logs") {
+    can("audit:read");
     return ok("Audit logs retrieved.", await listAuditLogs(env, url.searchParams));
   }
 
   if (method === "GET" && path === "/admin/dashboard") {
-    const [orders, contacts, newsletter] = await Promise.all([
+    can("dashboard:read");
+    const nowMs = Date.now();
+    const period = dashboardPeriod(Object.fromEntries(url.searchParams), nowMs);
+    const [orders, contacts, newsletter, products, vacancies, jobs] = await Promise.all([
       listCollection(env, "orders", { includeInactive: true }),
       listCollection(env, "contacts", { includeInactive: true }),
       listCollection(env, "newsletters", { includeInactive: true }),
+      listCollection(env, "products", { includeInactive: true }),
+      listCollection(env, "vacancies", { includeInactive: true }),
+      listCollection(env, "installationJobs", { includeInactive: true }),
     ]);
     const statusCounts = orders.reduce((counts, order) => {
       const status = normalizeOrderStatus(order.status);
@@ -1273,16 +1337,20 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       statusCounts,
       revenueSeries: getRevenueSeries(orders),
       recentOrders,
+      kpis: dashboardKpis({ orders, products, vacancies, jobs }, period, nowMs),
     });
   }
 
   // Packages
   if (method === "GET" && path === "/admin/packages") {
-    return ok("Packages retrieved.", await listCollection(env, "packages", { includeInactive: true }));
+    can("content:read");
+    return ok("Packages retrieved.", await serializeAdminPackages(env, await listCollection(env, "packages", { includeInactive: true })));
   }
+  const serializePackage = async (item) => (await serializeAdminPackages(env, [item]))[0];
   if (method === "POST" && path === "/admin/packages") {
+    can("content:write");
     const payload = await packagePayload(env, body);
-    return create({ entity: "package", collection: "packages", payload, message: "Package created." });
+    return create({ entity: "package", collection: "packages", payload, message: "Package created.", serialize: serializePackage });
   }
   const packageId = idAfter(path, "/admin/packages");
   if (packageId) {
@@ -1292,12 +1360,14 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       id: packageId,
       payloadFor: (input, existing) => packagePayload(env, input, existing),
       messages: { update: "Package updated.", delete: "Package deleted." },
+      serialize: serializePackage,
     });
     if (response) return response;
   }
 
   // Services and customer segments
   if (method === "GET" && path === "/admin/services") {
+    can("content:read");
     const [offerings, customerSegments] = await Promise.all([
       listCollection(env, "services", { includeInactive: true }),
       listCollection(env, "customerSegments", { includeInactive: true }),
@@ -1305,6 +1375,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Services retrieved.", { offerings, customerSegments });
   }
   if (method === "POST" && path === "/admin/services") {
+    can("content:write");
     const payload = await contentPayload(env, body, null, "services");
     return create({ entity: "service", collection: "services", payload, message: "Service created." });
   }
@@ -1320,6 +1391,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     if (response) return response;
   }
   if (method === "POST" && path === "/admin/services/customer-segments") {
+    can("content:write");
     const payload = await segmentPayload(env, body);
     return create({
       entity: "customerSegment",
@@ -1342,11 +1414,14 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Portfolio
   if (method === "GET" && path === "/admin/portfolio") {
-    return ok("Portfolio retrieved.", await listCollection(env, "portfolio", { includeInactive: true }));
+    can("content:read");
+    return ok("Portfolio retrieved.", (await listCollection(env, "portfolio", { includeInactive: true })).map(serializePortfolio));
   }
+  const servePortfolio = async (item) => serializePortfolio(item);
   if (method === "POST" && path === "/admin/portfolio") {
+    can("content:write");
     const payload = await contentPayload(env, body, null, "portfolio");
-    return create({ entity: "portfolio", collection: "portfolio", payload, message: "Portfolio item created." });
+    return create({ entity: "portfolio", collection: "portfolio", payload, message: "Portfolio item created.", serialize: servePortfolio });
   }
   const portfolioId = idAfter(path, "/admin/portfolio");
   if (portfolioId) {
@@ -1356,16 +1431,19 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       id: portfolioId,
       payloadFor: (input, existing) => contentPayload(env, input, existing, "portfolio"),
       messages: { update: "Portfolio item updated.", delete: "Portfolio item deleted." },
+      serialize: servePortfolio,
     });
     if (response) return response;
   }
 
   // Contacts
   if (method === "GET" && path === "/admin/contacts") {
+    can("leads:read");
     return ok("Messages retrieved.", await listCollection(env, "contacts", { includeInactive: true }));
   }
   const replyMatch = /^\/admin\/contacts\/([^/]+)\/reply$/.exec(path);
   if (replyMatch && method === "POST") {
+    can("leads:write");
     const rawSubject = stringField(body, "subject", { label: "Subject", max: LIMITS.replySubject });
     const reply = stringField(body, "message", {
       label: "Reply message",
@@ -1407,6 +1485,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
   }
   const contactId = idAfter(path, "/admin/contacts");
   if (contactId && method === "PUT") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "contacts", contactId);
     const status = enumField(body, "status", CONTACT_STATUSES, { label: "Status", existing: existing.status });
     const payload = { status, note: optionalNote(body), isActive: optionalIsActive(body) };
@@ -1421,6 +1500,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Message updated.", message);
   }
   if (contactId && method === "DELETE") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "contacts", contactId);
     await deleteCollectionItem(env, "contacts", existing);
     await forgetRecordReads(env, "contacts", existing.id);
@@ -1435,10 +1515,12 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Newsletter
   if (method === "GET" && path === "/admin/newsletter") {
+    can("leads:read");
     return ok("Subscribers retrieved.", await listCollection(env, "newsletters", { includeInactive: true }));
   }
   const subscriberId = idAfter(path, "/admin/newsletter");
   if (subscriberId && method === "PUT") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "newsletters", subscriberId);
     const status = enumField(body, "status", NEWSLETTER_STATUSES, { label: "Status", existing: existing.status });
     const payload = { status, isActive: optionalIsActive(body) };
@@ -1453,6 +1535,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Subscriber updated.", subscriber);
   }
   if (subscriberId && method === "DELETE") {
+    can("leads:write");
     const existing = await getCollectionItem(env, "newsletters", subscriberId);
     await deleteCollectionItem(env, "newsletters", existing);
     audit({
@@ -1466,50 +1549,11 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   // Carts and orders
   if (method === "GET" && path === "/admin/carts") {
+    can("orders:read");
     return ok("Carts retrieved.", await listCollection(env, "carts", { includeInactive: true }));
   }
 
-  if (method === "GET" && path === "/admin/orders") {
-    return ok("Orders retrieved.", await listCollection(env, "orders", { includeInactive: true }));
-  }
-  const orderId = idAfter(path, "/admin/orders");
-  if (orderId && method === "GET") {
-    return ok("Order retrieved.", await getCollectionItem(env, "orders", orderId));
-  }
-  if (orderId && method === "PUT") {
-    const existing = await getCollectionItem(env, "orders", orderId);
-    const status = enumField(body, "status", ORDER_STATUSES, { label: "Status", existing: existing.status });
-    const paymentStatus = enumField(body, "paymentStatus", PAYMENT_STATUSES, {
-      label: "Payment status",
-      existing: existing.paymentStatus,
-    });
-    const payload = { status, paymentStatus, note: optionalNote(body), isActive: optionalIsActive(body) };
-    const order = await updateCollectionItem(env, "orders", existing.id, payload);
-    const changes = changedFields(existing, payload);
-    const statusChanged = changes.includes("status");
-    audit({
-      action: statusChanged ? "order.status_change" : "order.update",
-      entity: "order",
-      entityId: existing.id,
-      summary: statusChanged
-        ? `Order from ${existing.name || existing.id} marked ${status}`
-        : `Updated order from ${existing.name || existing.id}`,
-      changes,
-    });
-    return ok("Order updated.", order);
-  }
-  if (orderId && method === "DELETE") {
-    const existing = await getCollectionItem(env, "orders", orderId);
-    await deleteCollectionItem(env, "orders", existing);
-    await forgetRecordReads(env, "orders", existing.id);
-    audit({
-      action: "order.delete",
-      entity: "order",
-      entityId: existing.id,
-      summary: `Deleted order from ${existing.name || existing.id}`,
-    });
-    return ok("Order deleted.", existing);
-  }
+  // Orders (GET, PUT, DELETE and fulfilment actions): src/ops/orders.js.
 
   return null;
 };
@@ -1540,8 +1584,23 @@ const route = async (incoming, env, ctx, path) => {
   const url = new URL(request.url);
 
   if (request.method === "GET" && path === "/health") return handleHealth(env);
+  // Public uploaded images (UPLOADS_V1 §1).
+  if (isPublicUploadPath(request.method, path)) return handleUploadGet(env, path);
 
   const isWebhook = request.method === "POST" && path === WEBHOOK_PATH;
+  // Raw image bytes: exempt from the JSON-only rule, read by the upload handler with its own cap.
+  if (request.method === "POST" && path === UPLOAD_PATH) {
+    const { admin } = await requireAdmin(request, env, ctx);
+    return handleUploadCreate({
+      request,
+      env,
+      ctx,
+      admin,
+      url,
+      audit: (entry) => recordAudit(env, ctx, request, admin, entry),
+      sendNotification: (message) => sendNotification(env, message),
+    });
+  }
   if (!isWebhook) assertJsonContentType(request);
   const rawBytes = await readBodyBytes(request);
 
@@ -1556,9 +1615,27 @@ const route = async (incoming, env, ctx, path) => {
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     const { admin } = await requireAdmin(request, env, ctx);
+    // v3 modules first: they own /admin/orders* (src/ops/orders.js).
+    const opsResponse = await handleOpsAdmin({
+      request,
+      env,
+      ctx,
+      path,
+      body,
+      url,
+      admin,
+      audit: (entry) => recordAudit(env, ctx, request, admin, entry),
+      sendNotification: (message) => sendNotification(env, message),
+    });
+    if (opsResponse) return opsResponse;
+    const uploadsResponse = await handleUploadsAdmin({ request, env, path });
+    if (uploadsResponse) return uploadsResponse;
     const response = await handleAdmin(request, env, ctx, path, body, admin, url);
     if (response) return response;
   }
+
+  const opsPublicResponse = await handleOpsPublic({ request, env, ctx, path, body, url });
+  if (opsPublicResponse) return opsPublicResponse;
 
   const publicResponse = await handlePublic(request, env, ctx, path, body, url);
   if (publicResponse) return publicResponse;
@@ -1567,7 +1644,8 @@ const route = async (incoming, env, ctx, path) => {
 };
 
 const errorResponse = (error, requestId) => {
-  if (!(error instanceof ApiError)) {
+  // Errors from backend/shared carry expose === true and a statusCode.
+  if (!(error instanceof ApiError) && !(error?.expose === true && Number.isInteger(error?.statusCode))) {
     console.error(`[${requestId}] Unhandled worker error:`, describeError(error));
     return json({ success: false, message: "Something went wrong." }, 500);
   }
@@ -1583,7 +1661,7 @@ const errorResponse = (error, requestId) => {
 export default {
   async fetch(request, env, ctx) {
     const requestId = resolveRequestId(request);
-    let path = null;
+    let path;
     try {
       path = normalizePath(new URL(request.url));
     } catch {
@@ -1597,5 +1675,10 @@ export default {
       response = errorResponse(error, requestId);
     }
     return finalizeResponse(response, request, env, path, requestId);
+  },
+
+  // Cron triggers (wrangler.toml): daily low-stock digest and upload maintenance.
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(handleOpsScheduled(env, (message) => sendNotification(env, message)));
   },
 };

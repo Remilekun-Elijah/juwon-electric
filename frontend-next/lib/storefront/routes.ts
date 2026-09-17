@@ -1,0 +1,79 @@
+// Storefront URLs and navigation (client and server safe). Always link to public paths, never `/storefront/...`:
+// proxy.ts rewrites public paths to the storefront segment and redirects the prefixed form.
+import { routes } from "@/lib/site";
+
+export const storeRoutes = {
+  ...routes,
+  checkout: "/checkout",
+  checkoutSuccess: "/checkout/success",
+  calculator: "/calculator",
+  faq: "/faq",
+  team: "/team",
+} as const;
+
+export type StoreNavItem = { label: string; href: string };
+
+/**
+ * Header navigation, in order. Seven items fit at 1024 px; Careers moved to the mobile drawer and the footer when Team
+ * was added (TEAM_AND_MOTION_V1 §4).
+ */
+export const storeNav: StoreNavItem[] = [
+  { label: "Packages", href: storeRoutes.packages },
+  { label: "Products", href: storeRoutes.products },
+  { label: "Calculator", href: storeRoutes.calculator },
+  { label: "Services", href: storeRoutes.services },
+  { label: "Our work", href: storeRoutes.portfolio },
+  { label: "Team", href: storeRoutes.team },
+  { label: "Contact", href: storeRoutes.contact },
+];
+
+/** Mobile drawer navigation: the header items plus Careers, placed after Team. */
+export const storeDrawerNav: StoreNavItem[] = storeNav.flatMap((item) =>
+  item.href === storeRoutes.team ? [item, { label: "Careers", href: storeRoutes.vacancies }] : [item]
+);
+
+/** sessionStorage key for the last placed order summary (written by checkout, read by /checkout/success). */
+export const LAST_ORDER_KEY = "je/last-order";
+
+/** `/contact?topic=<topic>` for "Ask about this product" style links. */
+export const contactTopicPath = (topic: string) => `${storeRoutes.contact}?topic=${encodeURIComponent(topic)}`;
+
+/** Strips a leading `/storefront` so active-link checks work whether a component sees the public or rewritten path. */
+export const publicPathname = (pathname: string | null | undefined) => {
+  const path = pathname || "/";
+  if (path === "/storefront") return "/";
+  return path.startsWith("/storefront/") ? path.slice("/storefront".length) : path;
+};
+
+/** True when `href` is the current page or one of its children (`/products` is active on `/products/x`). */
+export const isActivePath = (pathname: string | null | undefined, href: string) => {
+  const path = publicPathname(pathname);
+  if (href === "/") return path === "/";
+  return path === href || path.startsWith(`${href}/`);
+};
+
+/** First number of a settings phone field that may hold several ("+234…, +234…"). */
+export const primaryPhone = (phone: string | null | undefined) => (phone || "").split(/[,;/]/)[0]?.trim() || "";
+
+/** All numbers of a settings phone field. */
+export const phoneNumbers = (phone: string | null | undefined) =>
+  (phone || "")
+    .split(/[,;/]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+/** `tel:` href for a display phone number. */
+export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
+
+/** Digits of a phone number for wa.me links: "+234 800 000 0000" gives "2348000000000". Empty when there are none. */
+export const whatsappDigits = (phone: string | null | undefined) => (phone || "").replace(/\D/g, "");
+
+/** `https://wa.me/<digits>` with a greeting, or "" when the number has no digits. */
+export const whatsappHref = (phone: string | null | undefined, text = "Hello Juwon Electric") => {
+  const digits = whatsappDigits(phone);
+  return digits ? `https://wa.me/${digits}?text=${encodeURIComponent(text)}` : "";
+};
+
+/** `/portfolio?category=<slug>`, or `/portfolio` without a slug. */
+export const portfolioCategoryPath = (category: string | null | undefined) =>
+  category ? `${storeRoutes.portfolio}?category=${encodeURIComponent(category)}` : storeRoutes.portfolio;
