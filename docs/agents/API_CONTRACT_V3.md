@@ -647,3 +647,23 @@ BE-2 has already adopted it: `bd75e45` holds a byte-identical `richText.js` and 
 8. **Confirmed.** Unknown body fields are ignored.
 
 **Migration order.** `0012` exists before `0011`. That is allowed: wrangler applies unapplied migrations in name order, so a later `0011` still applies. `0011` must not depend on `0012` objects, and `0012` must not depend on `0011`.
+
+### 2026-09-17: round 4 rulings on BE-2 items 9–26 (binding)
+9. **Confirmed.** `stockCommittedAt` is set only when the move to `processing` actually changed stock.
+10. **Confirmed.** Order writes are guarded on the stored `fulfillmentStatus`/`paymentStatus` (`assignedEngineerId` for assignment). Concurrent status changes get 409, and concurrent note edits are last-write-wins.
+11. **Confirmed.** A cancel restores the net quantity of the order's `sale` minus `sale_reversal` movements. No separate commitment record is stored.
+12. **Confirmed.** Admin order responses do not include `sortOrder` (FE-2 does not use it). The Worker's public `POST /order` response should drop it too (review L12).
+13. **Confirmed.** The messages are `"Fulfilment status is not valid."`, `"Payment status is not valid."` and `"requiresInstallation must be true or false."`. A missing `engineerId` gets `"Assignee must be an active engineer."`.
+14. **Confirmed.** `mark-paid` on a paid order and cancelling a cancelled order are 200 no-ops.
+15. **Confirmed.** Express order routes are gated in `routes/admin.js`, and Worker order routes in `src/ops/orders.js`.
+16. **Confirmed.** Assigning or reassigning works only on `unassigned` and `assigned` jobs, and other statuses get the transition 409. To move started work to someone else, cancel the job and create a new one.
+17. **Confirmed.** The `note` on `POST /admin/jobs/:id/status` goes into the audit summary only.
+18. **Confirmed.** The checklist-complete rule applies only to `/admin/me/jobs`. Admins with `jobs:assign` may complete a job regardless.
+19. **Confirmed.** On job creation the order is checked for `requiresInstallation` first, then for being cancelled.
+20. **Confirmed.** The staff list is sorted by name, `openJobs` counts jobs that are not completed or cancelled, the PUT ignores `role`/`isActive`, and edits are audited as `user.update`.
+21. **Confirmed.** Notification read state is stored as `notificationReads` rows plus a `"<adminId>:*"` watermark, and reading one returns the notification with `read: true`.
+22. **Confirmed.** `unreadCount` covers the caller's whole audience and ignores the `type` and `unread` filters (it is the badge count).
+23. **Confirmed.** Vacancy emails are sent only when `vacancyEmails` is non-empty. There is no env fallback.
+24. **Confirmed.** The Worker email sender moves to `src/email.js`, with the same behaviour.
+25. **Confirmed.** Only `kpis.revenue` uses the period. `openOrders`, `lowStockItems`, `openVacancies` and `upcomingJobs` are current values. The defaults for a missing `from` or `to` are as documented in API.md.
+26. **Confirmed.** The dashboard reads the `vacancies` collection, which BE-1's module writes.

@@ -4,6 +4,85 @@ Reviewer: SUP-BE · Contract: `docs/agents/API_CONTRACT_V3.md` · Checklist and 
 
 ---
 
+## Round 4 (2026-09-17): BE-2 complete (bd75e45..ca4cf07)
+
+### Method
+A temporary worktree at `agents/be-ops` ca4cf07, which already contains `agents/be-platform` ae917b4, with `node_modules` symlinked. It was removed afterwards. The probes were throwaway scripts using BE-2's `opsKit` clients against both runtimes.
+
+### BE-2 claims, re-verified
+- **`npm test`:** 56/56 test files pass.
+- **`npm run lint`:** green, and `check-chars` reports 161 files clean. **M2 is closed.**
+- **Worker bundle:** `wrangler deploy --dry-run` builds (289 KiB).
+- **Migrations:** 0001–0008 and 0010–0013 are present. 0009 is BE-1's unused reservation.
+
+### Coordinator checks
+- **Order transitions (§6.2).**
+  - `shared/orders.js` `FULFILLMENT_TRANSITIONS` and `PAYMENT_TRANSITIONS` match the contract tables exactly.
+  - Probed in both runtimes with identical results: `pending→delivered`, `pending→installed`, `cancelled→processing` and payment `pending→refunded` all return 409 with the contract messages.
+  - The `unpaid` input alias is accepted.
+  - A PUT with a changed `status` returns 400 (BE-2's scenario).
+- **Migration 0011 backfill.**
+  - Applied on 0001–0010, then `seed.sql`, then 8 legacy orders: unpaid, completed/paid, cancelled/refunded, completed/partial, bare, bogus values, a non-string `paymentStatus`, and one with an engineer. Applied twice with byte-identical rows, so it is **idempotent**.
+  - `unpaid→pending` sets `legacyPaymentStatus: "unpaid"`; `partial` is kept; `completed→delivered`; `status` is re-derived; the defaults are filled.
+  - `serializeOrder(migrated)` equals `serializeOrder(original)`, the Express read-time path, for 7 of 8 orders. The exception is L11.
+- **Stock (§6.3).** Product A had 4, product B had 1, and the package takes A×2 and B×1.
+  - Order 1 → `processing` left A=2, B=0.
+  - Order 2 → `processing` returned `409 "Insufficient stock to process this order."`, and **A stayed at 2**, so the commit is all-or-nothing.
+  - A repeat `processing` was a 200 no-op with no double commit.
+  - Order 1 → `cancelled` restored A=4, B=1.
+  - Order 2 → `processing` then succeeded.
+  - Results were identical in both runtimes. BE-2's scenario also covers three racing transitions.
+  - **Worker mechanism:** `cloudflare/src/ops/stock.js` issues one `DB.batch`: a compare-and-set `UPDATE` per product and for the order, each followed by `INSERT INTO batch_guard (ok) SELECT changes()` (`CHECK ok = 1`), then movement inserts, then `DELETE FROM batch_guard`. It retries 5 times, then returns 409. The logic is sound on the node:sqlite stand-in.
+  - **Integration check (not verifiable locally):** on real D1, confirm that `changes()` reflects the preceding statement inside a batch and that a CHECK failure rolls back the whole batch. Run it against `wrangler dev --local` or a staging D1 before the first production deploy.
+- **Engineer scoping (§7.3).** Engineer 2 gets `404 "Job not found."` for GET, status and PUT on engineer 1's job. Engineers get 403 on `/admin/jobs` and `/admin/orders/:id`.
+  - Completing with an unticked checklist returns `409 "Complete the checklist first."`.
+  - An engineer PUT that tries to change a checklist `label`, `notes` or `engineerId` changes only `done`; labels, notes and the assignee are untouched.
+  - An unknown checklist id returns 400.
+  - An engineer sending `cancelled` gets 400.
+  - Everything was identical in both runtimes.
+- **Notification audience (§8.2).** Every result was identical in both runtimes, and read-marking outside the audience returns `404 "Notification not found."`.
+
+  | Viewer | Sees |
+  |---|---|
+  | superadmin | low_stock, new_order, vacancy_posted (no job_assigned) |
+  | engineer 1 | only their job_assigned |
+  | engineer 2 | nothing |
+  | hr | vacancy_posted |
+  | inventory, sales | low_stock and new_order (both hold `inventory:read` and `orders:read`) |
+
+- **Settings.** `GET /settings/public` returns only `business{name,phone,email,address,website}` and `payments{gatewayEnabled}`. **No notification emails.** An engineer gets 403 on `GET /admin/settings`, and inventory gets 403 on PUT.
+- **Full-body parity (§13.7).** My probe compared **every** response body (59 steps, key order ignored, ids and timestamps masked) across both runtimes. Only 5 steps differ:
+  - admin package create `sortOrder` (Express seeds a catalog; accepted in §13, BE-2 item 6);
+  - public `POST /order` `sortOrder`, Worker only (L12, pre-existing);
+  - the dashboard `kpis.period.from/to` wall-clock values (not masked, because the keys aren't named `*At`).
+
+  Every **admin** order, job, notification, settings, inventory and dashboard body is identical.
+- **Merge fix (Worker store UNIQUE mapping).** The generic `409 "Another record was saved with the same value. Please try again."` applies only to `categories` and `products`. BE-1's paths are unchanged in both runtimes:
+  - a duplicate vacancy slug still gets `-2`;
+  - a duplicate admin email still gets `409 "An account with this email already exists."`;
+  - a duplicate SKU still gets its own 409;
+  - a duplicate category slug gets `-2`.
+- **Removed `sortOrder` on admin orders.** `agents/fe-admin` (6b8b544) uses `sortOrder` only for categories, customer segments and content types, never for orders, so nothing breaks.
+- **BE-1 ae917b4 (L7 fix, carried in be-ops).** `richText.js` still passes 30/30 fixtures, and the hostile samples are still safe. Adversarial 100 KB inputs now take at most 17 ms (previously 300–360 ms). **L7 is closed.**
+
+### Findings (BE-2), by severity
+No Critical, High or Medium findings.
+- **L11. 0011 and the read-time backfill differ for a non-string `paymentStatus`** (for example `5`): the migration stores `legacyPaymentStatus: 5`, while Express reads it as `null`. Only malformed legacy data is affected.
+  *Fix (optional):* in 0011, `CASE json_type(data,'$.paymentStatus') WHEN 'text' THEN json_extract(...) ELSE NULL END`.
+- **L12. Public `POST /order` response includes `sortOrder` in the Worker only.** This is pre-existing: the Worker's generic create stores one. The admin views strip it, but the public response doesn't.
+  *Fix:* serialise the public order response through `serializeOrder`, or drop `sortOrder` in the Worker's public order handler.
+- **L13. Some parity steps are projected, not full-body.** 15 of the 46 orders steps, 15 of the 35 settings and notifications steps, 3 of the 8 dashboard steps, and 7 of the 67 jobs steps. This loosens §13.7. My probe shows the full bodies currently match.
+  *Fix:* at integration or later, switch the projected **admin** steps to full masked bodies, and add `from`/`to` to the mask for dashboard steps. The public order and package steps may stay projected until L12 is fixed.
+- **I5. Real-D1 integration checks:** the `batch_guard`/`changes()` rollback, remote migrations 0007–0013 applied in order, and the cron trigger.
+
+### Rulings on BE-2 interpretations 9–26 (recorded in contract §13)
+All are confirmed. Item 16 is confirmed with guidance: to move a started job to another engineer, cancel it and create a new job.
+
+### Status
+BE-2 has **no gate items open**. Every BE-1 and BE-2 checklist item is PASS; see the status table in `BE_ACCEPTANCE.md`. Proceeding to Phase B (`agents/be-integration`).
+
+---
+
 ## Round 3 (2026-09-16): BE-1 scope complete; BE-2 catalog and inventory
 
 ### Method
