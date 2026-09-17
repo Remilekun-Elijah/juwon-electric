@@ -112,7 +112,7 @@ function useScrolledPast(enabled: boolean, threshold: number) {
  *
  * At the top of any page that starts with a `[data-store-hero]` band (the home hero and every PageIntro) it is
  * transparent over it. After scrolling 24px, and on a page without a hero, the bar lifts: it drops a few pixels from the
- * top edge into a rounded dark glass bar (translucent slate-950, blur, hairline border, deep shadow), inset from the page
+ * top edge into a rounded dark glass bar (translucent brand-950, blur, hairline border, deep shadow), inset from the page
  * edges, so the gold logo and white nav stay legible over light content. Both states use white nav with a gold underline
  * on the active item, the logo without a chip, a white phone link, a glass cart and menu button and a gold quote pill.
  * The lift uses transform only and the bar height never changes, so nothing shifts. Reduced motion skips the movement.
@@ -128,7 +128,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
   const scrolled = useScrolledPast(hasHero, SOLID_AFTER_PX);
   const overlay = hasHero && !scrolled;
 
-  const glassFocus = "focus-visible:ring-white focus-visible:ring-offset-slate-900";
+  const glassFocus = "focus-visible:ring-white focus-visible:ring-offset-brand-950";
 
   return (
     <header
@@ -144,7 +144,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
       <div
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-slate-950/60 to-transparent transition-opacity duration-[250ms]",
+          "pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-brand-950/60 to-transparent transition-opacity duration-[250ms]",
           overlay ? "opacity-100" : "opacity-0"
         )}
       />
@@ -161,7 +161,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
             "flex items-center gap-3 rounded-2xl border px-2 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out lg:gap-4",
             overlay
               ? "border-transparent bg-transparent"
-              : "border-white/10 bg-slate-950/90 shadow-elev-4 backdrop-blur-md supports-[backdrop-filter]:bg-slate-950/70"
+              : "border-white/10 bg-brand-950/90 shadow-elev-4 backdrop-blur-md supports-[backdrop-filter]:bg-brand-950/70"
           )}
         >
         <Link

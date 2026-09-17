@@ -124,7 +124,7 @@ Add a gold accent scale in `app/globals.css` `@theme`. Gold comes from the Juwon
 
 Rules:
 - Gold is for accents on **dark** surfaces only: highlighted headline words, stat numbers, primary buttons on dark.
-- Dark surfaces use `slate-950`, `slate-900` or `brand-950`.
+- Dark surfaces use `brand-950` (revised 2026-09-17: the deep brand red replaced `slate-950` and `slate-900` across the storefront).
 - Text on gold buttons is `slate-950`.
 - Keep contrast at 4.5:1 or better for body text.
 
@@ -136,7 +136,7 @@ Rules:
   - The phone link is white.
   - The cart button is a glass button (`bg-white/10 border-white/20`).
   - A gold pill CTA reads **"Get a quote"** and links to `/contact?topic=Quote`.
-- **After scrolling, and on pages without a hero:** the bar lifts: same white nav, glass cart and gold quote pill, in a rounded (`rounded-2xl`) dark glass bar (`bg-slate-950/70`, `backdrop-blur-md`, `border-white/10`, `shadow-elev-4`) inset from the page edges and moved down 8-12 px with a transform (revised 2026-09-17; was the solid white header). Reduced motion skips the movement. It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
+- **After scrolling, and on pages without a hero:** the bar lifts: same white nav, glass cart and gold quote pill, in a rounded (`rounded-2xl`) dark glass bar (`bg-brand-950/70`, `backdrop-blur-md`, `border-white/10`, `shadow-elev-4`) inset from the page edges and moved down 8-12 px with a transform (revised 2026-09-17; was the solid white header). Reduced motion skips the movement. It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
 - **Mobile:** the same transparent-then-lifted behaviour. The menu button is a glass button while transparent.
 - The header must not shift layout. The hero reserves the header height at the top.
 
@@ -151,7 +151,7 @@ Rules:
   - Crossfade every 7 s (opacity, 1 s).
   - The active image slowly zooms in, Ken Burns style (scale 1 → 1.08 over 8 s).
 - **Overlay:**
-  - A left-to-right gradient from `slate-950/90` to `slate-950/40`, plus a bottom gradient to `slate-950/80`.
+  - A left-to-right gradient from `brand-950/90` to `brand-950/40`, plus a bottom gradient to `brand-950/80`.
   - Text contrast must pass on every photo.
 - **Slide indicators:**
   - 4 thin bars, bottom centre.
@@ -201,7 +201,7 @@ Alternate surfaces so no two adjacent sections share the same white background:
 |---|---|---|
 | 1 | hero | dark photo |
 | 2 | client logos | white, marquee |
-| 3 | why choose us | **dark `slate-950`**: white text, cards `bg-white/5 border-white/10`, icons in gold circles, hover glow |
+| 3 | why choose us | **dark `brand-950`**: white text, cards `bg-white/5 border-white/10`, icons in gold circles, hover glow |
 | 4 | solutions (who we power) | `slate-50`: image-led cards with a dark gradient overlay, title on the image, zoom on hover |
 | 5 | find your package | white, with battery-type chips in the header |
 | 6 | shop by category | `slate-50` |
@@ -209,13 +209,13 @@ Alternate surfaces so no two adjacent sections share the same white background:
 | 8 | calculator teaser | **brand panel**: `brand-900` with a gold accent, animated numbers preview |
 | 9 | case studies | white: image cards with overlay badges, zoom on hover |
 | 10 | reviews | `brand-50` tint: quote cards, star fill animation on reveal |
-| 11 | how it works | **dark `slate-950`**: gold step numbers, connector line draw |
+| 11 | how it works | **dark `brand-950`**: gold step numbers, connector line draw |
 | 12 | financing | white |
 | 13 | FAQ | `slate-50` |
 | 14 | careers teaser | white, compact |
 | 15 | final CTA | brand red panel with a background photo overlay and gold primary button |
 
-- The **footer** turns dark `slate-950` with white/70 text and gold hover links, on every storefront page.
+- The **footer** turns dark `brand-950` with white/70 text and gold hover links, on every storefront page.
 - Section eyebrows are gold on dark and brand-700 on light.
 
 ### 7.6 Animation checklist (everything that can animate)
@@ -240,7 +240,7 @@ Owner: "can we make the rest of all the frontend animate like the homepage?" Thi
 
 ### 8.1 Inner page hero (`PageIntro`)
 - **Look:** a compact dark band that shares the home hero's style.
-  - `slate-950` background with one of our installation photos (`public/panel-*.webp`) at low opacity, under the same left-to-right dark gradient.
+  - `brand-950` background with one of our installation photos (`public/panel-*.webp`) at low opacity, under the same left-to-right dark gradient.
   - Gold eyebrow, white h1, white/75 description.
   - Breadcrumbs in white/60, with the current item white.
   - Actions and children styled for dark: gold primary, glass secondary.

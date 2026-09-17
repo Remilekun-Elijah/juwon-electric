@@ -11,7 +11,7 @@ import { LIMITS, isValidEmail } from "@/lib/validation";
 
 /**
  * Footer newsletter signup: `POST /subscribe` with Turnstile action "subscribe" (same call as the classic footer).
- * `tone="dark"` for the slate-950 footer (TEAM_AND_MOTION_V1 §7.5).
+ * `tone="dark"` for the brand-950 footer (TEAM_AND_MOTION_V1 §7.5).
  */
 export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "dark" }) {
   const dark = tone === "dark";

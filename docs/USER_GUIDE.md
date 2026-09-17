@@ -1243,6 +1243,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-17 (brand red dark surfaces)**
+- Customer: the website's dark areas (the home banner, page headers, dark sections and the footer) are now the deep Juwon red instead of near-black.
+
 **2026-09-17 (mobile and footer motion)**
 - Customer: on phones, sections now slide in from the left, the right and below as you scroll, and the footer animates in too.
 

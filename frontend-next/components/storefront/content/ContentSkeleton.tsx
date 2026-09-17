@@ -9,7 +9,7 @@ const pulse = "motion-reduce:animate-none";
 export function IntroSkeleton({ breadcrumbs = false, actions = false }: { breadcrumbs?: boolean; actions?: boolean }) {
   const bar = cn(pulse, "bg-white/10");
   return (
-    <div data-store-hero="" className="-mt-[65px] bg-slate-950 md:-mt-[73px]">
+    <div data-store-hero="" className="-mt-[65px] bg-brand-950 md:-mt-[73px]">
       <div className={cn(storeContainer, "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
         {breadcrumbs && <Skeleton className={cn(bar, "mb-6 h-4 w-48")} />}
         <Skeleton className={cn(bar, "h-3 w-24")} />
