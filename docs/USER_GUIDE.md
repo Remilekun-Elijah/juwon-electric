@@ -97,7 +97,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 
 ### Finding your way around Settings
 
-**Settings** (in the **System** group) opens the **Settings overview**: a card for each area, grouped like this. Each card shows a short summary of what's set now (for example "Online payments off"). Select **Edit …** on a card (or **View …** if your role can only view) to open that page.
+**Settings** (in the **System** group) opens **Business profile**. Every settings page lists the other pages beside it, grouped like this.
 
 | Group | Pages |
 |---|---|
@@ -106,7 +106,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 | Sales | Payments, Inventory |
 | Website | Homepage & contact, Financing, Load calculator |
 
-In this guide, a path such as **Settings → Website → Homepage & contact** means: open **Settings**, then the **Homepage & contact** card under **Website**.
+In this guide, a path such as **Settings → Website → Homepage & contact** means: open **Settings**, then **Homepage & contact** under **Website** in that list.
 
 - **Moving between settings pages:** on a computer, the list on the left of each settings page jumps straight to another page. On a phone or tablet, use the row of buttons above the page (swipe it sideways to see them all). **Back to settings** returns to the overview.
 - **Saving:** each page saves on its own. As soon as you change something, a bar appears at the bottom with "Unsaved changes". Select **Save changes** to save, or **Discard** to put back what was saved.
@@ -196,7 +196,6 @@ Each of these is its own page in Settings (see [Finding your way around Settings
 
 - If the New orders or Low stock list is empty, alerts go to the server's default address set up by your developer.
 - Staff other than Super admin and Admin see Settings as **View only**.
-- The overview cards show what's set at a glance, so you can check everything without opening each page.
 - An address typed in the box but not added with **Add** isn't saved.
 - Business details show on the website within about a minute (chapter 12).
 
@@ -917,7 +916,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 **How to spot sample content**
 
-- In the admin: a **Sample** badge on the item, or on a settings page and its card on the Settings overview, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
+- In the admin: a **Sample** badge on the item or on a settings page, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
 - On the website: a small "Sample" label on stats, reviews, client logos, team member cards, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
 
 **What to do**
@@ -1242,6 +1241,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (settings opens on a section page)**
+- Admin: **Settings** now opens **Business profile** straight away, with the list of settings pages beside it. The page of cards and the **Back to settings** link are gone.
 
 **2026-09-17 (round hero photo dots)**
 - Customer: the buttons that change the home page background photo are now round dots, and the "Scroll" prompt at the bottom of the banner is gone.
