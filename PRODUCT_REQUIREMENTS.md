@@ -183,6 +183,7 @@ Persona: HR
 - Payment status at creation: pending, partially paid or paid (paid records the paid date).
 - Optional internal note (up to 500 characters).
 - Records: channel `in_store` and the creating staff member. The website channel is `website`. The orders list filters by channel.
+- Orders list display: fulfilment status and payment status are shown in separate labelled columns (payment shown as a labelled line on phones). Payment labels shown to staff: Unpaid (pending), Part-paid (partial), Paid, Failed, Refunded. A cancelled order whose payment is Paid or Part-paid is flagged "Refund due" in the list and in the order details until payment is set to Refunded.
 - Returns (decision 2026-09-17): an in-store order can be cancelled even after it is delivered (for example a walk-in customer returns the goods). Cancelling restores the stock taken for it through Sale reversed movements and is written to the activity log. Payment status is not changed automatically; if money is given back, staff set the payment status to Refunded. Website orders still cannot be cancelled once delivered.
 - Dashboard revenue uses order totals, so discounts are reflected.
 
@@ -275,6 +276,9 @@ Open items for owner review
 - Storefront order confirmation says "Delivery within Lagos is free." This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (orders list)
+- §6.9: orders list shows fulfilment and payment in separate labelled columns, payment labels Unpaid/Part-paid, and a "Refund due" flag on cancelled paid or part-paid orders.
 
 2026-09-17 (later)
 - §6.1: recorded the owner's decision that the inventory role does not edit packages (package editing stays with Super admin, Admin and Sales).

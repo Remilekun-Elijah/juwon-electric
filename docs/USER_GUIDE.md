@@ -238,7 +238,7 @@ Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super ad
 
 The steps are: **Pending → Processing → Out for delivery → Delivered → Installed** (Installed only when the order needs installation). An order can be **Cancelled** any time before it is delivered.
 
-1. Go to **Orders**. New orders are marked as new. Filter by fulfilment status, payment status, or channel (**Website** / **In store**).
+1. Go to **Orders**. New orders are marked as new. Each order shows two statuses in their own columns: **Fulfilment** (where the order is: Pending, Processing, Out for delivery, Delivered, Installed or Cancelled) and **Payment** (Unpaid, Part-paid, Paid, Failed or Refunded). On a phone, payment shows as a small "Payment: …" line under the fulfilment status. The tabs filter by fulfilment; use the drop-downs to filter by payment or channel (**Website** / **In store**).
 2. Open the order and check the customer's name, phone, delivery address and items.
 3. **Call the customer to confirm** the order and arrange payment.
 4. Record payment (chapter 6, story 6.2).
@@ -280,7 +280,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 6. Choose the fulfilment:
    - **Collected now:** the customer takes the goods today. Stock is taken out straight away and the order is saved as **Delivered**.
    - **Deliver or install later:** we deliver or install later. Enter the **delivery address**, and tick **Requires installation** if an engineer needs to install it. The order is saved as **Pending** and follows the normal steps (story 5.3).
-7. Set the **payment status**: Pending, Partially paid or Paid.
+7. Set the **payment status**: Unpaid, Part-paid or Paid.
 8. Add a **note** if useful, check the total in the summary, and submit.
 
 **What you'll see:** the new order's details, with an **In store** badge and your name as the creator.
@@ -308,13 +308,15 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 
 | Status | Use when |
 |---|---|
-| Pending | Nothing paid yet |
-| Partially paid | A deposit or part payment received |
+| Unpaid | Nothing paid yet |
+| Part-paid | A deposit or part payment received |
 | Paid | Paid in full (the date is recorded as "Paid on") |
 | Failed | A payment attempt failed |
-| Refunded | Money returned (only after Paid or Partially paid, and it's final) |
+| Refunded | Money returned (only after Paid or Part-paid, and it's final) |
 
 **Tip:** the list only offers the changes that are allowed from the current status.
+
+**Refund due:** if an order is cancelled after it was Paid or Part-paid, the orders list and the order show **Refund due**. Give the customer their money back, then set payment to **Refunded** and the flag goes away.
 
 ### Story 6.3: Assign an engineer and create an installation job
 
@@ -731,6 +733,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (orders list)**
+- Orders: fulfilment and payment now have separate labelled columns; payment labels are Unpaid and Part-paid; cancelled orders that were paid show **Refund due** (stories 5.3 and 6.2).
 
 **2026-09-17 (later)**
 - Sales rep: added Story 6.5, recording a return by cancelling a delivered in-store sale (stock goes back; update payment to Refunded if money is returned).
