@@ -8,7 +8,7 @@ import { settingsGroups, settingsSections, type SettingsSectionId } from "./sect
 /** Desktop (lg+): grouped left rail beside the section content, in the admin sidebar's style. */
 export function SettingsRail({ active }: { active: SettingsSectionId }) {
   return (
-    <nav aria-label="Settings sections" className="hidden lg:block">
+    <nav aria-label="Settings sections" className="hidden lg:block lg:self-stretch">
       <div className="sticky top-24 space-y-6">
         {settingsGroups.map((group) => {
           const items = settingsSections.filter((section) => section.group === group.id);

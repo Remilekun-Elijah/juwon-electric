@@ -19,7 +19,7 @@ type SettingsContextValue = {
   save: SaveSection;
   dirty: boolean;
   setDirty: (dirty: boolean) => void;
-  /** Bumped by Discard: section forms are keyed by it, so they reset from the saved values. */
+  /** Bumped by Discard and after a save: section forms are keyed by it, so they reset from the saved values. */
   resetKey: number;
   discard: () => void;
 };
@@ -108,6 +108,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       try {
         const updated = await saveSettings(input);
         setData(() => updated);
+        // Remount the form from the saved values, even when the server's response matches what was there before.
+        setDirty(false);
+        setResetKey((key) => key + 1);
         toast.success("Settings updated.");
         return true;
       } catch (error) {
