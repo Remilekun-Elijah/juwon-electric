@@ -6,10 +6,15 @@ import { Button, Input, toast } from "@/components/ui";
 import TurnstileWidget from "@/components/public/TurnstileWidget";
 import { subscribe } from "@/lib/api/public";
 import { useTurnstile } from "@/lib/turnstile/useTurnstile";
+import { cn } from "@/lib/cn";
 import { LIMITS, isValidEmail } from "@/lib/validation";
 
-/** Footer newsletter signup: `POST /subscribe` with Turnstile action "subscribe" (same call as the classic footer). */
-export default function StoreNewsletter() {
+/**
+ * Footer newsletter signup: `POST /subscribe` with Turnstile action "subscribe" (same call as the classic footer).
+ * `tone="dark"` for the slate-950 footer (TEAM_AND_MOTION_V1 §7.5).
+ */
+export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "dark" }) {
+  const dark = tone === "dark";
   const [emailAddress, setEmailAddress] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +48,7 @@ export default function StoreNewsletter() {
 
   return (
     <form onSubmit={handleSubmit} noValidate aria-describedby="store-newsletter-note">
-      <label htmlFor="store-newsletter-email" className="text-sm font-medium text-slate-900">
+      <label htmlFor="store-newsletter-email" className={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
         Email address
       </label>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -72,12 +77,12 @@ export default function StoreNewsletter() {
       </div>
       <div aria-live="polite">
         {error && (
-          <p id="store-newsletter-error" className="mt-2 text-sm text-red-700">
+          <p id="store-newsletter-error" className={cn("mt-2 text-sm", dark ? "text-red-300" : "text-red-700")}>
             {error}
           </p>
         )}
       </div>
-      <p id="store-newsletter-note" className="mt-2 text-xs text-slate-500">
+      <p id="store-newsletter-note" className={cn("mt-2 text-xs", dark ? "text-white/60" : "text-slate-500")}>
         Occasional offers and maintenance tips. Unsubscribe any time.
       </p>
       <TurnstileWidget
@@ -85,7 +90,7 @@ export default function StoreNewsletter() {
         error={turnstile.error}
         bindContainer={turnstile.bindContainer}
         className="mt-2"
-        errorClassName="text-sm text-red-700"
+        errorClassName={cn("text-sm", dark ? "text-red-300" : "text-red-700")}
       />
     </form>
   );

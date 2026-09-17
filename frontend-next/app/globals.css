@@ -26,6 +26,12 @@
   --color-brand-900: #5e0f12;
   --color-brand-950: #3a090b;
 
+  /* Gold accent from the Juwon logo (TEAM_AND_MOTION_V1 §7.1). Dark surfaces only; text on gold is slate-950. */
+  --color-gold-300: #ecd873;
+  --color-gold-400: #dfc638;
+  --color-gold-500: #c9ad1f;
+  --color-gold-600: #a48c16;
+
   /* Original Juwon colours (keep; used across the public site). */
   --color-navbar_color: #94161b;
   --color-header_color: #004449;
@@ -401,6 +407,132 @@
   mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
 }
 
+/* Hero (§7.3): headline lines rise out of a clipped mask; the active photo zooms slowly; indicator bars fill. */
+@keyframes je-line {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.je-line {
+  animation: je-line 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+@keyframes je-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+.je-kenburns {
+  animation: je-kenburns 8s ease-out both;
+}
+
+@keyframes je-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.je-progress {
+  transform-origin: left center;
+  animation: je-progress var(--slide-duration, 7s) linear both;
+}
+[data-paused="true"] .je-progress,
+[data-paused="true"] .je-kenburns {
+  animation-play-state: paused;
+}
+
+/* Status dot: a soft ring that grows and fades (about once every 2s, well under 3 flashes a second). */
+@keyframes je-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+.je-ping {
+  animation: je-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Scroll cue: a dot slides down a short line. */
+@keyframes je-scroll-dot {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+.je-scroll-dot {
+  animation: je-scroll-dot 2s ease-in-out infinite;
+}
+
+/* Floating actions (§7.4) slide in from the right after the page settles. */
+@keyframes je-slide-in-right {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.je-fab-in {
+  animation: je-slide-in-right 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--enter-delay, 1200ms);
+}
+
+/* Review stars fill one by one when their card reveals (§7.6). `--star` is the star index. */
+.je-star {
+  transition:
+    transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 300ms ease-out;
+  transition-delay: calc(var(--reveal-delay, 0ms) + 350ms + var(--star, 0) * 90ms);
+}
+[data-reveal="hidden"] .je-star {
+  transform: scale(0.3);
+  opacity: 0;
+}
+
+/* FAQ answers open with a height and opacity transition where the browser supports ::details-content. */
+.je-details {
+  interpolate-size: allow-keywords;
+}
+.je-details::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  opacity: 0;
+  transition:
+    block-size 250ms ease-out,
+    opacity 250ms ease-out,
+    content-visibility 250ms allow-discrete;
+}
+.je-details[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
 /* CountUp (components/storefront/motion/CountUp.tsx): hold back the digits until the count starts; show them anyway after 3s. */
 @keyframes je-count-fallback {
   to {
@@ -435,5 +567,25 @@
   }
   .je-marquee-mask {
     mask-image: none;
+  }
+  .je-line,
+  .je-kenburns,
+  .je-progress,
+  .je-ping,
+  .je-fab-in {
+    animation: none;
+  }
+  .je-scroll-dot {
+    animation: none;
+    opacity: 1;
+  }
+  .je-star,
+  [data-reveal="hidden"] .je-star {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+  .je-details::details-content {
+    transition: none;
   }
 }
