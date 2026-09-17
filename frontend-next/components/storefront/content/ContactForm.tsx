@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, Send } from "lucide-react";
 import TurnstileWidget from "@/components/public/TurnstileWidget";
+import { shake } from "@/components/storefront/motion/motion";
 import { Alert, Button, Field, Input, Textarea } from "@/components/ui";
 import { submitContact } from "@/lib/api/public";
 import { useTurnstile } from "@/lib/turnstile/useTurnstile";
@@ -46,7 +47,8 @@ export type ContactFormProps = {
 
 /**
  * Contact form: name, phone, optional email and message, with Turnstile action "contact" and the classic payload
- * (`POST /contact`). Inline validation, success and error states, and a double-submit guard.
+ * (`POST /contact`). Inline validation, success and error states, and a double-submit guard. Motion (§8.2): focus rings
+ * grow in, fields with errors shake once, and the sent state draws its check mark.
  */
 export default function ContactForm({ topic }: ContactFormProps) {
   const initial: Values = { name: "", phoneNumber: "", emailAddress: "", message: topicMessage(topic) };
@@ -70,6 +72,9 @@ export default function ContactForm({ topic }: ContactFormProps) {
 
     const found = validate(values);
     setErrors(found);
+    const invalid = (Object.keys(found) as (keyof Values)[]).filter((field) => found[field]);
+    // Presentation only: each field with an error shakes once (skipped under reduced motion).
+    for (const field of invalid) shake(document.getElementById(`contact-${field}`));
     const firstInvalid = (Object.keys(found) as (keyof Values)[])[0];
     if (firstInvalid) {
       document.getElementById(`contact-${firstInvalid}`)?.focus();
@@ -107,9 +112,9 @@ export default function ContactForm({ topic }: ContactFormProps) {
 
   if (status === "sent") {
     return (
-      <div role="status" className="flex flex-col items-start gap-4 py-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600">
-          <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
+      <div role="status" className="je-in je-in-fade flex flex-col items-start gap-4 py-4">
+        <span className="je-in je-in-pop flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600">
+          <CheckCircle2 aria-hidden="true" className="je-check-draw h-6 w-6" />
         </span>
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900">Message sent</h2>
@@ -127,7 +132,7 @@ export default function ContactForm({ topic }: ContactFormProps) {
   const sending = status === "sending";
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-labelledby="contact-form-heading" className="space-y-5">
+    <form onSubmit={handleSubmit} noValidate aria-labelledby="contact-form-heading" className="je-fields space-y-5">
       <div>
         <h2 id="contact-form-heading" className="text-xl font-semibold tracking-tight text-slate-900">
           Send us a message

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import BusinessDetails from "@/components/storefront/content/BusinessDetails";
 import ContactForm from "@/components/storefront/content/ContactForm";
 import ContactFormWithTopic from "@/components/storefront/content/ContactFormWithTopic";
 import { cn } from "@/lib/cn";
 import { socials } from "@/lib/site";
 import { getStoreSettings } from "@/lib/storefront/data";
-import { storeCard, storeContainer, storeFocus, storeSection } from "@/lib/storefront/styles";
+import { enterDelay, storeCard, storeContainer, storeFocus, storePress, storeSection } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -37,17 +37,19 @@ export default async function ContactPage() {
         eyebrow="Get in touch"
         title="Contact us"
         description="Tell us what you need to power. Our engineers will recommend the right inverter, battery and solar setup."
+        image={INTRO_IMAGES.home}
       />
 
       <div className={storeSection}>
         <div className={cn(storeContainer, "grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8")}>
-          <div className={cn(storeCard, "min-w-0 p-5 sm:p-8")}>
+          {/* The form and the details slide in from opposite sides (TEAM_AND_MOTION_V1 §8.2). */}
+          <div style={enterDelay(250)} className={cn(storeCard, "je-in je-in-left min-w-0 p-5 sm:p-8")}>
             <Suspense fallback={<ContactForm />}>
               <ContactFormWithTopic />
             </Suspense>
           </div>
 
-          <aside aria-labelledby="contact-details-heading" className="space-y-6">
+          <aside aria-labelledby="contact-details-heading" style={enterDelay(320)} className="je-in je-in-right space-y-6">
             <div className={cn(storeCard, "p-5 sm:p-6")}>
               <h2 id="contact-details-heading" className="text-lg font-semibold tracking-tight text-slate-900">
                 Contact details
@@ -68,7 +70,8 @@ export default async function ContactPage() {
                       rel="noopener noreferrer"
                       className={cn(
                         "inline-flex min-h-11 items-center rounded-full border border-slate-200 px-4 text-sm font-medium text-slate-600 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 md:min-h-9",
-                        storeFocus
+                        storeFocus,
+                        storePress
                       )}
                     >
                       {social.label}
