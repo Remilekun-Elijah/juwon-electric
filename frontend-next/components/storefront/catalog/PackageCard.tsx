@@ -7,7 +7,7 @@ import type { Package } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { packagePath } from "@/lib/packages";
 import { storeCard, storeFocus } from "@/lib/storefront/styles";
-import { cheapestOptionIndex, hasSolarOption, lowestPrice, packageRating, packageTypeLabel } from "./packageMeta";
+import { defaultCartOptionIndex, hasSolarOption, includedProductCount, lowestPrice, packageRating, packageTypeLabel } from "./packageMeta";
 
 export type PackageCardProps = {
   pkg: Package;
@@ -20,10 +20,10 @@ export type PackageCardProps = {
 
 /**
  * Package summary card: type, kVA and volt, what it powers, "from" price, solar availability, included items count,
- * "View details" and add to cart. No "use client": it renders inside the server pages and the PackageFilters island.
+ * "View details" and add to cart. Prices and the solar badge only count available options (Commerce v2 §4). No "use client": it renders inside the server pages and the PackageFilters island.
  */
 export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = false, className }: PackageCardProps) {
-  const itemCount = pkg.items?.reduce((total, line) => total + Math.max(1, Number(line.quantity) || 1), 0) ?? 0;
+  const productCount = includedProductCount(pkg);
   const solar = hasSolarOption(pkg);
   const label = `${pkg.name} ${pkg.kva}kVA ${packageTypeLabel(pkg).toLowerCase()}`;
 
@@ -56,10 +56,10 @@ export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = 
         </p>
       )}
 
-      {itemCount > 0 && (
+      {productCount > 0 && (
         <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-slate-500">
           <PackageIcon aria-hidden="true" className="h-4 w-4 text-slate-400" />
-          {itemCount} {itemCount === 1 ? "item" : "items"} included
+          Includes {productCount} {productCount === 1 ? "product" : "products"}
         </p>
       )}
 
@@ -76,7 +76,7 @@ export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = 
             <span className="sr-only">: {label}</span>
             <ArrowRight aria-hidden="true" />
           </Link>
-          {!compact && <AddToCartButton pkg={pkg} optionIndex={cheapestOptionIndex(pkg)} size="lg" className="w-full sm:flex-1 md:flex-none xl:flex-1" />}
+          {!compact && <AddToCartButton pkg={pkg} optionIndex={defaultCartOptionIndex(pkg)} size="lg" className="w-full sm:flex-1 md:flex-none xl:flex-1" />}
         </div>
       </div>
     </article>

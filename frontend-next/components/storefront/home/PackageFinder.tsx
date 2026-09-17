@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Package as PackageIcon, Sun, Zap } from "lucide-react";
+import { availablePackages, hasSolarOption, includedProductCount, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import PriceTag from "@/components/storefront/PriceTag";
 import { Badge, TabPanel, Tabs, buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
@@ -10,12 +11,6 @@ import { cn } from "@/lib/cn";
 import { PACKAGE_TABS, packagePath, packageTabIndex } from "@/lib/packages";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeCard, storeFocus } from "@/lib/storefront/styles";
-
-/** Lowest positive option price, or 0 when none is priced. */
-export const lowestPrice = (pkg: Package) => {
-  const prices = (pkg.options ?? []).map((option) => Number(option.price)).filter((price) => Number.isFinite(price) && price > 0);
-  return prices.length ? Math.min(...prices) : 0;
-};
 
 /**
  * Up to three packages for a type, spread from the cheapest to the most premium: all of them when there are three or
@@ -32,11 +27,9 @@ const tabIcons = [BatteryCharging, Zap, Sun];
 /** `/packages?type=` values for each tab (the S1 packages page filter). */
 const typeQuery = ["tubular", "lithium", "hybrid-lithium"];
 
-const hasSolarOption = (pkg: Package) => Number(pkg.options?.[1]?.price) > 0;
-
 function FinderCard({ pkg }: { pkg: Package }) {
   const price = lowestPrice(pkg);
-  const items = pkg.items?.length ?? 0;
+  const products = includedProductCount(pkg);
   return (
     <article className={cn(storeCard, "group relative flex h-full flex-col p-5 transition-shadow hover:shadow-elev-3 sm:p-6")}>
       <div className="flex items-start justify-between gap-3">
@@ -56,7 +49,7 @@ function FinderCard({ pkg }: { pkg: Package }) {
         </Link>
       </h3>
       <p className="mt-1 text-sm text-slate-500">
-        {[pkg.volt ? `${pkg.volt}V` : null, pkg.type ? `${pkg.type} battery` : null, items ? `${items} items included` : null]
+        {[pkg.volt ? `${pkg.volt}V` : null, pkg.type ? `${pkg.type} battery` : null, products ? `Includes ${products} ${products === 1 ? "product" : "products"}` : null]
           .filter(Boolean)
           .join(" · ")}
       </p>
@@ -69,8 +62,12 @@ function FinderCard({ pkg }: { pkg: Package }) {
   );
 }
 
-/** "Find your package": tabs by battery type, each showing up to three packages from cheapest to premium. */
-export default function PackageFinder({ packages }: { packages: Package[] }) {
+/**
+ * "Find your package": tabs by battery type, each showing up to three packages from cheapest to premium. Packages with
+ * no available option are left out (Commerce v2 §4).
+ */
+export default function PackageFinder({ packages: allPackages }: { packages: Package[] }) {
+  const packages = availablePackages(allPackages);
   const groups = PACKAGE_TABS.map((label, index) => ({
     value: String(index),
     label,

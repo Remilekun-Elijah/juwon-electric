@@ -5,6 +5,7 @@ import { Package as PackageIcon, Phone } from "lucide-react";
 import CatalogHelpBand from "@/components/storefront/catalog/CatalogHelpBand";
 import PackageFilters from "@/components/storefront/catalog/PackageFilters";
 import PackageFiltersFallback from "@/components/storefront/catalog/PackageFiltersFallback";
+import { availablePackages } from "@/components/storefront/catalog/packageMeta";
 import PageIntro from "@/components/storefront/PageIntro";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -24,9 +25,12 @@ export const metadata: Metadata = {
   openGraph: { url: storeRoutes.packages, title: "Inverter and solar packages | Juwon Electric", description },
 };
 
-/** Packages (spec §4): server data, filtered on the client with the state in the URL. */
+/**
+ * Packages (spec §4): server data, filtered on the client with the state in the URL. Packages with no available option
+ * are left out (Commerce v2 §4).
+ */
 export default async function PackagesPage() {
-  const packages = await getStorePackages();
+  const packages = availablePackages(await getStorePackages());
 
   return (
     <>

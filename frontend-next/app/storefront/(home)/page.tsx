@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
+import { availablePackages } from "@/components/storefront/catalog/packageMeta";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
@@ -49,7 +50,7 @@ const seeAll = (href: string, label: string) => (
 
 /** Storefront home (docs/agents/fe-storefront.md §4 `/`). Every section below the hero hides itself when its data is empty. */
 export default async function HomePage() {
-  const [packages, categories, products, services, portfolio, vacancies, settings] = await Promise.all([
+  const [allPackages, categories, products, services, portfolio, vacancies, settings] = await Promise.all([
     getStorePackages(),
     getStoreCategories(),
     getStoreProducts({ page: 1 }),
@@ -59,6 +60,8 @@ export default async function HomePage() {
     getStoreSettings(),
   ]);
 
+  // Commerce v2 §4: packages with no available option stay out of the home finder.
+  const packages = availablePackages(allPackages);
   const topCategories = buildCategoryTree(categories);
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
   const recentWork = featuredFirst(portfolio).slice(0, HOME_PORTFOLIO);
