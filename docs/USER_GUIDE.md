@@ -914,7 +914,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
    - **Maintenance per month (₦)**: typical servicing cost.
 5. Select **Save changes** in the bar at the bottom.
 
-**What you'll see on the website:** a "Size your system" teaser on the home page, a gold **Size your system** button at the bottom right of every page (except the calculator itself, the cart and checkout), and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
+**What you'll see on the website:** a "Size your system" teaser on the home page, the gold **Load calculator** button in the top menu, and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
 
 **Tips**
 
@@ -1006,7 +1006,7 @@ This chapter describes the public website for customers. Staff can use it to gui
 
 **On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-On a computer, the top menu has **Packages**, **Products**, **Calculator**, **Services**, **Our work**, **Team** and **Contact**, plus **Get a quote** and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Team**). **Careers** is in the footer too.
+On a computer, the top menu has **Packages**, **Products**, **Calculator**, **Services**, **Our work**, **Team** and **Contact**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Team**). **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
@@ -1102,7 +1102,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a customer, I want to work out what size of system I need so that I can pick the right package and see what I'd save on a generator.*
 
-The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the "Size your system" section on the home page, the top menu or the link in the footer. When the calculator is switched off, these links are hidden.
+The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the gold **Load calculator** button in the top menu, the "Size your system" section on the home page, the **Calculator** menu item or the link in the footer. When the calculator is switched off, these links are hidden.
 
 1. Open the **Calculator**. A list of common appliances is already filled in with typical amounts.
 2. For each appliance, set **how many** you have and **how many hours a day** you use it, with the steppers. Set the number to 0 for anything you don't have.
@@ -1160,7 +1160,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 2. Select **Shop packages** to see all packages, or **Chat on WhatsApp** (or **Talk to an engineer**, which calls us, when WhatsApp isn't set up).
 3. Below the buttons you'll see a few figures about our work (for example the number of installations). They count up from 0 when the page opens.
 4. On a large computer screen, a card at the bottom right shows the lowest package price ("Complete packages from ₦…"). Select its arrow to compare packages.
-5. For a price for your own needs, select **Get a quote** in the top menu. It opens the contact form with the topic already set to Quote. On a phone, **Get a quote** is at the bottom of the menu.
+5. To work out what size system you need, select **Load calculator** in the top menu. For a price for your own needs, open the menu and select **Get a quote**, which opens the contact form with the topic already set to Quote. On a phone both are at the bottom of the menu.
 6. Scroll down for the rest of the page. At the top of the page the menu sits over the photo; once you scroll it lifts into a floating dark bar.
 
 **Tips**
@@ -1168,14 +1168,14 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 - If your phone or computer is set to reduce motion, the photos don't change by themselves and nothing zooms or counts up. You can still select a bar to see each photo.
 - The pages work without animations: everything is readable straight away.
 
-### Story 11.13: Use the floating buttons
+### Story 11.13: Use the floating WhatsApp button
 
-*As a customer, I want quick buttons to size my system or chat with the team from any page so that I don't have to look for them.*
+*As a customer, I want a quick way to chat with the team from any page so that I don't have to look for it.*
 
-At the bottom right of most pages you may see up to two buttons. On a phone they are round buttons with just an icon; on a larger screen they show a label. On a phone's home page they appear once you scroll past the big photo at the top.
+At the bottom right of most pages you may see one button. On a phone it is a round button with just an icon; on a larger screen it shows a label. On a phone's home page it appears once you scroll past the big photo at the top.
 
-- **Size your system** (gold, "Load calculator"): opens the calculator (story 11.8). It shows only when the calculator is available, and not on the calculator page itself.
 - **Chat on WhatsApp** ("We reply during business hours"): opens WhatsApp with "Hello Juwon Electric" ready (story 11.10). It shows only when Juwon Electric has a WhatsApp number set.
+- The load calculator is no longer a floating button: use **Load calculator** in the top menu (story 11.8).
 
 **Tips**
 
@@ -1253,6 +1253,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (load calculator button in the header)**
+- Customer: the top menu's gold button is now **Load calculator** instead of **Get a quote** (which moved into the phone menu), and the floating **Size your system** button at the bottom right is gone. **Chat on WhatsApp** still floats there.
 
 **2026-09-17 (products on the website switch)**
 - Owner: **Settings → Website → Homepage & contact** has a new switch, **Show products on the website**. Turn it off to sell packages only: customers stop seeing the Products menu item, the product sections on the home page and every product page. Packages keep their products, and nothing changes in the admin.

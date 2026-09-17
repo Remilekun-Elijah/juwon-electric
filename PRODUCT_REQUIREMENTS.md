@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Products on the website switch (see section 12, Change log)
+Last updated: 2026-09-17, Load calculator button in the header (see section 12, Change log)
 
 1. Executive summary
 
@@ -319,7 +319,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
 
 - Colour: a gold accent scale taken from the Juwon Electric logo. Gold is used only as an accent on the dark surfaces, which are the deep brand red brand-950 (revised 2026-09-17: the storefront's dark bands, hero overlays, header glass and footer were near-black slate; they are now brand red): highlighted headline words, stat numbers and primary buttons on dark. Text on gold buttons is dark (slate-950). Body text keeps a contrast of at least 4.5:1.
 - Header:
-  - On the home page, while the page is at the top (scrolled less than 24 px), the header is transparent over the hero: white nav links with a gold underline on the active item, the logo without a chip, a white phone link, a glass cart button and a gold **Get a quote** pill linking to `/contact?topic=Quote`. On phones the menu button is glass too.
+  - On the home page, while the page is at the top (scrolled less than 24 px), the header is transparent over the hero: white nav links with a gold underline on the active item, the logo without a chip, a white phone link, a glass cart button and a gold **Load calculator** pill linking to `/calculator` (**Get a quote**, linking to `/contact?topic=Quote`, while the calculator is switched off). On phones the menu button is glass too.
   - After scrolling, and on pages without a hero, the header lifts: it keeps the same look (white nav, gold logo, glass cart, gold **Get a quote** pill) and drops slightly from the top edge into a rounded, translucent dark glass bar with a soft shadow, inset from the page edges, so the logo and links stay legible over light sections. The change animates over 300 ms; with reduced motion the bar changes without moving. The header height never changes, and the hero reserves room for it, so nothing shifts.
   - This is the only scroll listener on the storefront (passive, at most one check per animation frame).
 - Hero (full-bleed):
@@ -330,11 +330,10 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   - Stats: up to 4 figures from Settings → Website stats, in large gold numbers that count up, with uppercase labels. A Sample label shows while the stats are sample. With no stats, the three reassurance ticks show instead (no payment to place an order, we call to confirm, installation included). The separate stats band below the hero is removed.
   - Glass price card: "Complete packages from ₦…" in gold with an arrow link to the packages, bottom right of the hero. It shows only on wide screens (1280 px and up, so it doesn't cover the stats or the floating buttons) and only when there is a priced package.
   - On load the pill, headline lines, lead, buttons, stats and price card appear one after another (about 100 ms apart). All of it is in the page HTML.
-- Floating actions (replace the single floating WhatsApp button): a stack at the bottom right, clear of the phone's safe area.
-  - **Size your system** (sub-label "Load calculator"): a gold pill linking to `/calculator`. Shown only when the calculator is switched on, and not on the calculator page itself.
+- Floating action (2026-09-17: ~~a stack of two pills~~ one pill, since the load calculator moved to the header button): bottom right, clear of the phone's safe area.
   - **Chat on WhatsApp** (sub-label "We reply during business hours"): a brand-red pill opening WhatsApp. Shown only when a WhatsApp number is set.
-  - Hidden on `/cart` and `/checkout`, so they never cover the order buttons. On phones (under 640 px) on the home page they stay hidden while the hero is on screen, so they don't cover the hero stats, and appear once the hero scrolls away.
-  - They slide in from the right about 1.2 seconds after the page loads. On phones they are 56 px round buttons with an accessible name; on screens 640 px and wider they show the label and sub-label. While the footer is on screen they fade, so footer links stay readable.
+  - Hidden on `/cart` and `/checkout`, so it never covers the order buttons. On phones (under 640 px) on the home page it stays hidden while the hero is on screen, so it doesn't cover the hero stats, and appears once the hero scrolls away.
+  - It slides in from the right about 1.2 seconds after the page loads. On phones they are 56 px round buttons with an accessible name; on screens 640 px and wider they show the label and sub-label. While the footer is on screen they fade, so footer links stay readable.
   - No "online" status, no notification badge.
 - Section rhythm (no two neighbouring sections share a white background), in page order:
   1. Hero: dark photo.
@@ -571,7 +570,7 @@ Sample content
 - Unsaved-changes guard (Settings redesign): with an unsaved change on **Business profile**, selecting **Payments** in the rail or **Orders** in the sidebar asks "You have unsaved changes. Leave without saving?"; **Keep editing** stays with the change intact and **Leave without saving** opens the page without saving. Reloading the tab shows the browser's leave-page prompt. With no unsaved changes, links open straight away.
 - Products on the website (2026-09-17): with **Products on the website** off, the storefront header, mobile menu and footer show no Products link, the home page has no "Shop by category" or "Popular products" section, `/products`, `/products/<slug>` and `/products/category/<slug>` show the storefront 404, the sitemap lists no product or category URL, and the cart, empty cart, packages and 404 pages show no products link. Packages still list their products and specifications, and the admin still shows Products, Categories, Inventory and single-product in-store sales. Switching it back on restores all of it within a minute.
 - Settings view only (Settings redesign): a Sales account opens every settings page and sees the "View only" notice, disabled fields and no save bar. On a server without website settings, **Homepage & contact**, **Financing** and **Load calculator** show "Website, financing and calculator settings aren’t available yet".
-- Floating actions (2026-09-17): with the calculator on and a WhatsApp number set, every storefront page except the calculator page shows **Size your system** and **Chat on WhatsApp** at the bottom right (round buttons on phones, labelled pills from 640 px); the calculator page shows only WhatsApp; `/cart` and `/checkout` show neither. With the calculator off and no WhatsApp number, no floating buttons show. Neither button shows an "online" status or a badge.
+- Header button and floating action (2026-09-17, revised): with the calculator on, the header shows a gold **Load calculator** button linking to `/calculator` (it reads **Get a quote** and links to `/contact?topic=Quote` while the calculator is off), and the phone menu lists both. With a WhatsApp number set, every storefront page except `/cart` and `/checkout` shows one **Chat on WhatsApp** pill at the bottom right (a round button on phones, a labelled pill from 640 px); with no number, none shows. There is no floating calculator button, and nothing shows an "online" status or a badge.
 
 8. Metrics & success criteria
 
@@ -690,6 +689,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (load calculator button in the header)
+- §6.10: the header's gold **Get a quote** button is now **Load calculator**, linking to `/calculator` (it falls back to **Get a quote** while the calculator is switched off), and the phone menu lists both. The floating **Size your system** button at the bottom right is removed; only **Chat on WhatsApp** remains there.
 
 2026-09-17 (products on the website switch)
 - §6.7 and §6.11: **Settings → Website → Homepage & contact** gains **Products on the website** (`website.productsEnabled`, public, default on). Off hides every Products link, section and page on the storefront and drops product URLs from the sitemap; packages and the whole admin are unaffected. The API keeps the same endpoints and payloads; the flag is a new key in the `website` settings section.
