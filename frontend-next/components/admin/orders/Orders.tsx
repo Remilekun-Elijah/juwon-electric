@@ -2,7 +2,7 @@
 
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, ReceiptText, SearchX, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, ReceiptText, SearchX, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
@@ -327,7 +327,10 @@ export function Orders() {
           <TD className="hidden whitespace-nowrap md:table-cell">{formatDate(getRecordDate(item))}</TD>
           <TD className="hidden whitespace-nowrap tabular-nums lg:table-cell">{itemCount(item)}</TD>
           <TD align="right" className="whitespace-nowrap font-medium tabular-nums text-slate-900">
-            {formatCurrency(getOrderRevenue(item))}
+            <span className="inline-flex items-center gap-1">
+              {formatCurrency(getOrderRevenue(item))}
+              <ChevronRight aria-hidden="true" className="h-4 w-4 text-slate-400 xl:hidden" />
+            </span>
           </TD>
           <TD className="hidden xl:table-cell">
             <FulfillmentBadge status={orderFulfillment(item)} />
@@ -338,9 +341,9 @@ export function Orders() {
               {isRefundDue(item) && <RefundDueBadge />}
             </div>
           </TD>
-          <TD align="right">
+          <TD align="right" className="hidden xl:table-cell">
             <div className="flex items-center justify-end gap-2" onClick={(event) => event.stopPropagation()}>
-              <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={() => openOrder(item)}>
+              <Button variant="outline" size="sm" onClick={() => openOrder(item)}>
                 View
                 <span className="sr-only"> {item.name}</span>
               </Button>
@@ -446,7 +449,7 @@ export function Orders() {
           <TH align="right">Total</TH>
           <TH className="hidden xl:table-cell">Fulfilment</TH>
           <TH className="hidden xl:table-cell">Payment</TH>
-          <TH align="right" srOnly>
+          <TH align="right" srOnly className="hidden xl:table-cell">
             Actions
           </TH>
         </THead>
