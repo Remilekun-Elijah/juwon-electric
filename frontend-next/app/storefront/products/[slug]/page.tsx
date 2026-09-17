@@ -10,9 +10,10 @@ import { packageIncludesProduct } from "@/components/storefront/catalog/packageM
 import ProductGallery from "@/components/storefront/catalog/ProductGallery";
 import SpecsTable from "@/components/storefront/catalog/SpecsTable";
 import JsonLd from "@/components/storefront/JsonLd";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import PriceTag from "@/components/storefront/PriceTag";
 import Section from "@/components/storefront/Section";
+import Reveal from "@/components/storefront/motion/Reveal";
 import StockBadge from "@/components/storefront/StockBadge";
 import { buttonClasses } from "@/components/ui";
 import type { Package, PublicProduct } from "@/lib/api/types";
@@ -23,7 +24,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
 import { getStoreCategories, getStorePackages, getStoreProduct, getStoreProducts } from "@/lib/storefront/data";
 import { contactTopicPath, storeRoutes } from "@/lib/storefront/routes";
-import { storeCard, storeCardPadding, storeContainer, storeH3, storeLink, storeMeta } from "@/lib/storefront/styles";
+import { enterDelay, storeArrowNudge, storeCard, storeCardPadding, storeContainer, storeH3, storeLink, storeOnDarkFocus } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -116,12 +117,16 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
               : []),
           { label: product.name, href: productPath(product) },
         ]}
+        image={INTRO_IMAGES.panels}
       >
-        <p className={storeMeta}>
+        <p className="text-sm text-white/75">
           {product.sku && <span className="tabular-nums">SKU {product.sku}</span>}
           {product.sku && product.category && <span aria-hidden="true"> · </span>}
           {product.category && (
-            <Link href={categoryPath(product.category)} className={storeLink}>
+            <Link
+              href={categoryPath(product.category)}
+              className={cn("rounded-sm font-medium text-gold-300 underline-offset-4 transition-colors hover:text-gold-400 hover:underline", storeOnDarkFocus)}
+            >
               {product.category.name}
             </Link>
           )}
@@ -130,10 +135,10 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
 
       <div className={cn(storeContainer, "py-10 sm:py-14")}>
         <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
-          <ProductGallery images={product.images} name={product.name} className="md:sticky md:top-24 md:self-start" />
+          <ProductGallery images={product.images} name={product.name} style={enterDelay(200)} className="je-in je-in-zoom md:sticky md:top-24 md:self-start" />
 
           <div className="space-y-6">
-            <section aria-labelledby="product-price" className={cn(storeCard, storeCardPadding)}>
+            <section aria-labelledby="product-price" style={enterDelay(300)} className={cn(storeCard, storeCardPadding, "je-in")}>
               <h2 id="product-price" className="sr-only">
                 Price and availability
               </h2>
@@ -168,25 +173,25 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
             </section>
 
             {hasSpecs && (
-              <section aria-labelledby="product-specs" className={cn(storeCard, storeCardPadding)}>
+              <Reveal as="section" aria-labelledby="product-specs" style={enterDelay(400)} className={cn(storeCard, storeCardPadding, "je-in")}>
                 <h2 id="product-specs" className={storeH3}>
                   Specifications
                 </h2>
                 <SpecsTable attributes={product.attributes} schema={category?.attributes} className="mt-4" />
-              </section>
+              </Reveal>
             )}
 
             {hasDescription && (
-              <section aria-labelledby="product-description" className={cn(storeCard, storeCardPadding)}>
+              <Reveal as="section" aria-labelledby="product-description" style={enterDelay(480)} className={cn(storeCard, storeCardPadding, "je-in")}>
                 <h2 id="product-description" className={storeH3}>
                   Description
                 </h2>
                 <RichText html={product.descriptionHtml} className="mt-3 text-slate-600" />
-              </section>
+              </Reveal>
             )}
 
             {!hasSpecs && !hasDescription && (
-              <section aria-labelledby="product-details" className={cn(storeCard, storeCardPadding)}>
+              <section aria-labelledby="product-details" style={enterDelay(400)} className={cn(storeCard, storeCardPadding, "je-in")}>
                 <h2 id="product-details" className={storeH3}>
                   Details
                 </h2>
@@ -207,9 +212,9 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
           title="Included in these packages"
           description={`Get the ${product.name} delivered and installed as part of a complete inverter system.`}
           actions={
-            <Link href={storeRoutes.packages} className={cn(storeLink, "inline-flex min-h-11 items-center gap-1.5")}>
+            <Link href={storeRoutes.packages} className={cn(storeLink, "group inline-flex min-h-11 items-center gap-1.5")}>
               All packages
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              <ArrowRight aria-hidden="true" className={cn("h-4 w-4", storeArrowNudge)} />
             </Link>
           }
         >
@@ -217,14 +222,14 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
         </Section>
       )}
 
-      <div className={cn(storeContainer, "py-10 sm:py-14")}>
+      <Reveal className={cn(storeContainer, "py-10 sm:py-14")}>
         <CatalogHelpBand
           title="Need help choosing parts?"
           description="Tell us what you want to power and our engineers will recommend matching inverters, batteries and panels."
           topic={product.name}
           secondary={{ label: "Browse packages", href: storeRoutes.packages }}
         />
-      </div>
+      </Reveal>
     </>
   );
 }

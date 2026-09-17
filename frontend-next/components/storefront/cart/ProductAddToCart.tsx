@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui";
 import { MAX_QUANTITY } from "@/lib/cart/store";
@@ -32,6 +32,13 @@ export default function ProductAddToCart({ product, className }: ProductAddToCar
   const max = Math.max(1, Math.min(PRODUCT_PAGE_MAX_QUANTITY, room));
   const value = Math.min(quantity, max);
   const cartFull = room === 0;
+  // Presentation only: after a successful add the button briefly reads "Added" and a ring pulses once (§8.2).
+  const [added, setAdded] = useState(0);
+  useEffect(() => {
+    if (!added) return;
+    const timer = setTimeout(() => setAdded(0), 1600);
+    return () => clearTimeout(timer);
+  }, [added]);
 
   if (!buyable) {
     return (
@@ -65,18 +72,24 @@ export default function ProductAddToCart({ product, className }: ProductAddToCar
             maxHintId="product-quantity-max"
           />
         </div>
-        <Button
-          size="lg"
-          className="w-full sm:flex-1 md:flex-none xl:flex-1"
-          disabled={!hydrated || cartFull}
-          aria-busy={!hydrated || undefined}
-          icon={<ShoppingCart aria-hidden="true" />}
-          onClick={() => {
-            if (add(value)) setQuantity(1);
-          }}
-        >
-          Add to cart
-        </Button>
+        <div className="relative w-full sm:flex-1 md:flex-none xl:flex-1">
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={!hydrated || cartFull}
+            aria-busy={!hydrated || undefined}
+            icon={added ? <CheckCircle2 aria-hidden="true" /> : <ShoppingCart aria-hidden="true" />}
+            onClick={() => {
+              if (add(value)) {
+                setQuantity(1);
+                setAdded((count) => count + 1);
+              }
+            }}
+          >
+            {added ? "Added" : "Add to cart"}
+          </Button>
+          {added > 0 && <span key={added} aria-hidden="true" className="je-added pointer-events-none absolute inset-0 rounded-lg ring-2 ring-brand-500" />}
+        </div>
       </div>
 
       <div className="mt-2 space-y-1 text-sm text-slate-500">

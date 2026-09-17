@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ProductListing, { readListingParams } from "@/components/storefront/catalog/ProductListing";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import { findCategory } from "@/lib/catalog";
 import { SITE_NAME } from "@/lib/site";
 import { getStoreCategories, getStoreProducts } from "@/lib/storefront/data";
@@ -33,7 +33,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/storefr
 
   return (
     <>
-      <PageIntro eyebrow="Catalogue" title="Products" description={description} />
+      <PageIntro eyebrow="Catalogue" title="Products" description={description} image={INTRO_IMAGES.panels} />
       <div className={`${storeContainer} py-10 sm:py-14`}>
         <ProductListing
           categories={categories}

@@ -4,6 +4,17 @@ import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { storeFocus } from "@/lib/storefront/styles";
 
+/** A number that rolls up into a clipped cell when it changes: the keyed span remounts and replays `je-roll`. */
+export function RollingDigits({ value }: { value: number }) {
+  return (
+    <span className="inline-block overflow-hidden">
+      <span key={value} className="je-roll inline-block">
+        {value}
+      </span>
+    </span>
+  );
+}
+
 export type QuantityStepperProps = {
   value: number;
   min: number;
@@ -23,7 +34,10 @@ const stepButton = cn(
   "focus-visible:ring-offset-0"
 );
 
-/** Minus, value and plus with 44 px targets, in the cart line style. The value is announced politely. */
+/**
+ * Minus, value and plus with 44 px targets, in the cart line style. The value is announced politely. A new value rolls up
+ * into its cell (180ms, TEAM_AND_MOTION_V1 §8.2; none under reduced motion).
+ */
 export default function QuantityStepper({ value, min, max, onChange, label, disabled = false, maxHintId, className }: QuantityStepperProps) {
   return (
     <div
@@ -45,7 +59,7 @@ export default function QuantityStepper({ value, min, max, onChange, label, disa
         className="grid h-11 min-w-12 place-items-center border-x border-slate-200 px-2 text-sm font-semibold tabular-nums text-slate-900"
       >
         <span className="sr-only">Quantity </span>
-        {value}
+        <RollingDigits value={value} />
       </output>
       <button
         type="button"

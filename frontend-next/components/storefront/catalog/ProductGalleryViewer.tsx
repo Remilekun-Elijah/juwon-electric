@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { cn } from "@/lib/cn";
-import { storeFocus } from "@/lib/storefront/styles";
+import { staggerDelay, storeFocus } from "@/lib/storefront/styles";
 import ProductImage from "./ProductImage";
 
-/** Client island for ProductGallery: thumbnails that switch the main image. */
-export default function ProductGalleryViewer({ images, name, className }: { images: string[]; name: string; className?: string }) {
+/** Client island for ProductGallery: thumbnails that switch the main image. Thumbnails rise in a stagger on load. */
+export default function ProductGalleryViewer({ images, name, className, style }: { images: string[]; name: string; className?: string; style?: CSSProperties }) {
   const [active, setActive] = useState(0);
   const current = Math.min(active, images.length - 1);
 
   return (
-    <div className={className}>
+    <div className={className} style={style}>
       <ProductImage
         src={images[current]}
         alt={`${name}, image ${current + 1} of ${images.length}`}
@@ -24,7 +24,7 @@ export default function ProductGalleryViewer({ images, name, className }: { imag
         {images.map((image, index) => {
           const selected = index === current;
           return (
-            <li key={image}>
+            <li key={image} style={staggerDelay(index, 50, 350)} className="je-in">
               <button
                 type="button"
                 onClick={() => setActive(index)}

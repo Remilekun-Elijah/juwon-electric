@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, Filter } from "lucide-react";
 import type { Category } from "@/lib/api/types";
@@ -12,6 +13,7 @@ export type CategoryNavProps = {
   /** Id of the category being viewed; leave out for all products. */
   activeId?: string | null;
   className?: string;
+  style?: CSSProperties;
 };
 
 const linkClasses = (active: boolean, inTrail: boolean) =>
@@ -60,12 +62,12 @@ function NavList({ categories, activeId }: { categories: Category[]; activeId?: 
  * Category tree with the active category highlighted. A disclosure (`<details>`, no JavaScript) below `lg`; an
  * always-open sidebar card from `lg`. Server component.
  */
-export default function CategoryNav({ categories, activeId, className }: CategoryNavProps) {
+export default function CategoryNav({ categories, activeId, className, style }: CategoryNavProps) {
   if (!categories.length) return null;
   const activeName = activeId ? categories.find((category) => category.id === activeId)?.name : undefined;
 
   return (
-    <div className={className}>
+    <div className={className} style={style}>
       <details className={cn(storeCard, "group lg:hidden")}>
         <summary
           className={cn(

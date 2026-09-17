@@ -20,6 +20,7 @@ import type { CartQuoteState } from "@/lib/cart/useCartQuote";
 import { formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { storeFocus } from "@/lib/storefront/styles";
+import { RollingDigits } from "./QuantityStepper";
 
 export type CartLinesProps = {
   cart: CartItem[];
@@ -156,7 +157,7 @@ export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLine
                       className="grid h-11 min-w-12 place-items-center border-x border-slate-200 px-2 text-sm font-semibold tabular-nums text-slate-900"
                     >
                       <span className="sr-only">Quantity </span>
-                      {item.quantity}
+                      <RollingDigits value={item.quantity} />
                     </output>
                     <button
                       type="button"

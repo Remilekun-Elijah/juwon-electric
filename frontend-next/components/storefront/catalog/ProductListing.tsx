@@ -6,7 +6,7 @@ import type { Category, Paged, PublicProduct } from "@/lib/api/types";
 import { totalPages } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeCard, storeLink } from "@/lib/storefront/styles";
+import { enterDelay, staggerDelay, storeCard, storeLink } from "@/lib/storefront/styles";
 import CatalogPagination from "./CatalogPagination";
 import CategoryNav from "./CategoryNav";
 import ProductCard from "./ProductCard";
@@ -50,7 +50,9 @@ export function listingHref(basePath: string, query: Record<string, string | num
 
 /**
  * Catalogue listing shared by `/products` and `/products/category/[slug]`: category sidebar, GET search form (no
- * JavaScript needed), results count, product grid, link pagination, and empty or no-results states. Server component.
+ * JavaScript needed), results count, product grid, link pagination, and empty or no-results states. The category nav
+ * slides in from the left, the search bar fades in, cards rise in a stagger (then reveal on scroll further down) and the
+ * pagination fades in (TEAM_AND_MOTION_V1 §8.2). Server component.
  */
 export default function ProductListing({ categories, category, result, q, page, basePath, keep = {} }: ProductListingProps) {
   const schemaById = new Map(categories.map((item) => [item.id, item.attributes ?? []]));
@@ -63,10 +65,10 @@ export default function ProductListing({ categories, category, result, q, page, 
 
   return (
     <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-8">
-      <CategoryNav categories={categories} activeId={category?.id} className="lg:sticky lg:top-24 lg:self-start" />
+      <CategoryNav categories={categories} activeId={category?.id} style={enterDelay(250)} className="je-in je-in-left lg:sticky lg:top-24 lg:self-start" />
 
       <div className="min-w-0">
-        <form action={basePath} method="get" role="search" className={cn(storeCard, "p-3 sm:p-4")}>
+        <form action={basePath} method="get" role="search" style={enterDelay(300)} className={cn(storeCard, "je-in je-in-fade p-3 sm:p-4")}>
           {Object.entries(keep).map(([key, value]) => (value ? <input key={key} type="hidden" name={key} value={value} /> : null))}
           <div className="flex flex-col gap-2 sm:flex-row">
             <label htmlFor="catalog-search" className="sr-only">
@@ -115,19 +117,21 @@ export default function ProductListing({ categories, category, result, q, page, 
         {items.length > 0 ? (
           <>
             <Reveal as="ul" stagger className="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
-              {items.map((product) => (
-                <li key={product.id}>
+              {items.map((product, index) => (
+                <li key={product.id} style={staggerDelay(index, 60, 380, 6)} className="je-in">
                   <ProductCard product={product} schema={product.categoryId ? schemaById.get(product.categoryId) : undefined} />
                 </li>
               ))}
             </Reveal>
-            <CatalogPagination page={page} pages={pages} hrefFor={hrefFor} className="mt-8 sm:mt-10" />
+            <Reveal from="fade">
+              <CatalogPagination page={page} pages={pages} hrefFor={hrefFor} className="mt-8 sm:mt-10" />
+            </Reveal>
           </>
         ) : q ? (
           <EmptyState
             standalone
             icon={SearchX}
-            className="mt-4"
+            className="je-in mt-4"
             title={`No ${scopeLabel} match “${q}”`}
             description="Check the spelling or try a shorter term such as a brand, kVA rating or battery type."
             action={
@@ -140,7 +144,7 @@ export default function ProductListing({ categories, category, result, q, page, 
           <EmptyState
             standalone
             icon={SearchX}
-            className="mt-4"
+            className="je-in mt-4"
             title="This page is empty"
             description={`There are only ${pages} ${pages === 1 ? "page" : "pages"} of ${scopeLabel}.`}
             action={
@@ -153,7 +157,7 @@ export default function ProductListing({ categories, category, result, q, page, 
           <EmptyState
             standalone
             icon={PackageIcon}
-            className="mt-4"
+            className="je-in mt-4"
             title={category ? `No ${scopeLabel} listed yet` : "Our product catalogue is being updated"}
             description="Browse our complete inverter and solar packages, or ask us about a specific item and we’ll check availability."
             action={
