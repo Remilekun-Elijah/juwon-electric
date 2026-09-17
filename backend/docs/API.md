@@ -727,3 +727,16 @@ Audience: `low_stock` needs `inventory:read`, `new_order` needs `orders:read`, `
 - `POST /admin/notifications/read-all` (`notifications:read`): `"All notifications marked as read."` with `{ unreadCount: 0 }`.
 
 Helpers: `backend/services/notifications.js` `notify({ type, title, message, entity, entityId, recipientId? })` (Express) and `backend/cloudflare/src/notifications.js` `notify(env, ctx, {...})` (Worker). Both are best-effort and never fail the triggering request. The Worker's Resend sender moved to `backend/cloudflare/src/email.js` so modules outside `index.js` can send email.
+
+### Dashboard KPIs
+
+`GET /admin/dashboard?from&to` (`dashboard:read`). `stats`, `statusCounts`, `revenueSeries` and `recentOrders` are unchanged. A `kpis` key is added:
+
+- **`period: { from, to }`:** defaults to the 30 days ending now. When only `from` is sent, `to` is now; when only `to` is sent, `from` is 30 days earlier.
+- **`revenue`:** the sum of `totalAmount` (falling back to the parsed `total`) for orders placed in the period (`receivedAt`, else `createdAt`) whose `fulfillmentStatus` is not `cancelled` and whose `paymentStatus` is `paid` or `partial`. Legacy orders are normalised first.
+- **`openOrders`:** `fulfillmentStatus` in `pending`, `processing` or `out_for_delivery`. Not limited to the period.
+- **`lowStockItems`:** active products with `stockQuantity <= reorderLevel`.
+- **`openVacancies`:** vacancies with status `open`.
+- **`upcomingJobs`:** jobs that are `unassigned` or `assigned` with `scheduledAt` between now and 7 days from now.
+
+Errors: `400` `"from must be a valid date."`, `"to must be a valid date."`, `"Date range must be 366 days or fewer."` and `"from must be before to."`.

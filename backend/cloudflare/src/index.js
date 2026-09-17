@@ -92,6 +92,7 @@ import { sendNotification } from "./email.js";
 import { notify } from "./notifications.js";
 import { newOrderNotification } from "../../shared/notifications.js";
 import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
+import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
 import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../../shared/catalog.js";
 import { NEW_ORDER_FIELDS } from "../../shared/orders.js";
 
@@ -1249,10 +1250,15 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   if (method === "GET" && path === "/admin/dashboard") {
     can("dashboard:read");
-    const [orders, contacts, newsletter] = await Promise.all([
+    const nowMs = Date.now();
+    const period = dashboardPeriod(Object.fromEntries(url.searchParams), nowMs);
+    const [orders, contacts, newsletter, products, vacancies, jobs] = await Promise.all([
       listCollection(env, "orders", { includeInactive: true }),
       listCollection(env, "contacts", { includeInactive: true }),
       listCollection(env, "newsletters", { includeInactive: true }),
+      listCollection(env, "products", { includeInactive: true }),
+      listCollection(env, "vacancies", { includeInactive: true }),
+      listCollection(env, "installationJobs", { includeInactive: true }),
     ]);
     const statusCounts = orders.reduce((counts, order) => {
       const status = normalizeOrderStatus(order.status);
@@ -1284,6 +1290,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       statusCounts,
       revenueSeries: getRevenueSeries(orders),
       recentOrders,
+      kpis: dashboardKpis({ orders, products, vacancies, jobs }, period, nowMs),
     });
   }
 

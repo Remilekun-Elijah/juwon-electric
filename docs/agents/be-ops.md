@@ -11,7 +11,7 @@ Base: `v3-agents-base` @ `d48b482`. Contract: `docs/agents/API_CONTRACT_V3.md` o
 | §6 Orders and fulfilment (D4a) | Done |
 | §7 Installation jobs, engineer endpoints, staff | Done |
 | §8 Settings and notifications | Done (BE-1's two `TODO(integration)` vacancy markers now call `notify()`) |
-| §9 Dashboard KPIs | Not started |
+| §9 Dashboard KPIs | Done |
 
 Commits:
 
@@ -22,7 +22,8 @@ Commits:
 - faa51c4: orders (§6)
 - 7fc1e05: jobs, engineer endpoints and staff (§7)
 - 5e5fe02, 77a0107: merges of `agents/be-platform` (through ae917b4)
-- settings and notifications (§8): the commit that adds this file version
+- b33dedb: settings and notifications (§8)
+- dashboard KPIs (§9): the commit that adds this file version
 
 ## Integration with BE-1
 
@@ -58,7 +59,7 @@ Commits:
   - `0011_orders_fulfilment.sql`: order backfill (§6.1). Tested on a seeded database at `0010`: the migrated rows equal the read-time normalisation and are idempotent.
   - `0013_settings_notifications.sql`: notification and read-row indexes.
 - **Tests** (`cd backend && npm test`):
-  - Scenarios: `backend/test/scenarios/{catalog,inventory,orders,jobs,settingsNotifications}.js`, plus `opsKit.js` for admin and record seeding, email capture (nodemailer and Resend) and masking.
+  - Scenarios: `backend/test/scenarios/{catalog,inventory,orders,jobs,settingsNotifications,dashboard}.js`, plus `opsKit.js` for admin and record seeding, email capture (nodemailer and Resend) and masking.
   - Runners: `backend/test/*.test.js` (Express), `backend/cloudflare/test/*.test.js` (Worker) and `backend/test/parity/*.parity.test.js`.
   - Mongo mode is not covered by tests.
 
@@ -91,3 +92,5 @@ Commits:
 22. **Notifications: `unreadCount`** counts every unread notification in the caller's audience, ignoring the `type` and `unread` filters.
 23. **Settings: vacancy emails** are sent only when `vacancyEmails` is not empty. Vacancies had no earlier env recipient to fall back to.
 24. **Worker email sender** moved from `src/index.js` into `src/email.js` (same function), so notifications and vacancies can send email.
+25. **Dashboard: `openOrders`, `lowStockItems`, `openVacancies`** are current counts and ignore the period. Only `revenue` uses it. With only one of `from`/`to` sent, the other defaults as described in API.md.
+26. **Dashboard: vacancies** are read from the store's `vacancies` collection, which BE-1's module writes in both runtimes.
