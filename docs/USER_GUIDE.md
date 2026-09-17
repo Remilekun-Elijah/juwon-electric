@@ -1150,7 +1150,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 3. Below the buttons you'll see a few figures about our work (for example the number of installations). They count up from 0 when the page opens.
 4. On a large computer screen, a card at the bottom right shows the lowest package price ("Complete packages from ₦…"). Select its arrow to compare packages.
 5. For a price for your own needs, select **Get a quote** in the top menu. It opens the contact form with the topic already set to Quote. On a phone, **Get a quote** is at the bottom of the menu.
-6. Scroll down for the rest of the page. At the top of the page the menu sits over the photo; once you scroll it turns white.
+6. Scroll down for the rest of the page. At the top of the page the menu sits over the photo; once you scroll it lifts into a floating dark bar.
 
 **Tips**
 
@@ -1242,6 +1242,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (round hero photo dots)**
+- Customer: the buttons that change the home page background photo are now round dots, and the "Scroll" prompt at the bottom of the banner is gone.
 
 **2026-09-17 (brand red dark surfaces)**
 - Customer: the website's dark areas (the home banner, page headers, dark sections and the footer) are now the deep Juwon red instead of near-black.

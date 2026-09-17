@@ -154,12 +154,12 @@ Rules:
   - A left-to-right gradient from `brand-950/90` to `brand-950/40`, plus a bottom gradient to `brand-950/80`.
   - Text contrast must pass on every photo.
 - **Slide indicators:**
-  - 4 thin bars, bottom centre.
+  - Up to 4 round dots (10px), bottom centre (revised 2026-09-17; were thin bars). The active dot is gold and grows from 35% to full size over the slide duration; its animation end advances the slideshow.
   - The active bar fills with a gold progress animation over 7 s.
   - Clicking or pressing a bar jumps to that slide.
   - Autoplay pauses on hover and on focus-within.
-  - A small visible **pause/play** button sits next to the bars, for accessibility.
-  - Under `prefers-reduced-motion`: no autoplay and no zoom. The first image is static and the bars still work.
+  - A small visible **pause/play** button sits next to the dots, for accessibility.
+  - Under `prefers-reduced-motion`: no autoplay and no zoom. The first image is static and the dots still work.
 - **Content** (left, `max-w-3xl`):
   1. **Status pill (glass):** a green dot with a soft pulse and the text "Inverter, battery & solar systems across Nigeria". No invented registration or founding year.
   2. **h1:** "Reliable power for Nigerian homes and **businesses**", sized `text-4xl sm:text-6xl lg:text-7xl`, white. The last word uses a gold gradient text fill.
@@ -181,7 +181,7 @@ Rules:
   - It floats in after the content.
   - Hidden on mobile.
 - **"Shop by battery type" chips:** move them to the "Find your package" section header, as tabs or chips.
-- **Scroll cue:** bottom-left, "SCROLL" in small tracking-wide type beside a vertical line with a gold dot sliding down (loop, 2 s). Hidden under reduced motion. It's a button that scrolls to the next section.
+- **Scroll cue:** removed 2026-09-17 (was a bottom-left "SCROLL" button with a gold dot sliding down a line).
 - **Load animations:** the background zooms in; then the pill, the h1 lines, the lead, the buttons, the stats (count-up) and the price card appear in sequence (about 80–120 ms steps). Content must still be in the HTML and visible without JavaScript.
 
 ### 7.4 Floating actions (replace the current WhatsApp button)

@@ -8,7 +8,6 @@ import { cn } from "@/lib/cn";
 import { primaryPhone, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
 import { enterDelay, storeContainer, storePress } from "@/lib/storefront/styles";
 import HeroSlideshow, { type HeroSlide } from "./HeroSlideshow";
-import ScrollCue from "./ScrollCue";
 
 /** Our own installation photos (public/panel-*.webp). The first is the eagerly loaded, server-rendered background. */
 const HERO_SLIDES: HeroSlide[] = [
@@ -182,12 +181,6 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
           </div>
         </div>
       )}
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-4 hidden sm:block">
-        <div className={storeContainer}>
-          <ScrollCue className="pointer-events-auto motion-reduce:hidden" />
-        </div>
-      </div>
     </section>
   );
 }
