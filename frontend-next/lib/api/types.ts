@@ -266,10 +266,15 @@ export type OrderChannel = "website" | "in_store";
 
 export type OrderLineComponent = { productId: string; sku: string; name: string; quantity: number; unitPrice: number };
 
-/** Commerce v2 §1.3. Missing `type` on older lines means "package". */
+/**
+ * Commerce v2 §1.3. A line is a product line only when `type === "product"`. Lines placed
+ * before snapshots have no `type` or a display label there ("Inverter + tubular"); new
+ * package lines store the label in `typeLabel`.
+ */
 export type OrderLineSnapshot = {
-  type?: "package" | "product";
+  type?: "package" | "product" | (string & {});
   // package lines
+  typeLabel?: string;
   packageId?: string;
   optionName?: string;
   kva?: number | string;
