@@ -1,4 +1,4 @@
-// Landing v1 §4: seeds/sample-website.sql is up to date with backend/shared/sampleWebsite.js,
+// Landing v1 §4 and Team and motion v1 §1: seeds/sample-website.sql is up to date with backend/shared/sampleWebsite.js,
 // applies on top of the catalog seed, is idempotent, and keeps records and settings sections an
 // admin has saved since.
 import assert from "node:assert/strict";
@@ -35,6 +35,11 @@ test("Worker: sample SQL seeds content, portfolio and settings idempotently", as
   assert.equal((await get("/faqs?category=Products")).length, 3);
   assert.equal((await get("/testimonials")).length, 6);
   assert.deepEqual((await get("/clients")).map((item) => item.logoUrl)[0], "/samples/client-1.svg");
+  const team = await get("/team");
+  assert.equal(team.length, 12);
+  assert.deepEqual(team.map((item) => item.id), Array.from({ length: 12 }, (_, n) => `sample-team-${n + 1}`));
+  assert.deepEqual([...new Set(team.map((item) => item.group))], ["Leadership", "Engineering & installations", "Sales & customer care", "Operations"]);
+  assert.ok(team.every((item) => item.sample === true && item.photoUrl.startsWith("/samples/team/member-")));
 
   const portfolio = await get("/portfolio");
   assert.equal(portfolio.length, 15);
@@ -51,6 +56,8 @@ test("Worker: sample SQL seeds content, portfolio and settings idempotently", as
   // Admin saves: a FAQ, a portfolio item and the website section. Re-seeding keeps them.
   const put = (path, body) => client.request("PUT", path, { token: STATIC_TOKEN, body });
   assert.equal((await put("/admin/faqs/sample-faq-1", { answer: "Our own answer." })).status, 200);
+  assert.equal((await put("/admin/team/sample-team-2", { role: "Chief engineer" })).status, 200);
+  assert.equal((await put("/admin/team/sample-team-3", { sortOrder: 40 })).status, 200);
   const first = portfolio[0];
   assert.equal((await put(`/admin/portfolio/${first.id}`, { name: first.name, image: first.image, summary: "Real summary." })).status, 200);
   assert.equal((await put("/admin/settings", { website: { whatsappNumber: "+2348011111111" } })).status, 200);
@@ -58,6 +65,11 @@ test("Worker: sample SQL seeds content, portfolio and settings idempotently", as
 
   const kept = await get("/admin/faqs", STATIC_TOKEN);
   assert.equal(kept.find((item) => item.id === "sample-faq-1").answer, "Our own answer.");
+  const keptTeam = await get("/admin/team", STATIC_TOKEN);
+  const saved = keptTeam.find((item) => item.id === "sample-team-2");
+  assert.deepEqual([saved.role, saved.sample], ["Chief engineer", false], "an edited member is kept");
+  const reseeded = keptTeam.find((item) => item.id === "sample-team-3");
+  assert.deepEqual([reseeded.sortOrder, reseeded.sample], [3, true], "a moved sample member is still sample, so it is refreshed");
   assert.equal((await get(`/portfolio/${first.id}`)).summary, "Real summary.");
   const after = await get("/admin/settings", STATIC_TOKEN);
   assert.deepEqual([after.website.whatsappNumber, after.website.sample], ["+2348011111111", false]);
