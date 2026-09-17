@@ -842,6 +842,26 @@ What customers see within about a minute: no **Products** item in the menu or th
 
 What stays the same: **Products**, **Categories**, **Inventory** and in-store sales of single products all work as before in the admin, and package prices are unchanged. Turn the switch back on to bring the product pages back.
 
+### Story 10A.4c: Edit "Why customers choose us"
+
+*As the owner, I want to say why customers choose us in my own words so that the home page matches how we actually work.*
+
+The band near the top of the home page shows a row of cards, each with an icon, a short title and a sentence.
+
+1. Go to **Website → Why choose us** in the menu.
+2. Select **Add reason**, or the pencil on a card you want to change.
+3. Fill in:
+   - **Title:** a few words, for example "Installed by our engineers" (3 to 80 characters).
+   - **Text:** one or two sentences (10 to 300 characters).
+   - **Icon:** pick from the list; a preview shows beside it.
+   - **Show on the website:** turn off to keep a card without showing it.
+4. Select **Add reason** or **Save changes**. It appears on the home page within about a minute.
+5. Use the up and down arrows to set the order. **Four cards fit on one row**, so four or eight look best.
+
+**If you delete them all,** the home page goes back to four standard cards, so the band is never empty.
+
+**Tip:** only claim what you can stand behind. Customers compare these against what they experience.
+
 ### Story 10A.5: Set homepage stats, WhatsApp number and business hours
 
 *As the owner, I want the home page and footer to show our real figures, WhatsApp and opening hours so that customers know how to reach us.*
@@ -1253,6 +1273,12 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-18 (whatsapp button)**
+- Customer: the floating WhatsApp button is now WhatsApp green with the WhatsApp logo.
+
+**2026-09-18 (why customers choose us)**
+- Owner: a new **Website → Why choose us** page manages the cards in the home page band. Add, edit, reorder, hide or delete them, each with an icon, a title and a sentence. Delete them all and the four standard cards come back.
 
 **2026-09-17 (load calculator button in the header)**
 - Customer: the top menu's gold button is now **Load calculator** instead of **Get a quote** (which moved into the phone menu), the separate **Calculator** menu item is gone, and the floating **Size your system** button at the bottom right is gone too. **Chat on WhatsApp** still floats there.
