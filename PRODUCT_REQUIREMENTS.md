@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Commerce v3 (see section 12, Change log)
+Last updated: 2026-09-17, Landing v1 (see section 12, Change log)
 
 1. Executive summary
 
@@ -48,6 +48,9 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Online product purchase (added in Commerce v3, 2026-09-17): customers add individual active, in-stock products to the same cart as packages and order them on the website (§6.10)
 - Installation crews: up to 10 engineers per installation job, one of them the lead, with one installation job per order (§6.3, §6.4)
 - Package categories: a package can belong to a catalogue category and is listed on that category's storefront page (§6.1, §6.10)
+- Website content managed in the admin (Landing v1, 2026-09-17): FAQs, customer reviews and client logos; case-study details on portfolio items; homepage stats, WhatsApp number and business hours; financing terms; and the solar calculator settings (§6.11)
+- A richer home page built from that content, with every section hidden when it has no data, plus new public pages `/calculator` and `/faq`, a portfolio category filter and a floating WhatsApp button (§6.11)
+- Clearly labelled sample content for local development and review, seeded locally only and replaced before launch (§6.11, §11 Before launch checklist)
 
 Out of scope (initial release)
 - Complex promotions engine, loyalty, multi-currency pricing, advanced analytics
@@ -57,6 +60,9 @@ Out of scope (initial release)
 - ~~Buying individual products on the website~~: moved in scope in Commerce v3 (2026-09-17). Customers can now buy active, in-stock products online (§4, §6.10).
 - Customer-facing stock reservation: placing a website order does not hold stock; stock is taken when staff move the order to processing
 - File uploads (images and job photos are added as links)
+- Online financing applications, credit checks or loan approval: the financing section only shows terms set in Settings; customers talk to the team to apply (Landing v1)
+- Saving calculator results or collecting customer details from the calculator (Landing v1)
+- Copying any wording, images, logos, statistics, reviews, prices, office lists or financing numbers from the reference site used for layout ideas (Landing v1)
 
 5. User personas & user stories
 
@@ -65,6 +71,17 @@ Persona: Customer
 - As a customer, I want to view package details and product specs so I can compare offerings.
 - As a customer, I want to see exactly which products are included in each package option so I know what I am paying for.
 - As a customer, I want to buy a single product (for example a replacement battery) online, on its own or together with a package, so I don't have to visit the store or buy a whole package. (Commerce v3)
+- As a customer, I want to enter the appliances I use and how long I use them so I get an estimate of the inverter, battery and panels I need, see matching packages, and compare the cost with running a generator. (Landing v1)
+- As a customer, I want to read common questions and answers, see reviews and past installations like mine, and message the team on WhatsApp so I can decide with confidence. (Landing v1)
+
+Persona: Owner / Admin (website content, Landing v1)
+- As the owner, I want to publish only real reviews from customers who agreed to be quoted, and remove the sample reviews, so the website stays honest.
+- As the owner, I want to set the homepage stats, WhatsApp number, business hours, financing terms and calculator settings in Settings, and switch financing or the calculator off, so the website only shows what we actually offer.
+- As the owner, I want every piece of sample content labelled in the admin and on the website so nothing made-up goes live by mistake.
+
+Persona: Marketing / Admin (FAQs and website content, Landing v1)
+- As a marketing or admin staff member (Admin or Sales role), I want to add, edit, reorder, group by category and hide FAQs so customers find answers without calling.
+- As a marketing or admin staff member, I want to add client logos (with the client's permission) and case-study details to portfolio items so the home page shows real work.
 
 Persona: Sales/Admin
 - As an admin, I want to create and manage products and categories so the catalog stays accurate.
@@ -189,7 +206,7 @@ Persona: HR
 6.7 Settings & Notifications
 - System settings for payment gate toggles, notification emails, upload provider
 - Notifications: low-stock, new order, vacancy posted (optional)
-- Settings sections: Business (name, email, phone, address, website; shown on the public site), Notifications (email lists for new orders, low stock and vacancies, up to 10 each), Payments (accept online payments; Paystack or Flutterwave), Inventory (default reorder level; low-stock alerts on/off), Uploads (image URLs).
+- Settings sections: Business (name, email, phone, address, website; shown on the public site), Notifications (email lists for new orders, low stock and vacancies, up to 10 each), Payments (accept online payments; Paystack or Flutterwave), Inventory (default reorder level; low-stock alerts on/off), Uploads (image URLs). Landing v1 adds Website, Financing and Calculator (§6.11).
 - In-store orders raise the same new-order notification as website orders, with the channel recorded.
 
 6.8 Non-functional requirements
@@ -245,6 +262,110 @@ Persona: HR
 - SEO: canonical public URLs, sitemap and robots shared with the classic site, structured data (Product on product pages, JobPosting on vacancy pages when a location is given, Organization), and noindex on cart, checkout and confirmation pages.
 - Checkout payment note follows Settings: with online payments off, "No payment now: we'll call to confirm and arrange payment"; with them on, "You'll receive a secure payment link after we confirm your order". Bot protection (Turnstile) applies to orders, contact and newsletter sign-up.
 
+6.11 Website content and landing page (added 2026-09-17, Landing v1)
+
+Contract: docs/agents/LANDING_V1.md.
+
+Ground rules
+- Ideas only, nothing copied: the home page follows the *structure and ideas* of a reference solar landing page. None of its wording, images, logos, statistics, reviews, prices, office lists or financing numbers are used. All content is Juwon Electric's own.
+- Honest claims: the "Why choose us" cards state only what the platform already guarantees. No invented warranties, years in business or client counts, except in sample-flagged content that must be replaced before launch.
+- Everything new is managed in the admin console. Nothing on the new home sections needs a developer to change.
+
+Managed collections
+- Three new collections under a new **Website** group in the admin menu: **FAQs**, **Reviews** and **Client logos**.
+- Access: viewing needs `content:read` (Super admin, Admin, Inventory, Sales, Support); adding, editing, reordering and deleting need `content:write` (Super admin, Admin, Sales).
+- Shared rules for all three:
+  - Each item has a **Sort order** (lower shows first; ties show oldest first), an **Active** switch and a **Sample** flag.
+  - The website shows active items only. Inactive items stay in the admin.
+  - Each screen has a create/edit drawer, the active switch and a delete confirmation.
+  - Every create, update and delete is written to the activity log (`faq.*`, `testimonial.*`, `client.*`).
+  - Image and logo fields accept a full `http(s)` link or a site path starting with `/` (letters, numbers, `.`, `_`, `-` and `/`, up to 200 characters), for example `/samples/client-1.svg`.
+- FAQs:
+  - Fields: Question (5–200 characters, required), Answer (1–2000 characters, plain text, line breaks kept, required), Category (optional, up to 60 characters, for example "Ordering", "Installation", "Products").
+  - Admin list: category filter and ▲▼ buttons to change the order (no drag and drop).
+  - Public: the home page shows the first 6; `/faq` shows all, grouped by category.
+  - Messages: "FAQ created.", "FAQ updated.", "FAQ deleted.", "FAQ not found."
+- Reviews (stored as testimonials):
+  - Fields: Name (1–100, required; for example "Adaeze O."), Context (optional, up to 150; for example "5kVA lithium system, Lekki"), Quote (10–1000, required), Rating (optional, 1–5 stars), Source (optional: Website, WhatsApp, Google, Facebook, In person), Image (optional link or site path).
+  - Rule: only real reviews from customers who agreed to be quoted. Don't edit a customer's meaning.
+  - Admin list shows the star rating. Public: the home page reviews section (cards or a scroller that the customer moves; never auto-rotating) with stars, name, context and a source badge.
+  - Messages: "Review created.", "Review updated.", "Review deleted.", "Review not found."
+- Client logos (stored as clients):
+  - Fields: Name (1–100, required; used as the logo's alt text), Logo (required link or site path), Website (optional).
+  - Rule: only add a client's logo with the client's permission.
+  - Admin shows a grid with a logo preview. Public: the home page client logos grid (up to 6 per row, greyscale until hovered).
+  - Messages: "Client created.", "Client updated.", "Client deleted.", "Client not found."
+
+Portfolio case-study fields
+- Portfolio items gain four optional fields in the admin form: **Category** (a customer segment, chosen from a select; up to 60 characters), **Summary** (plain text, up to 500), **Location** (up to 100, for example "Lekki, Lagos") and **System** (up to 200, for example "10kVA inverter, 8 × 200Ah lithium, 12 × 550W panels").
+- Older portfolio items show these as empty and keep working.
+- An item counts as a **case study** when it has a Summary. The home page shows up to 3 case studies with image, category badge, location, system, summary and a link.
+- `/portfolio` gains a category filter (`/portfolio?category=<segment>`), and cards show summary, location and system when present. The existing "Featured on the home page" setting keeps working.
+
+Settings sections (Super admin and Admin change them; other staff view)
+- Website:
+  - Stats: up to 4 rows, each a Label (1–40 characters) and a Value (1–20, for example "500+").
+  - WhatsApp number: optional, same phone rule as the business phone.
+  - Business hours: optional, up to 200 characters, several lines (for example "Mon–Fri 8am–6pm" on one line and "Sat 9am–3pm" on the next).
+  - Public: all of it. Stats appear in the home stats band; WhatsApp and business hours in the footer; WhatsApp also drives the floating button and the final call to action.
+- Financing (off by default):
+  - Fields: Enabled switch; Deposit % (whole number 0–100); Terms (up to 6 different month counts, 1–60, shown in ascending order as chips); Monthly rate % (0–20, up to 2 decimals); Approval time (up to 60 characters, for example "24–48 hours"); Note (up to 300 characters).
+  - Public: every field only when Enabled is on. When off, the website receives nothing but "not enabled" and the financing section is hidden.
+  - Financing on the website describes terms only. Customers can't apply or be approved online; they talk to the team.
+- Calculator (off by default):
+  - Enabled switch.
+  - Appliances: up to 40 rows, each with Key (lower-case letters, numbers and `-`, up to 40, unique), Label (1–40), Watts (whole number 1–10,000), Default hours a day (0–24 in half-hour steps) and Default quantity (whole number 0–20). Rows can be added, removed and reordered.
+  - Parameters (defaults in brackets): Inverter headroom % (25; whole number 0–100), Battery depth of discharge % (80; 10–100), Battery voltage (48; 12, 24 or 48), Panel watts (550; 100–1000), Peak sun hours (4.5; 1–10, one decimal).
+  - Generator costs: Fuel price per litre (₦, whole number 0–100,000), Litres per kVA-hour (0–2, two decimals), Maintenance per month (₦, whole number 0–10,000,000).
+  - Public: every field only when Enabled is on. When off, `/calculator` and the home teaser are not shown.
+- Notification emails and other private settings are never public.
+- Each new section shows a **Sample** badge while it holds sample values.
+
+Home page (section order)
+Every section hides itself when it has no data, so an empty collection or unset setting leaves no blank block.
+1. Hero (unchanged, §6.10).
+2. Stats band: up to 4 large figures from Website stats.
+3. Client logos.
+4. Why choose us: 4 fixed cards stating only verifiable claims: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
+5. Solutions ("Who we power"): the customer segments as cards linking to `/portfolio?category=<segment>`.
+6. Packages: the existing package finder; package cards show up to 3 included products and "What it powers".
+7. Size your system: a teaser linking to `/calculator` (only when the calculator is enabled).
+8. Case studies: up to 3 portfolio items with a Summary.
+9. Reviews.
+10. How it works: 6 steps: order or call → confirmation call → processing → delivery → installation → after-sales support.
+11. Financing (only when enabled): a terms table (deposit, terms, monthly rate, approval time), a worked example calculated live on a package price, the note, and calls to action.
+12. FAQ: the first 6 FAQs as an accessible accordion, and "See all questions" linking to `/faq`.
+13. Final call to action: Shop packages, Call, and WhatsApp (only when a WhatsApp number is set).
+
+`/calculator` page (only when the calculator is enabled)
+- The customer starts with the appliance rows from Settings at their default quantity and hours, changes quantity and hours with steppers, and can **Add appliance** with their own label and watts.
+- Results update as they type:
+  - Total load (W) = Σ watts × quantity.
+  - Recommended inverter (kVA) = load × (1 + headroom % ÷ 100) ÷ 0.8 (power factor) ÷ 1000, rounded **up** to the next 0.5 kVA. Formula: `ceil((load × (1 + headroom)) / 0.8 / 1000 × 2) / 2`.
+  - Daily energy (kWh) = Σ watts × quantity × hours a day ÷ 1000.
+  - Battery capacity (kWh) = daily energy ÷ (depth of discharge % ÷ 100); also shown in Ah at the battery voltage (kWh × 1000 ÷ voltage).
+  - Solar panels = daily energy ÷ (panel watts × peak sun hours ÷ 1000), rounded up to a whole panel.
+- Matching packages: available packages whose kVA is at least the recommended size, cheapest first, up to 3.
+- Generator comparison: monthly generator cost = recommended kVA × litres per kVA-hour × hours a day × 30 × fuel price per litre, plus maintenance per month. It is compared with the cheapest matching package's price as a simple payback in months (package price ÷ monthly generator cost).
+- Disclaimer, always shown in plain words: "Estimates only — an engineer confirms your size before installation."
+- A "Talk to an engineer" call to action. Nothing the customer enters is stored or sent.
+- Worked example (default parameters): load 1,000 W → 1,000 × 1.25 ÷ 0.8 ÷ 1000 = 1.5625 → **2 kVA**; daily energy 5 kWh → battery 5 ÷ 0.8 = 6.25 kWh ≈ 130 Ah at 48 V; panels 5 ÷ (550 × 4.5 ÷ 1000 = 2.475) = 2.02 → **3 panels**. With fuel ₦1,000/litre, 0.25 litres per kVA-hour, 8 hours a day and ₦20,000 maintenance: 2 × 0.25 × 8 × 30 × ₦1,000 + ₦20,000 = **₦140,000 a month**; a ₦1,400,000 package pays back in **10 months**.
+
+`/faq` page, portfolio filter and WhatsApp
+- `/faq`: all active FAQs grouped by category, with FAQPage structured data for search engines.
+- `/portfolio`: category filter and case-study details, as above.
+- Floating **WhatsApp** button on every storefront page when a WhatsApp number is set: bottom right, 56 px, clear of the phone's safe area. It opens `https://wa.me/<digits>` with the message "Hello Juwon Electric". No number, no button.
+- The footer shows business hours and WhatsApp when set. `/calculator` and `/faq` are in the sitemap and linked from the footer (and the header when there is room).
+- FAQs, reviews and client logos changes reach the storefront the same way as other admin changes (§6.10, realtime and revalidation).
+
+Sample content
+- Flagged: every seeded record and settings section carries a sample flag.
+- Labelled in the admin: a **Sample** badge on each sample record and settings section, and on each screen with sample records the banner "Sample content is showing on the website. Edit or replace it before launch."
+- Labelled on the website: a small neutral "Sample" label on sample stats, reviews, client logos, case-study details, financing and the calculator notes. Sample FAQs are not labelled on the website, so they must be checked in the admin.
+- Cleared on save: when staff edit and save a sample record or settings section, it becomes real content (the flag is cleared), even if no value changed. Deleting sample records is allowed.
+- Seeded locally only: `npm run seed:sample` (backend) and `npm run d1:seed:sample:local` (Worker, local D1) load the same sample data. The seed refuses to run when `NODE_ENV=production`, is never part of migrations, `seed.sql` or CI, and the D1 seed file warns never to run it with `--remote`. Running it again updates the same sample records (fixed ids starting `sample-`) and never overwrites settings sections that already hold real content.
+- Production must never show sample content (§11 Before launch checklist).
+
 7. Acceptance criteria (selected)
 
 - Product CRUD: create a product with images and rich-text description; product appears on public catalog
@@ -269,6 +390,16 @@ Persona: HR
 - Online product purchase (Commerce v3): a customer adds 2 × an active product with 5 in stock from its product page and checks out; the order records a product line at the current price, the total includes it, "Requires installation" is off, stock stays 5 until the order is moved to processing (then 3), and the confirmation email lists "2 × <name> (<SKU>)". A product with 0 stock shows Out of stock with Add to cart disabled and no card button. If the product is hidden or its stock drops below the cart quantity before checkout, the cart flags the line and the order is rejected with "Some items in your cart are no longer available. Please refresh your cart." A cart with a package and a product creates one order with both lines and "Requires installation" on; a package-only cart sends the same order as before.
 - Package category (Commerce v3): assigning a package to the category Inverters shows "Inverters" on the package page and lists the package under "Packages in Inverters" above the products on that category page (and on its parent category's page); deleting Inverters is refused with "Category has subcategories, products or packages."; a package with "No category" appears on no category page.
 - Admin edit reflected on the storefront: changing a product price (or a package adjustment) in the admin console shows the new price on the next storefront page view; an already open storefront page in the same browser updates immediately, and in another browser within about a minute.
+- FAQs (Landing v1): a Sales account adds an FAQ with category "Installation", moves it up with ▲ and saves; it appears in that position on the home page (if among the first 6) and under "Installation" on `/faq` on the next page view, and FAQPage structured data lists it. Switching it inactive hides it from both. A question under 5 characters is rejected. A Support account can view FAQs but has no add, edit or delete buttons, and the server refuses changes with "You do not have permission to perform this action."
+- Reviews (Landing v1): an admin adds a review with rating 5 and source WhatsApp; it shows in the home reviews section with 5 stars, name, context and a WhatsApp badge, and the section never rotates by itself. A quote under 10 characters or a rating outside 1–5 is rejected. With no active reviews, the reviews section is not shown.
+- Client logos (Landing v1): a logo saved with a site path such as `/logos/acme.svg` or an `https://` link appears in the client logos grid with the client name as alt text; a logo value that is neither is rejected; with no active clients, the section is not shown.
+- Case studies (Landing v1): adding Category, Summary, Location and System to a portfolio item shows it among the home case studies (up to 3) and on `/portfolio?category=<segment>` with those details; a portfolio item without a Summary is not shown as a case study; older items without the new fields still display.
+- Website settings (Landing v1): saving 4 stats shows the stats band with 4 figures; a fifth stat is rejected; with no stats the band is hidden. Setting a WhatsApp number shows the floating WhatsApp button on every storefront page, the footer link and the WhatsApp call to action, opening `https://wa.me/<digits>` with "Hello Juwon Electric"; clearing it removes all three. Business hours show in the footer with their line breaks.
+- Financing (Landing v1): with Enabled off, the home financing section is hidden and the public settings contain only "not enabled"; with it on and deposit 40%, terms 3, 6 and 12 months, rate 3.5% and approval "48 hours", the section shows those terms, a worked example and the note. Terms with more than 6 values, duplicates or a value above 60 are rejected.
+- Calculator (Landing v1): with Enabled off, `/calculator` and the home teaser are not shown. With it on and the default parameters, a load of 1,000 W recommends 2 kVA; 5 kWh a day gives a 6.25 kWh (about 130 Ah at 48 V) battery and 3 × 550 W panels; with fuel ₦1,000, 0.25 litres per kVA-hour, 8 hours a day and ₦20,000 maintenance the generator costs ₦140,000 a month, and a ₦1,400,000 matching package shows a 10-month payback. Matching packages list at most 3 available packages of at least 2 kVA, cheapest first. The disclaimer "Estimates only — an engineer confirms your size before installation." is always visible, and nothing entered is stored.
+- Home page order (Landing v1): with all content present the sections appear in the §6.11 order; removing the data behind any section hides that section without leaving an empty heading or gap.
+- Sample content (Landing v1): after running the local seed, every seeded record and settings section shows a Sample badge in the admin, the banner "Sample content is showing on the website. Edit or replace it before launch." shows on screens with sample records, and the website shows "Sample" labels on sample stats, reviews, client logos, case-study details, financing and calculator notes. Editing and saving a sample record or section removes its badge and label. The seed refuses to run with `NODE_ENV=production`.
+- No sample content visible before launch (Landing v1): on the production website at launch, no "Sample" label appears on any page, no FAQ, review, client logo, portfolio item or settings section in the admin shows a Sample badge, no screen shows the sample banner, the WhatsApp link does not use `+2348000000000`, and no files under `/samples/` are referenced. Every item in the §11 Before launch checklist is ticked.
 
 8. Metrics & success criteria
 
@@ -314,6 +445,12 @@ Commerce v3 round (2026-09-17)
 - Online product purchase with one cart for packages and products
 - Package categories on the storefront
 
+Landing v1 round (2026-09-17)
+- FAQs, Reviews and Client logos managed in a new Website admin group; portfolio case-study fields
+- Website, Financing and Calculator settings sections
+- Richer home page, `/calculator`, `/faq`, portfolio category filter and WhatsApp button
+- Local-only sample content, and the Before launch checklist (§11)
+
 10. Risks & mitigation
 
 - Rich-text security: sanitize server-side and limit allowed tags/attributes. Use `sanitize-html` and disallow scripts.
@@ -324,17 +461,55 @@ Commerce v3 round (2026-09-17)
 - Storefront regressions: the classic public UI stays available behind `NEXT_PUBLIC_PUBLIC_UI=classic`.
 - Online product orders for stock that runs out before processing: checkout checks current stock, and processing is all-or-nothing with a per-product shortfall, so staff call the customer before moving the order on.
 - Walk-in sales without contact details can't be followed up: reps are encouraged to take a phone number for delivered or installed sales, and a delivery address is still required for "later" fulfilment.
+- Calculator estimates taken as a quote or guarantee (Landing v1): results depend on typical wattages, assumed sun hours and the customer's own entries, and real loads (motor start-up, air conditioners, pumps) can need a bigger inverter. Mitigation: the disclaimer "Estimates only — an engineer confirms your size before installation." is always shown, results are rounded up, "Talk to an engineer" is offered, generator figures are labelled as a simple comparison, and the owner reviews the appliance wattages and parameters before switching the calculator on.
+- Financing terms read as an offer (Landing v1): a deposit, rate or approval time on the website can be taken as a promise of credit. Mitigation: financing is off by default and hidden when off; switch it on only when real terms are agreed with the business (and any finance partner); use the Note to state that terms are subject to approval; the worked example is labelled an example; sample terms carry "Sample terms — not an offer." and a Sample label and must be replaced or switched off before launch.
+- Sample or unapproved content going live (Landing v1): sample stats, reviews, logos or terms could be mistaken for real claims. Mitigation: seeds run locally only and refuse production, sample items are labelled in the admin and on the website, and the §11 Before launch checklist must be completed.
+- Reviews and logos used without permission (Landing v1): only publish reviews and logos the customer or client agreed to; delete or deactivate at once if permission is withdrawn.
 
 11. Appendix
 - Link to technical plan: /PLATFORM_PLAN.md
 - Vacancy schema example and sanitization guidance included in PLATFORM_PLAN.md
-- API contract: docs/agents/API_CONTRACT_V3.md; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md
-- Staff user guide: docs/USER_GUIDE.md
+- API contract: docs/agents/API_CONTRACT_V3.md; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md; landing page and website content: docs/agents/LANDING_V1.md
+- Staff user guide: docs/USER_GUIDE.md (website content: chapter 10A)
+
+Before launch checklist (Landing v1)
+Complete every item before the website goes live. The local seed never runs in production, but if sample data was copied to a live database, or real content was entered by editing sample records, check each item. Replace means edit with real content and save (this clears the Sample flag); delete means remove the record. When done, no Sample badge or banner shows anywhere in the admin, and no "Sample" label shows on the website.
+- [ ] FAQs (8 sample): replace or delete each one, and check every answer matches how we really work:
+  - "Do I pay to place an order?"
+  - "How long does installation take?"
+  - "Can I buy a single battery or inverter?"
+  - "What's the difference between tubular and lithium batteries?"
+  - "Do you install outside Lagos?"
+  - "What happens after I order?"
+  - "Can I add solar panels later?"
+  - "How do I choose a package size?"
+  - Sample FAQs have no "Sample" label on the website, so check them in the admin (Website → FAQs).
+- [ ] Reviews (6 sample, made-up names such as "Adaeze O."): delete all; add only real reviews from customers who agreed to be quoted.
+- [ ] Client logos (6 sample, fictional clients using `/samples/client-1.svg` to `/samples/client-6.svg`): delete all; add only real clients who gave permission, with their own logo files or links.
+- [ ] Portfolio case-study details: for each portfolio item marked Sample, replace Category, Summary, Location and System with the real project details, or clear them.
+- [ ] Settings → Website:
+  - [ ] Stats (4 sample: Installations, Years in Lagos, Engineers, Average install time): enter true figures or remove the rows.
+  - [ ] WhatsApp number (sample `+2348000000000`): enter the real business WhatsApp number or clear it.
+  - [ ] Business hours (sample "Mon–Sat 8am–6pm"): enter the real hours or clear them.
+  - [ ] Save the section.
+- [ ] Settings → Financing (sample: enabled, 40% deposit, 3/6/12 months, 3.5% a month, "48 hours", note "Sample terms — not an offer."): enter real, approved terms and save, or switch **Enabled** off and save.
+- [ ] Settings → Calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then save; or switch **Enabled** off and save.
+- [ ] Walk through the website (home, `/calculator`, `/faq`, `/portfolio`, footer) on a phone and a computer and confirm no "Sample" label remains.
 
 Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (Landing v1)
+- §4: in scope: website content managed in the admin, the richer home page with `/calculator`, `/faq`, the portfolio filter and WhatsApp button, and labelled local-only sample content; out of scope: online financing applications, saving calculator results, and copying anything from the reference site.
+- §5: added stories for a customer sizing a system with the calculator and reading FAQs, reviews and case studies, an owner publishing real reviews and setting website, financing and calculator settings, and marketing or admin staff editing FAQs, client logos and case studies.
+- §6.7: listed the new Website, Financing and Calculator settings sections.
+- §6.11: new section, Website content and landing page (ground rules, FAQs, Reviews, Client logos, portfolio case-study fields, new settings and what is public, home section order and hide-when-empty, `/calculator` formulas, generator comparison and disclaimer, `/faq`, portfolio filter, WhatsApp button, sample content rules and local-only seeds).
+- §7: added acceptance criteria for FAQs, reviews, client logos, case studies, website settings, financing, the calculator, home section order, sample content and "no sample content visible before launch".
+- §9: added the Landing v1 milestone.
+- §10: added risks for calculator estimates, financing terms read as an offer, sample content going live, and reviews or logos used without permission.
+- §11: added the link to the Landing v1 contract and the Before launch checklist.
 
 2026-09-17 (Commerce v3)
 - §4: online product purchase, installation crews and package categories are now in scope; buying individual products on the website moved out of "Out of scope"; noted that placing a website order doesn't hold stock.
