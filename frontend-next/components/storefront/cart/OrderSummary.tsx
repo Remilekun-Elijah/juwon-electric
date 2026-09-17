@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Alert, Button, Spinner } from "@/components/ui";
+import AnimatedNumber from "@/components/storefront/motion/AnimatedNumber";
 import { cartItemLabel } from "@/lib/cart/orderItems";
 import { getProductCartKey, removeProductFromCart, type ProductCartItem } from "@/lib/cart/productStore";
 import { getCartItemKey, removeFromCart, type CartItem } from "@/lib/cart/store";
@@ -25,13 +26,17 @@ export type OrderSummaryProps = {
   className?: string;
 };
 
+/** Whole naira while a total tweens between two amounts. */
+const formatTotal = (amount: number) => formatPrice(Math.round(amount));
+
 export const UNAVAILABLE_MESSAGE = "Some items in your cart are no longer available. Remove them to place your order.";
 
 const NO_PRODUCTS: ProductCartItem[] = [];
 
 /**
  * Totals card for the cart and checkout, in the admin order-details style. The total is the server quote when it
- * priced the cart (classic `displayTotal`), otherwise the stored prices with `QUOTE_FALLBACK_NOTE`.
+ * priced the cart (classic `displayTotal`), otherwise the stored prices with `QUOTE_FALLBACK_NOTE`. Subtotal and total
+ * tween to a new amount in 250ms (AnimatedNumber).
  */
 export default function OrderSummary({ cart, products = NO_PRODUCTS, quote, showItems = false, action, footer, className }: OrderSummaryProps) {
   const quoted = quote.status === "ok";
@@ -107,7 +112,9 @@ export default function OrderSummary({ cart, products = NO_PRODUCTS, quote, show
           <dt className="text-slate-600">
             Subtotal <span className="text-slate-500">({units} {units === 1 ? "unit" : "units"})</span>
           </dt>
-          <dd className="font-medium tabular-nums text-slate-900">{formatPrice(total)}</dd>
+          <dd className="font-medium tabular-nums text-slate-900">
+            <AnimatedNumber value={total} format={formatTotal} />
+          </dd>
         </div>
         <div className="flex items-baseline justify-between gap-3">
           <dt className="text-slate-600">Delivery within Lagos</dt>
@@ -115,7 +122,9 @@ export default function OrderSummary({ cart, products = NO_PRODUCTS, quote, show
         </div>
         <div className="flex items-baseline justify-between gap-3 border-t border-slate-200 pt-3">
           <dt className="text-base font-semibold text-slate-900">Total</dt>
-          <dd className="text-xl font-bold tabular-nums text-slate-900">{formatPrice(total)}</dd>
+          <dd className="text-xl font-bold tabular-nums text-slate-900">
+            <AnimatedNumber value={total} format={formatTotal} />
+          </dd>
         </div>
       </dl>
 

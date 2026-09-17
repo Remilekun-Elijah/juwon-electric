@@ -20,6 +20,9 @@ import { formatPrice, productPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { storeFocus } from "@/lib/storefront/styles";
 import QuantityStepper from "./QuantityStepper";
+import { useLineMotion } from "./useLineMotion";
+
+const productLineKey = (item: ProductCartItem) => getProductCartKey(item.productId);
 
 export type ProductCartLinesProps = {
   products: ProductCartItem[];
@@ -31,10 +34,12 @@ export type ProductCartLinesProps = {
 
 /**
  * Catalogue product lines on the cart page: image, name (links to the product), brand and SKU, quantity stepper,
- * remove with an undo toast, and the line total from the server quote. Lines the quote can't price are flagged.
+ * remove with an undo toast, and the line total from the server quote. Lines the quote can't price are flagged. Lines
+ * stagger in, fold away when removed and slide back on undo (useLineMotion, presentation only).
  */
 export default function ProductCartLines({ products, quote, focusAfterRemoveRef, className }: ProductCartLinesProps) {
   const latest = useRef(products);
+  const motion = useLineMotion(products, productLineKey);
   useEffect(() => {
     latest.current = products;
   }, [products]);
@@ -50,6 +55,7 @@ export default function ProductCartLines({ products, quote, focusAfterRemoveRef,
   };
 
   const remove = (item: ProductCartItem) => {
+    motion.leave(item);
     removeProductFromCart(item.productId);
     focusAfterRemoveRef?.current?.focus();
     toast(`${item.name} removed from your cart`, {
@@ -59,8 +65,9 @@ export default function ProductCartLines({ products, quote, focusAfterRemoveRef,
 
   return (
     <ul className={cn("divide-y divide-slate-100", className)}>
-      {products.map((item) => {
+      {motion.rows.map(({ item, ghost }, position) => {
         const cartKey = getProductCartKey(item.productId);
+        const entrance = ghost ? undefined : motion.enter(cartKey, position);
         const domId = `line-${cartKey.replace(/[^a-zA-Z0-9]/g, "-")}`;
         const line = quote.status === "ok" ? quote.lines[cartKey] : undefined;
         const unavailable = line?.available === false;
@@ -69,8 +76,14 @@ export default function ProductCartLines({ products, quote, focusAfterRemoveRef,
         const href = productPath({ slug: item.slug, id: item.productId });
 
         return (
-          <li key={cartKey} className="py-5 first:pt-0 last:pb-0">
-            <div className="flex items-start gap-3 sm:gap-4">
+          <li
+            key={ghost ? `leaving-${cartKey}` : cartKey}
+            aria-hidden={ghost || undefined}
+            inert={ghost || undefined}
+            style={entrance?.style}
+            className={cn("py-5 first:pt-0 last:pb-0", ghost ? "je-collapse" : entrance?.className)}
+          >
+            <div className={cn("flex items-start gap-3 sm:gap-4", ghost && "min-h-0 overflow-hidden")}>
               <Link
                 href={href}
                 tabIndex={-1}

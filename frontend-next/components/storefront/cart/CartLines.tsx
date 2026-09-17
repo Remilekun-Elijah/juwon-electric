@@ -21,6 +21,7 @@ import { formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { storeFocus } from "@/lib/storefront/styles";
 import { RollingDigits } from "./QuantityStepper";
+import { useLineMotion } from "./useLineMotion";
 
 export type CartLinesProps = {
   cart: CartItem[];
@@ -41,11 +42,13 @@ const optionName = (item: CartItem) =>
 
 /**
  * Cart lines: package, label, chosen option, with-solar switch (packages with exactly two options), quantity stepper,
- * remove with an undo toast, and line totals from the server quote when it priced the line.
+ * remove with an undo toast, and line totals from the server quote when it priced the line. Lines stagger in, fold away
+ * when removed and slide back on undo (useLineMotion, presentation only).
  */
 export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLinesProps) {
   // Latest cart for the undo action, which runs after the toast outlives this render.
   const latestCart = useRef(cart);
+  const motion = useLineMotion(cart, getCartItemKey);
   useEffect(() => {
     latestCart.current = cart;
   }, [cart]);
@@ -64,6 +67,7 @@ export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLine
   };
 
   const remove = (item: CartItem) => {
+    motion.leave(item);
     removeFromCart(getCartItemKey(item));
     focusAfterRemoveRef?.current?.focus();
     toast(`${item.name} package removed from your cart`, {
@@ -73,8 +77,9 @@ export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLine
 
   return (
     <ul className="divide-y divide-slate-100">
-      {cart.map((item) => {
+      {motion.rows.map(({ item, ghost }, position) => {
         const cartKey = getCartItemKey(item);
+        const entrance = ghost ? undefined : motion.enter(cartKey, position);
         const domId = `line-${cartKey.replace(/[^a-zA-Z0-9]/g, "-")}`;
         const label = cartItemBaseLabel(item);
         const withSolar = isWithSolar(item);
@@ -86,8 +91,14 @@ export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLine
           item.options?.length === 2 && Number(withSolar ? item.withoutSolarPrice : item.withSolarPrice) > 0;
 
         return (
-          <li key={cartKey} className="py-5 first:pt-0 last:pb-0">
-            <div className="flex items-start gap-3 sm:gap-4">
+          <li
+            key={ghost ? `leaving-${cartKey}` : cartKey}
+            aria-hidden={ghost || undefined}
+            inert={ghost || undefined}
+            style={entrance?.style}
+            className={cn("py-5 first:pt-0 last:pb-0", ghost ? "je-collapse" : entrance?.className)}
+          >
+            <div className={cn("flex items-start gap-3 sm:gap-4", ghost && "min-h-0 overflow-hidden")}>
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
                 <Package aria-hidden="true" className="h-5 w-5" />
               </span>

@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart/store";
 import { useCartQuote } from "@/lib/cart/useCartQuote";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeCard, storeCardPadding, storeContainer, storeLink } from "@/lib/storefront/styles";
+import { enterDelay, storeCard, storeCardPadding, storeContainer, storeLink } from "@/lib/storefront/styles";
 import { useHydrated } from "@/lib/useHydrated";
 import CartEmpty from "./CartEmpty";
 import CartLines from "./CartLines";
@@ -59,7 +59,7 @@ export default function CartView() {
   return (
     <div className={cn(storeContainer, "py-8 sm:py-12")}>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
-        <section aria-labelledby="cart-items-heading" className={cn(storeCard, storeCardPadding)}>
+        <section aria-labelledby="cart-items-heading" className={cn(storeCard, storeCardPadding, "je-in je-in-fast")}>
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <h2 id="cart-items-heading" ref={headingRef} tabIndex={-1} className="text-base font-semibold text-slate-900 focus:outline-hidden">
               Your cart <span className="font-normal text-slate-500">({count})</span>
@@ -84,7 +84,7 @@ export default function CartView() {
           )}
         </section>
 
-        <div className="space-y-4 lg:sticky lg:top-24">
+        <div style={enterDelay(60)} className="je-in je-in-fast je-in-right space-y-4 lg:sticky lg:top-24">
           <OrderSummary cart={cart} products={products} quote={quote} action={action} />
           <ul className={cn(storeCard, storeCardPadding, "space-y-3 text-sm text-slate-600")}>
             <li className="flex gap-3">

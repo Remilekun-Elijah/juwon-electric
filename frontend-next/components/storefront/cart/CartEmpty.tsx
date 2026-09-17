@@ -20,8 +20,9 @@ export default function CartEmpty({
 }: CartEmptyProps) {
   return (
     <div className={cn(storeContainer, "py-8 sm:py-12")}>
-      <div role="status" className={cn(storeCard, "mx-auto flex max-w-2xl flex-col items-center px-6 py-12 text-center sm:py-16")}>
-        <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700">
+      <div role="status" className={cn(storeCard, "je-in je-in-fast mx-auto flex max-w-2xl flex-col items-center px-6 py-12 text-center sm:py-16")}>
+        {/* The illustration floats gently (none under reduced motion). */}
+        <span className="je-float grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700">
           <ShoppingCart aria-hidden="true" className="h-6 w-6" />
         </span>
         <h2 className="mt-4 text-xl font-semibold tracking-tight text-slate-900">{title}</h2>

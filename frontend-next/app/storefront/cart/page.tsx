@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import CartView from "@/components/storefront/cart/CartView";
 
 export const revalidate = 60;
@@ -19,6 +19,7 @@ export default function Page() {
         eyebrow="Cart"
         title="Your cart"
         description="Review the packages and products in your cart, then check out. We’ll call you to confirm before anything is delivered."
+        image={INTRO_IMAGES.home}
       />
       <CartView />
     </>
