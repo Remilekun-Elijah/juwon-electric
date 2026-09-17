@@ -22,10 +22,11 @@ import {
   pricedOptions,
 } from "@/components/storefront/catalog/packageMeta";
 import JsonLd from "@/components/storefront/JsonLd";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import PriceTag from "@/components/storefront/PriceTag";
 import Section from "@/components/storefront/Section";
-import { Badge, buttonClasses } from "@/components/ui";
+import Reveal from "@/components/storefront/motion/Reveal";
+import { buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
 import { categoryPath, formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
@@ -33,7 +34,7 @@ import { packagePath, packageTitle } from "@/lib/packages";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { getStoreCategories, getStorePackage, getStorePackages } from "@/lib/storefront/data";
 import { contactTopicPath, storeRoutes } from "@/lib/storefront/routes";
-import { storeCard, storeCardPadding, storeContainer, storeH3, storeLink } from "@/lib/storefront/styles";
+import { enterDelay, storeCard, storeCardPadding, storeContainer, storeDarkBadge, storeH3, storeLink } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -142,14 +143,15 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
           ...(categoryRef ? [{ label: categoryRef.name, href: categoryPath(categoryRef) }] : []),
           { label: `${pkg.name} ${pkg.kva}kVA`, href: packagePath(pkg) },
         ]}
+        image={hasSolarOption(pkg) ? INTRO_IMAGES.home : INTRO_IMAGES.commercial}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <Badge tone="brand">{packageRating(pkg)}</Badge>
-          {hasSolarOption(pkg) && <Badge tone="warning">Available with solar</Badge>}
+          <span className={storeDarkBadge}>{packageRating(pkg)}</span>
+          {hasSolarOption(pkg) && <span className={`${storeDarkBadge} border-gold-400/40 text-gold-300`}>Available with solar</span>}
           {productCount > 0 && (
-            <Badge tone="neutral">
+            <span className={storeDarkBadge}>
               Includes {productCount} {productCount === 1 ? "product" : "products"}
-            </Badge>
+            </span>
           )}
         </div>
       </PageIntro>
@@ -157,7 +159,11 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
       <div className={cn(storeContainer, "py-10 sm:py-14")}>
         <PackageOptionScope defaultIndex={defaultCartOptionIndex(pkg)}>
           <div className="grid gap-6 lg:grid-cols-3 lg:items-start lg:gap-8">
-            <aside aria-labelledby="package-buy" className={cn(storeCard, storeCardPadding, "lg:sticky lg:top-24 lg:order-last")}>
+            <aside
+              aria-labelledby="package-buy"
+              style={enterDelay(250)}
+              className={cn(storeCard, storeCardPadding, "je-in je-in-right lg:sticky lg:top-24 lg:order-last")}
+            >
               <h2 id="package-buy" className={storeH3}>
                 Price and options
               </h2>
@@ -192,7 +198,7 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
             </aside>
 
             <div className="space-y-6 lg:col-span-2">
-              <section aria-labelledby="package-powers" className={cn(storeCard, storeCardPadding)}>
+              <Reveal as="section" aria-labelledby="package-powers" style={enterDelay(320)} className={cn(storeCard, storeCardPadding, "je-in")}>
                 <h2 id="package-powers" className={storeH3}>
                   What it powers
                 </h2>
@@ -200,20 +206,20 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
                 <p className="mt-3 text-sm text-slate-500">
                   A typical load for a {pkg.kva}kVA system. Every home is different, so we check your appliances before installation.
                 </p>
-              </section>
+              </Reveal>
 
-              <section aria-labelledby="package-included" className={cn(storeCard, storeCardPadding)}>
+              <Reveal as="section" aria-labelledby="package-included" style={enterDelay(400)} className={cn(storeCard, storeCardPadding, "je-in")}>
                 <h2 id="package-included" className={storeH3}>
                   What’s included
                 </h2>
                 <PackageIncluded pkg={pkg} categories={categories} />
-              </section>
+              </Reveal>
 
-              <section aria-labelledby="package-install" className={cn(storeCard, storeCardPadding)}>
+              <Reveal as="section" aria-labelledby="package-install" style={enterDelay(480)} className={cn(storeCard, storeCardPadding, "je-in")}>
                 <h2 id="package-install" className={storeH3}>
                   Delivery and installation
                 </h2>
-                <ul className="mt-4 grid gap-5 sm:grid-cols-2">
+                <Reveal as="ul" stagger className="mt-4 grid gap-5 sm:grid-cols-2">
                   {reassurance.map(({ icon: Icon, title, body }) => (
                     <li key={title} className="flex gap-3">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
@@ -225,8 +231,8 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
                       </div>
                     </li>
                   ))}
-                </ul>
-              </section>
+                </Reveal>
+              </Reveal>
             </div>
           </div>
         </PackageOptionScope>
@@ -248,9 +254,9 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
         </Section>
       )}
 
-      <div className={cn(storeContainer, "py-10 sm:py-14")}>
+      <Reveal className={cn(storeContainer, "py-10 sm:py-14")}>
         <CatalogHelpBand topic={packageTitle(pkg)} secondary={{ label: "All packages", href: storeRoutes.packages }} />
-      </div>
+      </Reveal>
     </>
   );
 }

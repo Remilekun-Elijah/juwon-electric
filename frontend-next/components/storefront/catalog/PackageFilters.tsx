@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter, Phone } from "lucide-react";
@@ -23,6 +23,9 @@ import {
 } from "./packageMeta";
 
 const DEFAULTS: PackageFilterState = { type: "all", kva: "all", sort: "recommended" };
+
+/** Filter change: the new cards fade in with an 8px rise over 300ms. */
+const CROSS_FADE = { "--in-duration": "300ms", "--in-y": "8px" } as CSSProperties;
 
 /**
  * Package filters (type, kVA range, price sort) over the server-fetched packages. The state lives in the URL query
@@ -58,6 +61,11 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
   };
 
   const filtered = type !== "all" || kva !== "all";
+  // The grid cross-fades when the filters change, but not when this island replaces the server fallback on load (the
+  // fallback already played the entrance).
+  const filterKey = `${type}|${kva}|${sort}`;
+  const [initialKey] = useState(filterKey);
+  const changed = filterKey !== initialKey;
 
   return (
     <div>
@@ -147,27 +155,29 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
       </div>
 
       <div className={cn("mt-4 transition-opacity", pending && "opacity-60")} aria-busy={pending || undefined}>
-        {visible.length ? (
-          <PackageGrid packages={visible} />
-        ) : (
-          <EmptyState
-            standalone
-            icon={Filter}
-            title="No packages match these filters"
-            description="Try another size or battery type, or tell us what you need to power and we’ll size a system for you."
-            action={
-              <>
-                <button type="button" onClick={() => update({ type: "all", kva: "all" })} className={buttonClasses({ variant: "outline", size: "lg" })}>
-                  Clear filters
-                </button>
-                <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>
-                  <Phone aria-hidden="true" />
-                  Talk to an engineer
-                </Link>
-              </>
-            }
-          />
-        )}
+        <div key={filterKey} className={changed ? "je-in" : undefined} style={changed ? CROSS_FADE : undefined}>
+          {visible.length ? (
+            <PackageGrid packages={visible} />
+          ) : (
+            <EmptyState
+              standalone
+              icon={Filter}
+              title="No packages match these filters"
+              description="Try another size or battery type, or tell us what you need to power and we’ll size a system for you."
+              action={
+                <>
+                  <button type="button" onClick={() => update({ type: "all", kva: "all" })} className={buttonClasses({ variant: "outline", size: "lg" })}>
+                    Clear filters
+                  </button>
+                  <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>
+                    <Phone aria-hidden="true" />
+                    Talk to an engineer
+                  </Link>
+                </>
+              }
+            />
+          )}
+        </div>
       </div>
     </div>
   );

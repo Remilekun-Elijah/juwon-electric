@@ -3,8 +3,10 @@
 import { useId, useState } from "react";
 import { Sun, Zap } from "lucide-react";
 import AddToCartButton from "@/components/storefront/cart/AddToCartButton";
+import AnimatedNumber from "@/components/storefront/motion/AnimatedNumber";
 import PriceTag from "@/components/storefront/PriceTag";
 import type { Package } from "@/lib/api/types";
+import { formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import OptionStockHint from "./OptionStockHint";
 import { usePackageOptionScope } from "./PackageOptionScope";
@@ -13,7 +15,8 @@ import { cartOptions, defaultCartOptionIndex } from "./packageMeta";
 /**
  * Option radio group (without or with solar, with prices). Only available options are listed (Commerce v2 §4), and
  * each keeps its ORIGINAL index into `pkg.options`, which is what AddToCartButton receives. Inside a
- * PackageOptionScope the choice also switches the page's "What's included" panels.
+ * PackageOptionScope the choice also switches the page's "What's included" panels. The selected ring scales in and the
+ * option's price tweens to the new amount (TEAM_AND_MOTION_V1 §8.2).
  */
 export default function PackageOptionPicker({ pkg }: { pkg: Package }) {
   const baseId = useId();
@@ -51,6 +54,13 @@ export default function PackageOptionPicker({ pkg }: { pkg: Package }) {
                   checked ? "border-brand-300 bg-brand-50" : "border-slate-200 bg-white hover:bg-slate-50"
                 )}
               >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "pointer-events-none absolute -inset-px rounded-xl ring-2 ring-brand-500 transition-[opacity,scale] duration-200 ease-out motion-reduce:transition-none",
+                    checked ? "scale-100 opacity-100" : "scale-95 opacity-0"
+                  )}
+                />
                 <input
                   id={id}
                   type="radio"
@@ -74,6 +84,17 @@ export default function PackageOptionPicker({ pkg }: { pkg: Package }) {
           <span className="font-medium text-slate-900">{chosen.name}:</span>
           <OptionStockHint inStock={chosen.inStock} />
           {chosen.inStock === false && <span>We’ll confirm a delivery date when we call.</span>}
+        </p>
+      )}
+
+      {chosen && (
+        <p className="mt-4 flex items-baseline justify-between gap-3 border-t border-slate-100 pt-4">
+          <span className="text-sm text-slate-600">Price for this option</span>
+          <AnimatedNumber
+            value={chosen.amount}
+            format={(amount) => formatPrice(Math.round(amount))}
+            className="text-2xl font-semibold tabular-nums tracking-tight text-slate-900"
+          />
         </p>
       )}
 

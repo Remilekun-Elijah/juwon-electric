@@ -71,3 +71,7 @@ export const storeDarkChip = (active: boolean) =>
 
 /** Delay for the nth item of a mounting list: `step` ms apart, capped so long lists never wait (8 steps by default). */
 export const staggerDelay = (index: number, step = 60, base = 0, cap = 8) => enterDelay(base + Math.min(index, cap - 1) * step);
+
+/** Small glass pill for facts in a dark page intro (package rating, SKU). */
+export const storeDarkBadge =
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm";

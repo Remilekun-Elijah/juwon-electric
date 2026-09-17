@@ -6,12 +6,13 @@ import CatalogHelpBand from "@/components/storefront/catalog/CatalogHelpBand";
 import PackageFilters from "@/components/storefront/catalog/PackageFilters";
 import PackageFiltersFallback from "@/components/storefront/catalog/PackageFiltersFallback";
 import { availablePackages } from "@/components/storefront/catalog/packageMeta";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { getStorePackages } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeContainer } from "@/lib/storefront/styles";
+import { enterDelay, storeContainer } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -34,7 +35,7 @@ export default async function PackagesPage() {
 
   return (
     <>
-      <PageIntro eyebrow="Packages" title="Inverter and solar packages" description={description} />
+      <PageIntro eyebrow="Packages" title="Inverter and solar packages" description={description} image={INTRO_IMAGES.home} />
 
       <div className={cn(storeContainer, "py-10 sm:py-14")}>
         <h2 className="sr-only">Browse packages</h2>
@@ -43,23 +44,25 @@ export default async function PackagesPage() {
             <PackageFilters packages={packages} />
           </Suspense>
         ) : (
-          <EmptyState
-            standalone
-            icon={PackageIcon}
-            title="Packages are being updated"
-            description="We’re refreshing our package prices. Call or message us and an engineer will quote a system for your home or business."
-            action={
-              <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>
-                <Phone aria-hidden="true" />
-                Talk to an engineer
-              </Link>
-            }
-          />
+          <div style={enterDelay(300)} className="je-in">
+            <EmptyState
+              standalone
+              icon={PackageIcon}
+              title="Packages are being updated"
+              description="We’re refreshing our package prices. Call or message us and an engineer will quote a system for your home or business."
+              action={
+                <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>
+                  <Phone aria-hidden="true" />
+                  Talk to an engineer
+                </Link>
+              }
+            />
+          </div>
         )}
 
-        <div className="mt-12 sm:mt-16">
+        <Reveal className="mt-12 sm:mt-16">
           <CatalogHelpBand secondary={{ label: "Browse products", href: storeRoutes.products }} />
-        </div>
+        </Reveal>
       </div>
     </>
   );

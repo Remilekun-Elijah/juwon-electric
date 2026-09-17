@@ -1,17 +1,18 @@
 import type { Package } from "@/lib/api/types";
 import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { storeCard } from "@/lib/storefront/styles";
+import { enterDelay, storeCard } from "@/lib/storefront/styles";
 import PackageGrid from "./PackageGrid";
 
 /**
  * Server-rendered stand-in for PackageFilters while it hydrates (and for visitors without JavaScript): a filter bar
- * placeholder and every package, unfiltered.
+ * placeholder and every package, unfiltered. It is what the page first paints, so it carries the page-load entrance:
+ * the filter bar fades in and the cards rise in a stagger.
  */
 export default function PackageFiltersFallback({ packages }: { packages: Package[] }) {
   return (
     <div>
-      <div className={cn(storeCard, "p-4 sm:p-5")}>
+      <div style={enterDelay(300)} className={cn(storeCard, "je-in je-in-fade p-4 sm:p-5")}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <Skeleton className="h-4 w-24" />
@@ -30,7 +31,7 @@ export default function PackageFiltersFallback({ packages }: { packages: Package
       <p className="mt-6 text-sm text-slate-500">
         Showing all {packages.length} {packages.length === 1 ? "package" : "packages"}
       </p>
-      <PackageGrid packages={packages} className="mt-4" />
+      <PackageGrid packages={packages} enter enterDelay={380} className="mt-4" />
     </div>
   );
 }

@@ -3,7 +3,8 @@ import { CheckCircle2, ClipboardList } from "lucide-react";
 import type { Category, ComposedItem, Package, PackageItem } from "@/lib/api/types";
 import { attributeRows, productPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
-import { storeLink } from "@/lib/storefront/styles";
+import Reveal from "@/components/storefront/motion/Reveal";
+import { staggerDelay, storeLink } from "@/lib/storefront/styles";
 import OptionStockHint from "./OptionStockHint";
 import { PackageOptionPanel } from "./PackageOptionScope";
 import { cartOptions, defaultCartOptionIndex, optionItems, type PricedOption } from "./packageMeta";
@@ -32,11 +33,11 @@ function ProductName({ name, slug, productId }: { name: string; slug: string | n
   );
 }
 
-function ComposedLine({ line, categories }: { line: ComposedItem; categories: Map<string, Category> }) {
+function ComposedLine({ line, categories, index }: { line: ComposedItem; categories: Map<string, Category>; index: number }) {
   const schema = line.categoryId ? categories.get(line.categoryId)?.attributes : undefined;
   const specs = attributeRows(line.attributes ?? {}, schema).slice(0, MAX_SPECS);
   return (
-    <li className="flex gap-3 py-4 sm:gap-4">
+    <li style={staggerDelay(index, 50)} className="je-in flex gap-3 py-4 sm:gap-4">
       <QuantityChip quantity={line.quantity} />
       <div className="min-w-0 flex-1">
         <ProductName name={line.name} slug={line.slug} productId={line.productId} />
@@ -63,9 +64,9 @@ function ComposedLine({ line, categories }: { line: ComposedItem; categories: Ma
 }
 
 /** Deprecated package-level items (contract §4.3), shown only for a legacy option when an older API still sends them. */
-function LegacyLine({ line }: { line: PackageItem }) {
+function LegacyLine({ line, index }: { line: PackageItem; index: number }) {
   return (
-    <li className="flex gap-3 py-3 sm:gap-4">
+    <li style={staggerDelay(index, 50)} className="je-in flex gap-3 py-3 sm:gap-4">
       <QuantityChip quantity={line.quantity} />
       <div className="min-w-0 flex-1">
         <ProductName name={line.name} slug={line.slug} productId={line.productId} />
@@ -91,17 +92,17 @@ function OptionContents({ pkg, option, categories }: { pkg: Package; option: Pri
         <OptionStockHint inStock={option.inStock} />
       </div>
       {items.length > 0 ? (
-        <ul className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
-          {items.map((line) => (
-            <ComposedLine key={line.productId} line={line} categories={categories} />
+        <Reveal as="ul" stagger className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
+          {items.map((line, index) => (
+            <ComposedLine key={line.productId} line={line} categories={categories} index={index} />
           ))}
-        </ul>
+        </Reveal>
       ) : legacyItems.length > 0 ? (
-        <ul className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
-          {legacyItems.map((line) => (
-            <LegacyLine key={`${line.productId}-${line.note ?? ""}`} line={line} />
+        <Reveal as="ul" stagger className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
+          {legacyItems.map((line, index) => (
+            <LegacyLine key={`${line.productId}-${line.note ?? ""}`} line={line} index={index} />
           ))}
-        </ul>
+        </Reveal>
       ) : (
         <div className="mt-3">
           {option.kits && (
@@ -128,7 +129,9 @@ export type PackageIncludedProps = {
 
 /**
  * "What's included" body for the package page (Commerce v2 §4). Renders every buyable option's contents on the server
- * and shows the one selected in the PackageOptionPicker (the cheapest by default). Server component.
+ * and shows the one selected in the PackageOptionPicker (the cheapest by default). Rows rise in a stagger when the page
+ * opens, as they scroll into view, and again when another option is picked (a CSS animation restarts when its panel
+ * stops being hidden). Server component.
  */
 export default function PackageIncluded({ pkg, categories }: PackageIncludedProps) {
   const options = cartOptions(pkg);
