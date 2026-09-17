@@ -433,19 +433,21 @@
   animation: je-kenburns 8s ease-out both;
 }
 
-@keyframes je-progress {
+/* Hero slideshow: the active dot grows while its photo is on screen; the end of the animation advances the slideshow. */
+@keyframes je-dot-progress {
   from {
-    transform: scaleX(0);
+    transform: scale(0.35);
+    opacity: 0.6;
   }
   to {
-    transform: scaleX(1);
+    transform: scale(1);
+    opacity: 1;
   }
 }
-.je-progress {
-  transform-origin: left center;
-  animation: je-progress var(--slide-duration, 7s) linear both;
+.je-dot-progress {
+  animation: je-dot-progress var(--slide-duration, 7s) linear both;
 }
-[data-paused="true"] .je-progress,
+[data-paused="true"] .je-dot-progress,
 [data-paused="true"] .je-kenburns {
   animation-play-state: paused;
 }
@@ -464,27 +466,6 @@
 }
 .je-ping {
   animation: je-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-/* Scroll cue: a dot slides down a short line. */
-@keyframes je-scroll-dot {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-}
-.je-scroll-dot {
-  animation: je-scroll-dot 2s ease-in-out infinite;
 }
 
 /* Floating actions (§7.4) slide in from the right after the page settles. */
@@ -769,14 +750,10 @@
   }
   .je-line,
   .je-kenburns,
-  .je-progress,
+  .je-dot-progress,
   .je-ping,
   .je-fab-in {
     animation: none;
-  }
-  .je-scroll-dot {
-    animation: none;
-    opacity: 1;
   }
   .je-star,
   [data-reveal="hidden"] .je-star {

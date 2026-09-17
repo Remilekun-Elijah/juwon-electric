@@ -18,13 +18,13 @@ export type HeroSlideshowProps = {
 const indicatorFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
 
 /**
- * Hero background (§7.3): photos crossfade (opacity, 1 s) with a slow zoom on the visible one, and gold progress bars
- * at the bottom centre that also jump to a photo. Place it inside the hero `<section>` (it fills it).
+ * Hero background (§7.3): photos crossfade (opacity, 1 s) with a slow zoom on the visible one, and round gold dots at
+ * the bottom centre that also jump to a photo. Place it inside the hero `<section>` (it fills it).
  *
- * - The active bar's CSS fill animation drives autoplay: when it ends, the next photo shows. Pausing stops the
- *   animation, so timing always matches the bar. No timers and no scroll listeners.
+ * - The active dot's CSS grow animation drives autoplay: when it ends, the next photo shows. Pausing stops the
+ *   animation, so timing always matches the dot. No timers and no scroll listeners.
  * - Autoplay pauses while a mouse is over the hero, while focus is inside it, or after the pause button is pressed.
- * - Reduced motion: no autoplay and no zoom (the bars still switch photos; the active bar shows full).
+ * - Reduced motion: no autoplay and no zoom (the dots still switch photos; the active dot shows full).
  * - Without JavaScript the first photo shows on its own.
  */
 export default function HeroSlideshow({ slides: allSlides, interval = 7000 }: HeroSlideshowProps) {
@@ -103,14 +103,14 @@ export default function HeroSlideshow({ slides: allSlides, interval = 7000 }: He
                       onClick={() => show(index)}
                       aria-label={`Show photo ${index + 1} of ${slides.length}`}
                       aria-current={current ? "true" : undefined}
-                      className={cn("group flex h-8 w-9 items-center justify-center rounded-full sm:w-11", indicatorFocus)}
+                      className={cn("group flex h-8 w-7 items-center justify-center rounded-full", indicatorFocus)}
                     >
-                      <span className="block h-1 w-full overflow-hidden rounded-full bg-white/30 transition-colors group-hover:bg-white/50">
+                      <span className="block h-2.5 w-2.5 rounded-full bg-white/30 transition-colors group-hover:bg-white/50">
                         {current && (
                           <span
                             key={`${active}-${autoplay}`}
                             onAnimationEnd={autoplay ? next : undefined}
-                            className={cn("block h-full rounded-full bg-gold-400", autoplay && "je-progress")}
+                            className={cn("block h-full w-full rounded-full bg-gold-400", autoplay && "je-dot-progress")}
                           />
                         )}
                       </span>
