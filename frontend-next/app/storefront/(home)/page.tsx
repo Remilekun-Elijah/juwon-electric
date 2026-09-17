@@ -20,6 +20,7 @@ import Reviews from "@/components/storefront/landing/Reviews";
 import Solutions from "@/components/storefront/landing/Solutions";
 import StatsBand from "@/components/storefront/landing/StatsBand";
 import WhyChooseUs from "@/components/storefront/landing/WhyChooseUs";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { buildCategoryTree } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { caseStudies, segmentTitles } from "@/lib/storefront/content";
@@ -36,7 +37,7 @@ import {
   getStoreVacancies,
 } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeLink } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeLink } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -50,9 +51,9 @@ const HOME_CASE_STUDIES = 3;
 const POPULAR_PRODUCTS = 8;
 
 const seeAll = (href: string, label: string) => (
-  <Link href={href} className={cn(storeLink, "inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
+  <Link href={href} className={cn(storeLink, "group inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
     {label}
-    <ArrowRight aria-hidden="true" className="h-4 w-4" />
+    <ArrowRight aria-hidden="true" className={cn("h-4 w-4", storeArrowNudge)} />
   </Link>
 );
 
@@ -132,13 +133,13 @@ export default async function HomePage() {
 
       {popularProducts.length > 0 && (
         <Section tone="white" eyebrow="In stock" title="Popular products" actions={seeAll(storeRoutes.products, "Browse all products")}>
-          <ul className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          <Reveal as="ul" stagger className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-5">
             {popularProducts.map((product) => (
               <li key={product.id} className="min-w-0">
                 <HomeProductCard product={product} />
               </li>
             ))}
-          </ul>
+          </Reveal>
         </Section>
       )}
 

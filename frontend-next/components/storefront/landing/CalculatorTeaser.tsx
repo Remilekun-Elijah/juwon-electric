@@ -1,10 +1,11 @@
 import { useId } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Calculator, Sun, Zap } from "lucide-react";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeBody, storeCard, storeContainer, storeEyebrow, storeFadeUp, storeH2, storeSection } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeBody, storeCard, storeContainer, storeEyebrow, storeH2, storePress, storeSection } from "@/lib/storefront/styles";
 
 const outputs = [
   { icon: Zap, label: "Inverter size" },
@@ -18,7 +19,7 @@ export default function CalculatorTeaser() {
 
   return (
     <section aria-labelledby={headingId} className={storeSection}>
-      <div className={cn(storeContainer, storeFadeUp)}>
+      <Reveal className={storeContainer}>
         <div className={cn(storeCard, "grid gap-8 p-5 sm:p-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-center lg:p-10")}>
           <div className="min-w-0">
             <p className={storeEyebrow}>Size your system</p>
@@ -29,13 +30,13 @@ export default function CalculatorTeaser() {
               Tick the appliances you want to keep running during outages and see a suggested inverter, battery and panel
               size in a minute, with packages that fit.
             </p>
-            <Link href={storeRoutes.calculator} className={buttonClasses({ size: "lg", className: "mt-6 w-full sm:w-auto" })}>
+            <Link href={storeRoutes.calculator} className={buttonClasses({ size: "lg", className: cn("group mt-6 w-full sm:w-auto", storePress) })}>
               <Calculator aria-hidden="true" />
               Open the load calculator
-              <ArrowRight aria-hidden="true" />
+              <ArrowRight aria-hidden="true" className={storeArrowNudge} />
             </Link>
           </div>
-          <ul className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <Reveal as="ul" stagger delay={150} className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
             {outputs.map(({ icon: Icon, label }) => (
               <li key={label} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-brand-700 ring-1 ring-slate-200">
@@ -44,9 +45,9 @@ export default function CalculatorTeaser() {
                 <span className="text-sm font-medium text-slate-700">{label}</span>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

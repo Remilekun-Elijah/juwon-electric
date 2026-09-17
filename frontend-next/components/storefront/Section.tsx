@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { storeBody, storeContainer, storeEyebrow, storeFadeUp, storeH2, storeSection } from "@/lib/storefront/styles";
+import { storeBody, storeContainer, storeEyebrow, storeH2, storeSection } from "@/lib/storefront/styles";
+import Reveal from "./motion/Reveal";
 
 export type SectionProps = {
   /** Anchor id for in-page links. */
@@ -21,7 +22,8 @@ export type SectionProps = {
 
 /**
  * Page section: `py-14 sm:py-20`, max-w-7xl container, optional eyebrow, heading, description and actions.
- * The heading labels the `<section>` landmark. Server component.
+ * The heading labels the `<section>` landmark. The header reveals as it scrolls into view (TEAM_AND_MOTION_V1 §5.6);
+ * children animate themselves (usually a staggered `Reveal` list). Server component.
  */
 export default function Section({
   id,
@@ -44,9 +46,9 @@ export default function Section({
       aria-labelledby={title ? headingId : undefined}
       className={cn(storeSection, tone === "white" && "border-y border-slate-200 bg-white", className)}
     >
-      <div className={cn(storeContainer, storeFadeUp, containerClassName)}>
+      <div className={cn(storeContainer, containerClassName)}>
         {hasHeader && (
-          <div className="mb-8 flex flex-col gap-4 sm:mb-10 md:flex-row md:items-end md:justify-between">
+          <Reveal className="mb-8 flex flex-col gap-4 sm:mb-10 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
               {eyebrow && <p className={storeEyebrow}>{eyebrow}</p>}
               {title && (
@@ -57,7 +59,7 @@ export default function Section({
               {description && <p className={cn(storeBody, "mt-3 text-base leading-relaxed")}>{description}</p>}
             </div>
             {actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
-          </div>
+          </Reveal>
         )}
         {children}
       </div>

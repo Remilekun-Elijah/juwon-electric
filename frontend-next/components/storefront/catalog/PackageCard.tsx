@@ -6,7 +6,7 @@ import PriceTag from "@/components/storefront/PriceTag";
 import type { Package } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { packagePath } from "@/lib/packages";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storeFocus, storeHoverLift, storePress } from "@/lib/storefront/styles";
 import { defaultCartOptionIndex, hasSolarOption, includedProductCount, lowestPrice, packageRating, packageTypeLabel } from "./packageMeta";
 
 export type PackageCardProps = {
@@ -30,7 +30,7 @@ export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = 
   const label = `${pkg.name} ${pkg.kva}kVA ${packageTypeLabel(pkg).toLowerCase()}`;
 
   return (
-    <article className={cn(storeCard, "flex h-full flex-col", compact ? "p-4 sm:p-5" : "p-5 sm:p-6", className)}>
+    <article className={cn(storeCard, storeHoverLift, "flex h-full flex-col", compact ? "p-4 sm:p-5" : "p-5 sm:p-6", className)}>
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="brand">{packageTypeLabel(pkg)}</Badge>
         {solar && (
@@ -78,11 +78,11 @@ export default function PackageCard({ pkg, headingAs: Heading = "h3", compact = 
         <div className={cn("mt-4 flex flex-col gap-2", !compact && "sm:flex-row md:flex-col xl:flex-row")}>
           <Link
             href={packagePath(pkg)}
-            className={buttonClasses({ variant: "outline", size: "lg", className: cn("w-full", !compact && "sm:flex-1 md:flex-none xl:flex-1") })}
+            className={buttonClasses({ variant: "outline", size: "lg", className: cn("group w-full", !compact && "sm:flex-1 md:flex-none xl:flex-1", storePress) })}
           >
             View details
             <span className="sr-only">: {label}</span>
-            <ArrowRight aria-hidden="true" />
+            <ArrowRight aria-hidden="true" className={storeArrowNudge} />
           </Link>
           {!compact && <AddToCartButton pkg={pkg} optionIndex={defaultCartOptionIndex(pkg)} size="lg" className="w-full sm:flex-1 md:flex-none xl:flex-1" />}
         </div>

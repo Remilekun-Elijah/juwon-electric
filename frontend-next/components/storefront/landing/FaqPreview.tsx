@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
+import Reveal from "@/components/storefront/motion/Reveal";
 import type { Faq } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeLink } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeLink } from "@/lib/storefront/styles";
 import FaqList from "./FaqList";
 
 /** Questions shown on the home page. */
@@ -17,13 +18,13 @@ export default function FaqPreview({ faqs }: { faqs: Faq[] }) {
 
   return (
     <Section tone="white" eyebrow="FAQ" title="Questions customers ask">
-      <div className="mx-auto max-w-3xl">
+      <Reveal className="mx-auto max-w-3xl">
         <FaqList faqs={shown} />
-        <Link href={storeRoutes.faq} className={cn(storeLink, "mt-6 inline-flex min-h-11 items-center gap-1.5 md:min-h-0")}>
+        <Link href={storeRoutes.faq} className={cn(storeLink, "group mt-6 inline-flex min-h-11 items-center gap-1.5 md:min-h-0")}>
           See all questions
-          <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          <ArrowRight aria-hidden="true" className={cn("h-4 w-4", storeArrowNudge)} />
         </Link>
-      </div>
+      </Reveal>
     </Section>
   );
 }

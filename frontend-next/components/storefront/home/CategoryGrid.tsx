@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Cable, Lightbulb, Package, PlugZap, Sun, Zap } from "lucide-react";
+import Reveal from "@/components/storefront/motion/Reveal";
 import type { CategoryNode } from "@/lib/catalog";
 import { categoryPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storeFocus, storeHoverLift } from "@/lib/storefront/styles";
 
 /** An everyday icon that matches the category name. */
 function categoryIcon(name: string) {
@@ -22,7 +23,7 @@ const subcategoryLabel = (count: number) => (count === 1 ? "1 subcategory" : `${
 /** "Shop by category": top-level categories with their subcategory counts. Server component. */
 export default function CategoryGrid({ categories }: { categories: CategoryNode[] }) {
   return (
-    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <Reveal as="ul" stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {categories.map((category) => {
         const Icon = categoryIcon(category.name);
         const children = category.children.length;
@@ -30,7 +31,7 @@ export default function CategoryGrid({ categories }: { categories: CategoryNode[
           <li key={category.id} className="min-w-0">
             <Link
               href={categoryPath(category)}
-              className={cn(storeCard, "group flex h-full items-start gap-4 p-5 transition-shadow hover:shadow-elev-3", storeFocus)}
+              className={cn(storeCard, storeHoverLift, "group flex h-full items-start gap-4 p-5", storeFocus)}
             >
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
                 <Icon aria-hidden="true" className="h-5 w-5" />
@@ -41,11 +42,11 @@ export default function CategoryGrid({ categories }: { categories: CategoryNode[
                   {children > 0 ? subcategoryLabel(children) : category.description ? <span className="line-clamp-2">{category.description}</span> : "Browse products"}
                 </span>
               </span>
-              <ArrowRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform group-hover:text-brand-700 motion-safe:group-hover:translate-x-0.5" />
+              <ArrowRight aria-hidden="true" className={cn("mt-1 h-4 w-4 shrink-0 text-slate-400 group-hover:text-brand-700", storeArrowNudge)} />
             </Link>
           </li>
         );
       })}
-    </ul>
+    </Reveal>
   );
 }

@@ -2,11 +2,12 @@ import { useId } from "react";
 import Link from "next/link";
 import { MessageSquare, Phone } from "lucide-react";
 import BrandPanel from "@/components/storefront/BrandPanel";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { StoreSettings } from "@/lib/storefront/data";
 import { contactTopicPath, primaryPhone, storeRoutes, telHref } from "@/lib/storefront/routes";
-import { storeContainer, storeFadeUp, storeSection } from "@/lib/storefront/styles";
+import { storeContainer, storePress, storeSection } from "@/lib/storefront/styles";
 import BusinessDetails from "./BusinessDetails";
 
 export type ContactBandProps = {
@@ -33,7 +34,7 @@ export default function ContactBand({
 
   return (
     <section aria-labelledby={headingId} className={storeSection}>
-      <div className={cn(storeContainer, storeFadeUp)}>
+      <Reveal className={storeContainer}>
         <BrandPanel className="px-5 py-10 sm:px-10 sm:py-12 lg:px-14">
           <div className={cn("grid gap-10", showDetails && "lg:grid-cols-2 lg:items-center")}>
             <div className="max-w-2xl">
@@ -49,7 +50,7 @@ export default function ContactBand({
                     className={buttonClasses({
                       variant: "secondary",
                       size: "lg",
-                      className: "bg-white text-brand-800 hover:bg-brand-50 focus-visible:ring-white focus-visible:ring-offset-brand-800",
+                      className: cn("bg-white text-brand-800 hover:bg-brand-50 focus-visible:ring-white focus-visible:ring-offset-brand-800", storePress),
                     })}
                   >
                     <Phone aria-hidden="true" />
@@ -61,7 +62,7 @@ export default function ContactBand({
                   className={buttonClasses({
                     variant: "outline",
                     size: "lg",
-                    className: "border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white focus-visible:ring-white focus-visible:ring-offset-brand-800",
+                    className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white focus-visible:ring-white focus-visible:ring-offset-brand-800", storePress),
                   })}
                 >
                   <MessageSquare aria-hidden="true" />
@@ -76,7 +77,7 @@ export default function ContactBand({
             )}
           </div>
         </BrandPanel>
-      </div>
+      </Reveal>
     </section>
   );
 }

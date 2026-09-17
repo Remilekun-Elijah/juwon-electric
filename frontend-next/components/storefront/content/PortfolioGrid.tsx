@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, ExternalLink, MapPin, Zap } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { Badge } from "@/components/ui";
 import type { PortfolioItem } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { categoryLabel, hasCaseStudyDetails } from "@/lib/storefront/content";
 import { portfolioCategoryPath } from "@/lib/storefront/routes";
-import { storeCard, storeFocus, storeLink } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storeFocus, storeHoverLift, storeImageZoom, storeLink } from "@/lib/storefront/styles";
 import { isAllowedUrl } from "@/lib/validation";
 import ContentImage from "./ContentImage";
 
@@ -47,7 +48,7 @@ export default function PortfolioGrid({
   linkToCategory = false,
 }: PortfolioGridProps) {
   return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+    <Reveal as="ul" stagger className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
       {items.map((item, index) => {
         const link = (item.link || "").trim();
         const href = link && isAllowedUrl(link) ? link : "";
@@ -61,13 +62,13 @@ export default function PortfolioGrid({
 
         return (
           <li key={portfolioKey(item, index)} className="min-w-0">
-            <article className={cn(storeCard, "group relative flex h-full flex-col overflow-hidden")}>
+            <article className={cn(storeCard, storeHoverLift, "group relative flex h-full flex-col overflow-hidden")}>
               <ContentImage
                 src={item.image}
                 alt={item.name}
                 sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
                 className="aspect-[4/3]"
-                imageClassName="transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
+                imageClassName={storeImageZoom}
                 priority={index < priorityCount}
               />
               <div className="flex flex-1 flex-col p-4 sm:p-5">
@@ -125,10 +126,10 @@ export default function PortfolioGrid({
 
                 {similar && (
                   <div className="mt-auto pt-4">
-                    <Link href={portfolioCategoryPath(category)} className={cn(storeLink, "relative z-10 inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
+                    <Link href={portfolioCategoryPath(category)} className={cn(storeLink, "group/similar relative z-10 inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
                       See similar projects
                       <span className="sr-only">: {categoryLabel(category, categoryTitles)}</span>
-                      <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                      <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/similar:translate-x-0.5" />
                     </Link>
                   </div>
                 )}
@@ -137,6 +138,6 @@ export default function PortfolioGrid({
           </li>
         );
       })}
-    </ul>
+    </Reveal>
   );
 }

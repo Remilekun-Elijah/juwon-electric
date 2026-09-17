@@ -18,6 +18,8 @@ export type RevealProps = Omit<HTMLAttributes<HTMLElement>, "children"> & {
    * (capped at 8 steps); children further down wait until they are scrolled to.
    */
   stagger?: boolean;
+  /** Delay between staggered items in ms (default 60). Longer steps suit short sequences such as How it works. */
+  staggerStep?: number;
   children?: ReactNode;
 };
 
@@ -30,7 +32,7 @@ export type RevealProps = Omit<HTMLAttributes<HTMLElement>, "children"> & {
  * - One IntersectionObserver per instance, disconnected once everything has appeared. No scroll listeners.
  * - Reduced motion: nothing is hidden or animated.
  */
-export default function Reveal({ as: Component = "div", delay = 0, stagger = false, children, ...rest }: RevealProps) {
+export default function Reveal({ as: Component = "div", delay = 0, stagger = false, staggerStep = STAGGER_STEP_MS, children, ...rest }: RevealProps) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function Reveal({ as: Component = "div", delay = 0, stagger = fal
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
           const element = entry.target as HTMLElement;
-          const wait = delay + (stagger ? Math.min(step, STAGGER_CAP - 1) * STAGGER_STEP_MS : 0);
+          const wait = delay + (stagger ? Math.min(step, STAGGER_CAP - 1) * staggerStep : 0);
           element.style.setProperty("--reveal-delay", `${wait}ms`);
           element.dataset.reveal = "shown";
           observer.unobserve(element);
@@ -70,7 +72,7 @@ export default function Reveal({ as: Component = "div", delay = 0, stagger = fal
       // Anything still hidden (unmount or re-run) becomes visible immediately rather than staying invisible.
       for (const element of waiting) delete element.dataset.reveal;
     };
-  }, [delay, stagger]);
+  }, [delay, stagger, staggerStep]);
 
   return (
     <Component ref={ref} {...rest}>

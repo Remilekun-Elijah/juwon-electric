@@ -6,7 +6,7 @@ import type { CategoryAttribute, PublicProduct } from "@/lib/api/types";
 import { attributeRows, productPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeCard, storeFocus, storeHoverLift, storeImageZoom } from "@/lib/storefront/styles";
 import ProductImage from "./ProductImage";
 
 export type ProductCardProps = {
@@ -29,7 +29,8 @@ export default function ProductCard({ product, schema, headingAs: Heading = "h3"
     <article
       className={cn(
         storeCard,
-        "group relative flex h-full flex-col overflow-hidden transition-shadow focus-within:shadow-elev-2 hover:shadow-elev-2",
+        storeHoverLift,
+        "group relative flex h-full flex-col overflow-hidden",
         className
       )}
     >
@@ -38,7 +39,7 @@ export default function ProductCard({ product, schema, headingAs: Heading = "h3"
         alt=""
         sizes="(min-width: 1280px) 280px, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
         className="border-b border-slate-100"
-        imageClassName="transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
+        imageClassName={storeImageZoom}
       />
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         {(product.brand || product.category?.name) && (

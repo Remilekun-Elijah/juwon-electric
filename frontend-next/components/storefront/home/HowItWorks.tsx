@@ -1,4 +1,5 @@
 import { ClipboardCheck, Headphones, PhoneCall, Settings2, Truck, Wrench } from "lucide-react";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { cn } from "@/lib/cn";
 import { storeCard } from "@/lib/storefront/styles";
 
@@ -42,12 +43,16 @@ const stepsFor = (gatewayEnabled: boolean) => [
   },
 ];
 
-/** "How it works": six numbered steps (payment copy follows `settings.payments.gatewayEnabled`). Server component. */
+/**
+ * "How it works": six numbered steps (payment copy follows `settings.payments.gatewayEnabled`). Steps reveal one after
+ * another and the line along the top of each card draws across as it appears (TEAM_AND_MOTION_V1 §5.7). Server component.
+ */
 export default function HowItWorks({ gatewayEnabled }: { gatewayEnabled: boolean }) {
   return (
-    <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+    <Reveal as="ol" stagger staggerStep={120} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
       {stepsFor(gatewayEnabled).map(({ icon: Icon, title, text }, index) => (
-        <li key={title} className={cn(storeCard, "relative flex gap-4 p-5")}>
+        <li key={title} className={cn(storeCard, "relative flex gap-4 overflow-hidden p-5")}>
+          <span aria-hidden="true" className="je-draw absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-700 via-brand-500 to-brand-200" />
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
             <Icon aria-hidden="true" className="h-5 w-5" />
           </span>
@@ -58,6 +63,6 @@ export default function HowItWorks({ gatewayEnabled }: { gatewayEnabled: boolean
           </div>
         </li>
       ))}
-    </ol>
+    </Reveal>
   );
 }

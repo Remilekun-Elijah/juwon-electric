@@ -7,19 +7,19 @@ import type { PublicProduct } from "@/lib/api/types";
 import { productPath } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeCard, storeFocus, storeHoverLift, storeImageZoom } from "@/lib/storefront/styles";
 
 /** Compact product card for the home page: image, brand, name, price, stock and Add to cart when buyable. Server component. */
 export default function HomeProductCard({ product }: { product: PublicProduct }) {
   const cartProduct = toCartProduct(product);
   return (
-    <article className={cn(storeCard, "group relative flex h-full flex-col overflow-hidden transition-shadow hover:shadow-elev-3")}>
+    <article className={cn(storeCard, storeHoverLift, "group relative flex h-full flex-col overflow-hidden")}>
       <ContentImage
         src={product.images?.[0]}
         alt={product.name}
         sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
         className="aspect-square border-b border-slate-200 bg-white"
-        imageClassName="transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
+        imageClassName={storeImageZoom}
       />
       <div className="flex flex-1 flex-col p-4">
         {(product.brand || product.category?.name) && (

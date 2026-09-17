@@ -5,12 +5,13 @@ import Link from "next/link";
 import { ArrowRight, BatteryCharging, Package as PackageIcon, Sun, Zap } from "lucide-react";
 import { availablePackages, hasSolarOption, includedProducts, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import PriceTag from "@/components/storefront/PriceTag";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { Badge, TabPanel, Tabs, buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { PACKAGE_TABS, packagePath, packageTabIndex } from "@/lib/packages";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storeFocus, storeHoverLift, storePress } from "@/lib/storefront/styles";
 
 /**
  * Up to three packages for a type, spread from the cheapest to the most premium: all of them when there are three or
@@ -31,7 +32,7 @@ function FinderCard({ pkg }: { pkg: Package }) {
   const price = lowestPrice(pkg);
   const included = includedProducts(pkg, 3);
   return (
-    <article className={cn(storeCard, "group relative flex h-full flex-col p-5 transition-shadow hover:shadow-elev-3 sm:p-6")}>
+    <article className={cn(storeCard, storeHoverLift, "group relative flex h-full flex-col p-5 sm:p-6")}>
       <div className="flex items-start justify-between gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <PackageIcon aria-hidden="true" className="h-5 w-5" />
@@ -79,7 +80,7 @@ function FinderCard({ pkg }: { pkg: Package }) {
       )}
       <div className="mt-auto flex items-end justify-between gap-3 pt-5">
         <PriceTag amount={price} prefix="From" size="md" />
-        <ArrowRight aria-hidden="true" className="mb-1 h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:text-brand-700 motion-safe:group-hover:translate-x-0.5" />
+        <ArrowRight aria-hidden="true" className={cn("mb-1 h-5 w-5 shrink-0 text-slate-400 group-hover:text-brand-700", storeArrowNudge)} />
       </div>
     </article>
   );
@@ -118,15 +119,15 @@ export default function PackageFinder({ packages: allPackages }: { packages: Pac
       />
       {groups.map((group) => (
         <TabPanel key={group.value} id="package-finder" value={group.value} active={group.value === current.value} className="mt-6">
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Reveal as="ul" stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pickRange(group.packages).map((pkg) => (
               <li key={String(pkg.id)} className="min-w-0">
                 <FinderCard pkg={pkg} />
               </li>
             ))}
-          </ul>
+          </Reveal>
           <div className="mt-6">
-            <Link href={`${storeRoutes.packages}?type=${typeQuery[Number(group.value)]}`} className={buttonClasses({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}>
+            <Link href={`${storeRoutes.packages}?type=${typeQuery[Number(group.value)]}`} className={buttonClasses({ variant: "outline", size: "lg", className: cn("w-full sm:w-auto", storePress) })}>
               See all {group.packages.length} {group.label.toLowerCase()} packages
               <ArrowRight aria-hidden="true" />
             </Link>

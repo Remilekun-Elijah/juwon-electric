@@ -1,5 +1,6 @@
 import { BadgeCheck, ClipboardList, PhoneCall, Wrench } from "lucide-react";
 import Section from "@/components/storefront/Section";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { cn } from "@/lib/cn";
 import { storeCard } from "@/lib/storefront/styles";
 
@@ -39,7 +40,7 @@ export default function WhyChooseUs() {
       title="Why customers choose us"
       description="A simple, honest way to buy backup power for your home or business."
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+      <Reveal as="ul" stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
         {reasons.map(({ icon: Icon, title, text }) => (
           <li key={title} className={cn(storeCard, "flex gap-4 p-5 sm:flex-col sm:p-6")}>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
@@ -51,7 +52,7 @@ export default function WhyChooseUs() {
             </div>
           </li>
         ))}
-      </ul>
+      </Reveal>
     </Section>
   );
 }

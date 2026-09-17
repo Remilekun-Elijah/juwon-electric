@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, MessageSquare, Wallet } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
 import { formatPrice } from "@/lib/catalog";
@@ -9,7 +10,7 @@ import { cn } from "@/lib/cn";
 import { packagePath } from "@/lib/packages";
 import { type StoreFinancing, monthsLabel, workedExample } from "@/lib/storefront/financing";
 import { contactTopicPath, storeRoutes } from "@/lib/storefront/routes";
-import { storeCard } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storePress } from "@/lib/storefront/styles";
 
 export type FinancingProps = {
   financing: StoreFinancing;
@@ -41,7 +42,7 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
       description="Pay a deposit, get your system installed, and pay the balance in monthly instalments."
       actions={<SampleBadge show={financing.sample} />}
     >
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-6">
+      <Reveal stagger staggerStep={120} className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-6">
         <div className={cn(storeCard, "flex flex-col p-5 sm:p-6")}>
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
@@ -64,13 +65,13 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
           </table>
           {financing.note && <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-600">{financing.note}</p>}
           <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row">
-            <Link href={contactTopicPath("Financing")} className={buttonClasses({ size: "lg", className: "w-full sm:w-auto" })}>
+            <Link href={contactTopicPath("Financing")} className={buttonClasses({ size: "lg", className: cn("w-full sm:w-auto", storePress) })}>
               <MessageSquare aria-hidden="true" />
               Ask about financing
             </Link>
-            <Link href={storeRoutes.packages} className={buttonClasses({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}>
+            <Link href={storeRoutes.packages} className={buttonClasses({ variant: "outline", size: "lg", className: cn("group w-full sm:w-auto", storePress) })}>
               Shop packages
-              <ArrowRight aria-hidden="true" />
+              <ArrowRight aria-hidden="true" className={storeArrowNudge} />
             </Link>
           </div>
         </div>
@@ -134,7 +135,7 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
             </p>
           </div>
         )}
-      </div>
+      </Reveal>
     </Section>
   );
 }

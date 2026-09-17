@@ -1,6 +1,7 @@
 import { Quote, Star } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { Badge } from "@/components/ui";
 import type { Testimonial } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
@@ -40,7 +41,9 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
         absolutely positioned `sr-only` text inside the cards; without it that text escapes the scroll clip and widens
         the page (375 px scrollWidth was 1767).
       */}
-      <ul
+      <Reveal
+        as="ul"
+        stagger
         aria-label="Customer reviews"
         className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 lg:gap-5 [&::-webkit-scrollbar]:hidden"
       >
@@ -72,7 +75,7 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
             </li>
           );
         })}
-      </ul>
+      </Reveal>
     </Section>
   );
 }

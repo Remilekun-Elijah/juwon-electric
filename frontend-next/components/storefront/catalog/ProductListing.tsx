@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Package as PackageIcon, Search, SearchX } from "lucide-react";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { Button, EmptyState, SearchInput, buttonClasses } from "@/components/ui";
 import type { Category, Paged, PublicProduct } from "@/lib/api/types";
 import { totalPages } from "@/lib/catalog";
@@ -113,13 +114,13 @@ export default function ProductListing({ categories, category, result, q, page, 
 
         {items.length > 0 ? (
           <>
-            <ul className="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
+            <Reveal as="ul" stagger className="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
               {items.map((product) => (
                 <li key={product.id}>
                   <ProductCard product={product} schema={product.categoryId ? schemaById.get(product.categoryId) : undefined} />
                 </li>
               ))}
-            </ul>
+            </Reveal>
             <CatalogPagination page={page} pages={pages} hrefFor={hrefFor} className="mt-8 sm:mt-10" />
           </>
         ) : q ? (

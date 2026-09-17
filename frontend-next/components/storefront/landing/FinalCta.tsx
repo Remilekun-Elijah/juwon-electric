@@ -2,10 +2,11 @@ import { useId } from "react";
 import Link from "next/link";
 import { ArrowRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import BrandPanel from "@/components/storefront/BrandPanel";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { phoneNumbers, primaryPhone, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
-import { storeContainer, storeFadeUp, storeFocus, storeSection } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeContainer, storeFocus, storePress, storeSection } from "@/lib/storefront/styles";
 
 export type FinalCtaProps = {
   phone: string;
@@ -33,7 +34,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
 
   return (
     <section aria-labelledby={headingId} className={storeSection}>
-      <div className={cn(storeContainer, storeFadeUp)}>
+      <Reveal className={storeContainer}>
         <BrandPanel ring="bottom-left" className="px-5 py-10 text-center sm:px-10 sm:py-14 lg:px-14">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-100">Ready when you are</p>
           <h2 id={headingId} className="mx-auto mt-2 max-w-2xl text-2xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-4xl">
@@ -45,10 +46,10 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href={storeRoutes.packages}
-              className={buttonClasses({ variant: "secondary", size: "lg", className: cn("bg-white text-brand-800 hover:bg-brand-50", onBrand) })}
+              className={buttonClasses({ variant: "secondary", size: "lg", className: cn("group bg-white text-brand-800 hover:bg-brand-50", onBrand, storePress) })}
             >
               Shop packages
-              <ArrowRight aria-hidden="true" />
+              <ArrowRight aria-hidden="true" className={storeArrowNudge} />
             </Link>
             {mainPhone && (
               <a
@@ -56,7 +57,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
                 className={buttonClasses({
                   variant: "outline",
                   size: "lg",
-                  className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white", onBrand),
+                  className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white", onBrand, storePress),
                 })}
               >
                 <Phone aria-hidden="true" />
@@ -71,7 +72,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
                 className={buttonClasses({
                   variant: "outline",
                   size: "lg",
-                  className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white", onBrand),
+                  className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white", onBrand, storePress),
                 })}
               >
                 <MessageCircle aria-hidden="true" />
@@ -109,7 +110,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
             </p>
           )}
         </BrandPanel>
-      </div>
+      </Reveal>
     </section>
   );
 }
