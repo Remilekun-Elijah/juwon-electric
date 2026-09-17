@@ -4,6 +4,7 @@ import type { ChangeEvent } from "react";
 import { Field, Input, Select, Switch, Textarea } from "@/components/ui";
 import { LIMITS } from "@/lib/validation";
 import { packageTypeOptions, type ContentItem, type FieldErrors } from "./contentConstants";
+import { PackageOptionsEditor, type PackageOptionsState } from "./PackageOptionsEditor";
 
 const grid = "grid gap-4 sm:grid-cols-2";
 
@@ -13,23 +14,13 @@ export type ContentFormProps = {
   model: ContentItem;
   setModel: (model: ContentItem) => void;
   errors?: FieldErrors;
-  optionsText: string;
-  setOptionsText: (value: string) => void;
-  optionsError: string;
-  validateOptions: () => void;
+  /** Packages only: the price options editor state. */
+  packageOptions?: PackageOptionsState;
 };
 
 const text = (value: unknown) => (value === null || value === undefined ? "" : String(value));
 
-export function PackageForm({
-  model,
-  setModel,
-  optionsText,
-  setOptionsText,
-  optionsError,
-  validateOptions,
-  errors = {},
-}: ContentFormProps) {
+export function PackageForm({ model, setModel, packageOptions, errors = {} }: ContentFormProps) {
   const set = (key: keyof ContentItem) => (event: ControlEvent) => setModel({ ...model, [key]: event.target.value });
   return (
     <div className="space-y-5">
@@ -69,21 +60,7 @@ export function PackageForm({
       >
         <Textarea rows={3} value={text(model.load)} onChange={set("load")} maxLength={LIMITS.packageLoad} />
       </Field>
-      <Field
-        label="Price options (JSON)"
-        helper={`A list of 1 to ${LIMITS.packageOptions} options, each with a "name", a "price" above 0 and "kits" (required).`}
-        error={optionsError}
-        required
-      >
-        <Textarea
-          rows={10}
-          spellCheck={false}
-          className="font-mono text-xs leading-relaxed"
-          value={optionsText}
-          onChange={(event) => setOptionsText(event.target.value)}
-          onBlur={validateOptions}
-        />
-      </Field>
+      {packageOptions && <PackageOptionsEditor {...packageOptions} />}
       <Switch
         label="Show on the shop"
         description="Hidden packages stay here but aren’t listed for customers."

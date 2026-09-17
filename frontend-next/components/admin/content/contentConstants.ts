@@ -3,11 +3,11 @@
  * Ported from the Vite admin (`constants/adminConstants.js` and `components/ContentManager.jsx`); the server is the
  * source of truth for every rule (backend/docs/API.md).
  */
+import type { PackageOptionInput } from "@/lib/api/types";
+import type { PackageOptionRecord } from "@/lib/admin/packageOptions";
 import { LIMITS, validateUrlField } from "@/lib/validation";
 
 export type ContentType = "packages" | "services" | "portfolio";
-
-export type PackageOption = { name?: unknown; price?: unknown; kits?: unknown };
 
 /**
  * One editable catalog record. The three content types share one loose model (as the Vite form did), so the
@@ -25,7 +25,10 @@ export type ContentItem = {
   kva?: string | number;
   volt?: string | number | null;
   legacyId?: string | number | null;
-  options?: PackageOption[] | string;
+  /** Admin responses (composed or legacy options); edited through `PackageOptionsEditor`. */
+  options?: PackageOptionRecord[];
+  /** Deprecated top-level package items (Commerce v2 §1.1). Read only; never sent back. */
+  items?: unknown;
   // services
   title?: string;
   subtitle?: string;
@@ -52,10 +55,7 @@ export const emptyPackage: ContentItem = {
   load: "",
   kva: "",
   volt: "",
-  options: [
-    { name: "Without solar", price: "", kits: "" },
-    { name: "With solar", price: "", kits: "" },
-  ],
+  options: [],
   isActive: true,
 };
 
@@ -80,9 +80,6 @@ export const emptyPortfolio: ContentItem = {
 
 export const getTitle = (item: ContentItem) => item.name || item.title || "Untitled";
 export const capitalize = (value = "") => (value ? value.charAt(0).toUpperCase() + value.slice(1) : "");
-export const toOptionsText = (options: ContentItem["options"]) =>
-  typeof options === "string" ? options : JSON.stringify(options || [], null, 2);
-
 const formatNumber = (value: number) => new Intl.NumberFormat("en-NG").format(value);
 
 // Numeric fields accept a JSON number or a plain decimal string, as the API does (no signs, exponents or padding).
@@ -93,47 +90,6 @@ const toNumber = (value: unknown) => {
   return NaN;
 };
 const isBlank = (value: unknown) => value === undefined || value === null || String(value).trim() === "";
-
-const validateOption = (option: unknown, index: number) => {
-  const label = `Option ${index + 1}`;
-  if (!option || typeof option !== "object" || Array.isArray(option)) {
-    return `${label} must be an object with "name", "price" and "kits".`;
-  }
-  const { name, kits, price } = option as PackageOption;
-  if (name != null && typeof name !== "string") return `${label}: name must be text.`;
-  if (!String(name ?? "").trim()) return `${label}: name is required.`;
-  if (String(name).trim().length > LIMITS.optionName) {
-    return `${label}: name must be ${LIMITS.optionName} characters or fewer.`;
-  }
-  if (kits != null && typeof kits !== "string") return `${label}: kits must be text.`;
-  if (!String(kits ?? "").trim()) return `${label}: kits is required.`;
-  if (String(kits).trim().length > LIMITS.optionKits) {
-    return `${label}: kits must be ${LIMITS.optionKits} characters or fewer.`;
-  }
-  const amount = toNumber(price);
-  if (!(amount > 0) || amount > LIMITS.optionPriceMax) {
-    return `${label}: price must be a number greater than 0 and at most ${formatNumber(LIMITS.optionPriceMax)}.`;
-  }
-  return "";
-};
-
-export type OptionsResult = { error: string; value?: undefined } | { error?: undefined; value: PackageOption[] };
-
-export const parseOptions = (text: string): OptionsResult => {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    return { error: "This isn’t valid JSON. Check for missing quotes, commas or brackets." };
-  }
-  if (!Array.isArray(parsed)) return { error: "Enter a list of options inside square brackets [ ]." };
-  if (parsed.length === 0) return { error: "Add at least one price option." };
-  if (parsed.length > LIMITS.packageOptions) {
-    return { error: `A package can have up to ${LIMITS.packageOptions} options.` };
-  }
-  const optionError = parsed.map(validateOption).find(Boolean);
-  return optionError ? { error: optionError } : { value: parsed as PackageOption[] };
-};
 
 const textError = (value: unknown, max: number, label: string, { required = false } = {}) => {
   const text = String(value ?? "").trim();
@@ -159,10 +115,15 @@ const legacyIdError = (value: unknown) => {
     : `Shop id must be a whole number from 0 to ${formatNumber(LEGACY_ID_MAX)}.`;
 };
 
-/** Package payload in the shape the API validates: blank volt clears it, a blank shop id is left unchanged. */
-export const toPackagePayload = (model: ContentItem, options: PackageOption[]): ContentItem => {
+/**
+ * Package payload in the shape the API validates: blank volt clears it, a blank shop id is left unchanged. Options go
+ * in the stored shape and the deprecated top-level `items` is dropped (Commerce v2 §1.1).
+ */
+export const toPackagePayload = (model: ContentItem, options: PackageOptionInput[]) => {
   const trimmed = <V>(value: V) => (typeof value === "string" ? value.trim() : value);
-  const payload: ContentItem = { ...model, options, kva: trimmed(model.kva) };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { options: _responseOptions, items: _deprecatedItems, ...rest } = model;
+  const payload = { ...rest, options, kva: trimmed(model.kva) };
   payload.volt = isBlank(model.volt) ? null : trimmed(model.volt);
   if (isBlank(model.legacyId)) delete payload.legacyId;
   else payload.legacyId = Number(trimmed(model.legacyId));

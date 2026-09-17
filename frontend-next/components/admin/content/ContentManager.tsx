@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Images, Package, Pencil, Plus, SearchX, Trash2, Wrench, type LucideIcon } from "lucide-react";
 import {
@@ -27,8 +27,20 @@ import {
 } from "@/components/ui";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { ApiError, adminFetch, getServicesAdmin } from "@/lib/api/admin";
+import { ApiError, adminFetch, getProduct, getServicesAdmin, savePackage } from "@/lib/api/admin";
+import type { Product } from "@/lib/api/types";
 import { formatCurrency, matchesQuery, parseMoney } from "@/lib/admin/format";
+import {
+  draftProductIds,
+  hydrateDrafts,
+  placeServerOptionError,
+  toOptionDrafts,
+  toOptionInputs,
+  validateOptionDrafts,
+  type OptionDraft,
+  type OptionErrors,
+  type PackageOptionRecord,
+} from "@/lib/admin/packageOptions";
 import { PackageForm, PortfolioForm, ServiceForm, type ContentFormProps } from "./ContentForms";
 import {
   capitalize,
@@ -37,8 +49,6 @@ import {
   emptyService,
   getTitle,
   packageTypeOptions,
-  parseOptions,
-  toOptionsText,
   toPackagePayload,
   validateModel,
   type ContentItem,
@@ -110,19 +120,44 @@ const getPriceRange = (options: ContentItem["options"]) => {
 
 type CellsProps = { item: ContentItem };
 
+function OptionPriceBadge({ option }: { option: PackageOptionRecord }) {
+  if (option.available === false) return <Badge tone="danger">Unavailable</Badge>;
+  return option.composed ? <Badge tone="info">Composed</Badge> : <Badge tone="neutral">Manual price</Badge>;
+}
+
+/** Each option's public price with how it's priced (Commerce v2 §3). */
+function PackageOptionPrices({ options }: { options: ContentItem["options"] }) {
+  const list = Array.isArray(options) ? options : [];
+  if (!list.length) return <>—</>;
+  return (
+    <ul className="space-y-1.5">
+      {list.map((option, index) => (
+        <li key={`${option.name ?? ""}-${index}`} className="flex items-center gap-2 whitespace-nowrap">
+          <span className="max-w-[120px] truncate text-slate-500">{option.name || `Option ${index + 1}`}</span>
+          <span className="font-medium tabular-nums text-slate-900">{formatCurrency(parseMoney(option.price))}</span>
+          <OptionPriceBadge option={option} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function PackageCells({ item }: CellsProps) {
   return (
     <>
       <TD className="max-w-[280px]">
         <p className="truncate font-medium text-slate-900">{getTitle(item)}</p>
         <p className="truncate text-sm text-slate-500">{item.load}</p>
+        <p className="truncate text-xs tabular-nums text-slate-500 lg:hidden">{getPriceRange(item.options)}</p>
       </TD>
       <TD className="hidden whitespace-nowrap md:table-cell">{capitalize(item.type)}</TD>
       <TD className="hidden whitespace-nowrap tabular-nums sm:table-cell">
         {item.kva ? `${item.kva} kVA` : "—"}
         {item.volt ? <span className="text-slate-400"> · {item.volt} V</span> : null}
       </TD>
-      <TD className="hidden whitespace-nowrap tabular-nums lg:table-cell">{getPriceRange(item.options)}</TD>
+      <TD className="hidden lg:table-cell">
+        <PackageOptionPrices options={item.options} />
+      </TD>
     </>
   );
 }
@@ -179,7 +214,7 @@ const columns: Record<ContentType, { Cells: (props: CellsProps) => ReactNode; he
       { label: "Package" },
       { label: "Battery type", className: "hidden md:table-cell" },
       { label: "Size", className: "hidden sm:table-cell" },
-      { label: "Price", className: "hidden lg:table-cell" },
+      { label: "Options and prices", className: "hidden lg:table-cell" },
     ],
   },
   services: {
@@ -220,8 +255,11 @@ export function ContentManager({ type, children }: ContentManagerProps) {
   const [model, setModel] = useState<ContentItem>(initial);
   const [editingId, setEditingId] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [optionsText, setOptionsText] = useState(toOptionsText(initial.options));
+  const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>(() => toOptionDrafts(initial.options));
+  const [optionErrors, setOptionErrors] = useState<Record<string, OptionErrors>>({});
   const [optionsError, setOptionsError] = useState("");
+  const [checkingProducts, setCheckingProducts] = useState(false);
+  const productsRequest = useRef(0);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -258,11 +296,34 @@ export function ContentManager({ type, children }: ContentManagerProps) {
   const filtersActive = Boolean(query.trim()) || packageTypeFilter !== "all" || statusFilter !== "all";
   const colSpan = headers.length + 2;
 
+  const resetOptions = (drafts: OptionDraft[]) => {
+    productsRequest.current += 1;
+    setOptionDrafts(drafts);
+    setOptionErrors({});
+    setOptionsError("");
+    setCheckingProducts(false);
+  };
+
+  /** Loads current price, stock and status for the products in an existing package's options. */
+  const loadOptionProducts = async (drafts: OptionDraft[]) => {
+    const ids = draftProductIds(drafts);
+    if (!ids.length) return;
+    const request = productsRequest.current;
+    setCheckingProducts(true);
+    const results = await Promise.allSettled(ids.map((productId) => getProduct(productId)));
+    if (request !== productsRequest.current) return;
+    const products = new Map<string, Product>();
+    results.forEach((result) => {
+      if (result.status === "fulfilled" && result.value) products.set(result.value.id, result.value);
+    });
+    setOptionDrafts((current) => hydrateDrafts(current, products));
+    setCheckingProducts(false);
+  };
+
   const resetEditor = () => {
     setEditingId("");
     setModel(initial);
-    setOptionsText(toOptionsText(initial.options));
-    setOptionsError("");
+    resetOptions(toOptionDrafts(initial.options));
     setFormError("");
     setFieldErrors({});
   };
@@ -275,8 +336,11 @@ export function ContentManager({ type, children }: ContentManagerProps) {
   const edit = (item: ContentItem) => {
     setEditingId(item.id ?? "");
     setModel({ ...initial, ...item });
-    setOptionsText(toOptionsText(item.options ?? initial.options));
-    setOptionsError("");
+    if (type === "packages") {
+      const drafts = toOptionDrafts(item.options);
+      resetOptions(drafts);
+      void loadOptionProducts(drafts);
+    }
     setFormError("");
     setFieldErrors({});
     setDrawerOpen(true);
@@ -287,37 +351,42 @@ export function ContentManager({ type, children }: ContentManagerProps) {
     setDrawerOpen(false);
   };
 
-  const validateOptions = () => {
-    const result = parseOptions(optionsText);
-    setOptionsError(result.error || "");
-    return result;
-  };
-
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    let payload = model;
+    if (saving) return;
     const errors = validateModel(type, model);
     setFieldErrors(errors);
-    const optionsResult = type === "packages" ? validateOptions() : null;
-    if (Object.keys(errors).length || optionsResult?.error) {
-      setFormError("");
+    const packages = type === "packages";
+    const optionCheck = packages ? validateOptionDrafts(optionDrafts) : { errors: {}, general: "" };
+    setOptionErrors(optionCheck.errors);
+    setOptionsError(optionCheck.general);
+    const optionsInvalid = Boolean(optionCheck.general) || Object.keys(optionCheck.errors).length > 0;
+    if (Object.keys(errors).length || optionsInvalid) {
+      setFormError(optionsInvalid ? "Check the price options below." : "");
       return;
     }
-    if (optionsResult?.value) payload = toPackagePayload(model, optionsResult.value);
 
     setSaving(true);
     setFormError("");
     try {
-      const response = await adminFetch<ContentItem>(`/${type}${editingId ? `/${encodeURIComponent(editingId)}` : ""}`, {
-        method: editingId ? "PUT" : "POST",
-        body: payload,
-      });
+      const response = packages
+        ? await savePackage<ContentItem>(editingId || null, toPackagePayload(model, toOptionInputs(optionDrafts)))
+        : await adminFetch<ContentItem>(`/${type}${editingId ? `/${encodeURIComponent(editingId)}` : ""}`, {
+            method: editingId ? "PUT" : "POST",
+            body: model,
+          });
       toast.success(response.message || (editingId ? `${capitalize(singular)} updated` : `${capitalize(singular)} added`));
       setDrawerOpen(false);
       list.reload();
     } catch (error) {
       if (isForbidden(error)) toast.error(errorText(error));
-      setFormError(errorText(error));
+      const placed =
+        packages && error instanceof ApiError && error.status === 400
+          ? placeServerOptionError(error.message, optionDrafts)
+          : null;
+      if (placed?.rowId) setOptionErrors({ [placed.rowId]: placed.errors });
+      else if (placed?.general) setOptionsError(placed.general);
+      setFormError(placed ? "Check the price options below." : errorText(error));
     } finally {
       setSaving(false);
     }
@@ -566,11 +635,18 @@ export function ContentManager({ type, children }: ContentManagerProps) {
           <Form
             model={model}
             setModel={setModel}
-            optionsText={optionsText}
-            setOptionsText={setOptionsText}
-            optionsError={optionsError}
-            validateOptions={validateOptions}
             errors={fieldErrors}
+            packageOptions={
+              type === "packages"
+                ? {
+                    drafts: optionDrafts,
+                    setDrafts: setOptionDrafts,
+                    errors: optionErrors,
+                    generalError: optionsError,
+                    checkingProducts,
+                  }
+                : undefined
+            }
           />
         </form>
       </Drawer>
