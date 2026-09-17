@@ -1,5 +1,6 @@
-import type { OrderItem } from "@/lib/api/types";
+import type { OrderItem, ProductOrderItem } from "@/lib/api/types";
 import { getAmount } from "@/lib/format";
+import type { ProductCartItem } from "./productStore";
 import { isWithSolar, type CartItem } from "./store";
 
 /**
@@ -32,3 +33,10 @@ export const cartItemBaseLabel = (item: Pick<CartItem, "type" | "kva">) =>
 
 /** Short label for a checkout summary line, matching the cart page wording. */
 export const cartItemLabel = (item: CartItem) => `${cartItemBaseLabel(item)}${isWithSolar(item) ? " (with solar)" : ""}`;
+
+/** Commerce v3 §3.1: a product line as sent to POST /cart/quote and POST /order, after the package items. */
+export const toProductOrderItem = (item: Pick<ProductCartItem, "productId" | "quantity">): ProductOrderItem => ({
+  type: "product",
+  productId: item.productId,
+  quantity: item.quantity,
+});

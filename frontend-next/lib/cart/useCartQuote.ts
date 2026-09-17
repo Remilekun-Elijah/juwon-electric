@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
 import { ApiError, type ApiEnvelope } from "@/lib/api/client";
 import { quoteCart } from "@/lib/api/public";
-import type { CartQuote, OrderItem } from "@/lib/api/types";
-import { toOrderItem } from "./orderItems";
+import type { CartQuote, CartRequestItem } from "@/lib/api/types";
+import { toOrderItem, toProductOrderItem } from "./orderItems";
+import { applyProductQuotePrices, getProductCartKey, type ProductCartItem } from "./productStore";
 import { applyQuotePrices, getCartItemKey, type CartItem } from "./store";
 
 // Server-side prices for the checkout (POST /cart/quote). Port of frontend/src/pages/Checkout/useCartQuote.js.
@@ -65,7 +66,7 @@ type Budget = { left: number };
 
 /** Quotes `items`; on an "unavailable" 400 splits the list to find the lines that can't be priced. */
 export const quoteItems = async (
-  items: OrderItem[],
+  items: CartRequestItem[],
   { signal, budget }: { signal: AbortSignal; budget: Budget }
 ): Promise<{ lines: QuoteLine[]; total: number }> => {
   if (budget.left <= 0) throw new Error("Quote request budget exhausted");
@@ -88,38 +89,56 @@ export const quoteItems = async (
 };
 
 // Fields that affect pricing; the stored price is excluded so applying a quote doesn't re-trigger it.
-const quoteSignature = (cart: CartItem[]) =>
-  JSON.stringify(
-    cart.map((item) => {
+// Product lines (Commerce v3) are appended only when present, so a package-only signature is unchanged.
+const quoteSignature = (cart: CartItem[], products: ProductCartItem[]) =>
+  JSON.stringify([
+    ...cart.map((item) => {
       const { price, ...fields } = toOrderItem(item);
       void price;
       return [getCartItemKey(item), fields];
-    })
-  );
+    }),
+    ...products.map((item) => [getProductCartKey(item.productId), toProductOrderItem(item)]),
+  ]);
+
+const NO_PRODUCTS: ProductCartItem[] = [];
 
 export type QuoteStatus = "idle" | "loading" | "ok" | "fallback";
 
 type Settled = { key: string; status: "ok" | "fallback"; lines: Record<string, QuoteLine>; total: number | null };
 
 /**
- * useCartQuote({ open, cart }) → { status, lines, total, unavailableKeys, blocked, refresh }
+ * useCartQuote({ open, cart, products? }) → { status, lines, total, unavailableKeys, blocked, refresh }
+ * - products: catalogue product lines (Commerce v3), quoted after the package items; omit for a package-only cart,
+ *   which then sends exactly the same request as before
  * - status: "idle" | "loading" | "ok" | "fallback"
- * - lines: { [cartKey]: { available, price, lineTotal } } (only when status is "ok")
+ * - lines: { [cartKey]: { available, price, lineTotal } } (only when status is "ok"); product lines are keyed by
+ *   `getProductCartKey(productId)`
  * - blocked: true while quoting or when some lines can't be priced
  * The loading/idle states are derived from the request key, so the effect only sets state from async callbacks.
  */
-export function useCartQuote({ open, cart }: { open: boolean; cart: CartItem[] }) {
+export function useCartQuote({
+  open,
+  cart,
+  products = NO_PRODUCTS,
+}: {
+  open: boolean;
+  cart: CartItem[];
+  products?: ProductCartItem[];
+}) {
   const [settled, setSettled] = useState<Settled | null>(null);
   const [nonce, setNonce] = useState(0);
 
-  const signature = useMemo(() => quoteSignature(cart), [cart]);
-  const hasItems = cart.length > 0;
+  const signature = useMemo(() => quoteSignature(cart, products), [cart, products]);
+  const hasItems = cart.length + products.length > 0;
   const active = open && hasItems;
   const key = `${signature}#${nonce}`;
 
   const startQuote = useEffectEvent((requestKey: string, signal: AbortSignal) => {
-    const keys = cart.map(getCartItemKey);
-    return quoteItems(cart.map(toOrderItem), { signal, budget: { left: MAX_QUOTE_REQUESTS } })
+    const packageCount = cart.length;
+    const keys = [...cart.map(getCartItemKey), ...products.map((item) => getProductCartKey(item.productId))];
+    // Package items first (unchanged mapping), then product items; quote lines map back by index.
+    const items: CartRequestItem[] = [...cart.map(toOrderItem), ...products.map(toProductOrderItem)];
+    return quoteItems(items, { signal, budget: { left: MAX_QUOTE_REQUESTS } })
       .then(({ lines, total }) => {
         const byKey: Record<string, QuoteLine> = {};
         lines.forEach((line, index) => {
@@ -127,8 +146,18 @@ export function useCartQuote({ open, cart }: { open: boolean; cart: CartItem[] }
         });
         setSettled({ key: requestKey, status: "ok", lines: byKey, total });
         applyQuotePrices(
-          lines.flatMap((line, index) => (line.available ? [{ cartKey: keys[index], price: line.price }] : []))
+          lines
+            .slice(0, packageCount)
+            .flatMap((line, index) => (line.available ? [{ cartKey: keys[index], price: line.price }] : []))
         );
+        const productLines = lines.slice(packageCount);
+        if (productLines.length) {
+          applyProductQuotePrices(
+            productLines.flatMap((line, index) =>
+              line.available && products[index] ? [{ productId: products[index].productId, price: line.price }] : []
+            )
+          );
+        }
       })
       .catch(() => {
         if (!signal.aborted) setSettled({ key: requestKey, status: "fallback", lines: {}, total: null });

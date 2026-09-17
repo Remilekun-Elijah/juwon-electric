@@ -6,9 +6,9 @@
 import { apiRequest, getPublicData, type ApiRequestInit } from "./client";
 import type {
   CartQuote,
+  CartRequestItem,
   Category,
   ContactPayload,
-  OrderItem,
   OrderPayload,
   Package,
   Paged,
@@ -30,6 +30,15 @@ const post = <T>(path: string, body: unknown, init: ApiRequestInit = {}) =>
 /* ---------- Packages, services, portfolio ---------- */
 
 export const getPackages = (init?: ApiRequestInit) => getPublicData<Package[]>("/packages", undefined, init);
+
+export type PackageQuery = { category?: string };
+
+/**
+ * `GET /packages?category=<id|slug>` (Commerce v3 §4): packages in a catalogue category or its descendants; an unknown
+ * category gives `[]`. Kept apart from `getPackages(init)` so existing callers keep their signature.
+ */
+export const getPackagesInCategory = ({ category }: PackageQuery, init?: ApiRequestInit) =>
+  getPublicData<Package[]>("/packages", { category: category || undefined }, init);
 
 /** `GET /packages/:id` (the backend also resolves slug and legacy id, but slugs repeat, so use `id`). */
 export const getPackage = (id: string | number, init?: ApiRequestInit) =>
@@ -79,7 +88,7 @@ export const getPublicSettings = (init?: ApiRequestInit) =>
 /* ---------- Mutations (client-side) ---------- */
 
 /** `POST /cart/quote` with the same item fields as `placeOrder`. */
-export const quoteCart = (items: OrderItem[], init?: ApiRequestInit) => post<CartQuote>("/cart/quote", { items }, init);
+export const quoteCart = (items: CartRequestItem[], init?: ApiRequestInit) => post<CartQuote>("/cart/quote", { items }, init);
 
 /** `POST /cart` (abandoned-cart capture; unused by the Vite site). Turnstile action "cart". */
 export const saveCart = (payload: SaveCartPayload, init?: ApiRequestInit) => post<unknown>("/cart", payload, init);

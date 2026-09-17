@@ -102,6 +102,9 @@ export function useCart() {
   return useSyncExternalStore(subscribe, read, getServerSnapshot);
 }
 
+/** Current package lines outside React (the product store uses it for the shared line limit). */
+export const getCartItems = (): CartItem[] => read();
+
 /** Sum of price × quantity (Vite `getTotal`). */
 export const getCartTotal = (items: CartItem[]) =>
   items.reduce((sum, item) => sum + Number(item?.price) * Number(item?.quantity), 0);
