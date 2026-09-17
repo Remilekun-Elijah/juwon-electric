@@ -32,6 +32,11 @@
   --color-gold-500: #c9ad1f;
   --color-gold-600: #a48c16;
 
+  /* WhatsApp brand colours, used only for links that open WhatsApp. */
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #1da851;
+  --color-whatsapp-deep: #075e54;
+
   /* Original Juwon colours (keep; used across the public site). */
   --color-navbar_color: #94161b;
   --color-header_color: #004449;

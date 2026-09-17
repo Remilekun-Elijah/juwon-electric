@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { MessageCircle } from "lucide-react";
+import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
 import { cn } from "@/lib/cn";
 import { enterDelay } from "@/lib/storefront/styles";
 import { isActivePath, publicPathname, storeRoutes, whatsappHref } from "@/lib/storefront/routes";
@@ -24,8 +24,9 @@ const pillBase = cn(
 const iconCircle = "flex h-10 w-10 shrink-0 items-center justify-center rounded-full";
 
 /**
- * Floating action (TEAM_AND_MOTION_V1 §7.4), bottom right above the safe area: "Chat on WhatsApp" (brand, when a
- * number is set). No online status or badges. The load calculator moved to the header button (2026-09-17).
+ * Floating action (TEAM_AND_MOTION_V1 §7.4), bottom right above the safe area: "Chat on WhatsApp" in WhatsApp green
+ * with the WhatsApp mark on a white circle (2026-09-18; was a brand-red pill with a generic chat bubble), when a number
+ * is set. No online status or badges. The load calculator moved to the header button (2026-09-17).
  *
  * - The pill slides in from the right about 1.2 s after load (CSS; none under reduced motion).
  * - On phones it is a 56 px circle with an accessible name; from `sm` it shows a label and sub-label.
@@ -81,14 +82,14 @@ export default function FloatingActions({ whatsappNumber }: FloatingActionsProps
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Chat with Juwon Electric on WhatsApp (opens in a new tab)"
-            className={cn(pillBase, "bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500", faded)}
+            className={cn(pillBase, "bg-whatsapp text-whatsapp-deep hover:bg-whatsapp-dark focus-visible:ring-whatsapp-deep", faded)}
           >
-            <span className={cn(iconCircle, "bg-brand-900 text-white")}>
-              <MessageCircle aria-hidden="true" className="h-5 w-5" />
+            <span className={cn(iconCircle, "bg-white text-whatsapp")}>
+              <WhatsAppIcon className="h-5 w-5" />
             </span>
             <span aria-hidden="true" className="hidden text-left sm:block">
               <span className="block text-sm font-semibold leading-tight">Chat on WhatsApp</span>
-              <span className="block text-xs leading-tight text-brand-100">We reply during business hours</span>
+              <span className="block text-xs leading-tight text-whatsapp-deep/80">We reply during business hours</span>
             </span>
           </a>
         </div>
