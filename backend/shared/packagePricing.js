@@ -145,8 +145,15 @@ export const publicOption = ({ productsTotal: _total, priceAdjustment: _adjustme
   items: items.map(({ unitPrice: _unitPrice, lineTotal: _lineTotal, ...item }) => item),
 });
 
+/** `{ id, slug, name }` of the package's category (COMMERCE_V3 §4); null when unset, unknown or, publicly, inactive. */
+export const packageCategoryRef = (pack, categoriesById = new Map(), { activeOnly = false } = {}) => {
+  const category = pack?.categoryId ? categoriesById.get(pack.categoryId) : null;
+  if (!category || (activeOnly && category.isActive === false)) return null;
+  return { id: category.id, slug: category.slug, name: category.name };
+};
+
 /** GET /packages and /packages/:id. Top-level `items` is no longer returned. */
-export const serializePublicPackage = (pack, productsById) => ({
+export const serializePublicPackage = (pack, productsById, categoriesById = new Map()) => ({
   id: pack.legacyId ?? pack.id,
   _id: pack.id,
   slug: pack.slug,
@@ -157,13 +164,23 @@ export const serializePublicPackage = (pack, productsById) => ({
   kva: pack.kva,
   volt: pack.volt,
   options: composeOptions(pack, productsById).map(publicOption),
+  categoryId: pack.categoryId ?? null,
+  categoryRef: packageCategoryRef(pack, categoriesById, { activeOnly: true }),
 });
 
 /** GET /admin/packages and admin write responses: the stored record with computed options. */
-export const serializeAdminPackage = (pack, productsById) => {
+export const serializeAdminPackage = (pack, productsById, categoriesById = new Map()) => {
   const { items: _items, ...rest } = pack;
-  return { ...rest, options: composeOptions(pack, productsById) };
+  return {
+    ...rest,
+    options: composeOptions(pack, productsById),
+    categoryId: pack.categoryId ?? null,
+    categoryRef: packageCategoryRef(pack, categoriesById),
+  };
 };
+
+/** True when some package references a category (so categories must be loaded to serialize). */
+export const packagesNeedCategories = (packages) => packages.some((pack) => Boolean(pack?.categoryId));
 
 /** Order line snapshot fields for a priced (composed) option: components per 1 package. */
 export const packageLineSnapshot = (option) => ({

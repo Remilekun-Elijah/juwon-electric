@@ -59,7 +59,7 @@ export const runCatalogScenario = async (client) => {
 
   await expect("delete category", "DELETE", `/admin/categories/${duplicate.id}`, {}, 200, "Category deleted.");
   await expect("delete again", "DELETE", `/admin/categories/${duplicate.id}`, {}, 404, "Category not found.");
-  await expect("delete category with subcategories", "DELETE", `/admin/categories/${root.id}`, {}, 409, "Category has subcategories or products.");
+  await expect("delete category with subcategories", "DELETE", `/admin/categories/${root.id}`, {}, 409, "Category has subcategories, products or packages.");
 
   // ---- products -------------------------------------------------------------------------
   const productBody = {
@@ -209,7 +209,7 @@ export const runCatalogScenario = async (client) => {
     { productId: battery.id, quantity: 2, note: "Tubular", name: "200Ah Battery", slug: battery.slug, sku: "BAT-200AH", brand: null, categoryId: root.id, attributes: {} },
   ]);
   const publicPlain = (await expect("public package without items", "GET", `/packages/${plain.id}`, { token: null }, 200)).body.data;
-  assert.deepEqual(Object.keys(publicPlain).sort(), ["_id", "category", "id", "kva", "load", "name", "options", "slug", "type", "volt"]);
+  assert.deepEqual(Object.keys(publicPlain).sort(), ["_id", "category", "categoryId", "categoryRef", "id", "kva", "load", "name", "options", "slug", "type", "volt"]);
   assert.deepEqual(publicPlain.options, [{ name: "Without solar", composed: false, price: 1200000, available: true, inStock: true, kits: "2 batteries", items: [] }]);
 
   await expect("product used by a package", "DELETE", `/admin/products/${battery.id}`, {}, 409, "Product is used by a package.");

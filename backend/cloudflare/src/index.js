@@ -93,10 +93,13 @@ import { notify } from "./notifications.js";
 import { newOrderNotification } from "../../shared/notifications.js";
 import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
 import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
+import { assertCategoryExists, packagesInCategory } from "../../shared/catalog.js";
+import { idRef } from "../../shared/fields.js";
 import {
   assertOptionProducts,
   packageLineSnapshot,
   packageOptionsPayload,
+  packagesNeedCategories,
   packagesNeedProducts,
   serializeAdminPackage,
   serializePublicPackage,
@@ -190,6 +193,8 @@ const packagePayload = async (env, body, existing = null) => {
   if (!(kva > 0)) badRequest("kVA must be greater than 0.");
   const category = stringField(body, "category", { label: "Category", max: LIMITS.packageType });
   const legacyId = legacyIdField(body);
+  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update.
+  const categoryId = idRef(body, "categoryId", { label: "Category" });
   const load = stringField(body, "load", { label: "Load", required: true, max: LIMITS.packageLoad, multiline: true });
   const volt = numericField(body, "volt", { label: "Volt", maxLength: LIMITS.packageVolt });
   if (volt !== undefined && !(volt > 0)) badRequest("Volt must be greater than 0.");
@@ -198,6 +203,7 @@ const packagePayload = async (env, body, existing = null) => {
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   slugField(body);
+  if (categoryId) assertCategoryExists(await listCollection(env, "categories", { includeInactive: true }), categoryId);
   if (packagesNeedProducts([{ options }])) assertOptionProducts(options, await allProductsById(env));
 
   await assertLegacyIdUnique(env, legacyId, existing?.id);
@@ -206,6 +212,7 @@ const packagePayload = async (env, body, existing = null) => {
     type,
     // Blank optional text is not written on update.
     category: category || (existing ? undefined : type),
+    categoryId: existing ? categoryId : categoryId ?? null,
     name,
     slug: await slugPatch(env, "packages", body, existing, `${name}-${type}-${kva}`),
     load,
@@ -226,9 +233,15 @@ const allProductsById = async (env) =>
 // Products by id when any of the packages has a composed option (prices are computed on read).
 const productsForPackages = async (env, packages) => (packagesNeedProducts(packages) ? allProductsById(env) : new Map());
 
+// Categories by id when any of the packages references one (for `categoryRef`, COMMERCE_V3 §4).
+const categoriesForPackages = async (env, packages) =>
+  packagesNeedCategories(packages)
+    ? new Map((await listCollection(env, "categories", { includeInactive: true })).map((category) => [category.id, category]))
+    : new Map();
+
 const serializeAdminPackages = async (env, packages) => {
-  const products = await productsForPackages(env, packages);
-  return packages.map((pack) => serializeAdminPackage(pack, products));
+  const [products, categories] = await Promise.all([productsForPackages(env, packages), categoriesForPackages(env, packages)]);
+  return packages.map((pack) => serializeAdminPackage(pack, products, categories));
 };
 
 const contentPayload = async (env, body, existing, kind) => {
@@ -821,16 +834,23 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
   if (vacancyResponse) return vacancyResponse;
 
   if (request.method === "GET" && path === "/packages") {
-    const packages = await listCollection(env, "packages");
-    const products = await productsForPackages(env, packages);
-    return ok("Packages retrieved.", packages.map((pack) => serializePublicPackage(pack, products)));
+    const active = await listCollection(env, "packages");
+    // ?category=<id|slug>: packages in that category or its descendants (COMMERCE_V3 §4).
+    const query = Object.fromEntries(url.searchParams);
+    const packages =
+      query.category !== undefined
+        ? packagesInCategory(active, await listCollection(env, "categories", { includeInactive: true }), query)
+        : active;
+    const [products, categories] = await Promise.all([productsForPackages(env, packages), categoriesForPackages(env, packages)]);
+    return ok("Packages retrieved.", packages.map((pack) => serializePublicPackage(pack, products, categories)));
   }
 
   const packageId = request.method === "GET" ? idAfter(path, "/packages") : null;
   if (packageId) {
     const item = await getCollectionItem(env, "packages", packageId);
     if (item.isActive === false) notFound("Package not found.");
-    return ok("Package retrieved.", serializePublicPackage(item, await productsForPackages(env, [item])));
+    const [products, categories] = await Promise.all([productsForPackages(env, [item]), categoriesForPackages(env, [item])]);
+    return ok("Package retrieved.", serializePublicPackage(item, products, categories));
   }
 
   if (request.method === "GET" && path === "/services") {

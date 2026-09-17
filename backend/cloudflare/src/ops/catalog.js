@@ -132,8 +132,8 @@ export const handleCatalogAdmin = async (context) => {
   if (categoryId && method === "DELETE") {
     requireCapability(admin, "products:write");
     const existing = await getCollectionItem(env, "categories", categoryId);
-    const [categories, products] = await Promise.all([all(env, "categories"), all(env, "products")]);
-    assertCategoryDeletable(existing, categories, products);
+    const [categories, products, packages] = await Promise.all([all(env, "categories"), all(env, "products"), all(env, "packages")]);
+    assertCategoryDeletable(existing, categories, products, packages);
     await deleteCollectionItem(env, "categories", existing);
     audit({ action: "category.delete", entity: "category", entityId: existing.id, summary: `Deleted category "${existing.name}"` });
     return ok("Category deleted.", serializeCategory(existing));

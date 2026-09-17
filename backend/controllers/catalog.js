@@ -111,8 +111,8 @@ export const adminUpdateCategory = asyncHandler(async (req, res) => {
 
 export const adminDeleteCategory = asyncHandler(async (req, res) => {
   const existing = await getCollectionItem("categories", req.params.id);
-  const [categories, products] = await Promise.all([all("categories"), all("products")]);
-  assertCategoryDeletable(existing, categories, products);
+  const [categories, products, packages] = await Promise.all([all("categories"), all("products"), all("packages")]);
+  assertCategoryDeletable(existing, categories, products, packages);
   const item = await deleteCollectionItem("categories", existing.id);
   auditDelete(req, "category", item);
   ok(res, "Category deleted.", serializeCategory(item));

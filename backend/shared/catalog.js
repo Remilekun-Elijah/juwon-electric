@@ -93,9 +93,11 @@ export const assertValidParent = (categories, parentId, selfId = null) => {
   }
 };
 
-export const assertCategoryDeletable = (category, categories, products) => {
-  if (categories.some((item) => item.parentId === category.id) || products.some((item) => item.categoryId === category.id)) {
-    throw conflict("Category has subcategories or products.");
+/** 409 while subcategories, products or packages (COMMERCE_V3 §4) reference the category. */
+export const assertCategoryDeletable = (category, categories, products, packages = []) => {
+  const uses = (item) => item.categoryId === category.id;
+  if (categories.some((item) => item.parentId === category.id) || products.some(uses) || packages.some(uses)) {
+    throw conflict("Category has subcategories, products or packages.");
   }
 };
 
@@ -248,6 +250,12 @@ export const assertProductDeletable = (product, packages) => {
   if (packages.some((pack) => packageProductIds(pack).has(product.id))) throw conflict("Product is used by a package.");
 };
 
+/** GET /packages?category=<id|slug> (COMMERCE_V3 §4): active categories and their descendants; unknown -> []. */
+export const packagesInCategory = (packages, categories, query) => {
+  const inCategory = categoryFilter(categories, queryText(query, "category"), { activeOnly: true });
+  return inCategory ? packages.filter(inCategory) : [];
+};
+
 export const isLowStockProduct = (product) =>
   (Number(product.stockQuantity) || 0) <= (Number(product.reorderLevel) || 0);
 
@@ -293,8 +301,11 @@ const matchesQuery = (product, q) => {
   );
 };
 
-/** Category filter (id or slug, including descendants). null when the category is unknown. */
-const categoryFilter = (categories, key, { activeOnly }) => {
+/**
+ * Category filter over records with `categoryId` (products, packages): id or slug, including
+ * descendants. Matches everything without a key; null when the category is unknown.
+ */
+export const categoryFilter = (categories, key, { activeOnly }) => {
   if (!key) return () => true;
   const pool = activeOnly ? categories.filter((item) => item.isActive !== false) : categories;
   const category = pool.find((item) => item.id === key || item.slug === key);
