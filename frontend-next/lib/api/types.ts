@@ -886,7 +886,8 @@ export type Settings = {
   notifications: { orderEmails: string[]; lowStockEmails: string[]; vacancyEmails: string[] };
   payments: { gatewayEnabled: boolean; provider: "paystack" | "flutterwave" | null };
   inventory: { defaultReorderLevel: number; lowStockAlertsEnabled: boolean };
-  uploads: { provider: "url" };
+  /** Not shown in the admin (UPLOADS_V1 §7): uploads depend on server configuration only. */
+  uploads: { provider: "url" | "r2" };
   /** Landing v1 §3. Saving a section stores its `sample` as false. */
   website: WebsiteSettings;
   financing: FinancingSettings;
@@ -921,3 +922,37 @@ export type AdminNotification = {
 };
 
 export type NotificationsPage = Paged<AdminNotification> & { unreadCount: number };
+
+/* ---------- Image uploads (UPLOADS_V1 §2) ---------- */
+
+export type UploadContentType = "image/jpeg" | "image/png" | "image/webp";
+
+/** `?purpose=` for POST /admin/uploads: the key prefix. Default `other`. */
+export type UploadPurpose =
+  | "products"
+  | "categories"
+  | "packages"
+  | "services"
+  | "portfolio"
+  | "segments"
+  | "reviews"
+  | "clients"
+  | "team"
+  | "other";
+
+/** GET /admin/uploads/config. Never carries usage or storage limits. */
+export type UploadConfig = {
+  enabled: boolean;
+  maxBytes: number;
+  accept: UploadContentType[];
+  maxDimension: number;
+};
+
+/** 201 "Image uploaded." from POST /admin/uploads (raw image bytes, Content-Type is the image type). */
+export type Upload = {
+  id: string;
+  url: string;
+  key: string;
+  size: number;
+  contentType: UploadContentType;
+};
