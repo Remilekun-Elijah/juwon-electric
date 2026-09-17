@@ -1,12 +1,13 @@
 import LiveRefresh from "@/components/storefront/LiveRefresh";
 import StoreFooter from "@/components/storefront/StoreFooter";
 import StoreHeader from "@/components/storefront/StoreHeader";
+import WhatsAppButton from "@/components/storefront/WhatsAppButton";
 import { getStoreChromeSettings } from "@/lib/storefront/data";
 
 /**
  * Storefront chrome (docs/agents/fe-storefront.md). Served at public paths through proxy.ts; `/storefront/*` itself
  * redirects. Plus Jakarta Sans on slate-50 like the admin console, skip link, sticky header, main landmark, footer,
- * and LiveRefresh for near-realtime updates.
+ * LiveRefresh for near-realtime updates, and the floating WhatsApp button when a number is set (LANDING_V1 §7).
  */
 export default async function StorefrontLayout({ children }: LayoutProps<"/storefront">) {
   const settings = await getStoreChromeSettings();
@@ -24,6 +25,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/store
         {children}
       </main>
       <StoreFooter settings={settings} />
+      <WhatsAppButton number={settings.website.whatsappNumber} />
       <LiveRefresh />
     </div>
   );

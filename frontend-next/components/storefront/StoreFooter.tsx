@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SITE_NAME, socials } from "@/lib/site";
 import type { StoreSettings } from "@/lib/storefront/data";
-import { phoneNumbers, storeRoutes, telHref } from "@/lib/storefront/routes";
+import { phoneNumbers, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
 import { storeContainer, storeFocus } from "@/lib/storefront/styles";
 import StoreNewsletter from "./StoreNewsletter";
 
@@ -14,6 +14,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "Inverter and solar packages", href: storeRoutes.packages },
       { label: "Products", href: storeRoutes.products },
+      { label: "Load calculator", href: storeRoutes.calculator },
       { label: "Your cart", href: storeRoutes.cart },
     ],
   },
@@ -23,6 +24,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Services", href: storeRoutes.services },
       { label: "Our work", href: storeRoutes.portfolio },
       { label: "Careers", href: storeRoutes.vacancies },
+      { label: "FAQ", href: storeRoutes.faq },
       { label: "Contact us", href: storeRoutes.contact },
     ],
   },
@@ -39,12 +41,14 @@ const footerLink = cn("inline-flex min-h-11 items-center rounded-sm text-sm md:m
 
 /** White footer with a top border: Shop / Company / Contact columns, newsletter, socials and ©. Server component. */
 export default function StoreFooter({ settings }: { settings: StoreSettings }) {
-  const { business } = settings;
+  const { business, website } = settings;
   const phones = phoneNumbers(business.phone);
+  const whatsapp = whatsappHref(website.whatsappNumber);
 
   return (
     <footer className="border-t border-slate-200 bg-white">
-      <div className={cn(storeContainer, "py-12 sm:py-16")}>
+      {/* Extra bottom room on phones so the floating WhatsApp button never covers the last footer row. */}
+      <div className={cn(storeContainer, "py-12 sm:py-16", whatsapp && "pb-24 sm:pb-16")}>
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Link href={storeRoutes.home} className={cn("inline-block rounded-md", storeFocus)}>
@@ -101,10 +105,28 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                     {business.email}
                   </a>
                 </div>
+                {whatsapp && (
+                  <div className="flex gap-2.5">
+                    <MessageCircle aria-hidden="true" className="mt-3.5 h-4 w-4 md:mt-0.5 shrink-0 text-brand-700" />
+                    <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={footerLink}>
+                      Chat on WhatsApp
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </div>
+                )}
                 <div className="flex gap-2.5">
                   <MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
                   <span>{business.address}</span>
                 </div>
+                {website.businessHours && (
+                  <div className="flex gap-2.5">
+                    <Clock aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
+                    <p className="whitespace-pre-line">
+                      <span className="sr-only">Opening hours: </span>
+                      {website.businessHours}
+                    </p>
+                  </div>
+                )}
               </address>
             </div>
           </div>
