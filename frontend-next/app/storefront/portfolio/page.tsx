@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PageIntro from "@/components/storefront/PageIntro";
+import Section from "@/components/storefront/Section";
+import ContactBand from "@/components/storefront/content/ContactBand";
+import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
+import { EmptyState, buttonClasses } from "@/components/ui";
+import { getStorePortfolio, getStoreSettings } from "@/lib/storefront/data";
+import { storeRoutes } from "@/lib/storefront/routes";
 
-// Placeholder from S0 (storefront foundation). The owning agent replaces the body; keep the metadata canonical.
 export const revalidate = 60;
 
 export const metadata: Metadata = {
@@ -10,12 +16,41 @@ export const metadata: Metadata = {
   alternates: { canonical: "/portfolio" },
 };
 
-export default function Page() {
+/** Portfolio (docs/agents/fe-storefront.md §4 `/portfolio`): installations with featured projects first. */
+export default async function PortfolioPage() {
+  const [portfolio, settings] = await Promise.all([getStorePortfolio(), getStoreSettings()]);
+  const items = featuredFirst(portfolio);
+
   return (
-    <PageIntro
-      eyebrow="Portfolio"
-      title="Our work"
-      description="Inverter, battery and solar installations we have completed for homes and businesses."
-    />
+    <>
+      <PageIntro
+        eyebrow="Portfolio"
+        title="Our work"
+        description="Inverter, battery and solar installations we have completed for homes and businesses."
+      />
+
+      <Section>
+        {items.length > 0 ? (
+          <PortfolioGrid items={items} headingAs="h2" priorityCount={3} />
+        ) : (
+          <EmptyState
+            standalone
+            title="No projects to show yet"
+            description="We’re adding photos of recent installations. Ask us for examples of systems like the one you need."
+            action={
+              <Link href={storeRoutes.contact} className={buttonClasses()}>
+                Contact us
+              </Link>
+            }
+          />
+        )}
+      </Section>
+
+      <ContactBand
+        business={settings.business}
+        title="Want a system like these?"
+        description="Tell us about your home or business and what you need to power. We’ll recommend a setup."
+      />
+    </>
   );
 }
