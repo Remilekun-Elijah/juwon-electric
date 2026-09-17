@@ -308,6 +308,9 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
 - Footer: dark (slate-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Meet the team**, Careers, FAQ and Contact us.
 
 Motion and accessibility (storefront-wide, 2026-09-17)
+- Inner pages (2026-09-17): every storefront page opens with a compact dark page intro in the home hero style (installation photo with slow zoom, gold eyebrow, white heading rising in, breadcrumbs), and the header is transparent over it until you scroll. Cart and checkout use a shorter, faster intro.
+- Page motion: packages (filter bar, staggered cards, cross-fade on filter change, price card slide-in, option ring, price counts to the new amount, staggered "What's included"); products and categories (category nav slide-in, staggered cards and specs, gallery zoom, "Added" confirmation, rolling quantity); services and portfolio (staggered image cards, filter cross-fade); careers (staggered cards, role summary slide-in, one Apply pulse); contact (form and details slide in, growing focus rings, one shake on field errors, drawn check when sent); cart (staggered lines, removed line folds away, Undo slides it back, totals count, all entrances 300 ms or less); checkout (sections rise, summary slides in, Place order shimmer while sending); order success (check mark draws, steps stagger); 404 (floating illustration, staggered suggestions).
+- Contrast on dark intros is measured at 4.5:1 or better for body text over every photo. Reduced motion turns all of this off.
 - Built with CSS transitions and keyframes plus a small `IntersectionObserver` helper. No animation libraries and no scroll listeners (except the header check above).
 - What moves: sections and card grids fade and slide in as they scroll into view (staggered, once); numbers count up (hero stats, team stats, the calculator teaser preview, the financing worked example); client logos marquee; cards lift, images zoom gently and arrows nudge on hover; buttons have a press state; How it works draws its line; review stars fill; FAQ answers open smoothly; calculator results tween; the header fades from transparent to solid; the floating actions slide in.
 - Content stays visible without JavaScript and to search engines: everything is in the HTML and visible by default. The hidden "before" state is applied only after the page loads, and only to content that starts below the screen. Counting figures keep their final value in the markup; if scripts never run, the figures show within 3 seconds.
@@ -610,6 +613,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (motion on every page)
+- §6.10: dark animated page intros and motion on every storefront page; header transparent over any page intro.
 
 2026-09-17 (navigation and floating buttons)
 - §6.11: the Calculator link is hidden in the header, phone menu and footer while the calculator is switched off.

@@ -1178,6 +1178,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-17 (motion on every page)**
+- Customer: every page now opens with a dark photo header and animates like the home page; in the cart, a removed item folds away and **Undo** brings it back.
+
 **2026-09-17 (navigation and floating buttons)**
 - Customer: the Calculator link is hidden when the calculator is off; on phones the floating buttons appear after you scroll past the home page photo (stories 11.8, 11.13).
 
