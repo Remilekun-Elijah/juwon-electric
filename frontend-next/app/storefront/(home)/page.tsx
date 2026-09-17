@@ -3,27 +3,30 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
 import { PACKAGE_TYPE_FILTERS, availablePackages, lowestPrice, packageTypeKey } from "@/components/storefront/catalog/packageMeta";
-import ContactBand from "@/components/storefront/content/ContactBand";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
-import { OfferingCard, SegmentCard, contentKey } from "@/components/storefront/content/ServiceCards";
-import CareersTeaser from "@/components/storefront/home/CareersTeaser";
-import CategoryGrid from "@/components/storefront/home/CategoryGrid";
 import HomeHero from "@/components/storefront/home/HomeHero";
-import HomeProductCard from "@/components/storefront/home/HomeProductCard";
 import HowItWorks from "@/components/storefront/home/HowItWorks";
 import PackageFinder from "@/components/storefront/home/PackageFinder";
-import { EmptyState, buttonClasses } from "@/components/ui";
-import { buildCategoryTree } from "@/lib/catalog";
+import CalculatorTeaser from "@/components/storefront/landing/CalculatorTeaser";
+import ClientLogos from "@/components/storefront/landing/ClientLogos";
+import FaqPreview from "@/components/storefront/landing/FaqPreview";
+import Financing from "@/components/storefront/landing/Financing";
+import FinalCta from "@/components/storefront/landing/FinalCta";
+import Reviews from "@/components/storefront/landing/Reviews";
+import Solutions from "@/components/storefront/landing/Solutions";
+import StatsBand from "@/components/storefront/landing/StatsBand";
+import WhyChooseUs from "@/components/storefront/landing/WhyChooseUs";
 import { cn } from "@/lib/cn";
+import { caseStudies, segmentTitles } from "@/lib/storefront/content";
 import {
-  getStoreCategories,
+  getStoreClients,
+  getStoreFaqs,
   getStorePackages,
   getStorePortfolio,
-  getStoreProducts,
   getStoreServices,
   getStoreSettings,
-  getStoreVacancies,
+  getStoreTestimonials,
 } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeLink } from "@/lib/storefront/styles";
@@ -36,10 +39,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const POPULAR_PRODUCTS = 8;
-const HOME_PORTFOLIO = 6;
-const HOME_OFFERINGS = 3;
-const HOME_SEGMENTS = 6;
+const HOME_CASE_STUDIES = 3;
 
 const seeAll = (href: string, label: string) => (
   <Link href={href} className={cn(storeLink, "inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
@@ -48,135 +48,93 @@ const seeAll = (href: string, label: string) => (
   </Link>
 );
 
-/** Storefront home (docs/agents/fe-storefront.md §4 `/`). Every section below the hero hides itself when its data is empty. */
+/**
+ * Storefront home in the LANDING_V1 §7 order: hero, stats, client logos, why choose us, solutions, packages, calculator
+ * teaser, case studies, reviews, how it works, financing, FAQ and the final call to action. Every section after the
+ * hero hides itself when it has no data (the static "Why choose us" and "How it works" always show).
+ */
 export default async function HomePage() {
-  const [allPackages, categories, products, services, portfolio, vacancies, settings] = await Promise.all([
+  const [allPackages, services, portfolio, settings, testimonials, clients, faqs] = await Promise.all([
     getStorePackages(),
-    getStoreCategories(),
-    getStoreProducts({ page: 1 }),
     getStoreServices(),
     getStorePortfolio(),
-    getStoreVacancies(),
     getStoreSettings(),
+    getStoreTestimonials(),
+    getStoreClients(),
+    getStoreFaqs(),
   ]);
 
-  // Commerce v2 §4: packages with no available option stay out of the home finder.
+  // Commerce v2 §4: packages with no available option stay out of the home page.
   const packages = availablePackages(allPackages);
-  const topCategories = buildCategoryTree(categories);
-  const heroPrices = packages.map(lowestPrice).filter((price): price is number => typeof price === "number" && price > 0);
-  const heroFromPrice = heroPrices.length ? Math.min(...heroPrices) : null;
+  const prices = packages.map(lowestPrice).filter((price) => price > 0);
+  const heroFromPrice = prices.length ? Math.min(...prices) : null;
   const heroPackageTypes = PACKAGE_TYPE_FILTERS.filter((type) => type.value !== "all")
     .map((type) => ({ ...type, count: packages.filter((pkg) => packageTypeKey(pkg) === type.value).length }))
     .filter((type) => type.count > 0);
-  const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
-  const recentWork = featuredFirst(portfolio).slice(0, HOME_PORTFOLIO);
-  const offerings = services.offerings.slice(0, HOME_OFFERINGS);
-  const segments = services.customerSegments.slice(0, HOME_SEGMENTS);
+
+  const segments = services.customerSegments;
+  const studies = caseStudies(featuredFirst(portfolio)).slice(0, HOME_CASE_STUDIES);
+
+  // Financing worked example: the cheapest available package.
+  const cheapestPackage = packages.filter((pkg) => lowestPrice(pkg) > 0).sort((a, b) => lowestPrice(a) - lowestPrice(b))[0] ?? null;
+  const { website, financing, calculator } = settings;
 
   return (
     <>
       <OrganizationJsonLd settings={settings} />
       <HomeHero phone={settings.business.phone} fromPrice={heroFromPrice} packageTypes={heroPackageTypes} />
 
-      <Section
-        id="packages"
-        eyebrow="Packages"
-        title="Find your package"
-        description="Complete systems with the inverter, batteries and installation included. Choose a battery type to see options from entry level to premium."
-        actions={packages.length > 0 ? seeAll(storeRoutes.packages, "All packages") : undefined}
-      >
-        {packages.length > 0 ? (
-          <PackageFinder packages={packages} />
-        ) : (
-          <EmptyState
-            standalone
-            title="Packages are being updated"
-            description="Call or message us and an engineer will recommend the right system for your home or business."
-            action={
-              <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>
-                Talk to an engineer
-              </Link>
-            }
-          />
-        )}
-      </Section>
+      {website.stats.length > 0 && <StatsBand stats={website.stats} sample={website.sample} />}
 
-      {topCategories.length > 0 && (
+      <ClientLogos clients={clients} />
+
+      <WhyChooseUs />
+
+      <Solutions segments={segments} />
+
+      {packages.length > 0 && (
+        <Section
+          id="packages"
+          tone="white"
+          eyebrow="Packages"
+          title="Find your package"
+          description="Complete systems with the inverter, batteries and installation included. Choose a battery type to see options from entry level to premium."
+          actions={seeAll(storeRoutes.packages, "All packages")}
+        >
+          <PackageFinder packages={packages} />
+        </Section>
+      )}
+
+      {calculator && <CalculatorTeaser />}
+
+      {studies.length > 0 && (
         <Section
           tone="white"
-          eyebrow="Products"
-          title="Shop by category"
-          description="Inverters, batteries, solar panels and accessories, with specifications and stock status."
-          actions={seeAll(storeRoutes.products, "All products")}
+          eyebrow="Case studies"
+          title="Systems we have installed"
+          description="Real installations: where they are, what we fitted and what they now keep running."
+          actions={seeAll(storeRoutes.portfolio, "See all our work")}
         >
-          <CategoryGrid categories={topCategories} />
+          <PortfolioGrid items={studies} categoryTitles={segmentTitles(segments)} linkToCategory />
         </Section>
       )}
 
-      {popularProducts.length > 0 && (
-        <Section eyebrow="In stock" title="Popular products" actions={seeAll(storeRoutes.products, "Browse all products")}>
-          <ul className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-            {popularProducts.map((product) => (
-              <li key={product.id} className="min-w-0">
-                <HomeProductCard product={product} />
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
+      <Reviews testimonials={testimonials} />
 
       <Section
         tone="white"
         eyebrow="How it works"
-        title="From choosing a system to switching it on"
+        title="From your first call to after-sales support"
         description="Every order is confirmed by phone before anything is delivered, and our own engineers do the installation."
       >
         <HowItWorks gatewayEnabled={settings.payments.gatewayEnabled} />
       </Section>
 
-      {offerings.length > 0 && (
-        <Section
-          eyebrow="Services"
-          title="What we do"
-          description="Beyond packages, we design, audit, install and maintain power systems."
-          actions={seeAll(storeRoutes.services, "All services")}
-        >
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {offerings.map((offering, index) => (
-              <li key={contentKey(offering, index)} className="min-w-0">
-                <OfferingCard offering={offering} compact />
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
+      {financing && <Financing financing={financing} examplePackage={cheapestPackage} examplePrice={cheapestPackage ? lowestPrice(cheapestPackage) : 0} />}
 
-      {segments.length > 0 && (
-        <Section tone="white" eyebrow="Customers" title="Who we power">
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {segments.map((segment, index) => (
-              <li key={contentKey(segment, index)} className="min-w-0">
-                <SegmentCard segment={segment} />
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
+      <FaqPreview faqs={faqs} />
 
-      {recentWork.length > 0 && (
-        <Section eyebrow="Our work" title="Recent installations" actions={seeAll(storeRoutes.portfolio, "See all our work")}>
-          <PortfolioGrid items={recentWork} />
-        </Section>
-      )}
-
-      {vacancies.length > 0 && <CareersTeaser vacancies={vacancies} />}
-
-      <ContactBand
-        business={settings.business}
-        showDetails
-        title="Talk to an engineer"
-        description="Tell us what you want to keep running during outages. We’ll recommend a system that fits your load and budget, and answer any questions about our packages."
-      />
+      <FinalCta phone={settings.business.phone} whatsappNumber={website.whatsappNumber} businessHours={website.businessHours} />
     </>
   );
 }

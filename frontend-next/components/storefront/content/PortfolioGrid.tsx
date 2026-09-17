@@ -1,7 +1,12 @@
-import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, ExternalLink, MapPin, Zap } from "lucide-react";
+import SampleBadge from "@/components/storefront/SampleBadge";
+import { Badge } from "@/components/ui";
 import type { PortfolioItem } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { categoryLabel, hasCaseStudyDetails } from "@/lib/storefront/content";
+import { portfolioCategoryPath } from "@/lib/storefront/routes";
+import { storeCard, storeFocus, storeLink } from "@/lib/storefront/styles";
 import { isAllowedUrl } from "@/lib/validation";
 import ContentImage from "./ContentImage";
 
@@ -20,19 +25,40 @@ export type PortfolioGridProps = {
   headingAs?: "h2" | "h3";
   /** Load the first images eagerly (top of the page). */
   priorityCount?: number;
+  /** Segment titles by slug for the category badge (Landing v1 §2). Without it the slug is shown in sentence case. */
+  categoryTitles?: Map<string, string>;
+  /** Show the category badge (off when the page is already filtered to one category). */
+  showCategory?: boolean;
+  /** Add "See similar projects" (the category filter) to case studies without their own link (home page). */
+  linkToCategory?: boolean;
 };
 
 /**
  * Responsive installation grid: 1 column at 375 px, 2 from `sm`, 3 from `lg`. Each tile is a full-width block with an
- * aspect-ratio image frame, so tiles always have real width and height (FP-01). Server component.
+ * aspect-ratio image frame, so tiles always have real width and height (FP-01). Case-study fields (category, location,
+ * system, summary) show when present, with a Sample label on seeded details. Server component.
  */
-export default function PortfolioGrid({ items, headingAs: Heading = "h3", priorityCount = 0 }: PortfolioGridProps) {
+export default function PortfolioGrid({
+  items,
+  headingAs: Heading = "h3",
+  priorityCount = 0,
+  categoryTitles = new Map(),
+  showCategory = true,
+  linkToCategory = false,
+}: PortfolioGridProps) {
   return (
     <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
       {items.map((item, index) => {
         const link = (item.link || "").trim();
         const href = link && isAllowedUrl(link) ? link : "";
         const external = /^https:\/\//i.test(href);
+        const category = item.category?.trim() || "";
+        const location = item.location?.trim() || "";
+        const system = item.system?.trim() || "";
+        const summary = item.summary?.trim() || "";
+        const details = hasCaseStudyDetails(item);
+        const similar = linkToCategory && !href && category;
+
         return (
           <li key={portfolioKey(item, index)} className="min-w-0">
             <article className={cn(storeCard, "group relative flex h-full flex-col overflow-hidden")}>
@@ -44,25 +70,68 @@ export default function PortfolioGrid({ items, headingAs: Heading = "h3", priori
                 imageClassName="transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
                 priority={index < priorityCount}
               />
-              <div className="flex flex-1 items-start justify-between gap-3 p-4 sm:p-5">
-                <div className="min-w-0">
-                  <Heading className="text-base font-semibold tracking-tight text-slate-900">
-                    {href ? (
-                      <a
-                        href={href}
-                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                        className={cn("rounded-sm after:absolute after:inset-0 after:content-['']", storeFocus)}
-                      >
-                        {item.name}
-                        {external && <span className="sr-only"> (opens in a new tab)</span>}
-                      </a>
-                    ) : (
-                      item.name
-                    )}
-                  </Heading>
-                  {item.featured && <p className="mt-1 text-xs font-medium text-brand-700">Featured project</p>}
+              <div className="flex flex-1 flex-col p-4 sm:p-5">
+                {((showCategory && category) || (details && item.sample)) && (
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    {showCategory && category && <Badge tone="brand">{categoryLabel(category, categoryTitles)}</Badge>}
+                    {details && <SampleBadge show={item.sample === true} />}
+                  </div>
+                )}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Heading className="text-base font-semibold tracking-tight text-slate-900">
+                      {href ? (
+                        <a
+                          href={href}
+                          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                          className={cn("rounded-sm after:absolute after:inset-0 after:content-['']", storeFocus)}
+                        >
+                          {item.name}
+                          {external && <span className="sr-only"> (opens in a new tab)</span>}
+                        </a>
+                      ) : (
+                        item.name
+                      )}
+                    </Heading>
+                    {item.featured && <p className="mt-1 text-xs font-medium text-brand-700">Featured project</p>}
+                  </div>
+                  {external && <ExternalLink aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 group-hover:text-brand-700" />}
                 </div>
-                {external && <ExternalLink aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 group-hover:text-brand-700" />}
+
+                {(location || system) && (
+                  <dl className="mt-3 space-y-1.5 text-sm text-slate-600">
+                    {location && (
+                      <div className="flex gap-2">
+                        <dt>
+                          <MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                          <span className="sr-only">Location</span>
+                        </dt>
+                        <dd className="min-w-0 break-words">{location}</dd>
+                      </div>
+                    )}
+                    {system && (
+                      <div className="flex gap-2">
+                        <dt>
+                          <Zap aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                          <span className="sr-only">System</span>
+                        </dt>
+                        <dd className="min-w-0 break-words font-medium text-slate-700">{system}</dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
+
+                {summary && <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-slate-600">{summary}</p>}
+
+                {similar && (
+                  <div className="mt-auto pt-4">
+                    <Link href={portfolioCategoryPath(category)} className={cn(storeLink, "relative z-10 inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
+                      See similar projects
+                      <span className="sr-only">: {categoryLabel(category, categoryTitles)}</span>
+                      <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                    </Link>
+                  </div>
+                )}
               </div>
             </article>
           </li>

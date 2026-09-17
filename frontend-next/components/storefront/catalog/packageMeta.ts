@@ -119,6 +119,18 @@ export const includedProductCount = (pkg: Pick<Package, "options">) => {
 };
 
 /**
+ * The first `limit` products of the cheapest available option, with how many more it lists, for card previews
+ * ("2 × 200Ah lithium battery … and 3 more"). Empty for legacy options.
+ */
+export const includedProducts = (pkg: Pick<Package, "options">, limit = 3) => {
+  const options = pricedOptions(pkg);
+  if (!options.length) return { items: [] as ComposedItem[], more: 0 };
+  const cheapest = options.reduce((best, option) => (option.amount < best.amount ? option : best));
+  const items = optionItems(cheapest);
+  return { items: items.slice(0, limit), more: Math.max(0, items.length - limit) };
+};
+
+/**
  * True when an available option lists the product. Also reads the deprecated top-level `items` (contract §4.3) in
  * case an older API still returns it.
  */

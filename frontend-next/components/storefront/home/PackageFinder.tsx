@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Package as PackageIcon, Sun, Zap } from "lucide-react";
-import { availablePackages, hasSolarOption, includedProductCount, lowestPrice } from "@/components/storefront/catalog/packageMeta";
+import { availablePackages, hasSolarOption, includedProducts, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import PriceTag from "@/components/storefront/PriceTag";
 import { Badge, TabPanel, Tabs, buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
@@ -29,7 +29,7 @@ const typeQuery = ["tubular", "lithium", "hybrid-lithium"];
 
 function FinderCard({ pkg }: { pkg: Package }) {
   const price = lowestPrice(pkg);
-  const products = includedProductCount(pkg);
+  const included = includedProducts(pkg, 3);
   return (
     <article className={cn(storeCard, "group relative flex h-full flex-col p-5 transition-shadow hover:shadow-elev-3 sm:p-6")}>
       <div className="flex items-start justify-between gap-3">
@@ -49,11 +49,34 @@ function FinderCard({ pkg }: { pkg: Package }) {
         </Link>
       </h3>
       <p className="mt-1 text-sm text-slate-500">
-        {[pkg.volt ? `${pkg.volt}V` : null, pkg.type ? `${pkg.type} battery` : null, products ? `Includes ${products} ${products === 1 ? "product" : "products"}` : null]
+        {[pkg.volt ? `${pkg.volt}V` : null, pkg.type ? `${pkg.type} battery` : null]
           .filter(Boolean)
           .join(" · ")}
       </p>
-      {pkg.load && <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{pkg.load}</p>}
+      {included.items.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">What’s included</p>
+          <ul className="mt-2 space-y-1.5 text-sm text-slate-700">
+            {included.items.map((item) => (
+              <li key={item.productId} className="flex gap-2">
+                <span className="w-7 shrink-0 font-semibold tabular-nums text-slate-500">
+                  {item.quantity}
+                  <span aria-hidden="true">&times;</span>
+                  <span className="sr-only"> of</span>
+                </span>
+                <span className="min-w-0 break-words">{item.name}</span>
+              </li>
+            ))}
+          </ul>
+          {included.more > 0 && <p className="mt-1.5 pl-9 text-sm text-slate-500">and {included.more} more</p>}
+        </div>
+      )}
+      {pkg.load && (
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">What it powers</p>
+          <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-slate-600">{pkg.load}</p>
+        </div>
+      )}
       <div className="mt-auto flex items-end justify-between gap-3 pt-5">
         <PriceTag amount={price} prefix="From" size="md" />
         <ArrowRight aria-hidden="true" className="mb-1 h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:text-brand-700 motion-safe:group-hover:translate-x-0.5" />
