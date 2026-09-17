@@ -3,7 +3,8 @@
 //
 // One D1 batch (a transaction) holds: a compare-and-set UPDATE per product, the movement
 // INSERTs, and optionally a compare-and-set UPDATE of another record (an order status
-// move). After each CAS UPDATE a guard row `INSERT INTO batch_guard (ok) SELECT changes()`
+// move) or the INSERT of a new record (`record.insert`: an in-store order created together
+// with its stock commit; a duplicate id fails the INSERT and rolls the batch back). After each CAS UPDATE a guard row `INSERT INTO batch_guard (ok) SELECT changes()`
 // violates CHECK (ok = 1) when the UPDATE matched nothing, which aborts and rolls back the
 // whole batch; the batch then retries against fresh rows. The last statement empties
 // batch_guard (migrations/0012_inventory_jobs.sql).
@@ -47,7 +48,7 @@ export const applyStockChanges = async (
 
     let rawRecord = null;
     let current = null;
-    if (record) {
+    if (record && !record.insert) {
       rawRecord = (await loadRows(env, record.collection, [record.id])).get(record.id);
       if (!rawRecord) notFound(notFoundMessage(record.collection));
       current = JSON.parse(rawRecord);
@@ -81,7 +82,17 @@ export const applyStockChanges = async (
     }
 
     let updatedRecord = null;
-    if (record) {
+    if (record?.insert) {
+      updatedRecord = { ...withoutUndefined(record.insert), updatedAt: timestamp };
+      const [slug, isActive, sortOrder] = rowValues(updatedRecord);
+      statements.push(
+        env.DB.prepare(
+          `INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(updatedRecord.id, record.collection, slug, JSON.stringify(updatedRecord), isActive, sortOrder, updatedRecord.createdAt, timestamp),
+        env.DB.prepare(GUARD)
+      );
+    } else if (record) {
       updatedRecord = {
         ...current,
         ...withoutUndefined(record.patch),

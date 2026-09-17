@@ -39,6 +39,8 @@ test("migration 0011 backfills legacy orders exactly like the read-time rules, a
   for (const row of once) {
     const migrated = JSON.parse(row.data);
     assert.deepEqual(serializeOrder(migrated), serializeOrder(legacy[row.id]), row.id);
-    assert.deepEqual(migrated, serializeOrder(legacy[row.id]), `${row.id} is stored in its final form`);
+    // Commerce v2 fields (channel, subtotal, discount, createdBy) are read-time defaults only.
+    const { channel: _channel, subtotal: _subtotal, discount: _discount, createdBy: _createdBy, ...stored } = serializeOrder(legacy[row.id]);
+    assert.deepEqual(migrated, stored, `${row.id} is stored in its final form`);
   }
 });

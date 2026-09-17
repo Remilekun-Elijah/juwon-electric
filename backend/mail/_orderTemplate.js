@@ -258,7 +258,7 @@ export default function orderTemplate({
                           >
                             <div style="font-family:Montserrat, Helvetica, Arial, sans-serif;font-size:16px;font-weight:300;line-height:24px;text-align:left;color:#000000;">
                             <p>Package: ${escapeHtml(a.package)} </p>
-                            <p>Type: ${escapeHtml(a.type)} battery </p>
+                            <p>Type: ${escapeHtml(a.typeLabel || a.type)} battery </p>
                             <p>
                               Price: <span style='color: #DB464C'>${escapeHtml(a.price)} x ${escapeHtml(a.quantity)}</span>
                             </p>

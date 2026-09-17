@@ -31,8 +31,9 @@ export const runOrdersScenario = async (client) => {
       name: "Order Kit",
       kva: 5,
       load: "Fridge",
-      options: [{ name: "Without solar", price: 500000, kits: "2 batteries" }],
-      items: [{ productId: inverter.id, quantity: 2 }, { productId: battery.id, quantity: 1 }],
+      options: [
+        { name: "Without solar", priceAdjustment: 499997, items: [{ productId: inverter.id, quantity: 2 }, { productId: battery.id, quantity: 1 }] },
+      ],
     },
     project: (body) => ({ message: body?.message }),
   }, 201);

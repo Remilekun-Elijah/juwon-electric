@@ -24,6 +24,7 @@ import {
   adminUpdateSubscriber,
 } from "../controllers/newsletter.js";
 import {
+  adminCreateOrder,
   adminDeleteOrder,
   adminGetOrder,
   adminListOrders,
@@ -152,6 +153,7 @@ router.post("/vacancies/:id/unpublish", can("vacancies:write"), adminUnpublishVa
 router.delete("/vacancies/:id", can("vacancies:write"), adminDeleteVacancy);
 
 router.get("/orders", can("orders:read"), adminListOrders);
+router.post("/orders", can("orders:create"), adminCreateOrder);
 router.get("/orders/:id", can("orders:read"), adminGetOrder);
 router.put("/orders/:id", can("orders:update"), adminUpdateOrder);
 router.delete("/orders/:id", can("orders:delete"), adminDeleteOrder);

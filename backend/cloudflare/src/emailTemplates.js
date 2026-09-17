@@ -199,7 +199,7 @@ export const orderNotificationTemplate = ({
         contentRow(
           `
             <p style="display:block;margin:13px 0;">Package: ${escapeHtml(item.package)}</p>
-            <p style="display:block;margin:13px 0;">Type: ${escapeHtml(item.type)} battery</p>
+            <p style="display:block;margin:13px 0;">Type: ${escapeHtml(item.typeLabel || item.type)} battery</p>
             <p style="display:block;margin:13px 0;">Price: <span style="color:#DB464C;">${escapeHtml(item.price)} x ${escapeHtml(item.quantity)}</span></p>
           `,
           "5px 40px 0 40px"

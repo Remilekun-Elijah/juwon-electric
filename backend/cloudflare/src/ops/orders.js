@@ -1,7 +1,18 @@
 // Orders and fulfilment (API_CONTRACT_V3 §6) for the Worker, at parity with
 // backend/controllers/orders.js. Enums, transitions and planning: backend/shared/orders.js.
-import { ok } from "../http.js";
-import { deleteCollectionItem, deleteRecordReads, getById, getCollectionItem, listCollection, readKey } from "../store.js";
+import { created, ok } from "../http.js";
+import {
+  createCollectionItem,
+  deleteCollectionItem,
+  deleteRecordReads,
+  getById,
+  getCollectionItem,
+  listCollection,
+  nextSortOrder,
+  readKey,
+} from "../store.js";
+import { notify } from "../notifications.js";
+import { newOrderNotification } from "../../../shared/notifications.js";
 import { requireCapability } from "../capabilities.js";
 import { applyStockChanges } from "./stock.js";
 import { actorOf, afterStockChange } from "./inventory.js";
@@ -14,12 +25,18 @@ import {
   commitLines,
   engineerIdPayload,
   fulfillmentPayload,
+  inStoreAuditEntries,
+  inStoreOrderPayload,
+  inStoreOrderRecord,
   jobSummary,
   markPaidPayload,
+  needsPackagesToCommit,
   orderAuditEntries,
   orderListFilter,
   orderUpdatePayload,
   planOrderChanges,
+  priceInStoreOrder,
+  restorableLines,
   reversalLines,
   serializeOrder,
 } from "../../../shared/orders.js";
@@ -41,8 +58,10 @@ export const applyOrderPlan = async (context, stored, plan) => {
   let lines = [];
   let reason = null;
   let onShortfall;
+  let skippedSkus = [];
   if (plan.fulfillment?.from === "pending" && plan.fulfillment.to === "processing") {
-    const packages = await listCollection(env, "packages", { includeInactive: true });
+    // Order line snapshots (COMMERCE_V2 §1.3); only legacy lines need the current packages.
+    const packages = needsPackagesToCommit(plan.order) ? await listCollection(env, "packages", { includeInactive: true }) : [];
     lines = commitLines(plan.order, new Map(packages.map((pack) => [pack.id, pack])));
     reason = "sale";
     onShortfall = insufficientStockForOrder;
@@ -51,7 +70,12 @@ export const applyOrderPlan = async (context, stored, plan) => {
     const movements = (await recordsWhere(env, "inventoryMovements", "referenceId", stored.id)).filter(
       (movement) => movement.referenceType === "order"
     );
-    lines = reversalLines(movements);
+    const reversal = reversalLines(movements);
+    // Deleted products are skipped (and noted in the audit) instead of failing the cancel.
+    const existing = reversal.length
+      ? new Set((await listCollection(env, "products", { includeInactive: true })).map((product) => product.id))
+      : new Set();
+    ({ lines, skippedSkus } = restorableLines(reversal, existing, movements));
     reason = "sale_reversal";
     plan.patch.stockCommittedAt = null;
   }
@@ -70,8 +94,42 @@ export const applyOrderPlan = async (context, stored, plan) => {
     },
   });
   afterStockChange(context, result.plans);
-  for (const entry of orderAuditEntries(plan)) audit({ ...entry, entity: "order", entityId: stored.id });
+  for (const entry of orderAuditEntries(plan, { skippedSkus })) audit({ ...entry, entity: "order", entityId: stored.id });
   return serializeOrder(result.record);
+};
+
+/**
+ * POST /admin/orders (COMMERCE_V2 §2.2), at parity with adminCreateOrder in
+ * backend/controllers/orders.js. A collected sale inserts the order in the same D1 batch as
+ * the stock commit (no order on a shortfall).
+ */
+const createInStoreOrder = async (context) => {
+  const { env, ctx, body, admin, audit } = context;
+  const input = inStoreOrderPayload(body);
+  const products = await listCollection(env, "products", { includeInactive: true });
+  const priced = priceInStoreOrder(input, new Map(products.map((product) => [product.id, product])));
+  const actor = actorOf(admin);
+  const record = inStoreOrderRecord(input, priced, { id: crypto.randomUUID(), actor, timestamp: timestamp() });
+
+  let order;
+  if (input.fulfilment === "collected") {
+    const result = await applyStockChanges(env, {
+      lines: priced.order.map((line) => ({ productId: line.productId, change: -line.quantity })),
+      reason: "sale",
+      reference: { type: "order", id: record.id },
+      actor,
+      onShortfall: insufficientStockForOrder,
+      record: { collection: "orders", insert: { ...record, sortOrder: await nextSortOrder(env, "orders") } },
+    });
+    afterStockChange(context, result.plans);
+    order = result.record;
+  } else {
+    order = await createCollectionItem(env, "orders", record, { id: record.id });
+  }
+
+  for (const entry of inStoreAuditEntries(order)) audit({ ...entry, entity: "order", entityId: order.id });
+  notify(env, ctx, newOrderNotification(order));
+  return created("Order created.", serializeOrder(order));
 };
 
 const timestamp = () => new Date().toISOString();
@@ -85,6 +143,10 @@ export const handleOrdersAdmin = async (context) => {
     const matches = orderListFilter(queryOf(url));
     const orders = (await listCollection(env, "orders", { includeInactive: true })).map(serializeOrder).filter(matches);
     return ok("Orders retrieved.", orders);
+  }
+  if (path === "/admin/orders" && method === "POST") {
+    requireCapability(admin, "orders:create");
+    return createInStoreOrder(context);
   }
 
   const orderId = idAfter(path, "/admin/orders");

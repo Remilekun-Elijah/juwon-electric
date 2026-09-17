@@ -31,8 +31,8 @@ export const inAudience = (notification, admin) => {
 
 const clip = (value, max) => String(value ?? "").slice(0, max);
 
-/** Stored notification record for notify({ type, title, message, entity, entityId, recipientId? }). */
-export const buildNotification = ({ type, title, message, entity, entityId, recipientId = null }, { id, timestamp }) => {
+/** Stored notification record for notify({ type, title, message, entity, entityId, recipientId?, data? }). */
+export const buildNotification = ({ type, title, message, entity, entityId, recipientId = null, data = null }, { id, timestamp }) => {
   if (!NOTIFICATION_TYPES.includes(type)) throw new Error(`Unknown notification type: ${type}`);
   if (!NOTIFICATION_ENTITIES.includes(entity)) throw new Error(`Unknown notification entity: ${entity}`);
   return {
@@ -43,6 +43,7 @@ export const buildNotification = ({ type, title, message, entity, entityId, reci
     entity,
     entityId: String(entityId),
     recipientId: type === "job_assigned" ? recipientId ?? null : null,
+    data: data && typeof data === "object" && !Array.isArray(data) ? data : null,
     isActive: true,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -73,6 +74,7 @@ export const serializeNotification = (notification, readState) => ({
   entity: notification.entity,
   entityId: notification.entityId,
   recipientId: notification.recipientId ?? null,
+  data: notification.data ?? null,
   read: isRead(notification, readState),
   createdAt: notification.createdAt,
 });
@@ -120,9 +122,13 @@ export const lowStockNotification = (product) => ({
 export const newOrderNotification = (order) => ({
   type: "new_order",
   title: "New order",
-  message: `${order.name || "A customer"} placed an order${order.total ? ` of ${order.total}` : ""}.`,
+  message:
+    order.channel === "in_store"
+      ? `In-store order for ${order.name || "a customer"}${order.total ? ` of ${order.total}` : ""}.`
+      : `${order.name || "A customer"} placed an order${order.total ? ` of ${order.total}` : ""}.`,
   entity: "order",
   entityId: order.id,
+  data: { channel: order.channel === "in_store" ? "in_store" : "website" },
 });
 
 export const vacancyPostedNotification = (vacancy) => ({

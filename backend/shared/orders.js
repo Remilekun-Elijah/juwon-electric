@@ -2,8 +2,10 @@
 // Enum and transition tables, read-time normalisation of legacy orders, update planning and
 // stock commitment. Pure: storage and atomic writes live in each runtime.
 import { badRequest, conflict } from "./errors.js";
-import { OPS_LIMITS, boolean, dateTime, isPlainObject, queryText, text } from "./fields.js";
+import { OPS_LIMITS, boolean, dateTime, email, integer, isPlainObject, phone, queryText, text } from "./fields.js";
+import { formatNaira, normalizeOptions } from "./packagePricing.js";
 
+export const ORDER_CHANNELS = ["website", "in_store"];
 export const FULFILLMENT_STATUSES = ["pending", "processing", "out_for_delivery", "delivered", "installed", "cancelled"];
 export const PAYMENT_STATUSES = ["pending", "partial", "paid", "failed", "refunded"];
 
@@ -57,16 +59,29 @@ export const orderBackfill = (order) => {
 };
 
 /**
- * Order as returned by admin endpoints: backfilled, with `status` derived. The internal
- * `sortOrder` (only the Worker stores one for orders) is not part of the order shape.
+ * Commerce v2 fields every order response carries (COMMERCE_V2 §2.2). Read-time defaults
+ * only: website orders stored before in-store sales have none of them.
+ */
+export const orderCommerceDefaults = (order) => ({
+  channel: ORDER_CHANNELS.includes(order.channel) ? order.channel : "website",
+  subtotal: typeof order.subtotal === "number" ? order.subtotal : null,
+  discount: isPlainObject(order.discount) ? order.discount : null,
+  createdBy: isPlainObject(order.createdBy) ? order.createdBy : null,
+});
+
+/**
+ * Order as returned by admin endpoints: backfilled, with `status` derived and the commerce
+ * defaults. The internal `sortOrder` (only the Worker stores one for orders) is not part of
+ * the order shape.
  */
 export const serializeOrder = (order) => {
   const { sortOrder: _sortOrder, ...normalized } = { ...order, ...orderBackfill(order) };
-  return { ...normalized, status: derivedStatus(normalized.fulfillmentStatus) };
+  return { ...normalized, ...orderCommerceDefaults(normalized), status: derivedStatus(normalized.fulfillmentStatus) };
 };
 
 /** Fields every new public order is stored with (§6.1). */
 export const NEW_ORDER_FIELDS = Object.freeze({
+  channel: "website",
   status: "pending",
   paymentStatus: "pending",
   fulfillmentStatus: "pending",
@@ -196,22 +211,47 @@ export const planOrderChanges = (stored, changes, { jobs = [], timestamp }) => {
   return { patch, order, fulfillment, payment, other };
 };
 
+const matchText = (value) => String(value ?? "").trim().toLowerCase();
+
+// Legacy lines (placed before snapshots): the current items of the ordered option (after the
+// read-time migration), else the package's deprecated top-level items.
+const legacyLineItems = (line, pack) => {
+  if (!pack) return [];
+  const option = normalizeOptions(pack).find((entry) => matchText(entry.name) === matchText(line.optionName));
+  if (option && Array.isArray(option.items)) return option.items;
+  return Array.isArray(pack.items) ? pack.items : [];
+};
+
+/** True when the stored line sells a product directly (in-store); anything else is a package line. */
+export const isProductLine = (line) => line?.type === "product";
+
 /**
- * Stock lines for pending -> processing: each order line's package items times the line
- * quantity, aggregated per product. Lines without a resolvable package (or packages
- * without items) add nothing. Returns [{ productId, change }] with negative changes.
+ * Stock lines to commit an order (pending -> processing, or an in-store "collected" sale),
+ * from the order line snapshots (COMMERCE_V2 §1.3): product lines take their quantity,
+ * package lines their components times the line quantity. Package lines without
+ * `components` fall back to the current package (`packagesById` is only needed for those).
+ * Aggregated per product; returns [{ productId, change }] with negative changes.
  */
-export const commitLines = (order, packagesById) => {
+export const commitLines = (order, packagesById = new Map()) => {
   const totals = new Map();
+  const add = (productId, count) => {
+    if (productId && count > 0) totals.set(productId, (totals.get(productId) || 0) + count);
+  };
   for (const line of Array.isArray(order.order) ? order.order : []) {
-    const pack = packagesById.get(line?.packageId);
     const quantity = Number(line?.quantity) || 1;
-    for (const item of Array.isArray(pack?.items) ? pack.items : []) {
-      totals.set(item.productId, (totals.get(item.productId) || 0) + item.quantity * quantity);
+    if (isProductLine(line)) {
+      add(line.productId, quantity);
+      continue;
     }
+    const components = Array.isArray(line?.components) ? line.components : legacyLineItems(line, packagesById.get(line?.packageId));
+    for (const item of components) add(item?.productId, (Number(item?.quantity) || 0) * quantity);
   }
   return [...totals].map(([productId, total]) => ({ productId, change: -total }));
 };
+
+/** True when some package line lacks a snapshot, so the current packages are needed. */
+export const needsPackagesToCommit = (order) =>
+  (Array.isArray(order.order) ? order.order : []).some((line) => !isProductLine(line) && !Array.isArray(line?.components));
 
 /** Stock lines that reverse this order's committed stock: sale minus sale_reversal movements. */
 export const reversalLines = (movements) => {
@@ -223,15 +263,33 @@ export const reversalLines = (movements) => {
   return [...net].filter(([, change]) => change > 0).map(([productId, change]) => ({ productId, change }));
 };
 
-/** Audit entries for a planned change (§6.4): one per kind, plus the legacy status alias. */
-export const orderAuditEntries = (plan) => {
+/**
+ * Splits reversal lines into those whose product still exists and the SKUs of deleted
+ * products (taken from the movements), so a cancel never fails on a deleted product (CO-01).
+ */
+export const restorableLines = (lines, existingIds, movements) => {
+  const skuOf = new Map(movements.map((movement) => [movement.productId, movement.sku]));
+  const kept = lines.filter((line) => existingIds.has(line.productId));
+  const skipped = lines
+    .filter((line) => !existingIds.has(line.productId))
+    .map((line) => skuOf.get(line.productId) || line.productId)
+    .sort();
+  return { lines: kept, skippedSkus: skipped };
+};
+
+/**
+ * Audit entries for a planned change (§6.4): one per kind, plus the legacy status alias.
+ * `skippedSkus`: products whose stock could not be restored because they were deleted.
+ */
+export const orderAuditEntries = (plan, { skippedSkus = [] } = {}) => {
   const { order, fulfillment, payment, other, patch } = plan;
   const who = order.name || order.id;
   const entries = [];
   if (fulfillment) {
+    const notes = skippedSkus.map((sku) => `; stock not restored for deleted product ${sku}`).join("");
     entries.push({
       action: "order.fulfillment_change",
-      summary: `Order from ${who}: fulfilment ${fulfillment.from} → ${fulfillment.to}`,
+      summary: `Order from ${who}: fulfilment ${fulfillment.from} → ${fulfillment.to}${notes}`,
       changes: ["fulfillmentStatus"],
     });
     if (patch.status !== order.status) {
@@ -253,6 +311,8 @@ export const orderListFilter = (query) => {
   if (fulfillmentStatus && !FULFILLMENT_STATUSES.includes(fulfillmentStatus)) throw badRequest("Fulfilment status is not valid.");
   const paymentStatus = queryText(query, "paymentStatus");
   if (paymentStatus && !PAYMENT_STATUSES.includes(paymentStatus)) throw badRequest("Payment status is not valid.");
+  const channel = queryText(query, "channel");
+  if (channel && !ORDER_CHANNELS.includes(channel)) throw badRequest("Channel is not valid.");
   const engineerId = queryText(query, "engineerId");
   const requiresInstallation = queryText(query, "requiresInstallation");
   if (requiresInstallation && !["true", "false"].includes(requiresInstallation)) {
@@ -273,6 +333,7 @@ export const orderListFilter = (query) => {
     const placed = String(order.receivedAt || order.createdAt || "");
     return (
       (!fulfillmentStatus || order.fulfillmentStatus === fulfillmentStatus) &&
+      (!channel || order.channel === channel) &&
       (!paymentStatus || order.paymentStatus === paymentStatus) &&
       (!engineerId || order.assignedEngineerId === engineerId) &&
       (!requiresInstallation || String(order.requiresInstallation) === requiresInstallation) &&
@@ -291,4 +352,149 @@ export const jobSummary = (job) => ({
 
 export const assertOrderDeletable = (jobs) => {
   if (hasOpenJobs(jobs)) throw conflict("Order has installation jobs.");
+};
+
+// ---- in-store orders (COMMERCE_V2 §2) -------------------------------------------------------
+
+export const IN_STORE_LIMITS = Object.freeze({
+  lines: 50,
+  quantityMax: 1000,
+  personName: 100,
+  deliveryAddress: 500,
+  note: 500,
+  discountReasonMin: 3,
+  discountReasonMax: 200,
+  discountMax: 1_000_000_000_000,
+});
+
+const FULFILMENTS = ["collected", "later"];
+const IN_STORE_PAYMENT_STATUSES = ["pending", "partial", "paid"];
+
+const inStoreLines = (raw) => {
+  if (!Array.isArray(raw) || raw.length === 0) throw badRequest("Add at least one product.");
+  if (raw.length > IN_STORE_LIMITS.lines) throw badRequest(`An order can have at most ${IN_STORE_LIMITS.lines} lines.`);
+  const seen = new Set();
+  return raw.map((entry) => {
+    if (!isPlainObject(entry)) throw badRequest("Invalid order line.");
+    const productId = text(entry, "productId", { label: "Product", required: true, max: OPS_LIMITS.id });
+    if (seen.has(productId)) throw badRequest("Each product can appear once per order.");
+    seen.add(productId);
+    return {
+      productId,
+      quantity: integer(entry, "quantity", { label: "Quantity", required: true, min: 1, max: IN_STORE_LIMITS.quantityMax }),
+    };
+  });
+};
+
+const discountInput = (raw) => {
+  if (raw === undefined || raw === null) return { amount: 0, reason: null };
+  if (!isPlainObject(raw)) throw badRequest("Discount is not valid.");
+  const amount = integer(raw, "amount", { label: "Discount amount", min: 0, max: IN_STORE_LIMITS.discountMax }) ?? 0;
+  if (amount === 0) return { amount: 0, reason: null };
+  const reason = text(raw, "reason", { label: "Discount reason", required: true, max: IN_STORE_LIMITS.discountReasonMax });
+  if (reason.length < IN_STORE_LIMITS.discountReasonMin) {
+    throw badRequest(`Discount reason must be at least ${IN_STORE_LIMITS.discountReasonMin} characters.`);
+  }
+  return { amount, reason };
+};
+
+/** Validated POST /admin/orders body (shape only; products and totals: priceInStoreOrder). */
+export const inStoreOrderPayload = (body) => {
+  const input = isPlainObject(body) ? body : {};
+  if (!isPlainObject(input.customer)) throw badRequest("Name is required.");
+  const customer = input.customer;
+  const name = text(customer, "name", { label: "Name", required: true, max: IN_STORE_LIMITS.personName });
+  const phoneNumber = phone(customer, "phoneNumber");
+  if (!phoneNumber) throw badRequest("Phone number is required.");
+  const emailAddress = email(customer, "emailAddress", { label: "Email address" }) || null;
+  const deliveryAddress =
+    text(customer, "deliveryAddress", { label: "Delivery address", max: IN_STORE_LIMITS.deliveryAddress, multiline: true }) || null;
+
+  const lines = inStoreLines(input.lines);
+  const discount = discountInput(input.discount);
+
+  const fulfilment = input.fulfilment;
+  if (typeof fulfilment !== "string" || !FULFILMENTS.includes(fulfilment)) throw badRequest("Fulfilment is not valid.");
+  const paymentStatus = input.paymentStatus;
+  if (typeof paymentStatus !== "string" || !IN_STORE_PAYMENT_STATUSES.includes(paymentStatus)) {
+    throw badRequest("Payment status is not valid.");
+  }
+  const requiresInstallation = boolean(input, "requiresInstallation", { label: "requiresInstallation" }) ?? false;
+  if (requiresInstallation && fulfilment !== "later") throw badRequest("Installation requires a later fulfilment.");
+  if (fulfilment === "later" && !deliveryAddress) throw badRequest("Delivery address is required for later fulfilment.");
+  const note = text(input, "note", { label: "Note", max: IN_STORE_LIMITS.note, multiline: true }) || null;
+
+  return { customer: { name, phoneNumber, emailAddress, deliveryAddress }, lines, discount, fulfilment, paymentStatus, requiresInstallation, note };
+};
+
+/**
+ * Prices validated in-store lines with current product prices. Products must exist and not
+ * be archived (hidden is allowed); the discount can't exceed the subtotal.
+ */
+export const priceInStoreOrder = (input, productsById) => {
+  const order = input.lines.map(({ productId, quantity }) => {
+    const product = productsById.get(productId);
+    if (!product) throw badRequest("Product not found.");
+    if ((product.status || "active") === "archived") throw badRequest("Archived products can't be sold.");
+    const unitPrice = Number(product.price) || 0;
+    return { type: "product", productId: product.id, sku: product.sku, name: product.name, quantity, unitPrice, lineTotal: unitPrice * quantity };
+  });
+  const subtotal = order.reduce((sum, line) => sum + line.lineTotal, 0);
+  if (input.discount.amount > subtotal) throw badRequest("Discount can't be more than the subtotal.");
+  return { order, subtotal, totalAmount: subtotal - input.discount.amount };
+};
+
+/**
+ * The stored in-store order record. `id` and `timestamp` come from the runtime. A collected
+ * sale is stored delivered with stock committed; the runtime commits the stock in the same
+ * atomic write.
+ */
+export const inStoreOrderRecord = (input, priced, { id, actor, timestamp }) => {
+  const collected = input.fulfilment === "collected";
+  const fulfillmentStatus = collected ? "delivered" : "pending";
+  return {
+    id,
+    ...input.customer,
+    order: priced.order,
+    subtotal: priced.subtotal,
+    discount: input.discount.amount > 0 ? { amount: input.discount.amount, reason: input.discount.reason } : null,
+    totalAmount: priced.totalAmount,
+    total: formatNaira(priced.totalAmount),
+    channel: "in_store",
+    createdBy: actor ? { id: actor.id, email: actor.email } : null,
+    source: "admin",
+    status: derivedStatus(fulfillmentStatus),
+    paymentStatus: input.paymentStatus,
+    paidAt: input.paymentStatus === "paid" ? timestamp : null,
+    fulfillmentStatus,
+    requiresInstallation: input.requiresInstallation,
+    assignedEngineerId: null,
+    stockCommittedAt: collected ? timestamp : null,
+    note: input.note,
+    isActive: true,
+    receivedAt: timestamp,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+};
+
+/** Audit entries for a new in-store order: order.create, plus the fulfilment move when collected. */
+export const inStoreAuditEntries = (order) => {
+  const count = order.order.reduce((sum, line) => sum + line.quantity, 0);
+  const discount = order.discount ? `; discount ${formatNaira(order.discount.amount)} (${order.discount.reason})` : "";
+  const entries = [
+    {
+      action: "order.create",
+      summary: `In-store order for ${order.name}: ${count} ${count === 1 ? "item" : "items"}, ${formatNaira(order.totalAmount)}${discount}`,
+      changes: ["order", "channel", "paymentStatus", "fulfillmentStatus"],
+    },
+  ];
+  if (order.fulfillmentStatus === "delivered") {
+    entries.push({
+      action: "order.fulfillment_change",
+      summary: `Order from ${order.name}: fulfilment pending → delivered`,
+      changes: ["fulfillmentStatus"],
+    });
+  }
+  return entries;
 };

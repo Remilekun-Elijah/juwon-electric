@@ -94,7 +94,7 @@ export const runSettingsNotificationsScenario = async (client) => {
   const all = (await expect("superadmin notifications", "GET", "/admin/notifications", { project: summary }, 200, "Notifications retrieved.")).body.data;
   assert.deepEqual(all.items.map((item) => item.type).sort(), ["low_stock", "new_order"], "job_assigned is only for its recipient");
   assert.equal(all.unreadCount, 2);
-  assert.deepEqual(Object.keys(all.items[0]).sort(), ["createdAt", "entity", "entityId", "id", "message", "read", "recipientId", "title", "type"]);
+  assert.deepEqual(Object.keys(all.items[0]).sort(), ["createdAt", "data", "entity", "entityId", "id", "message", "read", "recipientId", "title", "type"]);
 
   const inventoryView = (await expect("inventory sees low stock and orders", "GET", "/admin/notifications", { token: inventoryUser.token, project: summary }, 200)).body.data;
   assert.deepEqual(inventoryView.items.map((item) => item.type).sort(), ["low_stock", "new_order"]);

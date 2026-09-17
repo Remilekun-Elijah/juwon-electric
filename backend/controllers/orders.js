@@ -1,6 +1,6 @@
 import orderTemplate from "../mail/_orderTemplate.js";
 import { sendMail } from "../mail/mail.js";
-import { formatMoney, priceItems } from "./_pricing.js";
+import { formatMoney, loadPricingPackages, priceItems } from "./_pricing.js";
 import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
 import { forgetRecordReads } from "./adminReads.js";
@@ -12,6 +12,7 @@ import { track } from "../services/runtime.js";
 import {
   appendCollectionItem,
   applyStockChanges,
+  createCollectionItem,
   deleteCollectionItem,
   findCollectionItem,
   findCollectionItems,
@@ -34,16 +35,24 @@ import {
   commitLines,
   engineerIdPayload,
   fulfillmentPayload,
+  inStoreAuditEntries,
+  inStoreOrderPayload,
+  inStoreOrderRecord,
   jobSummary,
   markPaidPayload,
+  needsPackagesToCommit,
   orderAuditEntries,
   orderListFilter,
   orderUpdatePayload,
   planOrderChanges,
+  priceInStoreOrder,
+  restorableLines,
   reversalLines,
   serializeOrder,
 } from "../shared/orders.js";
+import { randomUUID } from "crypto";
 import { conflict } from "../shared/errors.js";
+import { packageLineSnapshot } from "../shared/packagePricing.js";
 import { notify } from "../services/notifications.js";
 import { getSettings } from "../services/settings.js";
 import { newOrderNotification } from "../shared/notifications.js";
@@ -59,16 +68,21 @@ const typeLabel = (type) =>
 // Prices come from the package catalog; client-sent price/total are ignored.
 // Stored items keep the shape the checkout form sends (display labels and
 // "₦1,150,000" money strings) so the admin UI and order email keep working.
+// Each line also stores its snapshot (COMMERCE_V2 §1.3): type "package", the option's
+// components per package, productsTotal and priceAdjustment. The display type label moves
+// to `typeLabel`.
 const priceOrderItems = async (validated) => {
-  const packages = await listCollection("packages");
+  const packages = await loadPricingPackages();
   const priced = priceItems(packages, validated, { kind: "order" });
 
   const order = priced.map(({ pack, option, unitPrice, quantity, lineTotal }) => ({
     package: option.kits
       ? `${kvaLabel(pack)} inverter with ${option.kits}`
       : `${kvaLabel(pack)} ${pack.name}`,
-    type: typeLabel(pack.type),
+    ...packageLineSnapshot(option),
+    typeLabel: typeLabel(pack.type),
     kva: kvaLabel(pack),
+    volt: pack.volt ?? null,
     price: formatMoney(unitPrice),
     quantity,
     name: pack.name,
@@ -140,15 +154,22 @@ export const applyOrderPlan = async (req, stored, plan) => {
   let lines = [];
   let reason = null;
   let onShortfall;
+  let skippedSkus = [];
   if (plan.fulfillment?.from === "pending" && plan.fulfillment.to === "processing") {
-    const packages = await listCollection("packages", { includeInactive: true });
+    // Order line snapshots (COMMERCE_V2 §1.3); only legacy lines need the current packages.
+    const packages = needsPackagesToCommit(plan.order) ? await listCollection("packages", { includeInactive: true }) : [];
     lines = commitLines(plan.order, new Map(packages.map((pack) => [pack.id, pack])));
     reason = "sale";
     onShortfall = insufficientStockForOrder;
     if (lines.length) plan.patch.stockCommittedAt = new Date().toISOString();
   } else if (plan.fulfillment?.to === "cancelled" && plan.order.stockCommittedAt) {
     const movements = await findCollectionItems("inventoryMovements", { referenceType: "order", referenceId: stored.id });
-    lines = reversalLines(movements);
+    const reversal = reversalLines(movements);
+    // Deleted products are skipped (and noted in the audit) instead of failing the cancel.
+    const existing = reversal.length
+      ? await findCollectionItems("products", {}).then((products) => new Set(products.map((product) => product.id)))
+      : new Set();
+    ({ lines, skippedSkus } = restorableLines(reversal, existing, movements));
     reason = "sale_reversal";
     plan.patch.stockCommittedAt = null;
   }
@@ -167,9 +188,41 @@ export const applyOrderPlan = async (req, stored, plan) => {
     },
   });
   afterStockChange(result.plans);
-  for (const entry of orderAuditEntries(plan)) audit(req, { ...entry, entity: "order", entityId: stored.id });
+  for (const entry of orderAuditEntries(plan, { skippedSkus })) audit(req, { ...entry, entity: "order", entityId: stored.id });
   return serializeOrder(result.record);
 };
+
+/**
+ * POST /admin/orders (COMMERCE_V2 §2.2): an in-store sale of products. A collected sale
+ * commits stock and inserts the order in one atomic step (no order on a shortfall).
+ */
+export const adminCreateOrder = asyncHandler(async (req, res) => {
+  const input = inStoreOrderPayload(req.body);
+  const products = await findCollectionItems("products", {});
+  const priced = priceInStoreOrder(input, new Map(products.map((product) => [product.id, product])));
+  const actor = actorOf(req);
+  const record = inStoreOrderRecord(input, priced, { id: randomUUID(), actor, timestamp: new Date().toISOString() });
+
+  let order;
+  if (input.fulfilment === "collected") {
+    const result = await applyStockChanges({
+      lines: priced.order.map((line) => ({ productId: line.productId, change: -line.quantity })),
+      reason: "sale",
+      reference: { type: "order", id: record.id },
+      actor,
+      onShortfall: insufficientStockForOrder,
+      record: { collection: "orders", insert: record },
+    });
+    afterStockChange(result.plans);
+    order = result.record;
+  } else {
+    order = await createCollectionItem("orders", record);
+  }
+
+  for (const entry of inStoreAuditEntries(order)) audit(req, { ...entry, entity: "order", entityId: order.id });
+  notify(newOrderNotification(order));
+  created(res, "Order created.", serializeOrder(order));
+});
 
 export const adminListOrders = asyncHandler(async (req, res) => {
   const matches = orderListFilter(req.query);

@@ -674,7 +674,9 @@ const CHANGED_ELSEWHERE = "This record was changed by another request. Please tr
  * Applies stock changes and writes one inventory movement per product, optionally
  * together with a compare-and-set update of another record (e.g. an order status move):
  *   { lines: [{ productId, change }], reason, note, reference: { type, id }, actor: { id, email },
- *     record: { collection, id, expect: { field: value }, patch }, onShortfall }
+ *     record: { collection, id, expect: { field: value }, patch } | { collection, insert }, onShortfall }
+ * `record.insert` stores a new record (with its id) in the same atomic step instead (an
+ * in-store order created together with its stock commit).
  * Resolves to { plans: [{ product, change, before, after }], movements, record }.
  * Throws 404 (unknown product or record), `onShortfall(shortfalls)` (default 409 "Stock
  * cannot go below zero.") and 409 when `expect` no longer matches. JSON store: one locked
@@ -698,7 +700,7 @@ export const applyStockChanges = async ({
       ? (await models.products.find({ id: { $in: ids } }).lean()).map(normalizeMongoRecord)
       : [];
     const plans = planStockChanges(merged, new Map(fresh.map((product) => [product.id, product])), onShortfall);
-    if (record) {
+    if (record && !record.insert) {
       const current = await models[record.collection].findOne(mongoIdFilter(record.id)).lean();
       if (!current) throw notFound(record.collection);
       if (!matchesQuery(normalizeMongoRecord(current), record.expect || {})) throw new ApiError(409, CHANGED_ELSEWHERE);
@@ -722,7 +724,10 @@ export const applyStockChanges = async ({
         plan.after = Number(updated.stockQuantity) || 0;
         plan.before = plan.after - plan.change;
       }
-      if (record) {
+      if (record?.insert) {
+        const doc = await models[record.collection].create({ ...record.insert, updatedAt: timestamp });
+        updatedRecord = doc.toObject({ transform: false, virtuals: false });
+      } else if (record) {
         updatedRecord = await models[record.collection]
           .findOneAndUpdate(
             { ...mongoIdFilter(record.id), ...(record.expect || {}) },
@@ -752,7 +757,9 @@ export const applyStockChanges = async ({
     const plans = planStockChanges(merged, new Map(products.map((product) => [product.id, product])), onShortfall);
     let recordIndex = -1;
     const records = record ? db[record.collection] || [] : [];
-    if (record) {
+    if (record?.insert) {
+      if (records.some((item) => item.id === record.insert.id)) throw new ApiError(409, CHANGED_ELSEWHERE);
+    } else if (record) {
       recordIndex = records.findIndex((item) => item.id === record.id);
       if (recordIndex === -1) throw notFound(record.collection);
       if (!matchesQuery(records[recordIndex], record.expect || {})) throw new ApiError(409, CHANGED_ELSEWHERE);
@@ -769,7 +776,10 @@ export const applyStockChanges = async ({
     db.products = products;
     db.inventoryMovements = [...(db.inventoryMovements || []), ...movements];
     let updatedRecord = null;
-    if (record) {
+    if (record?.insert) {
+      updatedRecord = { ...definedOnly(record.insert), updatedAt: timestamp };
+      db[record.collection] = [...records, updatedRecord];
+    } else if (record) {
       updatedRecord = { ...records[recordIndex], ...definedOnly(record.patch), id: records[recordIndex].id, updatedAt: timestamp };
       records[recordIndex] = updatedRecord;
       db[record.collection] = records;

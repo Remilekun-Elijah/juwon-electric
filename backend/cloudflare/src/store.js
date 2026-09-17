@@ -161,7 +161,7 @@ export const findByField = async (env, collection, field, value) => {
 // Slugs and ordering
 // ---------------------------------------------------------------------------
 
-const nextSortOrder = async (env, collection) => {
+export const nextSortOrder = async (env, collection) => {
   const row = await env.DB.prepare(
     "SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM records WHERE collection = ?"
   )

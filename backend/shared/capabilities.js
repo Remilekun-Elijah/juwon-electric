@@ -22,6 +22,7 @@ export const CAPABILITIES = {
   "inventory:read": ["admin", "inventory", "sales"],
   "inventory:adjust": ["admin", "inventory"],
   "orders:read": ["admin", "inventory", "sales", "support"],
+  "orders:create": ["admin", "sales"],
   "orders:update": ["admin", "sales"],
   "orders:delete": ["admin"],
   "leads:read": ["admin", "sales", "support"],
