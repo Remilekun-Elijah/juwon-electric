@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Dark scrolled header (see section 12, Change log)
+Last updated: 2026-09-17, Lifted scrolled header (see section 12, Change log)
 
 1. Executive summary
 
@@ -319,7 +319,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
 - Colour: a gold accent scale taken from the Juwon Electric logo. Gold is used only as an accent on dark surfaces (slate-950, slate-900 or brand-950): highlighted headline words, stat numbers and primary buttons on dark. Text on gold buttons is dark (slate-950). Body text keeps a contrast of at least 4.5:1.
 - Header:
   - On the home page, while the page is at the top (scrolled less than 24 px), the header is transparent over the hero: white nav links with a gold underline on the active item, the logo without a chip, a white phone link, a glass cart button and a gold **Get a quote** pill linking to `/contact?topic=Quote`. On phones the menu button is glass too.
-  - After scrolling, and on pages without a hero, it is a dark glass bar (translucent near-black with a blur) with the same white nav, gold logo, glass cart and gold **Get a quote** pill, so the logo and links stay legible over light and dark sections. The change fades over 250 ms. The header height never changes, and the hero reserves room for it, so nothing shifts.
+  - After scrolling, and on pages without a hero, the header lifts: it keeps the same look (white nav, gold logo, glass cart, gold **Get a quote** pill) and drops slightly from the top edge into a rounded, translucent dark glass bar with a soft shadow, inset from the page edges, so the logo and links stay legible over light sections. The change animates over 300 ms; with reduced motion the bar changes without moving. The header height never changes, and the hero reserves room for it, so nothing shifts.
   - This is the only scroll listener on the storefront (passive, at most one check per animation frame).
 - Hero (full-bleed):
   - Edge to edge, about one screen tall (at least 640 px, at most 920 px), under the transparent header.
@@ -689,8 +689,8 @@ Open items for owner review
 
 12. Change log
 
-2026-09-17 (dark scrolled header)
-- Storefront header: after scrolling (and on pages without a hero) the header is a translucent dark glass bar instead of solid white, keeping the white nav and gold quote pill; the logo no longer sits on a white chip. The gold logo was washing out on the white bar.
+2026-09-17 (lifted scrolled header)
+- Storefront header: after scrolling (and on pages without a hero) the header keeps its top-of-page look and lifts into a floating, rounded, translucent dark glass bar with a shadow, instead of the solid white header; the logo no longer sits on a white chip. The gold logo was washing out on the white bar.
 
 2026-09-17 (nationwide wording)
 - Juwon Electric serves customers across Nigeria, not only Lagos: the home hero pill and headline, the client logos heading, the footer description, the home page title and the sample content (a stat, an FAQ, a team bio and case-study locations) no longer limit the business to Lagos. The Lagos business address, Lagos time for schedules, and the "Delivery within Lagos is free" open item are unchanged.
