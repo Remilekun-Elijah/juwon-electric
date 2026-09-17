@@ -50,8 +50,13 @@ test("purposes: jobs and staff have their own capabilities", async () => {
   assert.equal(isUploadKey(key.replace(/^jobs/, "staff")), true);
 });
 
-test("the upload rate limit message uses a curly apostrophe", () => {
+test("the upload rate limit message uses a curly apostrophe and the admin fallback matches it", async (t) => {
   assert.equal(UPLOAD_MESSAGES.tooMany, "You\u2019ve uploaded a lot of images in a short time. Wait a few minutes, then try again.");
+  const { readFile } = await import("node:fs/promises");
+  const source = await readFile(new URL("../../frontend-next/lib/api/admin.ts", import.meta.url), "utf8").catch(() => null);
+  if (source === null) return t.skip("frontend-next is not checked out");
+  const fallback = source.match(/^\s*429: "([^"]*)",$/m)?.[1];
+  assert.equal(fallback, UPLOAD_MESSAGES.tooMany, "frontend-next/lib/api/admin.ts UPLOAD_FALLBACK_MESSAGES[429]");
 });
 
 test("signatures match only the declared type", () => {
