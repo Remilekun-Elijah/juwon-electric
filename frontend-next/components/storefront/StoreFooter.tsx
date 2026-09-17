@@ -55,8 +55,8 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
 
   return (
     <footer className="bg-slate-950 text-white/70">
-      {/* Extra bottom room on phones so the floating WhatsApp button never covers the last footer row. */}
-      <div className={cn(storeContainer, "py-12 sm:py-16", whatsapp && "pb-24 sm:pb-16")}>
+      {/* Extra bottom room on phones so the floating action circles never cover the last footer row. */}
+      <div className={cn(storeContainer, "py-12 sm:py-16", (whatsapp || settings.calculator) && "pb-40 sm:pb-20")}>
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Link href={storeRoutes.home} className={cn("inline-block rounded-xl bg-white px-3 py-2", darkFocus)}>
