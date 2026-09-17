@@ -69,6 +69,7 @@ import {
   adminUpdateVacancy,
 } from "../controllers/vacancies.js";
 import { asyncHandler } from "../services/asyncHandler.js";
+import { opsAdminRouter } from "./ops.js";
 
 const router = Router();
 
@@ -154,5 +155,8 @@ router.get("/orders", can("orders:read"), adminListOrders);
 router.get("/orders/:id", can("orders:read"), adminGetOrder);
 router.put("/orders/:id", can("orders:update"), adminUpdateOrder);
 router.delete("/orders/:id", can("orders:delete"), adminDeleteOrder);
+
+// v3 commerce and operations modules (capability-gated).
+router.use(opsAdminRouter);
 
 export default router;

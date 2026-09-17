@@ -1,6 +1,7 @@
 import { asyncHandler } from "../services/asyncHandler.js";
 import { ok } from "../services/http.js";
 import { listCollection } from "../services/store.js";
+import { dashboardKpis, dashboardPeriod } from "../shared/dashboard.js";
 
 const parseMoney = (value) => {
   if (typeof value === "number") return value;
@@ -51,11 +52,16 @@ const getStatusCounts = (orders) =>
     return { ...counts, [status]: (counts[status] || 0) + 1 };
   }, {});
 
-export const adminDashboard = asyncHandler(async (_req, res) => {
-  const [orders, contacts, newsletter] = await Promise.all([
+export const adminDashboard = asyncHandler(async (req, res) => {
+  const nowMs = Date.now();
+  const period = dashboardPeriod(req.query, nowMs);
+  const [orders, contacts, newsletter, products, vacancies, jobs] = await Promise.all([
     listCollection("orders", { includeInactive: true }),
     listCollection("contacts", { includeInactive: true }),
     listCollection("newsletters", { includeInactive: true }),
+    listCollection("products", { includeInactive: true }),
+    listCollection("vacancies", { includeInactive: true }),
+    listCollection("installationJobs", { includeInactive: true }),
   ]);
 
   const totalRevenue = orders.reduce((sum, order) => sum + getOrderRevenue(order), 0);
@@ -89,5 +95,6 @@ export const adminDashboard = asyncHandler(async (_req, res) => {
     statusCounts: getStatusCounts(orders),
     revenueSeries: getRevenueSeries(orders),
     recentOrders,
+    kpis: dashboardKpis({ orders, products, vacancies, jobs }, period, nowMs),
   });
 });

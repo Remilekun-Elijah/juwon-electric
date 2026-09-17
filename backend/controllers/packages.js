@@ -2,6 +2,7 @@ import { catalogHandlers } from "./_catalog.js";
 import { badRequest, notFound } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { getCollectionItem, listCollection } from "../services/store.js";
+import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../shared/catalog.js";
 import {
   LIMITS,
   deriveSlug,
@@ -57,6 +58,8 @@ const packagePayload = (body, { isUpdate }) => {
   const options = validateOptions(body.options);
   const isActive = optionalBoolean(body, "isActive", undefined);
   const sortOrder = sortOrderField(body);
+  // Products this package is made of (API_CONTRACT_V3 §4.3; stock is committed per item).
+  const items = packageItemsField(body);
 
   return {
     legacyId,
@@ -70,6 +73,7 @@ const packagePayload = (body, { isUpdate }) => {
     options,
     isActive: isUpdate ? isActive : isActive ?? true,
     sortOrder,
+    items,
   };
 };
 
@@ -78,18 +82,30 @@ const handlers = catalogHandlers({
   entity: "package",
   buildPayload: packagePayload,
   slugSource: (item) => `${item.name}-${item.type}-${item.kva}`,
+  validate: async (payload) => {
+    if (payload.items?.length) {
+      assertPackageItemsExist(payload.items, await listCollection("products", { includeInactive: true }));
+    }
+  },
   messages: { create: "Package created.", update: "Package updated.", delete: "Package deleted." },
 });
 
+// Packages with items add `items` (with product name/slug/sku); others are unchanged.
+const productsFor = async (packages) =>
+  packages.some((pack) => Array.isArray(pack.items) && pack.items.length)
+    ? new Map((await listCollection("products", { includeInactive: true })).map((product) => [product.id, product]))
+    : new Map();
+
 export const listPackages = async (_req, res) => {
   const packages = await listCollection("packages");
-  ok(res, "Packages retrieved.", packages.map(serializeForClient));
+  const products = await productsFor(packages);
+  ok(res, "Packages retrieved.", packages.map((pack) => withPublicPackageItems(serializeForClient(pack), pack, products)));
 };
 
 export const getPackage = async (req, res) => {
   const item = await getCollectionItem("packages", req.params.id);
   if (item.isActive === false) throw notFound("packages");
-  ok(res, "Package retrieved.", serializeForClient(item));
+  ok(res, "Package retrieved.", withPublicPackageItems(serializeForClient(item), item, await productsFor([item])));
 };
 
 export const adminListPackages = async (req, res) => {

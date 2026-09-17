@@ -45,8 +45,6 @@ import {
   CONTACT_STATUSES,
   LIMITS,
   NEWSLETTER_STATUSES,
-  ORDER_STATUSES,
-  PAYMENT_STATUSES,
   emailField,
   enumField,
   numericField,
@@ -89,6 +87,14 @@ import { handleAdminUsers } from "./adminUsers.js";
 import { handleAdminVacancies, handlePublicVacancies } from "./vacancies.js";
 import { requireCapability } from "./capabilities.js";
 import { adminSelf } from "../../shared/capabilities.js";
+import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
+import { sendNotification } from "./email.js";
+import { notify } from "./notifications.js";
+import { newOrderNotification } from "../../shared/notifications.js";
+import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
+import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
+import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../../shared/catalog.js";
+import { NEW_ORDER_FIELDS } from "../../shared/orders.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
 const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
@@ -194,6 +200,11 @@ const packagePayload = async (env, body, existing = null) => {
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   slugField(body);
+  // Products this package is made of (API_CONTRACT_V3 §4.3; stock is committed per item).
+  const items = packageItemsField(body);
+  if (items?.length) {
+    assertPackageItemsExist(items, await listCollection(env, "products", { includeInactive: true }));
+  }
 
   await assertLegacyIdUnique(env, legacyId, existing?.id);
   return {
@@ -210,8 +221,15 @@ const packagePayload = async (env, body, existing = null) => {
     options,
     isActive,
     sortOrder,
+    items,
   };
 };
+
+// Packages with items add `items` (with product name/slug/sku); others are unchanged.
+const productsForPackages = async (env, packages) =>
+  packages.some((pack) => Array.isArray(pack.items) && pack.items.length)
+    ? new Map((await listCollection(env, "products", { includeInactive: true })).map((product) => [product.id, product]))
+    : new Map();
 
 const serializePackage = (item) => ({
   id: item.legacyId ?? item.id,
@@ -504,44 +522,6 @@ const quoteValidatedItems = async (env, validated) => {
   return lines;
 };
 
-// ---------------------------------------------------------------------------
-// Email (Resend)
-// ---------------------------------------------------------------------------
-
-const sendNotification = async (env, { to, subject, text, html }) => {
-  if (!env.RESEND_API_KEY || !env.MAIL_FROM || !to) return { skipped: true };
-
-  let response;
-  try {
-    response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: env.MAIL_FROM,
-        to,
-        subject,
-        text,
-        html,
-        reply_to: env.MAIL_REPLY_TO || env.MAIL_FROM,
-      }),
-    });
-  } catch (error) {
-    console.error("Email provider request failed:", describeError(error));
-    return { skipped: false, failed: true };
-  }
-
-  if (!response.ok) {
-    response.body?.cancel?.().catch?.(() => {});
-    console.error(`Email provider failed with HTTP ${response.status}`);
-    return { skipped: false, failed: true };
-  }
-
-  return { skipped: false };
-};
-
 const sourceField = (body) => stringField(body, "source", { label: "Source", max: LIMITS.source }) || "client";
 
 const routeRoot = () =>
@@ -822,14 +802,15 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
 
   if (request.method === "GET" && path === "/packages") {
     const packages = await listCollection(env, "packages");
-    return ok("Packages retrieved.", packages.map(serializePackage));
+    const products = await productsForPackages(env, packages);
+    return ok("Packages retrieved.", packages.map((pack) => withPublicPackageItems(serializePackage(pack), pack, products)));
   }
 
   const packageId = request.method === "GET" ? idAfter(path, "/packages") : null;
   if (packageId) {
     const item = await getCollectionItem(env, "packages", packageId);
     if (item.isActive === false) notFound("Package not found.");
-    return ok("Package retrieved.", serializePackage(item));
+    return ok("Package retrieved.", withPublicPackageItems(serializePackage(item), item, await productsForPackages(env, [item])));
   }
 
   if (request.method === "GET" && path === "/services") {
@@ -979,14 +960,15 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
       order: pricing.items,
       total: pricing.total,
       totalAmount: pricing.totalAmount,
-      status: "pending",
-      paymentStatus: "unpaid",
+      ...NEW_ORDER_FIELDS,
       source,
       receivedAt: now(),
     });
+    notify(env, ctx, newOrderNotification(order));
+    const orderEmails = mergeSettings(await getById(env, "settings", SETTINGS_ID)).notifications.orderEmails;
     ctx.waitUntil(
       sendNotification(env, {
-        to: env.ADMIN_NOTIFY_EMAIL,
+        to: recipientsOr(orderEmails, env.ADMIN_NOTIFY_EMAIL),
         subject: "You have a new order",
         text: `${order.name}\n${order.phoneNumber}\n${order.deliveryAddress}\nTotal: ${order.total}`,
         html: orderNotificationTemplate(order),
@@ -1268,10 +1250,15 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
 
   if (method === "GET" && path === "/admin/dashboard") {
     can("dashboard:read");
-    const [orders, contacts, newsletter] = await Promise.all([
+    const nowMs = Date.now();
+    const period = dashboardPeriod(Object.fromEntries(url.searchParams), nowMs);
+    const [orders, contacts, newsletter, products, vacancies, jobs] = await Promise.all([
       listCollection(env, "orders", { includeInactive: true }),
       listCollection(env, "contacts", { includeInactive: true }),
       listCollection(env, "newsletters", { includeInactive: true }),
+      listCollection(env, "products", { includeInactive: true }),
+      listCollection(env, "vacancies", { includeInactive: true }),
+      listCollection(env, "installationJobs", { includeInactive: true }),
     ]);
     const statusCounts = orders.reduce((counts, order) => {
       const status = normalizeOrderStatus(order.status);
@@ -1303,6 +1290,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
       statusCounts,
       revenueSeries: getRevenueSeries(orders),
       recentOrders,
+      kpis: dashboardKpis({ orders, products, vacancies, jobs }, period, nowMs),
     });
   }
 
@@ -1514,51 +1502,7 @@ const handleAdmin = async (request, env, ctx, path, body, admin, url) => {
     return ok("Carts retrieved.", await listCollection(env, "carts", { includeInactive: true }));
   }
 
-  if (method === "GET" && path === "/admin/orders") {
-    can("orders:read");
-    return ok("Orders retrieved.", await listCollection(env, "orders", { includeInactive: true }));
-  }
-  const orderId = idAfter(path, "/admin/orders");
-  if (orderId && method === "GET") {
-    can("orders:read");
-    return ok("Order retrieved.", await getCollectionItem(env, "orders", orderId));
-  }
-  if (orderId && method === "PUT") {
-    can("orders:update");
-    const existing = await getCollectionItem(env, "orders", orderId);
-    const status = enumField(body, "status", ORDER_STATUSES, { label: "Status", existing: existing.status });
-    const paymentStatus = enumField(body, "paymentStatus", PAYMENT_STATUSES, {
-      label: "Payment status",
-      existing: existing.paymentStatus,
-    });
-    const payload = { status, paymentStatus, note: optionalNote(body), isActive: optionalIsActive(body) };
-    const order = await updateCollectionItem(env, "orders", existing.id, payload);
-    const changes = changedFields(existing, payload);
-    const statusChanged = changes.includes("status");
-    audit({
-      action: statusChanged ? "order.status_change" : "order.update",
-      entity: "order",
-      entityId: existing.id,
-      summary: statusChanged
-        ? `Order from ${existing.name || existing.id} marked ${status}`
-        : `Updated order from ${existing.name || existing.id}`,
-      changes,
-    });
-    return ok("Order updated.", order);
-  }
-  if (orderId && method === "DELETE") {
-    can("orders:delete");
-    const existing = await getCollectionItem(env, "orders", orderId);
-    await deleteCollectionItem(env, "orders", existing);
-    await forgetRecordReads(env, "orders", existing.id);
-    audit({
-      action: "order.delete",
-      entity: "order",
-      entityId: existing.id,
-      summary: `Deleted order from ${existing.name || existing.id}`,
-    });
-    return ok("Order deleted.", existing);
-  }
+  // Orders (GET, PUT, DELETE and fulfilment actions): src/ops/orders.js.
 
   return null;
 };
@@ -1605,9 +1549,25 @@ const route = async (incoming, env, ctx, path) => {
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     const { admin } = await requireAdmin(request, env, ctx);
+    // v3 modules first: they own /admin/orders* (src/ops/orders.js).
+    const opsResponse = await handleOpsAdmin({
+      request,
+      env,
+      ctx,
+      path,
+      body,
+      url,
+      admin,
+      audit: (entry) => recordAudit(env, ctx, request, admin, entry),
+      sendNotification: (message) => sendNotification(env, message),
+    });
+    if (opsResponse) return opsResponse;
     const response = await handleAdmin(request, env, ctx, path, body, admin, url);
     if (response) return response;
   }
+
+  const opsPublicResponse = await handleOpsPublic({ request, env, ctx, path, body, url });
+  if (opsPublicResponse) return opsPublicResponse;
 
   const publicResponse = await handlePublic(request, env, ctx, path, body, url);
   if (publicResponse) return publicResponse;
@@ -1616,7 +1576,8 @@ const route = async (incoming, env, ctx, path) => {
 };
 
 const errorResponse = (error, requestId) => {
-  if (!(error instanceof ApiError)) {
+  // Errors from backend/shared carry expose === true and a statusCode.
+  if (!(error instanceof ApiError) && !(error?.expose === true && Number.isInteger(error?.statusCode))) {
     console.error(`[${requestId}] Unhandled worker error:`, describeError(error));
     return json({ success: false, message: "Something went wrong." }, 500);
   }
@@ -1646,5 +1607,14 @@ export default {
       response = errorResponse(error, requestId);
     }
     return finalizeResponse(response, request, env, path, requestId);
+  },
+
+  // Cron triggers (wrangler.toml): daily low-stock digest.
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(
+      handleOpsScheduled(env, (message) => sendNotification(env, message)).catch((error) =>
+        console.error("Scheduled low-stock digest failed:", describeError(error))
+      )
+    );
   },
 };

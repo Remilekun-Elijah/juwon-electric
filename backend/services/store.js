@@ -4,7 +4,8 @@ import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 import { customerSegments, portfolioItems, serviceOfferings } from "../data/seed.js";
-import { notFound } from "./errors.js";
+import { ApiError, notFound } from "./errors.js";
+import { belowZero, buildMovement, matchesMovementFilters, mergeChanges, movementOrder, planStockChanges } from "../shared/inventory.js";
 import { isMongoMode, track, useMongo } from "./runtime.js";
 import { normalizeSlug } from "./validators.js";
 
@@ -16,7 +17,14 @@ export const dbPath = process.env.JSON_STORE_PATH
 const plansPath = resolve(__dirname, "../../frontend/src/utils/plans.json");
 
 // Only the public catalog collections have slugs (and admin-controlled sortOrder).
-export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments"];
+export const CATALOG_COLLECTIONS = [
+  "packages",
+  "services",
+  "portfolio",
+  "customerSegments",
+  "categories",
+  "products",
+];
 const isCatalog = (collection) => CATALOG_COLLECTIONS.includes(collection);
 
 let dbLock = Promise.resolve();
@@ -71,6 +79,23 @@ const models = {
     mongoose.models.PasswordReset ||
     mongoose.model("PasswordReset", flexibleSchema, "passwordResets"),
   vacancies: mongoose.models.Vacancy || mongoose.model("Vacancy", flexibleSchema, "vacancies"),
+  // v3 commerce/operations modules (model names prefixed with Ops).
+  categories:
+    mongoose.models.OpsCategory || mongoose.model("OpsCategory", flexibleSchema, "categories"),
+  products: mongoose.models.OpsProduct || mongoose.model("OpsProduct", flexibleSchema, "products"),
+  inventoryMovements:
+    mongoose.models.OpsInventoryMovement ||
+    mongoose.model("OpsInventoryMovement", flexibleSchema, "inventoryMovements"),
+  installationJobs:
+    mongoose.models.OpsInstallationJob ||
+    mongoose.model("OpsInstallationJob", flexibleSchema, "installationJobs"),
+  settings: mongoose.models.OpsSettings || mongoose.model("OpsSettings", flexibleSchema, "settings"),
+  notifications:
+    mongoose.models.OpsNotification ||
+    mongoose.model("OpsNotification", flexibleSchema, "notifications"),
+  notificationReads:
+    mongoose.models.OpsNotificationRead ||
+    mongoose.model("OpsNotificationRead", flexibleSchema, "notificationReads"),
 };
 
 // Non-catalog collections whose writers keep slugs unique through `prepare`.
@@ -255,6 +280,13 @@ const defaultDb = async () => {
     webhookEvents: [],
     adminReadState: [],
     adminReads: [],
+    categories: [],
+    products: [],
+    inventoryMovements: [],
+    installationJobs: [],
+    settings: [],
+    notifications: [],
+    notificationReads: [],
   };
 };
 
@@ -634,6 +666,156 @@ export const deleteCollectionItemsBefore = async (collection, field, cutoffIso) 
   });
 };
 
+// ---- stock ----------------------------------------------------------------------
+
+const CHANGED_ELSEWHERE = "This record was changed by another request. Please try again.";
+
+/**
+ * Applies stock changes and writes one inventory movement per product, optionally
+ * together with a compare-and-set update of another record (e.g. an order status move):
+ *   { lines: [{ productId, change }], reason, note, reference: { type, id }, actor: { id, email },
+ *     record: { collection, id, expect: { field: value }, patch }, onShortfall }
+ * Resolves to { plans: [{ product, change, before, after }], movements, record }.
+ * Throws 404 (unknown product or record), `onShortfall(shortfalls)` (default 409 "Stock
+ * cannot go below zero.") and 409 when `expect` no longer matches. JSON store: one locked
+ * read-modify-write. Mongo: conditional $inc per product, rolled back with the opposite
+ * $inc if a later step fails.
+ */
+export const applyStockChanges = async ({
+  lines,
+  reason,
+  note = null,
+  reference = null,
+  actor = null,
+  record = null,
+  onShortfall = belowZero,
+}) => {
+  const merged = mergeChanges(lines);
+
+  if (useMongo()) {
+    const ids = [...merged.keys()];
+    const fresh = ids.length
+      ? (await models.products.find({ id: { $in: ids } }).lean()).map(normalizeMongoRecord)
+      : [];
+    const plans = planStockChanges(merged, new Map(fresh.map((product) => [product.id, product])), onShortfall);
+    if (record) {
+      const current = await models[record.collection].findOne(mongoIdFilter(record.id)).lean();
+      if (!current) throw notFound(record.collection);
+      if (!matchesQuery(normalizeMongoRecord(current), record.expect || {})) throw new ApiError(409, CHANGED_ELSEWHERE);
+    }
+
+    const timestamp = now();
+    const applied = [];
+    let updatedRecord = null;
+    try {
+      for (const plan of plans) {
+        const filter = plan.change < 0 ? { id: plan.product.id, stockQuantity: { $gte: -plan.change } } : { id: plan.product.id };
+        const updated = await models.products
+          .findOneAndUpdate(filter, { $inc: { stockQuantity: plan.change }, $set: { updatedAt: timestamp } }, { new: true, timestamps: false })
+          .lean();
+        if (!updated) {
+          const latest = normalizeMongoRecord(await models.products.findOne({ id: plan.product.id }).lean());
+          throw onShortfall([{ product: latest || plan.product, change: plan.change }]);
+        }
+        applied.push(plan);
+        plan.product = normalizeMongoRecord(updated);
+        plan.after = Number(updated.stockQuantity) || 0;
+        plan.before = plan.after - plan.change;
+      }
+      if (record) {
+        updatedRecord = await models[record.collection]
+          .findOneAndUpdate(
+            { ...mongoIdFilter(record.id), ...(record.expect || {}) },
+            { $set: { ...definedOnly(record.patch), updatedAt: timestamp } },
+            { new: true, timestamps: false }
+          )
+          .lean();
+        if (!updatedRecord) throw new ApiError(409, CHANGED_ELSEWHERE);
+      }
+    } catch (error) {
+      await Promise.all(
+        applied.map((plan) =>
+          models.products
+            .updateOne({ id: plan.product.id }, { $inc: { stockQuantity: -plan.change } })
+            .catch((rollbackError) => console.error("Stock rollback failed:", plan.product.id, rollbackError?.message))
+        )
+      );
+      throw error;
+    }
+    const movements = plans.map((plan) => buildMovement(plan, { id: randomUUID(), reason, note, reference, actor, timestamp }));
+    if (movements.length) await models.inventoryMovements.insertMany(movements);
+    return { plans, movements, record: updatedRecord ? normalizeMongoRecord(updatedRecord) : null };
+  }
+
+  return mutateDb((db) => {
+    const products = db.products || [];
+    const plans = planStockChanges(merged, new Map(products.map((product) => [product.id, product])), onShortfall);
+    let recordIndex = -1;
+    const records = record ? db[record.collection] || [] : [];
+    if (record) {
+      recordIndex = records.findIndex((item) => item.id === record.id);
+      if (recordIndex === -1) throw notFound(record.collection);
+      if (!matchesQuery(records[recordIndex], record.expect || {})) throw new ApiError(409, CHANGED_ELSEWHERE);
+    }
+    if (!plans.length && !record) return { skipWrite: true, result: { plans, movements: [], record: null } };
+
+    const timestamp = now();
+    for (const plan of plans) {
+      const index = products.indexOf(plan.product);
+      products[index] = { ...plan.product, stockQuantity: plan.after, updatedAt: timestamp };
+      plan.product = products[index];
+    }
+    const movements = plans.map((plan) => buildMovement(plan, { id: randomUUID(), reason, note, reference, actor, timestamp }));
+    db.products = products;
+    db.inventoryMovements = [...(db.inventoryMovements || []), ...movements];
+    let updatedRecord = null;
+    if (record) {
+      updatedRecord = { ...records[recordIndex], ...definedOnly(record.patch), id: records[recordIndex].id, updatedAt: timestamp };
+      records[recordIndex] = updatedRecord;
+      db[record.collection] = records;
+    }
+    return { plans, movements, record: updatedRecord };
+  });
+};
+
+/**
+ * Page of inventory movements matching { productId, reason, from, to } (shared/inventory.js
+ * movementFilters), newest first. Resolves to { items, page, limit, total } (stored records).
+ */
+export const pageMovements = async (filters, { page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+  if (useMongo()) {
+    const query = {
+      ...(filters.productId ? { productId: filters.productId } : {}),
+      ...(filters.reason ? { reason: filters.reason } : {}),
+      ...(filters.from || filters.to
+        ? { createdAt: { ...(filters.from ? { $gte: filters.from } : {}), ...(filters.to ? { $lte: filters.to } : {}) } }
+        : {}),
+    };
+    const model = models.inventoryMovements;
+    const [items, total] = await Promise.all([
+      model.find(query).sort({ createdAt: -1, sku: 1, id: -1 }).skip(skip).limit(limit).lean(),
+      model.countDocuments(query),
+    ]);
+    return { items: items.map(normalizeMongoRecord), page, limit, total };
+  }
+  const db = await readDb();
+  const all = (db.inventoryMovements || []).filter((item) => matchesMovementFilters(item, filters)).sort(movementOrder);
+  return { items: all.slice(skip, skip + limit), page, limit, total: all.length };
+};
+
+/** Product by id, slug, or case-insensitive SKU (API_CONTRACT_V3 §0.4). */
+export const getProductItem = async (key) => {
+  try {
+    return await getCollectionItem("products", key);
+  } catch (error) {
+    if (error?.statusCode !== 404) throw error;
+    const bySku = await findCollectionItem("products", { skuLower: String(key ?? "").trim().toLowerCase() });
+    if (!bySku) throw error;
+    return bySku;
+  }
+};
+
 export const appendCollectionItem = async (collection, payload) =>
   createCollectionItem(collection, {
     ...payload,
@@ -790,13 +972,37 @@ export const pageRecords = async (collection, { filter = {}, page = 1, limit = 5
 // for webhook replay protection).
 export const ensureSecurityIndexes = async () => {
   if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
-  await Promise.all(
-    [...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
+  await Promise.all([
+    ...[...Object.values(securityModels), ...Object.values(readModels)].map((model) =>
       model.createIndexes()
-    )
-  );
+    ),
+    ensureOpsIndexes(),
+  ]);
 };
 
+// Uniqueness the v3 modules rely on (the JSON store checks inside its lock instead).
+const ensureOpsIndexes = () =>
+  Promise.all([
+    models.products.collection.createIndex(
+      { skuLower: 1 },
+      { unique: true, partialFilterExpression: { skuLower: { $type: "string" } } }
+    ),
+    models.products.collection.createIndex(
+      { slug: 1 },
+      { unique: true, partialFilterExpression: { slug: { $type: "string" } } }
+    ),
+    models.categories.collection.createIndex(
+      { slug: 1 },
+      { unique: true, partialFilterExpression: { slug: { $type: "string" } } }
+    ),
+    models.inventoryMovements.collection.createIndex({ productId: 1, createdAt: -1 }),
+    models.inventoryMovements.collection.createIndex({ referenceId: 1 }),
+    models.installationJobs.collection.createIndex({ engineerId: 1, scheduledAt: 1 }),
+    models.notifications.collection.createIndex({ createdAt: -1 }),
+    models.notificationReads.collection.createIndex({ adminId: 1 }),
+  ]);
+
+export const isDuplicateKeyError = isDuplicateKey;
 // Unique indexes that the Mongo store relies on for correctness: without them,
 // uniqueness falls back to a non-atomic pre-check (review L5).
 const UNIQUE_INDEXES = [

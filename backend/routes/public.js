@@ -9,6 +9,7 @@ import { getPortfolioItem, listPortfolio } from "../controllers/portfolio.js";
 import { listServices } from "../controllers/services.js";
 import { getVacancy, listVacancies } from "../controllers/vacancies.js";
 import { asyncHandler } from "../services/asyncHandler.js";
+import { opsPublicRouter } from "./ops.js";
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.get("/portfolio/:id", asyncHandler(getPortfolioItem));
 // Open vacancies only (writes live under /admin/vacancies).
 router.get("/vacancies", listVacancies);
 router.get("/vacancies/:slug", getVacancy);
+router.use(opsPublicRouter);
 
 // Public writes validate the body, then apply their per-route rate limit, then
 // verify Turnstile, and only then touch the database (see the controllers).

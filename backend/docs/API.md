@@ -128,8 +128,9 @@ Status values (validated on write; stored legacy values remain readable, and a s
 
 | Field | Allowed |
 | --- | --- |
-| order `status` | `pending`, `completed`, `cancelled` |
-| order `paymentStatus` | `unpaid`, `partial`, `paid`, `refunded` |
+| order `status` | derived and read-only: `pending`, `completed`, `cancelled` (see "Orders and fulfilment" below) |
+| order `fulfillmentStatus` | `pending`, `processing`, `out_for_delivery`, `delivered`, `installed`, `cancelled` |
+| order `paymentStatus` | `pending`, `partial`, `paid`, `failed`, `refunded` (`unpaid` is accepted as an input alias for `pending`) |
 | contact `status` | `new`, `contacted`, `completed` |
 | newsletter `status` | `new`, `active`, `inactive` (`isActive` is a boolean) |
 
@@ -379,7 +380,7 @@ Package resolution (identical in the Node backend and the Cloudflare Worker):
 
 Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With solar", otherwise "Without solar") → the kits text at the end of `package`. An explicit option name that doesn't exist falls back to `withSolar` and then the kits text; if neither is given or matches, the item is unavailable. With none of the three given, the first option is used.
 
-The order is persisted in `orders` with `status: "pending"` and `paymentStatus: "unpaid"`, then sent through the existing email template using the server-computed values.
+The order is persisted in `orders` with `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: false` and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
 
 ### Vacancies
 
@@ -550,3 +551,192 @@ Leads and orders:
 `PUT` on contacts, newsletter and orders only changes the fields present in the body (`status`, `note`, `paymentStatus`, `isActive`); omitted fields keep their current values and are not written. Catalog `PUT`s (packages, services, portfolio, customer segments) keep their required fields required; optional fields that are omitted, `null` or blank keep their stored values (except `volt: null`, which clears it). New catalog items without `sortOrder` are placed last.
 
 The deletion endpoints remove customer data permanently; the audit log (kept 180 days) records who deleted what.
+
+## Commerce and operations (v3)
+
+The binding definition is `docs/agents/API_CONTRACT_V3.md` §4–9. This section lists what is implemented, in both Express and the Worker, with any interpretation of the contract. Every admin route below requires the listed capability (`403` `"You do not have permission to perform this action."`). Paged responses are `{ items, page, limit, total }` with the audit-log paging rules.
+
+### Catalog: categories and products
+
+Public:
+
+- `GET /categories`: `200` `"Categories retrieved."`, an array of active categories ordered by `sortOrder`, then `name`.
+- `GET /categories/:id`: by id or slug. `404` `"Category not found."` when inactive.
+- `GET /products?category&q&page&limit` (paged): active products ordered by name. `category` is an id or slug and includes descendants; an unknown category gives an empty page. `q` matches name, SKU, brand or tag (case-insensitive).
+- `GET /products/:id`: by id or slug. `404` `"Product not found."` unless `status` is `active`.
+
+Admin:
+
+- `GET /admin/categories` (`products:read`): array.
+- `POST /admin/categories`, `PUT /admin/categories/:id` (partial), `DELETE /admin/categories/:id` (`products:write`). Delete answers `409` `"Category has subcategories or products."` when the category is referenced.
+- `GET /admin/products?category&status&stock=low|out&q&page&limit` (`products:read`, paged): ordered by `updatedAt` descending.
+- `GET /admin/products/:id` (`products:read`): by id, slug or SKU.
+- `POST /admin/products`, `PUT /admin/products/:id` (partial), `DELETE /admin/products/:id` (`products:write`). Delete answers `409` `"Product is used by a package."`.
+
+Categories:
+
+- Fields: `name` (1–100), `slug`, `parentId`, `description` (≤1000), `imageUrl`, `attributes` (≤30 `{ key, label, type: text|number|boolean, unit }`), `isActive`, `sortOrder`.
+- `400` `"Parent category not found."` and `400` `"A category cannot be its own ancestor."`.
+
+Products:
+
+- **SKU:** 1–64 characters, `[A-Za-z0-9][A-Za-z0-9._-]*`, stored as sent and unique regardless of case (`409` `"Another product already uses SKU <sku>."`).
+- **Required on create:** `name` (1–150) and `price` (>0, ≤1,000,000,000).
+- **Optional:** `brand` (≤100), `costPrice`, `images` (≤10 URLs), `tags` (≤20) and `status` (`active`, `hidden`, `archived`).
+- **Attributes:** up to 50 keys; each value is a string of at most 200 characters, a number or a boolean.
+- **`descriptionHtml`:** sanitised by `shared/richText.js`, at most 50,000 characters after sanitising.
+- **`reorderLevel`:** 0–1,000,000. It defaults to `settings.inventory.defaultReorderLevel`, which is 0.
+- **`stockQuantity`:** can only be set on create (0–1,000,000), where it is written as an `initial` movement. A `PUT` with a different value answers `400` `"Use an inventory adjustment to change stock."`.
+- **Responses:** add `lowStock` (`stockQuantity <= reorderLevel`). Public products omit `costPrice`, `stockQuantity`, `reorderLevel` and `lowStock`, and add `inStock` and `category`.
+
+Packages accept `items: [{ productId, quantity (1–1000), note (≤200) }]` (≤50). Every product must exist, otherwise `400` `"Product not found."`. Public `GET /packages` and `GET /packages/:id` are unchanged for packages without items. With items, they add `items: [{ productId, quantity, note, name, slug, sku }]`.
+
+Audit actions: `category.create|update|delete`, `product.create|update|delete`.
+
+### Inventory
+
+- `GET /admin/inventory?stock=all|low|out&category&q&page&limit` (`inventory:read`, paged): `200` `"Inventory retrieved."`. Rows are `{ productId, sku, name, categoryId, stockQuantity, reorderLevel, lowStock, status, updatedAt }`, low stock first, then by name.
+- `POST /admin/inventory/adjustments` (`inventory:adjust`), body `{ productId, change, reason, note? }`: `201` `"Stock adjusted."` with `data: { movement, product }`.
+  - `productId` can also be a slug or SKU.
+  - `change` is a non-zero whole number with an absolute value of at most 1,000,000 (`400` `"Change must be a non-zero whole number."`).
+  - `reason` is `restock`, `adjustment`, `damage`, `return` or `correction` (`400` `"Reason is not valid."`). `note` is at most 500 characters.
+  - `409` `"Stock cannot go below zero."`.
+- `GET /admin/inventory/movements?productId&reason&from&to&page&limit` (`inventory:read`, paged): `200` `"Movements retrieved."`. Newest first; movements written together are ordered by SKU. Invalid dates answer `400` `"from must be a valid date."` or `"to must be a valid date."`.
+- `POST /admin/inventory/low-stock-check` (`inventory:adjust`): `200` `"Low-stock check complete."` with `data: { lowStock, emailed }`. It emails a digest of all active low-stock products. The Worker also runs it once a day from a cron trigger (`wrangler.toml`). Express runs it from a 24-hour timer started in `start()`, and that timer runs **once per Express instance**: with several instances behind a load balancer, each one sends its own digest.
+
+Movement: `{ id, productId, sku, productName, change, stockBefore, stockAfter, reason, referenceType, referenceId, note, createdBy: { id, email } | null, createdAt }`. Reasons written by the system are `initial`, `sale` and `sale_reversal`.
+
+**Atomicity.** The stock update and its movement are never written separately:
+
+- **JSON store:** one locked read-modify-write.
+- **Mongo:** a conditional `$inc` (`stockQuantity >= -change`), and every step that already ran is undone if a later one fails.
+- **D1:** one `batch` (a transaction). Each product `UPDATE` compares the stored JSON document and is followed by `INSERT INTO batch_guard (ok) SELECT changes()`. A guard row of 0 violates `CHECK (ok = 1)` and rolls back the whole batch, which then retries on fresh rows (up to 5 times, then `409`). Migration `0012` creates `batch_guard`.
+
+**Low-stock alert.** It fires when a movement takes stock from above the reorder level to at or below it, provided the level is above 0 or the stock reaches 0. It emails `settings.notifications.lowStockEmails`; when that list is empty it falls back to `SMTP_FROM` (Express) or `ADMIN_NOTIFY_EMAIL` (Worker). Nothing is sent when `settings.inventory.lowStockAlertsEnabled` is false. Email never fails the adjustment.
+
+Audit action: `inventory.adjust` (entity `product`).
+
+### Orders and fulfilment
+
+Enums, transitions and stock rules: contract §6. Every admin order response is normalised at read time, so legacy and new orders look the same:
+
+- **Legacy payment status:** `unpaid` reads as `pending` with `legacyPaymentStatus: "unpaid"`. A missing or unknown value reads as `pending` with `legacyPaymentStatus` set to the original value or `null`.
+- **Legacy status:** `completed` reads as `fulfillmentStatus: "delivered"`, `cancelled` as `cancelled`, and anything else as `pending`.
+- **Defaults:** `requiresInstallation: false`; `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
+- **`status`:** always derived from `fulfillmentStatus`.
+- **Persistence:** D1 migration `0011_orders_fulfilment.sql` writes the same values, and Express writes them on the next change.
+- **Removed field:** the internal `sortOrder` is no longer part of order responses.
+
+Endpoints:
+
+- `GET /admin/orders?fulfillmentStatus&paymentStatus&engineerId&requiresInstallation&from&to` (`orders:read`): array. `from` and `to` filter on `receivedAt`, falling back to `createdAt`.
+- `GET /admin/orders/:id` (`orders:read`): the order plus `jobs: [{ id, status, engineerId, scheduledAt }]`.
+- `PUT /admin/orders/:id` (`orders:update`): `200` `"Order updated."`. Body `{ note?, isActive?, requiresInstallation?, paymentStatus?, fulfillmentStatus?, status? }`.
+  - `status` must equal the current derived value, otherwise `400` `"Use fulfillmentStatus to change the order status."`.
+  - Setting `requiresInstallation: false` while non-cancelled jobs exist answers `409` `"Order has installation jobs."`.
+- `POST /admin/orders/:id/fulfillment` (`orders:update`), body `{ status, note? }`: `200` `"Fulfilment status updated."`. A missing or invalid `status` answers `400` `"Fulfilment status is not valid."`.
+- `POST /admin/orders/:id/mark-paid` (`orders:update`), body `{ note? }`: `200` `"Order marked as paid."`. An already-paid order is a no-op.
+- `POST /admin/orders/:id/assign-engineer` (`orders:update`), body `{ engineerId: string | null }`: `200` `"Engineer assigned."` or `"Engineer unassigned."`.
+  - `400` `"Assignee must be an active engineer."`, checked before `409` `"Order does not require installation."`.
+  - No job is created.
+- `DELETE /admin/orders/:id` (`orders:delete`): `409` `"Order has installation jobs."` when non-cancelled jobs exist.
+
+Transition errors: `409` `"Cannot change fulfilment status from <from> to <to>."`, `409` `"Cannot change payment status from <from> to <to>."` and `409` `"Order does not require installation."` (for `installed`). Sending the current value is a no-op (`200`). Entering `paid` sets `paidAt` when it is null.
+
+Stock:
+
+- **`pending → processing`:** every order line whose `packageId` resolves to a package with `items` decrements `item.quantity × line.quantity` per product. These are `sale` movements with `referenceType: "order"`. It is all-or-nothing: a shortfall answers `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]` ordered by SKU, and nothing is written. `stockCommittedAt` is set only when stock actually moved.
+- **`→ cancelled` with `stockCommittedAt` set:** `sale_reversal` movements restore the net quantity of the order's `sale` movements, and `stockCommittedAt` becomes `null`.
+- **Write safety:** the stock changes and the order update are one atomic write. It is guarded by the order's stored `fulfillmentStatus` and `paymentStatus` (`assignedEngineerId` for assignment). A concurrent status change answers `409` `"This record was changed by another request. Please try again."`, so stock is never committed twice.
+
+Audit actions:
+
+- `order.update`: note, isActive or requiresInstallation changes.
+- `order.fulfillment_change`: the summary shows `from → to`.
+- `order.status_change`: written in addition when the derived `status` changes.
+- `order.payment_change`, `order.assign_engineer`, `order.delete`.
+
+### Installation jobs, engineer endpoints and staff
+
+Job shape and transitions: contract §7.1. `order` and `engineer` (including `engineer.phone`) are joined at read time. `address` defaults to the order's `deliveryAddress`.
+
+Admin jobs:
+
+- `GET /admin/jobs?status&engineerId&orderId&from&to&page&limit` (`jobs:read`, paged): `"Jobs retrieved."`. Ordered by `scheduledAt` ascending with unscheduled jobs last, then `createdAt` descending. `from` and `to` filter `scheduledAt`.
+- `GET /admin/jobs/:id` (`jobs:read`): `"Job retrieved."`, or `404` `"Job not found."`.
+- `POST /admin/jobs` (`jobs:assign`), body `{ orderId, engineerId?, scheduledAt?, durationEstimateMinutes?, address?, checklist?: string[], notes? }`: `201` `"Job created."`.
+  - Checks run in this order: body validation (`"Order is required."`, `"Scheduled time must be a valid date."`, duration 15–10,080), then `404` `"Order not found."`, then `400` `"Assignee must be an active engineer."`, then `409` `"Order does not require installation."` or `"Order is cancelled."`.
+  - The job starts `assigned` when an engineer is given, otherwise `unassigned`.
+  - Assigning an engineer also sets the order's `assignedEngineerId` when it is empty.
+- `PUT /admin/jobs/:id` (`jobs:assign`), body `{ scheduledAt?, durationEstimateMinutes?, address?, checklist?, notes? }`: `"Job updated."`. Only the sent fields change.
+  - The checklist is replaced. String entries become new items; `{ id, label }` entries with a known id keep `done`, `doneAt` and `doneBy`.
+  - A closed job answers `409` `"Job is closed."`.
+- `POST /admin/jobs/:id/assign` (`jobs:assign`), body `{ engineerId | null }`: `"Job assigned."` (status `assigned`) or `"Job unassigned."` (status `unassigned`). Only unassigned or assigned jobs can be assigned; any other status answers `409` `"Cannot change job status from <from> to <to>."`.
+- `POST /admin/jobs/:id/status` (`jobs:assign`), body `{ status, note? }`: `"Job status updated."`. The allowed moves are `unassigned → cancelled`, `assigned → in_progress | cancelled` and `in_progress → completed | cancelled`. `assigned` and `unassigned` only come from assign. The same status is a no-op. The status sets `startedAt`, `completedAt` or `cancelledAt`, and the note goes into the audit summary.
+- `DELETE /admin/jobs/:id` (`jobs:assign`): `"Job deleted."`. Only for `unassigned`, `assigned` or `cancelled` jobs; otherwise `409` `"Job cannot be deleted once started."`.
+
+Engineer endpoints (`jobs:update-own`). Every lookup is scoped to the signed-in admin's id, and another engineer's job answers `404` `"Job not found."`:
+
+- `GET /admin/me/jobs?status&page&limit`: open jobs only, unless `status` is given.
+- `GET /admin/me/jobs/:id`.
+- `POST /admin/me/jobs/:id/status`, body `{ status: "in_progress" | "completed" }`.
+  - Any other value answers `400` `"Status is not valid."`.
+  - Invalid moves answer `409` `"Cannot change job status from <from> to <to>."`.
+  - Completing with unfinished checklist items answers `409` `"Complete the checklist first."`.
+- `PUT /admin/me/jobs/:id`, body `{ checklist?: [{ id, done }], photos?: string[] (≤20 URLs), completionNotes? (≤5000) }`.
+  - Checking an item sets `doneAt` and `doneBy`; unchecking clears them.
+  - An unknown item id answers `400` `"Checklist item not found."`.
+  - Jobs that are not `assigned` or `in_progress` answer `409` `"Job is closed."`.
+
+When a job becomes `completed` and its order is `delivered`, and every non-cancelled job of that order is completed, the order moves to `installed`. The move is audited as `order.fulfillment_change` by the acting admin.
+
+Staff:
+
+- `GET /admin/staff?role&area&isActive&q&page&limit` (`staff:read`, paged `AdminUser`, ordered by name). `area` matches an `areaCoverage` entry regardless of case. An invalid role answers `400` `"Role is not valid."`.
+- `GET /admin/staff/:id` (`staff:read`): `"Staff member retrieved."`, with `AdminUser` plus `openJobs` (the engineer's jobs that are not completed or cancelled). `404` `"User not found."`.
+- `PUT /admin/staff/:id` (`staff:write`), body `{ phone?, profile?: { areaCoverage?, certifications?, bio?, avatarUrl? } }`: `"Staff member updated."`. Sent profile keys replace the stored ones, and the other keys are kept. Role and activation are ignored here. Audited as `user.update`.
+
+Audit actions: `job.create`, `job.update`, `job.assign`, `job.status_change`, `job.delete` (entity `job`).
+
+### Settings and notifications
+
+Settings (contract §8.1, one document with id `global`, defaults when missing):
+
+- `GET /settings/public` (public): `"Settings retrieved."` with `{ business: { name, phone, email, address, website }, payments: { gatewayEnabled } }`. Notification emails are never public.
+- `GET /admin/settings` (`settings:read`): `"Settings retrieved."` with the full `Settings`, including `updatedAt` and `updatedBy: { id, email }`.
+- `PUT /admin/settings` (`settings:write`): `"Settings updated."`. Sent sections are merged key by key, sent arrays replace, and unknown sections and keys are ignored.
+  - A non-object section answers `400` `"<section> must be an object."`.
+  - Email lists (≤10 each) with an invalid entry answer `"<Label> must contain valid email addresses."` and are stored lowercase.
+  - `payments.provider` is `paystack`, `flutterwave` or `null` (`"Payment provider is not valid."`).
+  - `inventory.defaultReorderLevel` is 0–1,000,000 and `uploads.provider` must be `url`.
+  - Audited as `settings.update`, with dotted changed keys such as `notifications.lowStockEmails`.
+
+Recipients: new-order emails go to `notifications.orderEmails` and low-stock emails to `notifications.lowStockEmails`. When a list is empty, the existing env mailbox is used (`SMTP_FROM` for Express, `ADMIN_NOTIFY_EMAIL` for the Worker). Vacancy emails go to `notifications.vacancyEmails` on a vacancy's first publish, and only when that list is not empty (there was no earlier vacancy email).
+
+Notifications (contract §8.2). Types and when they are created:
+
+- `low_stock`: a product crosses its reorder level. Created even when low-stock emails are disabled.
+- `new_order`: a public order is placed.
+- `vacancy_posted`: a vacancy's first publish.
+- `job_assigned`: a job is created with an engineer or assigned. `recipientId` is the engineer.
+
+Audience: `low_stock` needs `inventory:read`, `new_order` needs `orders:read`, `vacancy_posted` needs `vacancies:read`, and `job_assigned` is visible only to its recipient. `read` is computed per admin. Records older than 90 days are removed opportunistically.
+
+- `GET /admin/notifications?unread=true&type&page&limit` (`notifications:read`, paged, newest first): `"Notifications retrieved."`, plus `unreadCount` for every unread notification in the audience, whatever the filters. An invalid type answers `400` `"Type is not valid."`.
+- `POST /admin/notifications/:id/read` (`notifications:read`): `"Notification marked as read."` with the notification. `404` `"Notification not found."` when it does not exist or is outside the caller's audience.
+- `POST /admin/notifications/read-all` (`notifications:read`): `"All notifications marked as read."` with `{ unreadCount: 0 }`.
+
+Helpers: `backend/services/notifications.js` `notify({ type, title, message, entity, entityId, recipientId? })` (Express) and `backend/cloudflare/src/notifications.js` `notify(env, ctx, {...})` (Worker). Both are best-effort and never fail the triggering request. The Worker's Resend sender moved to `backend/cloudflare/src/email.js` so modules outside `index.js` can send email.
+
+### Dashboard KPIs
+
+`GET /admin/dashboard?from&to` (`dashboard:read`). `stats`, `statusCounts`, `revenueSeries` and `recentOrders` are unchanged. A `kpis` key is added:
+
+- **`period: { from, to }`:** defaults to the 30 days ending now. When only `from` is sent, `to` is now; when only `to` is sent, `from` is 30 days earlier.
+- **`revenue`:** the sum of `totalAmount` (falling back to the parsed `total`) for orders placed in the period (`receivedAt`, else `createdAt`) whose `fulfillmentStatus` is not `cancelled` and whose `paymentStatus` is `paid` or `partial`. Legacy orders are normalised first.
+- **`openOrders`:** `fulfillmentStatus` in `pending`, `processing` or `out_for_delivery`. Not limited to the period.
+- **`lowStockItems`:** active products with `stockQuantity <= reorderLevel`.
+- **`openVacancies`:** vacancies with status `open`.
+- **`upcomingJobs`:** jobs that are `unassigned` or `assigned` with `scheduledAt` between now and 7 days from now.
+
+Errors: `400` `"from must be a valid date."`, `"to must be a valid date."`, `"Date range must be 366 days or fewer."` and `"from must be before to."`.
