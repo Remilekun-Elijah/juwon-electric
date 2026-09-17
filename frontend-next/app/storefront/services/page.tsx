@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Phone } from "lucide-react";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import ContactBand from "@/components/storefront/content/ContactBand";
-import { OfferingCard, SegmentCard, contentKey } from "@/components/storefront/content/ServiceCards";
+import { OfferingCard, contentKey } from "@/components/storefront/content/ServiceCards";
+import { SolutionCards } from "@/components/storefront/landing/Solutions";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { EmptyState, buttonClasses } from "@/components/ui";
+import { staggerDelay, storeGlassButton, storeGoldButton } from "@/lib/storefront/styles";
 import { getStoreServices, getStoreSettings } from "@/lib/storefront/data";
 import { primaryPhone, storeRoutes, telHref } from "@/lib/storefront/routes";
 
@@ -31,28 +34,29 @@ export default async function ServicesPage() {
         description="System design, energy audits, installation, maintenance and after-sales support for homes, businesses and institutions."
         actions={
           <>
-            <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>
+            <Link href={storeRoutes.contact} className={storeGoldButton}>
               Talk to an engineer
             </Link>
             {phone && (
-              <a href={telHref(phone)} className={buttonClasses({ variant: "outline", size: "lg" })}>
+              <a href={telHref(phone)} className={storeGlassButton}>
                 <Phone aria-hidden="true" />
                 <span className="tabular-nums">{phone}</span>
               </a>
             )}
           </>
         }
+        image={INTRO_IMAGES.commercial}
       />
 
       <Section eyebrow="Offerings" title="How we can help">
         {offerings.length > 0 ? (
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Reveal as="ul" stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {offerings.map((offering, index) => (
-              <li key={contentKey(offering, index)} className="min-w-0">
+              <li key={contentKey(offering, index)} style={staggerDelay(index, 60, 350, 6)} className="je-in min-w-0">
                 <OfferingCard offering={offering} />
               </li>
             ))}
-          </ul>
+          </Reveal>
         ) : (
           <EmptyState
             standalone
@@ -74,13 +78,7 @@ export default async function ServicesPage() {
           title="Who we power"
           description="Homes, businesses and institutions that need power they can rely on."
         >
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {customerSegments.map((segment, index) => (
-              <li key={contentKey(segment, index)} className="min-w-0">
-                <SegmentCard segment={segment} />
-              </li>
-            ))}
-          </ul>
+          <SolutionCards segments={customerSegments} />
         </Section>
       )}
 

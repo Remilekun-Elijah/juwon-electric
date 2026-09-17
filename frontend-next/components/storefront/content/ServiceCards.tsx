@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import type { PublicCustomerSegment, ServiceOffering } from "@/lib/api/types";
+import type { ServiceOffering } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { contactTopicPath } from "@/lib/storefront/routes";
-import { storeCard, storeH3, storeLink } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeCard, storeH3, storeHoverLift, storeImageZoom, storeLink } from "@/lib/storefront/styles";
 import { isAllowedUrl } from "@/lib/validation";
 import ContentImage from "./ContentImage";
 
@@ -39,19 +39,20 @@ export type OfferingCardProps = {
   compact?: boolean;
 };
 
-/** Service offering: image, title, subtitle and CTA. Server component. */
+/** Service offering: image, title, subtitle and CTA. Lifts on hover while the image zooms. Server component. */
 export function OfferingCard({ offering, headingAs: Heading = "h3", compact = false }: OfferingCardProps) {
   const paragraphs = paragraphsOf(offering.subtitle);
   const shown = compact ? paragraphs.slice(0, 1) : paragraphs;
   const cta = offeringCta(offering);
 
   return (
-    <article className={cn(storeCard, "flex h-full flex-col overflow-hidden")}>
+    <article className={cn(storeCard, storeHoverLift, "group flex h-full flex-col overflow-hidden")}>
       <ContentImage
         src={offering.image}
         alt=""
         sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
         className="aspect-[16/10] border-b border-slate-200"
+        imageClassName={storeImageZoom}
       />
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <Heading className={storeH3}>{offering.title}</Heading>
@@ -72,37 +73,10 @@ export function OfferingCard({ offering, headingAs: Heading = "h3", compact = fa
           ) : (
             <Link href={cta.href} className={cn(storeLink, "inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
               {cta.label}
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              <ArrowRight aria-hidden="true" className={cn("h-4 w-4", storeArrowNudge)} />
             </Link>
           )}
         </div>
-      </div>
-    </article>
-  );
-}
-
-export type SegmentCardProps = {
-  segment: PublicCustomerSegment;
-  headingAs?: "h2" | "h3";
-};
-
-/** Customer segment ("Who we power"): image, title and subtitle. Server component. */
-export function SegmentCard({ segment, headingAs: Heading = "h3" }: SegmentCardProps) {
-  return (
-    <article className={cn(storeCard, "flex h-full flex-col overflow-hidden")}>
-      <ContentImage
-        src={segment.image}
-        alt=""
-        sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
-        className="aspect-[4/3] border-b border-slate-200"
-      />
-      <div className="p-5">
-        <Heading className="text-base font-semibold tracking-tight text-slate-900">{segment.title}</Heading>
-        {paragraphsOf(segment.subtitle).map((paragraph, index) => (
-          <p key={index} className="mt-2 text-sm leading-relaxed text-slate-600">
-            {paragraph}
-          </p>
-        ))}
       </div>
     </article>
   );
