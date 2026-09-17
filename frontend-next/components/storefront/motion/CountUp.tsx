@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/cn";
-import { REVEAL_ROOT_MARGIN, isBelowFold, motionDisabled } from "./motion";
+import { REVEAL_ROOT_MARGIN, motionDisabled } from "./motion";
 
 type ParsedFigure = { prefix: string; number: number; decimals: number; grouped: boolean; suffix: string };
 
@@ -36,9 +36,12 @@ export type CountUpProps = {
 /**
  * Counts the number in `value` up from 0 when it scrolls into view (TEAM_AND_MOTION_V1 §5.2), about 1.2 s, once.
  *
- * The real value is always in the markup (server HTML, screen readers, crawlers). While counting, it is made transparent
- * and an `aria-hidden` twin in the same grid cell shows the moving figure, so the width never changes. Values already on
- * screen at mount, and reduced motion, show the final value with no count.
+ * - The real value is always in the markup (server HTML, screen readers, crawlers). While counting it is transparent
+ *   and an `aria-hidden` twin in the same grid cell shows the moving figure, so the width never changes.
+ * - `data-count="pending"` in the server HTML lets app/globals.css hold back the digits only when scripting is on and
+ *   motion is allowed, so a figure already on screen counts from 0 instead of flashing its final value first. Without
+ *   JavaScript the value shows as normal, and if hydration never happens a CSS fallback shows it after 3 s.
+ * - Reduced motion and values without a number show the final value straight away.
  */
 export default function CountUp({ value, duration = 1200, className }: CountUpProps) {
   const valueRef = useRef<HTMLSpanElement>(null);
@@ -47,14 +50,20 @@ export default function CountUp({ value, duration = 1200, className }: CountUpPr
   useEffect(() => {
     const real = valueRef.current;
     const counter = counterRef.current;
+    if (!real || !counter) return;
     const figure = parseFigure(value);
-    if (!real || !counter || !figure || motionDisabled() || !isBelowFold(real)) return;
+    if (!figure || motionDisabled()) {
+      real.dataset.count = "done";
+      return;
+    }
 
     let frame = 0;
     const finish = () => {
       counter.textContent = "";
       real.style.opacity = "";
+      real.dataset.count = "done";
     };
+    real.dataset.count = "running";
     real.style.opacity = "0";
     counter.textContent = formatFigure(figure, 0, false);
 
@@ -86,7 +95,7 @@ export default function CountUp({ value, duration = 1200, className }: CountUpPr
 
   return (
     <span className={cn("inline-grid", className)}>
-      <span ref={valueRef} className="[grid-area:1/1]">
+      <span ref={valueRef} data-count="pending" className="[grid-area:1/1]">
         {value}
       </span>
       <span ref={counterRef} aria-hidden="true" className="pointer-events-none [grid-area:1/1]" />
