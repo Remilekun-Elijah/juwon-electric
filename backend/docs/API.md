@@ -22,7 +22,10 @@ Admin authentication:
 
 Auth endpoints:
 
-- `POST /admin/auth/login` (body `{ "username", "password" }`)
+- `POST /admin/auth/login` (body `{ "username", "password" }`): `200` `"Login successful."` with `data: { token, admin: AdminSelf }`.
+- `GET /admin/auth/me` (auth required, no capability): `200` `"Session retrieved."` with `data: { admin: AdminSelf }`. The frontend calls it on load and after any `403`.
+
+`AdminSelf` is `{ id, name, email, role, capabilities, isStatic? }`. `role` is normalised (never `super_admin`), `capabilities` is sorted (every capability for `superadmin`), and `isStatic: true` appears only for the static `ADMIN_TOKEN`. Hide navigation by `capabilities`, never by `role`; the server enforces access either way.
 - `POST /admin/auth/logout` (auth required) revokes the current session and returns `200 { "success": true, "message": "Signed out." }`. With the static `ADMIN_TOKEN` it returns `200` `"Static admin tokens cannot be signed out; remove ADMIN_TOKEN to revoke access."`.
 - `POST /admin/auth/request-password-reset` (body `{ "username" }`)
 - `POST /admin/auth/reset-password` (body `{ "username", "token", "password" }`)
@@ -125,8 +128,9 @@ Status values (validated on write; stored legacy values remain readable, and a s
 
 | Field | Allowed |
 | --- | --- |
-| order `status` | `pending`, `completed`, `cancelled` |
-| order `paymentStatus` | `unpaid`, `partial`, `paid`, `refunded` |
+| order `status` | derived and read-only: `pending`, `completed`, `cancelled` (see "Orders and fulfilment" below) |
+| order `fulfillmentStatus` | `pending`, `processing`, `out_for_delivery`, `delivered`, `installed`, `cancelled` |
+| order `paymentStatus` | `pending`, `partial`, `paid`, `failed`, `refunded` (`unpaid` is accepted as an input alias for `pending`) |
 | contact `status` | `new`, `contacted`, `completed` |
 | newsletter `status` | `new`, `active`, `inactive` (`isActive` is a boolean) |
 
@@ -150,7 +154,7 @@ Response headers (every response, including errors, `404` and `OPTIONS`):
 - `/admin/*` and `/api/admin/*` responses (any letter case) also send `Cache-Control: no-store`.
 - `X-Powered-By` is not sent.
 
-Error status summary: `400` validation, `401` auth/webhook signature, `403` origin not allowed, `404` not found (`"<Label> not found."`: Package, Service, Portfolio item, Customer segment, Order, Contact, Subscriber, Admin), `409` duplicate package id or webhook still being processed, `413` body too large, `415` not JSON, `429` rate limit or login lockout (with `Retry-After`), `500` admin auth or webhook secret misconfigured, `502` reply email not delivered or inbound email not fetchable, `503` Turnstile unavailable or database unavailable (`"Service temporarily unavailable."`).
+Error status summary: `400` validation, `401` auth/webhook signature, `403` origin not allowed or missing capability, `404` not found (`"<Label> not found."`: Package, Service, Portfolio item, Customer segment, Order, Contact, Subscriber, User, Vacancy), `409` duplicate package id, duplicate admin email, vacancy status transition not allowed, own role or status change, last active superadmin, or webhook still being processed, `413` body too large, `415` not JSON, `429` rate limit or login lockout (with `Retry-After`), `500` admin auth or webhook secret misconfigured, `502` reply email not delivered or inbound email not fetchable, `503` Turnstile unavailable or database unavailable (`"Service temporarily unavailable."`).
 
 Email:
 
@@ -376,9 +380,70 @@ Package resolution (identical in the Node backend and the Cloudflare Worker):
 
 Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With solar", otherwise "Without solar") → the kits text at the end of `package`. An explicit option name that doesn't exist falls back to `withSolar` and then the kits text; if neither is given or matches, the item is unavailable. With none of the three given, the first option is used.
 
-The order is persisted in `orders` with `status: "pending"` and `paymentStatus: "unpaid"`, then sent through the existing email template using the server-computed values.
+The order is persisted in `orders` with `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: false` and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
+
+### Vacancies
+
+Contract `docs/agents/API_CONTRACT_V3.md` §3. Only `open` vacancies are public. Writes exist only under `/admin/vacancies`: `POST`/`PUT`/`DELETE /vacancies*` return `404` `"Route not found."`, and headers such as `X-User-Role` are never used.
+
+- `GET /vacancies?department=&employmentType=`: `200` `"Vacancies retrieved."` with an **array** of `PublicVacancy`, newest `postedAt` first. `department` matches case-insensitively (up to 100 characters). `employmentType` must be valid (`400` `"Employment type is not valid."`).
+- `GET /vacancies/:slug`: `200` `"Vacancy retrieved."`. It resolves by slug, then id. A draft, closed or unknown vacancy returns `404` `"Vacancy not found."`.
+
+`PublicVacancy` is `{ id, slug, title, department, location, employmentType, salaryRange, descriptionHtml, requirements, responsibilities, status, postedAt, createdAt, updatedAt }`. `descriptionHtml` is already sanitised; render it inside a scoped prose container.
 
 ## Admin Endpoints
+
+Roles and capabilities (contract `docs/agents/API_CONTRACT_V3.md` §1):
+
+Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `engineer`, `hr` or `support` (`customer` is not an admin role). Each admin route requires the capabilities listed below. The map lives in `backend/shared/capabilities.js`, which both Express (`middleware/capabilities.js`) and the Worker (`cloudflare/src/capabilities.js`) import. `superadmin` holds every capability, including ones added later.
+
+- The role is read from the **stored admin record** on every request. The role in the token payload, headers and body fields are never used for authorisation. A role change applies on the account's next request.
+- The legacy stored value `super_admin` reads as `superadmin` and is returned as `superadmin`. D1 migration `0007_admin_roles.sql` rewrites existing rows, and Express rewrites the record on its next write (for example, the next sign-in). The seeders write `superadmin`.
+- A missing or unknown role has no capabilities: the account can sign in and call `GET /admin/auth/me`, and gets `403` everywhere else.
+- The static `ADMIN_TOKEN` acts as `superadmin`.
+- A missing capability returns `403` `"You do not have permission to perform this action."` (the same body for every capability, not audited). Auth (`401`) and capability (`403`) checks run before body validation and record lookups.
+
+| Capability | Roles besides `superadmin` | Routes |
+| --- | --- | --- |
+| `dashboard:read` | admin, inventory, sales, hr, support | `GET /admin/dashboard` |
+| `audit:read` | admin | `GET /admin/audit-logs` |
+| `users:read` | admin | `GET /admin/users`, `GET /admin/users/:id` |
+| `users:manage` | admin | `POST /admin/users`, `PUT /admin/users/:id`, `POST /admin/users/:id/role`, `/deactivate`, `/reactivate` |
+| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio` |
+| `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio |
+| `orders:read` | admin, inventory, sales, support | `GET /admin/orders`, `GET /admin/orders/:id`, `GET /admin/carts` |
+| `orders:update` | admin, sales | `PUT /admin/orders/:id` |
+| `orders:delete` | admin | `DELETE /admin/orders/:id` |
+| `leads:read` | admin, sales, support | `GET /admin/contacts`, `GET /admin/newsletter` |
+| `leads:write` | admin, sales, support | `PUT`/`DELETE /admin/contacts/:id`, `POST /admin/contacts/:id/reply`, `PUT`/`DELETE /admin/newsletter/:id` |
+| `settings:read` / `settings:write` | admin, inventory, sales, hr, support / admin | upcoming settings module |
+| `products:read` / `products:write` | admin, inventory, sales, support / admin, inventory | upcoming catalog module |
+| `inventory:read` / `inventory:adjust` | admin, inventory, sales / admin, inventory | upcoming inventory module |
+| `jobs:read` / `jobs:assign` | admin, sales, support / admin, sales | upcoming installation jobs |
+| `jobs:update-own` | engineer (not admin) | upcoming `/admin/me/jobs*` |
+| `staff:read` / `staff:write` | admin, sales, hr / admin, hr | upcoming `/admin/staff*` |
+| `vacancies:read` / `vacancies:write` | admin, hr | `GET /admin/vacancies*` / create, update, publish, unpublish, delete |
+| `notifications:read` | admin, inventory, sales, engineer, hr, support | upcoming `/admin/notifications*` |
+
+No capability (any signed-in admin): `POST /admin/auth/logout`, `GET /admin/auth/me`, `GET /admin/reads`, `POST /admin/reads/all`. `POST /admin/reads` checks the record type: `contacts` needs `leads:read`, `orders` needs `orders:read`.
+
+Admin users (contract §2):
+
+`AdminUser` is `{ id, name, email, role, isActive, phone, profile: { areaCoverage, certifications, bio, avatarUrl }, lastLoginAt, createdAt, updatedAt }`. It never includes the password hash, reset tokens or sessions. `phone` is `null` when unset. `profile` defaults to empty arrays and nulls and is preserved by every users write.
+
+- `GET /admin/users?page&limit&role&isActive&q` **(paged)**: `200` `"Users retrieved."` with `{ items, page, limit, total }`, newest `createdAt` first, including inactive accounts. `role` must be a valid role (`400` `"Role is not valid."`). `isActive` is `true` or `false` (`400` `"isActive must be true or false."`). `q` is a case-insensitive substring of name or email, up to 100 characters (`400` `"q must be 100 characters or fewer."`). Paging errors are the audit-log messages. A repeated query parameter (for example `?role=a&role=b`) is rejected with that parameter's 400 in both runtimes; this applies to every new list endpoint.
+- `GET /admin/users/:id`: `200` `"User retrieved."`, or `404` `"User not found."`.
+- `POST /admin/users` (body `{ "name", "email", "role", "phone"? }`): `201` `"User created."`. `name` 1-100, `email` is lowercased, `phone` uses the phone rule or is `null`, `role` must be valid (`400` `"Role is not valid."`). The account has no usable password: a password reset token is emailed as an invite (subject `"Set up your Juwon Electric admin account"`, with a link to `ADMIN_APP_URL` when set; the template is `backend/shared/adminInviteEmail.js`), and the user sets a password with `POST /admin/auth/reset-password`. An expired invite is renewed with `POST /admin/auth/request-password-reset`. `409` `"An account with this email already exists."` (case-insensitive; D1 unique index `idx_records_admins_email`, a Mongo unique index on `email`, and a check under the JSON store lock). Audit `user.create`.
+- `PUT /admin/users/:id` (body `{ "name"?, "phone"? }`): `200` `"User updated."`. Only sent fields are written, and other fields (including `role` and `isActive`) are ignored. Audit `user.update` when something changed.
+- `POST /admin/users/:id/role` (body `{ "role" }`): `200` `"Role updated."` (the same when unchanged). Audit `user.role_change` with a `from → to` summary.
+- `POST /admin/users/:id/deactivate`: `200` `"User deactivated."`. Sets `isActive: false` and revokes every session, so the account's token gets `401` on its next request and it can no longer sign in or reset its password. Idempotent. Audit `user.deactivate`.
+- `POST /admin/users/:id/reactivate`: `200` `"User reactivated."`. Idempotent. Audit `user.reactivate`.
+
+Escalation rules (checked after the lookup, in this order):
+
+1. Only a `superadmin` may create, update, change the role of, deactivate or reactivate an account whose current **or** target role is `superadmin` or `admin`. Otherwise `403` `"You do not have permission to perform this action."`.
+2. No one may change their own role or status: `409` `"You cannot change your own role or status."`.
+3. Demoting or deactivating the last active `superadmin`: `409` `"At least one active superadmin is required."`. The count is checked before the write and again after it; if concurrent changes left no active superadmin, the change is rolled back with the same 409.
 
 Audit log:
 
@@ -388,7 +453,7 @@ Returns `{ "success": true, "message", "data": { "items", "page", "limit", "tota
 
 Each entry: `id`, `createdAt`, `adminId`, `adminEmail`, `action`, `entity`, `entityId`, `summary`, `changes` (changed field names only, never values), `ip`, `userAgent`.
 
-Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`.
+Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`, `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`, `vacancy`.
 
 Audit writes are best-effort and never fail the admin action. Entries older than 180 days are deleted opportunistically. Requests made with the static `ADMIN_TOKEN` are logged with `adminId` and `adminEmail` `"static-token"`.
 
@@ -409,6 +474,40 @@ Dashboard:
 - `GET /admin/dashboard`
 
 Returns dashboard stats, order status counts, revenue trend points, and recent orders for the admin dashboard.
+
+Vacancies:
+
+`Vacancy` is `PublicVacancy` plus `closedAt` and `createdBy: { id, email } | null`. `createdBy` is taken from the session (the static `ADMIN_TOKEN` records `"static-token"`) and never from the request. Records are built from validated fields only: `id`, `postedAt`, `closedAt`, `createdBy` and any unknown fields in a body are ignored.
+
+- `GET /admin/vacancies?status=&q=&page=&limit=` (`vacancies:read`) **(paged)**: `200` `"Vacancies retrieved."`. Includes every status, newest `updatedAt` first. `status` must be `draft`, `open` or `closed` (`400` `"Status is not valid."`). `q` matches title, department or location case-insensitively (up to 100 characters).
+- `GET /admin/vacancies/:id` (`vacancies:read`): `200` `"Vacancy retrieved."`. It resolves by id, then slug.
+- `POST /admin/vacancies` (`vacancies:write`): `201` `"Vacancy created."`. `status` defaults to `draft`. Creating with `status: "open"` sets `postedAt`, and `"closed"` sets `closedAt`.
+- `PUT /admin/vacancies/:id` (`vacancies:write`): `200` `"Vacancy updated."`. A partial update: only sent fields are written, and `null` clears an optional field. A `status` change follows the transitions below.
+- `POST /admin/vacancies/:id/publish` (`vacancies:write`): `200` `"Vacancy published."` (sets status to `open`).
+- `POST /admin/vacancies/:id/unpublish` (`vacancies:write`): `200` `"Vacancy unpublished."` (sets status to `draft`).
+- `DELETE /admin/vacancies/:id` (`vacancies:write`): `200` `"Vacancy deleted."` with the deleted record. This is a hard delete, so the slug can be used again.
+
+Unknown ids return `404` `"Vacancy not found."`.
+
+Fields and limits:
+
+| Field | Rule |
+| --- | --- |
+| `title` | required on create, 1-150 characters (`"Title is required."`, `"Title must be 150 characters or fewer."`) |
+| `slug` | optional, up to 120 characters. It is normalised, derived from `title` when blank, made unique with `-2`, `-3`..., and never changed by a title edit. A UUID-shaped slug returns `400` `"Slug must not look like an id."` |
+| `department`, `location`, `salaryRange` | optional, up to 100 characters, `null` when empty |
+| `employmentType` | `full-time`, `part-time`, `contract`, `internship`, `temporary` or `null` (`"Employment type is not valid."`) |
+| `descriptionHtml` | sanitised by `backend/shared/richText.js` (both runtimes), at most 50000 characters after sanitisation (`"Description must be 50000 characters or fewer."`), `""` allowed |
+| `requirements`, `responsibilities` | arrays of up to 30 single-line strings of 1-300 characters. Items are trimmed and blank items dropped (`"Requirements must be a list."`, `"Each requirement must be text."`, `"Each requirement must be 300 characters or fewer."`, `"Requirements can have at most 30 items."`) |
+| `status` | `draft`, `open` or `closed` (`"Status is not valid."`) |
+
+Status transitions: `draft→open`, `open→draft`, `open→closed`, `closed→open`, `closed→draft`. `draft→closed` returns `409` `"Cannot change vacancy status from draft to closed."`. Setting the current status again is a no-op (`200`). The first move to `open` sets `postedAt`, which is never cleared or reset. Closing sets `closedAt`, and leaving `closed` clears it.
+
+Rich text allowlist: `p br strong b em i u s blockquote ul ol li h2 h3 h4 a`. Links keep only an `http:`, `https:` or `mailto:` `href` and always get `rel="noopener noreferrer nofollow"` and `target="_blank"`. `script style iframe object embed noscript template svg math` are removed with their content. Other tags are unwrapped, and every other attribute and all comments are removed. Nesting deeper than 100 levels is unwrapped (text kept), and a quoted attribute value over 2048 characters means the tag is treated as text. Sanitising runs in linear time: 100 KB of hostile markup takes a few milliseconds. The fixtures are in `backend/shared/__fixtures__/richText.json`.
+
+Audit actions: `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete` (entity `vacancy`). A `PUT` that changes `status` is logged with the status action. The first publish will emit a `vacancy_posted` notification once the notifications module lands.
+
+Storage: the Worker uses `records` collection `vacancies` with migration `0008_vacancies.sql` (a unique slug index, and a status index). Express uses the `vacancies` collection in the JSON store (slug uniqueness checked under the store lock) or MongoDB (a unique `slug` index).
 
 Packages:
 
@@ -452,3 +551,192 @@ Leads and orders:
 `PUT` on contacts, newsletter and orders only changes the fields present in the body (`status`, `note`, `paymentStatus`, `isActive`); omitted fields keep their current values and are not written. Catalog `PUT`s (packages, services, portfolio, customer segments) keep their required fields required; optional fields that are omitted, `null` or blank keep their stored values (except `volt: null`, which clears it). New catalog items without `sortOrder` are placed last.
 
 The deletion endpoints remove customer data permanently; the audit log (kept 180 days) records who deleted what.
+
+## Commerce and operations (v3)
+
+The binding definition is `docs/agents/API_CONTRACT_V3.md` §4–9. This section lists what is implemented, in both Express and the Worker, with any interpretation of the contract. Every admin route below requires the listed capability (`403` `"You do not have permission to perform this action."`). Paged responses are `{ items, page, limit, total }` with the audit-log paging rules.
+
+### Catalog: categories and products
+
+Public:
+
+- `GET /categories`: `200` `"Categories retrieved."`, an array of active categories ordered by `sortOrder`, then `name`.
+- `GET /categories/:id`: by id or slug. `404` `"Category not found."` when inactive.
+- `GET /products?category&q&page&limit` (paged): active products ordered by name. `category` is an id or slug and includes descendants; an unknown category gives an empty page. `q` matches name, SKU, brand or tag (case-insensitive).
+- `GET /products/:id`: by id or slug. `404` `"Product not found."` unless `status` is `active`.
+
+Admin:
+
+- `GET /admin/categories` (`products:read`): array.
+- `POST /admin/categories`, `PUT /admin/categories/:id` (partial), `DELETE /admin/categories/:id` (`products:write`). Delete answers `409` `"Category has subcategories or products."` when the category is referenced.
+- `GET /admin/products?category&status&stock=low|out&q&page&limit` (`products:read`, paged): ordered by `updatedAt` descending.
+- `GET /admin/products/:id` (`products:read`): by id, slug or SKU.
+- `POST /admin/products`, `PUT /admin/products/:id` (partial), `DELETE /admin/products/:id` (`products:write`). Delete answers `409` `"Product is used by a package."`.
+
+Categories:
+
+- Fields: `name` (1–100), `slug`, `parentId`, `description` (≤1000), `imageUrl`, `attributes` (≤30 `{ key, label, type: text|number|boolean, unit }`), `isActive`, `sortOrder`.
+- `400` `"Parent category not found."` and `400` `"A category cannot be its own ancestor."`.
+
+Products:
+
+- **SKU:** 1–64 characters, `[A-Za-z0-9][A-Za-z0-9._-]*`, stored as sent and unique regardless of case (`409` `"Another product already uses SKU <sku>."`).
+- **Required on create:** `name` (1–150) and `price` (>0, ≤1,000,000,000).
+- **Optional:** `brand` (≤100), `costPrice`, `images` (≤10 URLs), `tags` (≤20) and `status` (`active`, `hidden`, `archived`).
+- **Attributes:** up to 50 keys; each value is a string of at most 200 characters, a number or a boolean.
+- **`descriptionHtml`:** sanitised by `shared/richText.js`, at most 50,000 characters after sanitising.
+- **`reorderLevel`:** 0–1,000,000. It defaults to `settings.inventory.defaultReorderLevel`, which is 0.
+- **`stockQuantity`:** can only be set on create (0–1,000,000), where it is written as an `initial` movement. A `PUT` with a different value answers `400` `"Use an inventory adjustment to change stock."`.
+- **Responses:** add `lowStock` (`stockQuantity <= reorderLevel`). Public products omit `costPrice`, `stockQuantity`, `reorderLevel` and `lowStock`, and add `inStock` and `category`.
+
+Packages accept `items: [{ productId, quantity (1–1000), note (≤200) }]` (≤50). Every product must exist, otherwise `400` `"Product not found."`. Public `GET /packages` and `GET /packages/:id` are unchanged for packages without items. With items, they add `items: [{ productId, quantity, note, name, slug, sku }]`.
+
+Audit actions: `category.create|update|delete`, `product.create|update|delete`.
+
+### Inventory
+
+- `GET /admin/inventory?stock=all|low|out&category&q&page&limit` (`inventory:read`, paged): `200` `"Inventory retrieved."`. Rows are `{ productId, sku, name, categoryId, stockQuantity, reorderLevel, lowStock, status, updatedAt }`, low stock first, then by name.
+- `POST /admin/inventory/adjustments` (`inventory:adjust`), body `{ productId, change, reason, note? }`: `201` `"Stock adjusted."` with `data: { movement, product }`.
+  - `productId` can also be a slug or SKU.
+  - `change` is a non-zero whole number with an absolute value of at most 1,000,000 (`400` `"Change must be a non-zero whole number."`).
+  - `reason` is `restock`, `adjustment`, `damage`, `return` or `correction` (`400` `"Reason is not valid."`). `note` is at most 500 characters.
+  - `409` `"Stock cannot go below zero."`.
+- `GET /admin/inventory/movements?productId&reason&from&to&page&limit` (`inventory:read`, paged): `200` `"Movements retrieved."`. Newest first; movements written together are ordered by SKU. Invalid dates answer `400` `"from must be a valid date."` or `"to must be a valid date."`.
+- `POST /admin/inventory/low-stock-check` (`inventory:adjust`): `200` `"Low-stock check complete."` with `data: { lowStock, emailed }`. It emails a digest of all active low-stock products. The Worker also runs it once a day from a cron trigger (`wrangler.toml`). Express runs it from a 24-hour timer started in `start()`, and that timer runs **once per Express instance**: with several instances behind a load balancer, each one sends its own digest.
+
+Movement: `{ id, productId, sku, productName, change, stockBefore, stockAfter, reason, referenceType, referenceId, note, createdBy: { id, email } | null, createdAt }`. Reasons written by the system are `initial`, `sale` and `sale_reversal`.
+
+**Atomicity.** The stock update and its movement are never written separately:
+
+- **JSON store:** one locked read-modify-write.
+- **Mongo:** a conditional `$inc` (`stockQuantity >= -change`), and every step that already ran is undone if a later one fails.
+- **D1:** one `batch` (a transaction). Each product `UPDATE` compares the stored JSON document and is followed by `INSERT INTO batch_guard (ok) SELECT changes()`. A guard row of 0 violates `CHECK (ok = 1)` and rolls back the whole batch, which then retries on fresh rows (up to 5 times, then `409`). Migration `0012` creates `batch_guard`.
+
+**Low-stock alert.** It fires when a movement takes stock from above the reorder level to at or below it, provided the level is above 0 or the stock reaches 0. It emails `settings.notifications.lowStockEmails`; when that list is empty it falls back to `SMTP_FROM` (Express) or `ADMIN_NOTIFY_EMAIL` (Worker). Nothing is sent when `settings.inventory.lowStockAlertsEnabled` is false. Email never fails the adjustment.
+
+Audit action: `inventory.adjust` (entity `product`).
+
+### Orders and fulfilment
+
+Enums, transitions and stock rules: contract §6. Every admin order response is normalised at read time, so legacy and new orders look the same:
+
+- **Legacy payment status:** `unpaid` reads as `pending` with `legacyPaymentStatus: "unpaid"`. A missing or unknown value reads as `pending` with `legacyPaymentStatus` set to the original value or `null`.
+- **Legacy status:** `completed` reads as `fulfillmentStatus: "delivered"`, `cancelled` as `cancelled`, and anything else as `pending`.
+- **Defaults:** `requiresInstallation: false`; `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
+- **`status`:** always derived from `fulfillmentStatus`.
+- **Persistence:** D1 migration `0011_orders_fulfilment.sql` writes the same values, and Express writes them on the next change.
+- **Removed field:** the internal `sortOrder` is no longer part of order responses.
+
+Endpoints:
+
+- `GET /admin/orders?fulfillmentStatus&paymentStatus&engineerId&requiresInstallation&from&to` (`orders:read`): array. `from` and `to` filter on `receivedAt`, falling back to `createdAt`.
+- `GET /admin/orders/:id` (`orders:read`): the order plus `jobs: [{ id, status, engineerId, scheduledAt }]`.
+- `PUT /admin/orders/:id` (`orders:update`): `200` `"Order updated."`. Body `{ note?, isActive?, requiresInstallation?, paymentStatus?, fulfillmentStatus?, status? }`.
+  - `status` must equal the current derived value, otherwise `400` `"Use fulfillmentStatus to change the order status."`.
+  - Setting `requiresInstallation: false` while non-cancelled jobs exist answers `409` `"Order has installation jobs."`.
+- `POST /admin/orders/:id/fulfillment` (`orders:update`), body `{ status, note? }`: `200` `"Fulfilment status updated."`. A missing or invalid `status` answers `400` `"Fulfilment status is not valid."`.
+- `POST /admin/orders/:id/mark-paid` (`orders:update`), body `{ note? }`: `200` `"Order marked as paid."`. An already-paid order is a no-op.
+- `POST /admin/orders/:id/assign-engineer` (`orders:update`), body `{ engineerId: string | null }`: `200` `"Engineer assigned."` or `"Engineer unassigned."`.
+  - `400` `"Assignee must be an active engineer."`, checked before `409` `"Order does not require installation."`.
+  - No job is created.
+- `DELETE /admin/orders/:id` (`orders:delete`): `409` `"Order has installation jobs."` when non-cancelled jobs exist.
+
+Transition errors: `409` `"Cannot change fulfilment status from <from> to <to>."`, `409` `"Cannot change payment status from <from> to <to>."` and `409` `"Order does not require installation."` (for `installed`). Sending the current value is a no-op (`200`). Entering `paid` sets `paidAt` when it is null.
+
+Stock:
+
+- **`pending → processing`:** every order line whose `packageId` resolves to a package with `items` decrements `item.quantity × line.quantity` per product. These are `sale` movements with `referenceType: "order"`. It is all-or-nothing: a shortfall answers `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]` ordered by SKU, and nothing is written. `stockCommittedAt` is set only when stock actually moved.
+- **`→ cancelled` with `stockCommittedAt` set:** `sale_reversal` movements restore the net quantity of the order's `sale` movements, and `stockCommittedAt` becomes `null`.
+- **Write safety:** the stock changes and the order update are one atomic write. It is guarded by the order's stored `fulfillmentStatus` and `paymentStatus` (`assignedEngineerId` for assignment). A concurrent status change answers `409` `"This record was changed by another request. Please try again."`, so stock is never committed twice.
+
+Audit actions:
+
+- `order.update`: note, isActive or requiresInstallation changes.
+- `order.fulfillment_change`: the summary shows `from → to`.
+- `order.status_change`: written in addition when the derived `status` changes.
+- `order.payment_change`, `order.assign_engineer`, `order.delete`.
+
+### Installation jobs, engineer endpoints and staff
+
+Job shape and transitions: contract §7.1. `order` and `engineer` (including `engineer.phone`) are joined at read time. `address` defaults to the order's `deliveryAddress`.
+
+Admin jobs:
+
+- `GET /admin/jobs?status&engineerId&orderId&from&to&page&limit` (`jobs:read`, paged): `"Jobs retrieved."`. Ordered by `scheduledAt` ascending with unscheduled jobs last, then `createdAt` descending. `from` and `to` filter `scheduledAt`.
+- `GET /admin/jobs/:id` (`jobs:read`): `"Job retrieved."`, or `404` `"Job not found."`.
+- `POST /admin/jobs` (`jobs:assign`), body `{ orderId, engineerId?, scheduledAt?, durationEstimateMinutes?, address?, checklist?: string[], notes? }`: `201` `"Job created."`.
+  - Checks run in this order: body validation (`"Order is required."`, `"Scheduled time must be a valid date."`, duration 15–10,080), then `404` `"Order not found."`, then `400` `"Assignee must be an active engineer."`, then `409` `"Order does not require installation."` or `"Order is cancelled."`.
+  - The job starts `assigned` when an engineer is given, otherwise `unassigned`.
+  - Assigning an engineer also sets the order's `assignedEngineerId` when it is empty.
+- `PUT /admin/jobs/:id` (`jobs:assign`), body `{ scheduledAt?, durationEstimateMinutes?, address?, checklist?, notes? }`: `"Job updated."`. Only the sent fields change.
+  - The checklist is replaced. String entries become new items; `{ id, label }` entries with a known id keep `done`, `doneAt` and `doneBy`.
+  - A closed job answers `409` `"Job is closed."`.
+- `POST /admin/jobs/:id/assign` (`jobs:assign`), body `{ engineerId | null }`: `"Job assigned."` (status `assigned`) or `"Job unassigned."` (status `unassigned`). Only unassigned or assigned jobs can be assigned; any other status answers `409` `"Cannot change job status from <from> to <to>."`.
+- `POST /admin/jobs/:id/status` (`jobs:assign`), body `{ status, note? }`: `"Job status updated."`. The allowed moves are `unassigned → cancelled`, `assigned → in_progress | cancelled` and `in_progress → completed | cancelled`. `assigned` and `unassigned` only come from assign. The same status is a no-op. The status sets `startedAt`, `completedAt` or `cancelledAt`, and the note goes into the audit summary.
+- `DELETE /admin/jobs/:id` (`jobs:assign`): `"Job deleted."`. Only for `unassigned`, `assigned` or `cancelled` jobs; otherwise `409` `"Job cannot be deleted once started."`.
+
+Engineer endpoints (`jobs:update-own`). Every lookup is scoped to the signed-in admin's id, and another engineer's job answers `404` `"Job not found."`:
+
+- `GET /admin/me/jobs?status&page&limit`: open jobs only, unless `status` is given.
+- `GET /admin/me/jobs/:id`.
+- `POST /admin/me/jobs/:id/status`, body `{ status: "in_progress" | "completed" }`.
+  - Any other value answers `400` `"Status is not valid."`.
+  - Invalid moves answer `409` `"Cannot change job status from <from> to <to>."`.
+  - Completing with unfinished checklist items answers `409` `"Complete the checklist first."`.
+- `PUT /admin/me/jobs/:id`, body `{ checklist?: [{ id, done }], photos?: string[] (≤20 URLs), completionNotes? (≤5000) }`.
+  - Checking an item sets `doneAt` and `doneBy`; unchecking clears them.
+  - An unknown item id answers `400` `"Checklist item not found."`.
+  - Jobs that are not `assigned` or `in_progress` answer `409` `"Job is closed."`.
+
+When a job becomes `completed` and its order is `delivered`, and every non-cancelled job of that order is completed, the order moves to `installed`. The move is audited as `order.fulfillment_change` by the acting admin.
+
+Staff:
+
+- `GET /admin/staff?role&area&isActive&q&page&limit` (`staff:read`, paged `AdminUser`, ordered by name). `area` matches an `areaCoverage` entry regardless of case. An invalid role answers `400` `"Role is not valid."`.
+- `GET /admin/staff/:id` (`staff:read`): `"Staff member retrieved."`, with `AdminUser` plus `openJobs` (the engineer's jobs that are not completed or cancelled). `404` `"User not found."`.
+- `PUT /admin/staff/:id` (`staff:write`), body `{ phone?, profile?: { areaCoverage?, certifications?, bio?, avatarUrl? } }`: `"Staff member updated."`. Sent profile keys replace the stored ones, and the other keys are kept. Role and activation are ignored here. Audited as `user.update`.
+
+Audit actions: `job.create`, `job.update`, `job.assign`, `job.status_change`, `job.delete` (entity `job`).
+
+### Settings and notifications
+
+Settings (contract §8.1, one document with id `global`, defaults when missing):
+
+- `GET /settings/public` (public): `"Settings retrieved."` with `{ business: { name, phone, email, address, website }, payments: { gatewayEnabled } }`. Notification emails are never public.
+- `GET /admin/settings` (`settings:read`): `"Settings retrieved."` with the full `Settings`, including `updatedAt` and `updatedBy: { id, email }`.
+- `PUT /admin/settings` (`settings:write`): `"Settings updated."`. Sent sections are merged key by key, sent arrays replace, and unknown sections and keys are ignored.
+  - A non-object section answers `400` `"<section> must be an object."`.
+  - Email lists (≤10 each) with an invalid entry answer `"<Label> must contain valid email addresses."` and are stored lowercase.
+  - `payments.provider` is `paystack`, `flutterwave` or `null` (`"Payment provider is not valid."`).
+  - `inventory.defaultReorderLevel` is 0–1,000,000 and `uploads.provider` must be `url`.
+  - Audited as `settings.update`, with dotted changed keys such as `notifications.lowStockEmails`.
+
+Recipients: new-order emails go to `notifications.orderEmails` and low-stock emails to `notifications.lowStockEmails`. When a list is empty, the existing env mailbox is used (`SMTP_FROM` for Express, `ADMIN_NOTIFY_EMAIL` for the Worker). Vacancy emails go to `notifications.vacancyEmails` on a vacancy's first publish, and only when that list is not empty (there was no earlier vacancy email).
+
+Notifications (contract §8.2). Types and when they are created:
+
+- `low_stock`: a product crosses its reorder level. Created even when low-stock emails are disabled.
+- `new_order`: a public order is placed.
+- `vacancy_posted`: a vacancy's first publish.
+- `job_assigned`: a job is created with an engineer or assigned. `recipientId` is the engineer.
+
+Audience: `low_stock` needs `inventory:read`, `new_order` needs `orders:read`, `vacancy_posted` needs `vacancies:read`, and `job_assigned` is visible only to its recipient. `read` is computed per admin. Records older than 90 days are removed opportunistically.
+
+- `GET /admin/notifications?unread=true&type&page&limit` (`notifications:read`, paged, newest first): `"Notifications retrieved."`, plus `unreadCount` for every unread notification in the audience, whatever the filters. An invalid type answers `400` `"Type is not valid."`.
+- `POST /admin/notifications/:id/read` (`notifications:read`): `"Notification marked as read."` with the notification. `404` `"Notification not found."` when it does not exist or is outside the caller's audience.
+- `POST /admin/notifications/read-all` (`notifications:read`): `"All notifications marked as read."` with `{ unreadCount: 0 }`.
+
+Helpers: `backend/services/notifications.js` `notify({ type, title, message, entity, entityId, recipientId? })` (Express) and `backend/cloudflare/src/notifications.js` `notify(env, ctx, {...})` (Worker). Both are best-effort and never fail the triggering request. The Worker's Resend sender moved to `backend/cloudflare/src/email.js` so modules outside `index.js` can send email.
+
+### Dashboard KPIs
+
+`GET /admin/dashboard?from&to` (`dashboard:read`). `stats`, `statusCounts`, `revenueSeries` and `recentOrders` are unchanged. A `kpis` key is added:
+
+- **`period: { from, to }`:** defaults to the 30 days ending now. When only `from` is sent, `to` is now; when only `to` is sent, `from` is 30 days earlier.
+- **`revenue`:** the sum of `totalAmount` (falling back to the parsed `total`) for orders placed in the period (`receivedAt`, else `createdAt`) whose `fulfillmentStatus` is not `cancelled` and whose `paymentStatus` is `paid` or `partial`. Legacy orders are normalised first.
+- **`openOrders`:** `fulfillmentStatus` in `pending`, `processing` or `out_for_delivery`. Not limited to the period.
+- **`lowStockItems`:** active products with `stockQuantity <= reorderLevel`.
+- **`openVacancies`:** vacancies with status `open`.
+- **`upcomingJobs`:** jobs that are `unassigned` or `assigned` with `scheduledAt` between now and 7 days from now.
+
+Errors: `400` `"from must be a valid date."`, `"to must be a valid date."`, `"Date range must be 366 days or fewer."` and `"from must be before to."`.

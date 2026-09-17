@@ -2,17 +2,19 @@ Run backend with Docker
 
 Build the image:
 
-  docker build -t pasted-backend ./backend
+  docker build -f backend/Dockerfile -t juwon-backend .
 
 Run the container (example):
 
   docker run --rm -p 3000:3000 \
     -e MONGODB_URI="your_mongodb_uri" \
-    -e SMTP_HOST="smtp.example.com" \
-    -e SMTP_PORT="587" \
+    -e ADMIN_AUTH_SECRET="at-least-32-characters" \
     -e SMTP_USER="user" \
-    -e SMTP_PASS="pass" \
-    pasted-backend
+    -e SMTP_SECRET="app-password" \
+    -e SMTP_FROM="noreply@example.com" \
+    juwon-backend
+
+Every environment variable (Express, Worker and Vercel) is listed in docs/DEPLOYMENT.md.
 
 Notes
 - Do NOT commit secrets. Use environment variables in your CI/CD provider or local .env files for development.
@@ -25,34 +27,35 @@ Quickstart (local development):
    npm install
    npm run dev
 
-Required env vars:
-- MONGODB_URI (mongodb connection string)
-- SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (for email features)
+Environment variables: see backend/.env.example and docs/DEPLOYMENT.md (for example MONGODB_URI, ADMIN_AUTH_SECRET, SUPERADMIN_EMAIL/SUPERADMIN_PASSWORD, SMTP_USER/SMTP_SECRET/SMTP_FROM).
+Tests and lint: npm test, npm run lint (Node 22.5 or newer).
 
-Vacancies API examples (replace localhost:3000 with your host):
+Vacancies API examples (replace localhost:9000 with your host; see docs/API.md "Vacancies"):
 
-# List public open vacancies
-curl -sS http://localhost:3000/vacancies | jq
+# List public open vacancies (also served at /api/vacancies)
+curl -sS http://localhost:9000/vacancies | jq
 
-# Get vacancy detail by slug
-curl -sS http://localhost:3000/vacancies/some-slug | jq
+# Get an open vacancy by slug
+curl -sS http://localhost:9000/vacancies/some-slug | jq
 
-# Create vacancy (admin role via header)
-curl -X POST http://localhost:3000/vacancies \
+# Sign in as an admin with vacancies:write (superadmin, admin or hr)
+TOKEN=$(curl -sS -X POST http://localhost:9000/admin/auth/login \
   -H "Content-Type: application/json" \
-  -H "X-User-Role: admin" \
-  -d '{"title":"Electrician","department":"Field","location":"Lagos","status":"open","descriptionHtml":"<p>Job details</p>"}' | jq
+  -d '{"username":"hr@example.com","password":"..."}' | jq -r .data.token)
 
-# Update vacancy (admin)
-curl -X PUT http://localhost:3000/vacancies/<id> \
-  -H "Content-Type: application/json" \
-  -H "X-User-Role: admin" \
-  -d '{"title":"Senior Electrician","status":"open"}' | jq
+# Create a draft, then publish it
+curl -sS -X POST http://localhost:9000/admin/vacancies \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+  -d '{"title":"Electrician","department":"Field","location":"Lagos","employmentType":"full-time","descriptionHtml":"<p>Job details</p>","requirements":["3 years experience"]}' | jq
+curl -sS -X POST http://localhost:9000/admin/vacancies/<id>/publish -H "Authorization: Bearer $TOKEN" | jq
 
-# Delete vacancy (admin)
-curl -X DELETE http://localhost:3000/vacancies/<id> -H "X-User-Role: admin" | jq
+# Update, close and delete
+curl -sS -X PUT http://localhost:9000/admin/vacancies/<id> \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+  -d '{"title":"Senior Electrician","status":"closed"}' | jq
+curl -sS -X DELETE http://localhost:9000/admin/vacancies/<id> -H "Authorization: Bearer $TOKEN" | jq
 
 Notes:
-- The backend currently uses a placeholder auth middleware that reads X-User-Role. Replace with proper auth for production.
-- The server sanitizes rich HTML using sanitize-html before saving descriptionHtml. If sanitize-html is missing, run npm install sanitize-html in backend.
+- Vacancy writes require an admin session with the vacancies:write capability. Client headers such as X-User-Role are ignored.
+- descriptionHtml is sanitised server-side by backend/shared/richText.js (the same code runs in the Cloudflare Worker).
 

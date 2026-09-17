@@ -1,3 +1,5 @@
+import { OPS_NOT_FOUND_LABELS } from "../shared/errors.js";
+
 export class ApiError extends Error {
   constructor(statusCode, message, details) {
     super(message);
@@ -15,8 +17,10 @@ const NOT_FOUND_LABELS = {
   orders: "Order",
   contacts: "Contact",
   newsletters: "Subscriber",
-  admins: "Admin",
+  admins: "User",
   carts: "Cart",
+  vacancies: "Vacancy",
+  ...OPS_NOT_FOUND_LABELS,
 };
 
 export const notFound = (resource = "Resource") =>
