@@ -24,9 +24,9 @@ import {
   Textarea,
 } from "@/components/ui";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/cn";
 import { WEBSITE_LIMITS, blankToNull, compactErrors, imageLocationError, lengthError } from "@/lib/admin/website";
-import { LIMITS } from "@/lib/validation";
 import { deleteTestimonial, getTestimonials, saveTestimonial } from "@/lib/api/admin";
 import type { Testimonial, TestimonialInput, TestimonialSource } from "@/lib/api/types";
 import { DeleteDialog, EditorDrawer, SampleBadge, SampleBanner, useCollection } from "./shared";
@@ -300,7 +300,6 @@ function ReviewForm({ review, onSubmit }: { review: Testimonial | null; onSubmit
   const [imageUrl, setImageUrl] = useState(review?.imageUrl ?? "");
   const [isActive, setIsActive] = useState(review?.isActive ?? true);
   const [errors, setErrors] = useState<ReviewErrors>({});
-  const imageOk = Boolean(imageUrl.trim()) && !imageLocationError(imageUrl, "Photo");
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -362,27 +361,17 @@ function ReviewForm({ review, onSubmit }: { review: Testimonial | null; onSubmit
           onChange={(event) => setSource(event.target.value as TestimonialSource | "")}
         />
       </Field>
-      <Field
-        label="Photo URL"
+      <ImageUpload
+        label="Photo"
+        value={imageUrl}
+        onChange={setImageUrl}
+        purpose="reviews"
         error={errors.imageUrl}
-        helper="Optional. An https:// link or a site path such as /reviews/adaeze.jpg. Only use a photo the customer agreed to share."
-      >
-        <Input
-          type="text"
-          inputMode="url"
-          value={imageUrl}
-          maxLength={LIMITS.url}
-          placeholder="https://"
-          onChange={(event) => setImageUrl(event.target.value)}
-        />
-      </Field>
-      {imageOk && (
-        <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element -- admin preview of an arbitrary URL */}
-          <img src={imageUrl.trim()} alt="" className="size-14 rounded-full border border-slate-200 bg-slate-50 object-cover" />
-          <span className="text-sm text-slate-500">Preview</span>
-        </div>
-      )}
+        helper="Optional. Only use a photo the customer agreed to share."
+        linkHelper="An https:// link or a site path such as /reviews/adaeze.jpg."
+        preview="round"
+        previewAlt={name.trim() ? `Photo of ${name.trim()}` : "Customer photo"}
+      />
       <Switch
         label="Show on the website"
         description="Hidden reviews stay here but aren’t shown to customers."

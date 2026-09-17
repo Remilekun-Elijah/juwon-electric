@@ -16,6 +16,7 @@ import {
   Switch,
 } from "@/components/ui";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/cn";
 import { WEBSITE_LIMITS, blankToNull, compactErrors, imageLocationError, isImageLocation, lengthError } from "@/lib/admin/website";
 import { LIMITS, validateUrlField } from "@/lib/validation";
@@ -250,25 +251,19 @@ function ClientForm({ client, onSubmit }: { client: Client | null; onSubmit: (in
       <Field label="Client name" required error={errors.name} helper="Used as the logo’s alt text on the website.">
         <Input value={name} maxLength={WEBSITE_LIMITS.clientName} onChange={(event) => setName(event.target.value)} />
       </Field>
-      <Field
+      <ImageUpload
         label="Logo"
         required
+        value={logoUrl}
+        onChange={setLogoUrl}
+        purpose="clients"
+        kind="logo"
         error={errors.logoUrl}
-        helper="An https:// link or a site path such as /clients/acme.svg. SVG or a transparent PNG looks best."
-      >
-        <Input
-          type="text"
-          inputMode="url"
-          value={logoUrl}
-          maxLength={LIMITS.url}
-          placeholder="/clients/acme.svg"
-          onChange={(event) => setLogoUrl(event.target.value)}
-        />
-      </Field>
-      <div className="space-y-1.5">
-        <p className="text-sm font-medium text-slate-700">Preview</p>
-        <LogoPreview key={logoUrl} src={logoUrl} name={name} className="h-28" />
-      </div>
+        linkHelper="An https:// link or a site path such as /clients/acme.svg. SVG or a transparent PNG looks best."
+        linkPlaceholder="/clients/acme.svg"
+        preview="contain"
+        previewAlt={name ? `${name} logo` : "Logo preview"}
+      />
       <Field label="Website" error={errors.website} helper="Optional. An https:// link.">
         <Input
           type="text"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
-import { ChevronDown, ChevronUp, ImageOff, Pencil, Plus, SearchX, Trash2, UsersRound } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Plus, SearchX, Trash2, UsersRound } from "lucide-react";
 import {
   Alert,
   Avatar,
@@ -24,13 +24,13 @@ import {
   Textarea,
 } from "@/components/ui";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   WEBSITE_LIMITS,
   blankToNull,
   compactErrors,
   httpsUrlError,
   imageLocationError,
-  isImageLocation,
   lengthError,
   reorderUpdates,
 } from "@/lib/admin/website";
@@ -293,42 +293,6 @@ export function TeamMembers() {
   );
 }
 
-/** Square photo preview as the team page crops it, with the initials avatar when there's no usable photo. */
-function PhotoPreview({ src, name }: { src: string; name: string }) {
-  const [failed, setFailed] = useState("");
-  const location = src.trim();
-  const usable = isImageLocation(location) && failed !== location;
-  return (
-    <div className="flex items-center gap-4">
-      <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-        {usable ? (
-          // eslint-disable-next-line @next/next/no-img-element -- admin preview of an arbitrary URL or site path
-          <img
-            src={location}
-            alt={name ? `Photo of ${name}` : "Photo preview"}
-            className="size-full object-cover"
-            onError={() => setFailed(location)}
-          />
-        ) : (
-          <Avatar name={name || "?"} size="xl" decorative />
-        )}
-      </div>
-      <p className="text-sm text-slate-500">
-        {usable ? (
-          "Preview. The team page shows the photo as a square."
-        ) : location && failed === location ? (
-          <span className="inline-flex items-center gap-1.5">
-            <ImageOff aria-hidden="true" className="size-4" />
-            Can’t show this image. Check the link.
-          </span>
-        ) : (
-          "No photo yet. The website shows their initials instead."
-        )}
-      </p>
-    </div>
-  );
-}
-
 type TeamErrors = Partial<Record<"name" | "role" | "group" | "bio" | "photoUrl" | "linkedinUrl", string>>;
 
 function TeamMemberForm({
@@ -428,21 +392,16 @@ function TeamMemberForm({
           onChange={(event) => setBio(oneLine(event.target.value))}
         />
       </Field>
-      <Field
-        label="Photo URL"
+      <ImageUpload
+        label="Photo"
+        value={photoUrl}
+        onChange={setPhotoUrl}
+        purpose="team"
         error={errors.photoUrl}
-        helper="Optional. An https:// link or a site path such as /team/ada.jpg. Square photos look best."
-      >
-        <Input
-          type="text"
-          inputMode="url"
-          value={photoUrl}
-          maxLength={LIMITS.url}
-          placeholder="https://"
-          onChange={(event) => setPhotoUrl(event.target.value)}
-        />
-      </Field>
-      <PhotoPreview src={photoUrl} name={name.trim()} />
+        helper="Optional. Square photos look best. Without one, the website shows their initials."
+        linkHelper="An https:// link or a site path such as /team/ada.jpg."
+        previewAlt={name.trim() ? `Photo of ${name.trim()}` : "Photo preview"}
+      />
       <Field label="LinkedIn URL" error={errors.linkedinUrl} helper="Optional. Their public LinkedIn profile link.">
         <Input
           type="url"
