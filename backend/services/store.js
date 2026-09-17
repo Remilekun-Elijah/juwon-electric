@@ -93,6 +93,9 @@ const models = {
   notifications:
     mongoose.models.OpsNotification ||
     mongoose.model("OpsNotification", flexibleSchema, "notifications"),
+  notificationReads:
+    mongoose.models.OpsNotificationRead ||
+    mongoose.model("OpsNotificationRead", flexibleSchema, "notificationReads"),
 };
 
 // Non-catalog collections whose writers keep slugs unique through `prepare`.
@@ -283,6 +286,7 @@ const defaultDb = async () => {
     installationJobs: [],
     settings: [],
     notifications: [],
+    notificationReads: [],
   };
 };
 
@@ -995,6 +999,7 @@ const ensureOpsIndexes = () =>
     models.inventoryMovements.collection.createIndex({ referenceId: 1 }),
     models.installationJobs.collection.createIndex({ engineerId: 1, scheduledAt: 1 }),
     models.notifications.collection.createIndex({ createdAt: -1 }),
+    models.notificationReads.collection.createIndex({ adminId: 1 }),
   ]);
 
 export const isDuplicateKeyError = isDuplicateKey;

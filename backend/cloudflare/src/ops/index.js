@@ -4,9 +4,10 @@ import { handleCatalogAdmin, handleCatalogPublic } from "./catalog.js";
 import { handleInventoryAdmin, runLowStockCheck } from "./inventory.js";
 import { handleJobsAdmin } from "./jobs.js";
 import { handleOrdersAdmin } from "./orders.js";
+import { handleSettingsAdmin, handleSettingsPublic } from "./settingsNotifications.js";
 
-const PUBLIC_HANDLERS = [handleCatalogPublic];
-const ADMIN_HANDLERS = [handleCatalogAdmin, handleInventoryAdmin, handleOrdersAdmin, handleJobsAdmin];
+const PUBLIC_HANDLERS = [handleCatalogPublic, handleSettingsPublic];
+const ADMIN_HANDLERS = [handleCatalogAdmin, handleInventoryAdmin, handleOrdersAdmin, handleJobsAdmin, handleSettingsAdmin];
 
 const firstResponse = async (handlers, context) => {
   for (const handler of handlers) {

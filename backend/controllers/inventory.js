@@ -5,7 +5,9 @@ import { asyncHandler } from "../services/asyncHandler.js";
 import { STATIC_TOKEN_ACTOR, audit } from "../services/audit.js";
 import { created, ok } from "../services/http.js";
 import { runInBackground } from "../services/runtime.js";
+import { notify } from "../services/notifications.js";
 import { getSettings } from "../services/settings.js";
+import { lowStockNotification } from "../shared/notifications.js";
 import { applyStockChanges, getProductItem, listCollection, pageMovements } from "../services/store.js";
 import { inventoryPage, serializeProduct } from "../shared/catalog.js";
 import { pageParams } from "../shared/fields.js";
@@ -23,11 +25,6 @@ import {
 export const actorOf = (req) =>
   req.admin ? { id: req.admin.id, email: req.admin.email } : { id: STATIC_TOKEN_ACTOR, email: STATIC_TOKEN_ACTOR };
 
-// Hooks run for products that just crossed their reorder level (the notifications module
-// registers one). Each receives the fresh product records.
-const lowStockHooks = [];
-export const onLowStock = (hook) => lowStockHooks.push(hook);
-
 /** Emails low-stock lines; resolves to true when delivered. Never rejects. */
 const emailLowStock = async (lines, settings, options) => {
   const recipients = lowStockRecipients(settings);
@@ -41,8 +38,8 @@ const emailLowStock = async (lines, settings, options) => {
 export const afterStockChange = (plans) => {
   const crossed = (plans || []).filter(crossedIntoLowStock).map((plan) => plan.product);
   if (!crossed.length) return;
+  for (const product of crossed) notify(lowStockNotification(product));
   runInBackground("Low-stock alert", async () => {
-    await Promise.all(lowStockHooks.map((hook) => Promise.resolve(hook(crossed)).catch(() => {})));
     await emailLowStock(crossed.map(lowStockLine), await getSettings(), { digest: false });
   });
 };

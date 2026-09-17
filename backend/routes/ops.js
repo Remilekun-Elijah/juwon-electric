@@ -40,6 +40,14 @@ import {
   myUpdateJob,
 } from "../controllers/jobs.js";
 import { adminAssignOrderEngineer, adminMarkOrderPaid, adminOrderFulfillment } from "../controllers/orders.js";
+import {
+  adminGetSettings,
+  adminListNotifications,
+  adminReadAllNotifications,
+  adminReadNotification,
+  adminUpdateSettings,
+  getPublicSettings,
+} from "../controllers/settingsNotifications.js";
 import { requireCapability as can } from "../middleware/capabilities.js";
 
 export const opsPublicRouter = Router();
@@ -89,3 +97,11 @@ opsAdminRouter.post("/me/jobs/:id/status", can("jobs:update-own"), myJobStatus);
 opsAdminRouter.get("/staff", can("staff:read"), adminListStaff);
 opsAdminRouter.get("/staff/:id", can("staff:read"), adminGetStaff);
 opsAdminRouter.put("/staff/:id", can("staff:write"), adminUpdateStaff);
+
+// Settings and notifications (§8).
+opsPublicRouter.get("/settings/public", getPublicSettings);
+opsAdminRouter.get("/settings", can("settings:read"), adminGetSettings);
+opsAdminRouter.put("/settings", can("settings:write"), adminUpdateSettings);
+opsAdminRouter.get("/notifications", can("notifications:read"), adminListNotifications);
+opsAdminRouter.post("/notifications/read-all", can("notifications:read"), adminReadAllNotifications);
+opsAdminRouter.post("/notifications/:id/read", can("notifications:read"), adminReadNotification);

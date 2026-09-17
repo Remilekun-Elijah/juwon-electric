@@ -19,6 +19,7 @@ import {
   vacancyView,
 } from "../../shared/vacancies.js";
 import { changedFields, recordAudit } from "./audit.js";
+import { notifyVacancyPosted as notifyVacancy } from "./notifications.js";
 import { requireCapability } from "./capabilities.js";
 import { ApiError, badRequest, created, ok } from "./http.js";
 import {
@@ -96,9 +97,8 @@ const retryOnDuplicate = async (task) => {
   }
 };
 
-const notifyVacancyPosted = (_vacancy) => {
-  // TODO(integration): notify vacancy_posted
-};
+// vacancy_posted notification and vacancyEmails email (API_CONTRACT_V3 §8.2).
+const notifyVacancyPosted = (env, ctx, vacancy) => notifyVacancy(env, ctx, vacancy);
 
 /** GET /vacancies and /vacancies/:slug. Returns null for other paths. */
 export const handlePublicVacancies = async (request, env, path, url) => {
@@ -169,7 +169,7 @@ export const handleAdminVacancies = async (request, env, ctx, path, body, admin,
       ...Object.keys(fields).filter((key) => fields[key] !== undefined),
       "status",
     ]);
-    if (status === "open") notifyVacancyPosted(vacancy);
+    if (status === "open") notifyVacancyPosted(env, ctx, vacancy);
     return created(VACANCY_MESSAGES.create, vacancyView(vacancy));
   }
 
@@ -211,7 +211,7 @@ export const handleAdminVacancies = async (request, env, ctx, path, body, admin,
       ? statusAction(vacancyView(existing).status, vacancy.status)
       : "vacancy.update";
     audit(action, vacancy, `Updated vacancy "${vacancy.title}"`, changes);
-    if (firstPublish) notifyVacancyPosted(vacancy);
+    if (firstPublish) notifyVacancyPosted(env, ctx, vacancy);
     return ok(VACANCY_MESSAGES.update, vacancyView(vacancy));
   }
 
@@ -239,7 +239,7 @@ export const handleAdminVacancies = async (request, env, ctx, path, body, admin,
       `${next === "open" ? "Published" : "Unpublished"} vacancy "${vacancy.title}"`,
       Object.keys(change.patch)
     );
-    if (change.firstPublish) notifyVacancyPosted(vacancy);
+    if (change.firstPublish) notifyVacancyPosted(env, ctx, vacancy);
     return ok(message, vacancyView(vacancy));
   }
 

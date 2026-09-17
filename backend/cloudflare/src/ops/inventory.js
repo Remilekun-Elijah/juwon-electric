@@ -17,15 +17,12 @@ import {
   serializeMovement,
 } from "../../../shared/inventory.js";
 import { SETTINGS_ID, mergeSettings } from "../../../shared/settings.js";
+import { lowStockNotification } from "../../../shared/notifications.js";
+import { notify } from "../notifications.js";
 
 export const getSettings = async (env) => mergeSettings(await getById(env, "settings", SETTINGS_ID));
 
 export const actorOf = (admin) => (admin ? { id: admin.id, email: admin.email } : null);
-
-// Hooks run (inside waitUntil) for products that just crossed their reorder level; the
-// notifications module registers one. Each receives (context, products).
-const lowStockHooks = [];
-export const onLowStock = (hook) => lowStockHooks.push(hook);
 
 const emailLowStock = async (env, sendNotification, lines, settings, options) => {
   const recipients = lowStockRecipients(settings);
@@ -41,8 +38,8 @@ export const afterStockChange = (context, plans) => {
   const crossed = (plans || []).filter(crossedIntoLowStock).map((plan) => plan.product);
   if (!crossed.length) return;
   const { env, ctx, sendNotification } = context;
+  for (const product of crossed) notify(env, ctx, lowStockNotification(product));
   const task = (async () => {
-    await Promise.all(lowStockHooks.map((hook) => Promise.resolve(hook(context, crossed)).catch(() => {})));
     await emailLowStock(env, sendNotification, crossed.map(lowStockLine), await getSettings(env), { digest: false });
   })().catch((error) => console.error("Low-stock alert failed:", error?.message));
   ctx?.waitUntil?.(task);

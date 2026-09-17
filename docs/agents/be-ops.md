@@ -7,10 +7,10 @@ Base: `v3-agents-base` @ `d48b482`. Contract: `docs/agents/API_CONTRACT_V3.md` o
 | Contract item | Status |
 | --- | --- |
 | §4 Catalog: categories, products, package `items` | Done (aligned with the contract) |
-| §5 Inventory: stock view, adjustments, movements, low-stock alerts and check | Done (aligned; `low_stock` notification lands with §8) |
-| §6 Orders and fulfilment (D4a) | Done (`new_order` notification lands with §8) |
-| §7 Installation jobs, engineer endpoints, staff | Done (`job_assigned` notification lands with §8) |
-| §8 Settings and notifications | Not started |
+| §5 Inventory: stock view, adjustments, movements, low-stock alerts and check | Done |
+| §6 Orders and fulfilment (D4a) | Done |
+| §7 Installation jobs, engineer endpoints, staff | Done |
+| §8 Settings and notifications | Done (BE-1's two `TODO(integration)` vacancy markers now call `notify()`) |
 | §9 Dashboard KPIs | Not started |
 
 Commits:
@@ -20,7 +20,9 @@ Commits:
 - 05498dd: catalog and inventory aligned with the contract
 - bd75e45: adopted BE-1's sanitiser, lint tooling and test globs
 - faa51c4: orders (§6)
-- jobs, engineer endpoints and staff (§7): the commit that adds this file version
+- 7fc1e05: jobs, engineer endpoints and staff (§7)
+- 5e5fe02, 77a0107: merges of `agents/be-platform` (through ae917b4)
+- settings and notifications (§8): the commit that adds this file version
 
 ## Integration with BE-1
 
@@ -54,9 +56,9 @@ Commits:
   - `0010_catalog.sql`: slug and SKU unique indexes.
   - `0012_inventory_jobs.sql`: `batch_guard`, plus movement and job indexes.
   - `0011_orders_fulfilment.sql`: order backfill (§6.1). Tested on a seeded database at `0010`: the migrated rows equal the read-time normalisation and are idempotent.
-  - `0013` comes with §8.
+  - `0013_settings_notifications.sql`: notification and read-row indexes.
 - **Tests** (`cd backend && npm test`):
-  - Scenarios: `backend/test/scenarios/{catalog,inventory,orders,jobs}.js`, plus `opsKit.js` for admin and record seeding, email capture (nodemailer and Resend) and masking.
+  - Scenarios: `backend/test/scenarios/{catalog,inventory,orders,jobs,settingsNotifications}.js`, plus `opsKit.js` for admin and record seeding, email capture (nodemailer and Resend) and masking.
   - Runners: `backend/test/*.test.js` (Express), `backend/cloudflare/test/*.test.js` (Worker) and `backend/test/parity/*.parity.test.js`.
   - Mongo mode is not covered by tests.
 
@@ -85,3 +87,7 @@ Commits:
 18. **Jobs: admins can complete a job** whose checklist is unfinished. The checklist rule applies to `/admin/me/jobs` only, as §7.3 says.
 19. **Jobs: order checks for creation** run `requiresInstallation` (`409` "Order does not require installation.") before the cancelled check.
 20. **Staff:** the list is ordered by name. `GET /admin/staff/:id` counts `openJobs` as the engineer's jobs that are not completed or cancelled. `PUT` ignores `role` and `isActive`, and is audited as `user.update` (§7 lists no staff action).
+21. **Notifications: read state** is stored as `notificationReads` rows (one per read notification, plus a `"<adminId>:*"` watermark for read-all), as the contract suggests. `POST /admin/notifications/:id/read` returns the notification with `read: true`.
+22. **Notifications: `unreadCount`** counts every unread notification in the caller's audience, ignoring the `type` and `unread` filters.
+23. **Settings: vacancy emails** are sent only when `vacancyEmails` is not empty. Vacancies had no earlier env recipient to fall back to.
+24. **Worker email sender** moved from `src/index.js` into `src/email.js` (same function), so notifications and vacancies can send email.

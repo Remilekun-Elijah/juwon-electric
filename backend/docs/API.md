@@ -697,3 +697,33 @@ Staff:
 - `PUT /admin/staff/:id` (`staff:write`), body `{ phone?, profile?: { areaCoverage?, certifications?, bio?, avatarUrl? } }`: `"Staff member updated."`. Sent profile keys replace the stored ones, and the other keys are kept. Role and activation are ignored here. Audited as `user.update`.
 
 Audit actions: `job.create`, `job.update`, `job.assign`, `job.status_change`, `job.delete` (entity `job`).
+
+### Settings and notifications
+
+Settings (contract §8.1, one document with id `global`, defaults when missing):
+
+- `GET /settings/public` (public): `"Settings retrieved."` with `{ business: { name, phone, email, address, website }, payments: { gatewayEnabled } }`. Notification emails are never public.
+- `GET /admin/settings` (`settings:read`): `"Settings retrieved."` with the full `Settings`, including `updatedAt` and `updatedBy: { id, email }`.
+- `PUT /admin/settings` (`settings:write`): `"Settings updated."`. Sent sections are merged key by key, sent arrays replace, and unknown sections and keys are ignored.
+  - A non-object section answers `400` `"<section> must be an object."`.
+  - Email lists (≤10 each) with an invalid entry answer `"<Label> must contain valid email addresses."` and are stored lowercase.
+  - `payments.provider` is `paystack`, `flutterwave` or `null` (`"Payment provider is not valid."`).
+  - `inventory.defaultReorderLevel` is 0–1,000,000 and `uploads.provider` must be `url`.
+  - Audited as `settings.update`, with dotted changed keys such as `notifications.lowStockEmails`.
+
+Recipients: new-order emails go to `notifications.orderEmails` and low-stock emails to `notifications.lowStockEmails`. When a list is empty, the existing env mailbox is used (`SMTP_FROM` for Express, `ADMIN_NOTIFY_EMAIL` for the Worker). Vacancy emails go to `notifications.vacancyEmails` on a vacancy's first publish, and only when that list is not empty (there was no earlier vacancy email).
+
+Notifications (contract §8.2). Types and when they are created:
+
+- `low_stock`: a product crosses its reorder level. Created even when low-stock emails are disabled.
+- `new_order`: a public order is placed.
+- `vacancy_posted`: a vacancy's first publish.
+- `job_assigned`: a job is created with an engineer or assigned. `recipientId` is the engineer.
+
+Audience: `low_stock` needs `inventory:read`, `new_order` needs `orders:read`, `vacancy_posted` needs `vacancies:read`, and `job_assigned` is visible only to its recipient. `read` is computed per admin. Records older than 90 days are removed opportunistically.
+
+- `GET /admin/notifications?unread=true&type&page&limit` (`notifications:read`, paged, newest first): `"Notifications retrieved."`, plus `unreadCount` for every unread notification in the audience, whatever the filters. An invalid type answers `400` `"Type is not valid."`.
+- `POST /admin/notifications/:id/read` (`notifications:read`): `"Notification marked as read."` with the notification. `404` `"Notification not found."` when it does not exist or is outside the caller's audience.
+- `POST /admin/notifications/read-all` (`notifications:read`): `"All notifications marked as read."` with `{ unreadCount: 0 }`.
+
+Helpers: `backend/services/notifications.js` `notify({ type, title, message, entity, entityId, recipientId? })` (Express) and `backend/cloudflare/src/notifications.js` `notify(env, ctx, {...})` (Worker). Both are best-effort and never fail the triggering request. The Worker's Resend sender moved to `backend/cloudflare/src/email.js` so modules outside `index.js` can send email.

@@ -44,6 +44,9 @@ import {
   serializeOrder,
 } from "../shared/orders.js";
 import { conflict } from "../shared/errors.js";
+import { notify } from "../services/notifications.js";
+import { getSettings } from "../services/settings.js";
+import { newOrderNotification } from "../shared/notifications.js";
 
 const kvaLabel = (pack) =>
   `${pack.kva}kva ${pack.volt ? `+ ${pack.volt}volt` : ""}`.trim();
@@ -108,11 +111,15 @@ export const placeOrder = asyncHandler(async (req, res) => {
   };
 
   const order = await appendCollectionItem("orders", payload);
+  notify(newOrderNotification(order));
+  const { orderEmails } = (await getSettings()).notifications;
 
   track(
     sendMail(
       {
         subject: "You have a new order",
+        // No configured recipients: sendMail falls back to the SMTP_FROM mailbox.
+        to: orderEmails.length ? orderEmails : undefined,
         data: order,
       },
       orderTemplate

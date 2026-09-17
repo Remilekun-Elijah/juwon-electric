@@ -21,6 +21,7 @@ import { uniqueSlug } from "./_catalog.js";
 import { paginate } from "../shared/adminUsers.js";
 import { asyncHandler } from "../services/asyncHandler.js";
 import { audit, changedFields } from "../services/audit.js";
+import { notifyVacancyPosted as notifyVacancy } from "../services/notifications.js";
 import { ApiError, badRequest } from "../services/errors.js";
 import { created, ok } from "../services/http.js";
 import { pageQuery } from "../services/pagination.js";
@@ -96,9 +97,8 @@ const retryOnDuplicate = async (task) => {
 const auditVacancy = (req, action, vacancy, summary, changes = []) =>
   audit(req, { action, entity: "vacancy", entityId: vacancy.id, summary, changes });
 
-const notifyVacancyPosted = (_vacancy) => {
-  // TODO(integration): notify vacancy_posted
-};
+// vacancy_posted notification and vacancyEmails email (API_CONTRACT_V3 §8.2).
+const notifyVacancyPosted = (vacancy) => notifyVacancy(vacancy);
 
 // ---- public -------------------------------------------------------------------
 

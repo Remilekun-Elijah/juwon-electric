@@ -38,6 +38,8 @@ import {
   staffPayload,
 } from "../shared/jobs.js";
 import { assertActiveEngineer, engineerIdPayload, planOrderChanges, serializeOrder } from "../shared/orders.js";
+import { jobAssignedNotification } from "../shared/notifications.js";
+import { notify } from "../services/notifications.js";
 
 const byId = (records) => new Map(records.map((record) => [record.id, record]));
 const now = () => new Date().toISOString();
@@ -123,7 +125,10 @@ export const adminCreateJob = asyncHandler(async (req, res) => {
     completedAt: null,
     cancelledAt: null,
   });
-  if (engineer) await assignOrderEngineerIfUnset(order.id, engineer.id);
+  if (engineer) {
+    await assignOrderEngineerIfUnset(order.id, engineer.id);
+    notify(jobAssignedNotification(job, order));
+  }
   auditJob(req, "job.create", job, `Created job for order from ${order.name || order.id}`, Object.keys(payload));
   created(res, "Job created.", await serialize(job));
 });
@@ -141,7 +146,10 @@ export const adminAssignJob = asyncHandler(async (req, res) => {
   const job = await getCollectionItem("installationJobs", req.params.id);
   const engineer = await engineerFor(engineerId);
   const item = await writeJobPatch(job, planJobAssignment(job, engineerId));
-  if (engineer) await assignOrderEngineerIfUnset(job.orderId, engineer.id);
+  if (engineer) {
+    await assignOrderEngineerIfUnset(job.orderId, engineer.id);
+    notify(jobAssignedNotification(item, await findCollectionItem("orders", { id: job.orderId })));
+  }
   auditJob(req, "job.assign", item, engineer ? `Assigned job to ${engineer.email}` : "Unassigned job", ["engineerId", "status"]);
   ok(res, engineer ? "Job assigned." : "Job unassigned.", await serialize(item));
 });

@@ -27,6 +27,7 @@ const COLLECTIONS = [
   "installationJobs",
   "settings",
   "notifications",
+  "notificationReads",
 ];
 
 // Catalog collections (public catalog records with admin-controlled sortOrder).

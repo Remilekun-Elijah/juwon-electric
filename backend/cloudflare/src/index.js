@@ -88,6 +88,10 @@ import { handleAdminVacancies, handlePublicVacancies } from "./vacancies.js";
 import { requireCapability } from "./capabilities.js";
 import { adminSelf } from "../../shared/capabilities.js";
 import { handleOpsAdmin, handleOpsPublic, handleOpsScheduled } from "./ops/index.js";
+import { sendNotification } from "./email.js";
+import { notify } from "./notifications.js";
+import { newOrderNotification } from "../../shared/notifications.js";
+import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
 import { assertPackageItemsExist, packageItemsField, withPublicPackageItems } from "../../shared/catalog.js";
 import { NEW_ORDER_FIELDS } from "../../shared/orders.js";
 
@@ -515,44 +519,6 @@ const quoteValidatedItems = async (env, validated) => {
   const lines = await quoteLines(env, validated);
   if (lines.some((line) => !line.available)) badRequest(UNAVAILABLE_ITEMS_MESSAGE);
   return lines;
-};
-
-// ---------------------------------------------------------------------------
-// Email (Resend)
-// ---------------------------------------------------------------------------
-
-const sendNotification = async (env, { to, subject, text, html }) => {
-  if (!env.RESEND_API_KEY || !env.MAIL_FROM || !to) return { skipped: true };
-
-  let response;
-  try {
-    response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: env.MAIL_FROM,
-        to,
-        subject,
-        text,
-        html,
-        reply_to: env.MAIL_REPLY_TO || env.MAIL_FROM,
-      }),
-    });
-  } catch (error) {
-    console.error("Email provider request failed:", describeError(error));
-    return { skipped: false, failed: true };
-  }
-
-  if (!response.ok) {
-    response.body?.cancel?.().catch?.(() => {});
-    console.error(`Email provider failed with HTTP ${response.status}`);
-    return { skipped: false, failed: true };
-  }
-
-  return { skipped: false };
 };
 
 const sourceField = (body) => stringField(body, "source", { label: "Source", max: LIMITS.source }) || "client";
@@ -997,9 +963,11 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
       source,
       receivedAt: now(),
     });
+    notify(env, ctx, newOrderNotification(order));
+    const orderEmails = mergeSettings(await getById(env, "settings", SETTINGS_ID)).notifications.orderEmails;
     ctx.waitUntil(
       sendNotification(env, {
-        to: env.ADMIN_NOTIFY_EMAIL,
+        to: recipientsOr(orderEmails, env.ADMIN_NOTIFY_EMAIL),
         subject: "You have a new order",
         text: `${order.name}\n${order.phoneNumber}\n${order.deliveryAddress}\nTotal: ${order.total}`,
         html: orderNotificationTemplate(order),
