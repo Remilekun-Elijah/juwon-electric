@@ -92,7 +92,7 @@ export type PublicCustomerSegment = {
 /** `GET /services` */
 export type ServicesData = { offerings: ServiceOffering[]; customerSegments: PublicCustomerSegment[] };
 
-/** `GET /portfolio` row. */
+/** `GET /portfolio` row (Landing v1 §2 adds the case-study fields; older records return null/false). */
 export type PortfolioItem = {
   id?: string;
   slug?: string;
@@ -100,7 +100,165 @@ export type PortfolioItem = {
   image: string;
   link?: string;
   featured?: boolean;
+  mobile?: boolean;
+  isActive?: boolean;
+  sortOrder?: number;
+  /** Customer-segment slug (`GET /portfolio?category=<slug>` filters by it). */
+  category?: string | null;
+  summary?: string | null;
+  location?: string | null;
+  /** e.g. "10kVA inverter, 8 × 200Ah lithium, 12 × 550W panels" */
+  system?: string | null;
+  sample?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
+
+/** Landing v1 §2: portfolio create/update body. Update is partial; "" or null clears the case-study fields. */
+export type PortfolioItemInput = {
+  name?: string;
+  slug?: string;
+  image?: string;
+  link?: string;
+  featured?: boolean;
+  mobile?: boolean;
+  isActive?: boolean;
+  sortOrder?: number;
+  category?: string | null;
+  summary?: string | null;
+  location?: string | null;
+  system?: string | null;
+};
+
+/* ---------- Landing v1 §1: website content (FAQs, reviews, client logos) ---------- */
+
+/** Landing v1 §1.1 `GET /faqs?category=` and `/admin/faqs`. */
+export type Faq = {
+  id: string;
+  question: string;
+  /** Plain multiline text. */
+  answer: string;
+  category: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  sample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FaqInput = {
+  question?: string;
+  answer?: string;
+  category?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type TestimonialSource = "website" | "whatsapp" | "google" | "facebook" | "in_person";
+
+/** Landing v1 §1.2 `GET /testimonials` and `/admin/testimonials` (called "Reviews" in the UI). */
+export type Testimonial = {
+  id: string;
+  name: string;
+  /** e.g. "5kVA lithium system, Lekki" */
+  context: string | null;
+  quote: string;
+  rating: 1 | 2 | 3 | 4 | 5 | null;
+  source: TestimonialSource | null;
+  /** http(s) URL or site path "/..." */
+  imageUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  sample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TestimonialInput = {
+  name?: string;
+  context?: string | null;
+  quote?: string;
+  rating?: 1 | 2 | 3 | 4 | 5 | null;
+  source?: TestimonialSource | null;
+  imageUrl?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+/** Landing v1 §1.3 `GET /clients` and `/admin/clients`. */
+export type Client = {
+  id: string;
+  name: string;
+  /** http(s) URL or site path "/..." */
+  logoUrl: string;
+  website: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  sample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ClientInput = {
+  name?: string;
+  logoUrl?: string;
+  website?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+/* ---------- Landing v1 §3: website, financing and calculator settings ---------- */
+
+export type WebsiteStat = { label: string; value: string };
+
+export type WebsiteSettings = {
+  /** At most 4. */
+  stats: WebsiteStat[];
+  whatsappNumber: string | null;
+  /** Multiline, e.g. "Mon–Fri 8am–6pm\nSat 9am–3pm". */
+  businessHours: string | null;
+  sample: boolean;
+};
+
+export type FinancingSettings = {
+  enabled: boolean;
+  /** Whole number 0–100. */
+  depositPercent: number | null;
+  /** Up to 6 unique whole months (1–60), ascending. */
+  termsMonths: number[];
+  /** 0–20, up to 2 decimals. */
+  monthlyRatePercent: number | null;
+  approvalTime: string | null;
+  note: string | null;
+  sample: boolean;
+};
+
+export type CalculatorAppliance = {
+  /** ^[a-z0-9-]{1,40}$, unique */
+  key: string;
+  label: string;
+  watts: number;
+  /** 0–24 in 0.5 steps. */
+  defaultHours: number;
+  defaultQuantity: number;
+};
+
+export type CalculatorSettings = {
+  enabled: boolean;
+  appliances: CalculatorAppliance[];
+  inverterHeadroomPercent: number;
+  batteryDepthOfDischargePercent: number;
+  batteryVoltage: 12 | 24 | 48;
+  panelWatts: number;
+  peakSunHours: number;
+  generator: { fuelPricePerLitre: number; litresPerKvaHour: number; maintenancePerMonth: number };
+  sample: boolean;
+};
+
+/** Public financing: every field when enabled, otherwise `{ enabled: false }`. */
+export type PublicFinancingSettings = (FinancingSettings & { enabled: true }) | { enabled: false };
+/** Public calculator: every field when enabled, otherwise `{ enabled: false }`. */
+export type PublicCalculatorSettings = (CalculatorSettings & { enabled: true }) | { enabled: false };
 
 /** Contract §3 `PublicVacancy`. `_id` covers the legacy Mongo shape still served by the base backend. */
 export type PublicVacancy = {
@@ -152,6 +310,10 @@ export type PublicSettings = {
     website: string | null;
   };
   payments: { gatewayEnabled: boolean };
+  /** Landing v1 §3 */
+  website: WebsiteSettings;
+  financing: PublicFinancingSettings;
+  calculator: PublicCalculatorSettings;
 };
 
 /** Line item sent to `POST /cart/quote` and `POST /order` (Vite `toOrderItem`). */
@@ -687,12 +849,23 @@ export type Settings = {
   payments: { gatewayEnabled: boolean; provider: "paystack" | "flutterwave" | null };
   inventory: { defaultReorderLevel: number; lowStockAlertsEnabled: boolean };
   uploads: { provider: "url" };
+  /** Landing v1 §3. Saving a section stores its `sample` as false. */
+  website: WebsiteSettings;
+  financing: FinancingSettings;
+  calculator: CalculatorSettings;
   updatedAt: string | null;
   updatedBy: ActorRef;
 };
 
+/** Sent sections merge key by key (sent arrays replace). `sample` is ignored: saving a section clears it. */
 export type SettingsInput = {
   [K in keyof Pick<Settings, "business" | "notifications" | "payments" | "inventory">]?: Partial<Settings[K]>;
+} & {
+  website?: Partial<Omit<WebsiteSettings, "sample">>;
+  financing?: Partial<Omit<FinancingSettings, "sample">>;
+  calculator?: Partial<Omit<CalculatorSettings, "sample" | "generator">> & {
+    generator?: Partial<CalculatorSettings["generator"]>;
+  };
 };
 
 export type NotificationType = "low_stock" | "new_order" | "vacancy_posted" | "job_assigned";
