@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Mobile and footer motion (see section 12, Change log)
+Last updated: 2026-09-17, Brand red dark surfaces (see section 12, Change log)
 
 1. Executive summary
 
@@ -316,7 +316,7 @@ Home page redesign (added 2026-09-17)
 
 Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a less white home page and a header area like a reference screenshot, with animations. We match the look and motion only. None of the reference's registration number, founding year, customer counts, city list, wording or photos are used.
 
-- Colour: a gold accent scale taken from the Juwon Electric logo. Gold is used only as an accent on dark surfaces (slate-950, slate-900 or brand-950): highlighted headline words, stat numbers and primary buttons on dark. Text on gold buttons is dark (slate-950). Body text keeps a contrast of at least 4.5:1.
+- Colour: a gold accent scale taken from the Juwon Electric logo. Gold is used only as an accent on the dark surfaces, which are the deep brand red brand-950 (revised 2026-09-17: the storefront's dark bands, hero overlays, header glass and footer were near-black slate; they are now brand red): highlighted headline words, stat numbers and primary buttons on dark. Text on gold buttons is dark (slate-950). Body text keeps a contrast of at least 4.5:1.
 - Header:
   - On the home page, while the page is at the top (scrolled less than 24 px), the header is transparent over the hero: white nav links with a gold underline on the active item, the logo without a chip, a white phone link, a glass cart button and a gold **Get a quote** pill linking to `/contact?topic=Quote`. On phones the menu button is glass too.
   - After scrolling, and on pages without a hero, the header lifts: it keeps the same look (white nav, gold logo, glass cart, gold **Get a quote** pill) and drops slightly from the top edge into a rounded, translucent dark glass bar with a soft shadow, inset from the page edges, so the logo and links stay legible over light sections. The change animates over 300 ms; with reduced motion the bar changes without moving. The header height never changes, and the hero reserves room for it, so nothing shifts.
@@ -339,7 +339,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
 - Section rhythm (no two neighbouring sections share a white background), in page order:
   1. Hero: dark photo.
   2. Client logos: white; a slow marquee when there are more logos than fit.
-  3. Why choose us: dark (slate-950), gold icon circles.
+  3. Why choose us: dark (brand-950), gold icon circles.
   4. Solutions ("Who we power"): light grey, image-led cards with the title on the photo.
   5. Find your package: white, with the "Shop by battery type" chips in the section header.
   6. Shop by category (restored): light grey.
@@ -347,13 +347,13 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   8. Size your system teaser: brand panel (brand-900) with a gold accent and a preview of calculator figures.
   9. Case studies: white, image cards.
   10. Reviews: light brand tint; stars fill one by one when the cards come into view.
-  11. How it works: dark (slate-950), gold step numbers, the connecting line draws across.
+  11. How it works: dark (brand-950), gold step numbers, the connecting line draws across.
   12. Financing (when switched on): white.
   13. FAQ: light grey; answers open smoothly.
   14. Careers teaser (restored; only when there are open vacancies): white, "We're hiring: N open roles" with up to 3 role titles and **See open roles**.
   15. Final call to action: brand red panel over an installation photo, eyebrow "Ready when you are", a gold **Shop packages** button, **Call**, and **Chat on WhatsApp** when set, followed by the business phone numbers, email, address and opening hours (the home page has no separate contact band).
   - Section eyebrows are gold on dark and brand red on light.
-- Footer: dark (slate-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Meet the team**, Careers, FAQ and Contact us.
+- Footer: dark (brand-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Meet the team**, Careers, FAQ and Contact us.
 
 Motion and accessibility (storefront-wide, 2026-09-17)
 - Inner pages (2026-09-17): every storefront page opens with a compact dark page intro in the home hero style (installation photo with slow zoom, gold eyebrow, white heading rising in, breadcrumbs), and the header is transparent over it until you scroll. Cart and checkout use a shorter, faster intro.
@@ -688,6 +688,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (brand red dark surfaces)
+- Storefront: every dark surface is the deep brand red `brand-950` instead of near-black slate: the home hero and its gradients, page intro bands, the dark sections (Why choose us, How it works), the lifted header bar, the footer, the solution cards, the floating action circle and the loading skeletons. Gold accents, white text and the admin console are unchanged.
 
 2026-09-17 (mobile and footer motion)
 - Storefront motion: on phones, scroll reveals mix directions (staggered items alternate left and right; single sections take turns rising and sliding from each side) instead of all sliding up. The footer now animates: brand column from the left, link and contact columns in sequence, bottom bar fade and social links popping in.
