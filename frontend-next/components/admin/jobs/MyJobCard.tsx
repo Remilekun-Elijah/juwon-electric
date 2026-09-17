@@ -1,11 +1,12 @@
 "use client";
 
-import { ChevronRight, MapPin, Phone } from "lucide-react";
+import { ChevronRight, MapPin, Phone, Users } from "lucide-react";
+import { useAdmin } from "@/components/admin/AdminContext";
 import { Card } from "@/components/ui";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import type { InstallationJob } from "@/lib/api/types";
 import { ChecklistProgress } from "./ChecklistProgress";
-import { jobAddress, mapsUrl, relativeSchedule, telHref } from "./jobUtils";
+import { crewmatesText, jobAddress, mapsUrl, relativeSchedule, telHref } from "./jobUtils";
 
 const linkClasses =
   "flex min-h-11 items-center justify-center gap-2 px-3 text-base font-medium text-brand-700 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500";
@@ -15,6 +16,7 @@ export function MyJobCard({ job, onOpen }: { job: InstallationJob; onOpen: () =>
   const address = jobAddress(job);
   const phone = job.order?.phoneNumber;
   const name = job.order?.name || "Customer";
+  const crewmates = crewmatesText(job, useAdmin().admin.id);
 
   return (
     <Card className="overflow-hidden">
@@ -32,6 +34,12 @@ export function MyJobCard({ job, onOpen }: { job: InstallationJob; onOpen: () =>
           <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-slate-400" />
         </span>
         <span className="mt-0.5 block text-base text-slate-600">{address || "No address"}</span>
+        {crewmates && (
+          <span className="mt-1 flex items-start gap-1.5 text-sm text-slate-600">
+            <Users aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+            {crewmates}
+          </span>
+        )}
         <ChecklistProgress job={job} className="mt-3 block" />
       </button>
       <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">

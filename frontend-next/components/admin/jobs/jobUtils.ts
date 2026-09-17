@@ -1,7 +1,7 @@
 /** Helpers shared by the admin installation jobs screen and the engineer's mobile view. */
 import { errorMessage } from "@/lib/admin/format";
 import { ApiError } from "@/lib/api/admin";
-import type { InstallationJob, JobStatus } from "@/lib/api/types";
+import type { InstallationJob, InstallationJobSummary, JobEngineer, JobStatus } from "@/lib/api/types";
 
 export const isClosedJob = (status: JobStatus) => status === "completed" || status === "cancelled";
 
@@ -9,6 +9,24 @@ export const checklistProgress = (job: Pick<InstallationJob, "checklist">) => {
   const total = job.checklist.length;
   const done = job.checklist.filter((item) => item.done).length;
   return { done, total, percent: total ? Math.round((done / total) * 100) : 0 };
+};
+
+/** Commerce v3 §1: crew ids, lead first (older responses only have `engineerId`). */
+export const jobEngineerIds = (job: Pick<InstallationJob | InstallationJobSummary, "engineerId" | "engineerIds">) =>
+  job.engineerIds ?? (job.engineerId ? [job.engineerId] : []);
+
+/** The crew as people, lead first. Falls back to the lead-only `engineer` from older responses. */
+export const jobCrew = (job: Pick<InstallationJob, "engineer" | "engineers">): JobEngineer[] =>
+  job.engineers ?? (job.engineer ? [job.engineer] : []);
+
+/** "With: Ada Obi (lead), Tunde Bello" for an engineer's own job: the rest of the crew, or "" when working alone. */
+export const crewmatesText = (job: Pick<InstallationJob, "engineer" | "engineers">, selfId: string | undefined) => {
+  const crew = jobCrew(job);
+  const others = crew
+    .map((person, index) => ({ person, lead: index === 0 && crew.length > 1 }))
+    .filter(({ person }) => person.id !== selfId);
+  if (!others.length) return "";
+  return `With: ${others.map(({ person, lead }) => `${person.name || person.email}${lead ? " (lead)" : ""}`).join(", ")}`;
 };
 
 /** The job address, falling back to the order's delivery address. */

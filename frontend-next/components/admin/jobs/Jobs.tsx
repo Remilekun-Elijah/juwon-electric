@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClipboardList, SearchX } from "lucide-react";
+import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import {
@@ -26,11 +27,12 @@ import {
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import { formatDateTime } from "@/lib/admin/format";
 import { jobStatusLabels } from "@/lib/admin/transitions";
-import { getEngineers, getJobs } from "@/lib/api/admin";
+import { getEngineers, getJob, getJobs } from "@/lib/api/admin";
 import type { InstallationJob, JobStatus, Paged } from "@/lib/api/types";
 import { ChecklistProgress } from "./ChecklistProgress";
+import { CrewStack } from "./EngineerCrew";
 import { JobDrawer } from "./JobDrawer";
-import { dayBoundary, jobAddress } from "./jobUtils";
+import { dayBoundary, errorMessage, jobAddress, jobCrew } from "./jobUtils";
 
 const PAGE_SIZE = 20;
 const COLUMNS = 6;
@@ -67,6 +69,26 @@ export function Jobs() {
   const jobs = useAdminQuery(`jobs|${JSON.stringify(query)}`, () => getJobs(query));
   const canReadStaff = can("staff:read");
   const engineers = useAdminQuery("engineers", getEngineers, { enabled: canReadStaff });
+
+  // Deep link: /admin/installations?job=<id> (for example from an order) opens that job. Read after mount, as on Orders.
+  useEffect(() => {
+    const jobId = new URLSearchParams(window.location.search).get("job");
+    if (!jobId) return undefined;
+    let active = true;
+    getJob(jobId).then(
+      (job) => {
+        if (!active) return;
+        setSelected(job);
+        setDrawerOpen(true);
+      },
+      (error: unknown) => {
+        if (active) toast.error(errorMessage(error));
+      }
+    );
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const items = jobs.data?.items ?? [];
   const total = jobs.data?.total ?? 0;
@@ -174,7 +196,7 @@ export function Jobs() {
             <p className="truncate text-sm text-slate-500">{address || "No address"}</p>
           </TD>
           <TD className="hidden whitespace-nowrap md:table-cell">
-            {job.engineer?.name || <span className="text-slate-400">Unassigned</span>}
+            <CrewStack crew={jobCrew(job)} />
           </TD>
           <TD className="hidden lg:table-cell">
             <ChecklistProgress job={job} compact />
@@ -268,6 +290,8 @@ export function Jobs() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         engineers={engineers.data ?? []}
+        engineersLoading={engineers.loading}
+        engineersError={engineers.error}
         onChanged={handleChanged}
         onDeleted={handleDeleted}
       />

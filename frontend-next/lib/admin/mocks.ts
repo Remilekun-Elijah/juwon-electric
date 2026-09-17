@@ -440,13 +440,20 @@ const engineerRef = (id: string | null) => {
   return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone } : null;
 };
 
+/** Commerce v3 §1: crew fields derived from `engineerIds` (lead first). */
+const crewFields = (engineerIds: string[]) => ({
+  engineerIds,
+  engineerId: engineerIds[0] ?? null,
+  engineer: engineerRef(engineerIds[0] ?? null),
+  engineers: engineerIds.map(engineerRef).filter((item) => item !== null),
+});
+
 const jobs: InstallationJob[] = [
   {
     id: "j-1",
     orderId: "order-preview-1",
     order: { id: "order-preview-1", name: "Adaeze Nwosu", phoneNumber: "08031234567", deliveryAddress: "12 Admiralty Way, Lekki" },
-    engineerId: "u-engineer-1",
-    engineer: engineerRef("u-engineer-1"),
+    ...crewFields(["u-engineer-1", "u-engineer-2"]),
     scheduledAt: daysFromNow(1, 9),
     durationEstimateMinutes: 240,
     address: "12 Admiralty Way, Lekki",
@@ -465,8 +472,7 @@ const jobs: InstallationJob[] = [
     id: "j-2",
     orderId: "order-preview-2",
     order: { id: "order-preview-2", name: "Bola Martins", phoneNumber: "08097654321", deliveryAddress: "4 Allen Avenue, Ikeja" },
-    engineerId: "u-engineer-1",
-    engineer: engineerRef("u-engineer-1"),
+    ...crewFields(["u-engineer-1"]),
     scheduledAt: daysFromNow(0, 13),
     durationEstimateMinutes: 180,
     address: "4 Allen Avenue, Ikeja",
@@ -485,8 +491,7 @@ const jobs: InstallationJob[] = [
     id: "j-3",
     orderId: "order-preview-3",
     order: { id: "order-preview-3", name: "Kelechi Uzo", phoneNumber: "08120000000", deliveryAddress: "8 Herbert Macaulay Way, Yaba" },
-    engineerId: null,
-    engineer: null,
+    ...crewFields([]),
     scheduledAt: daysFromNow(4, 11),
     durationEstimateMinutes: null,
     address: "8 Herbert Macaulay Way, Yaba",
@@ -888,7 +893,7 @@ export const mockAssignOrderEngineer = (order: Order, engineerId: string | null)
 export const mockOrderJobs = (orderId: string) =>
   jobs
     .filter((job) => job.orderId === orderId)
-    .map(({ id, status, engineerId, scheduledAt }) => ({ id, status, engineerId, scheduledAt }));
+    .map(({ id, status, engineerId, engineerIds, scheduledAt }) => ({ id, status, engineerId, engineerIds, scheduledAt }));
 
 /* ---------- Installation jobs ---------- */
 
@@ -905,13 +910,31 @@ export const mockJobs = (query: JobQuery = {}) =>
   pageOf(
     jobs
       .filter((job) => !query.status || job.status === query.status)
-      .filter((job) => !query.engineerId || job.engineerId === query.engineerId)
+      .filter((job) => !query.engineerId || onCrew(job, query.engineerId))
       .filter((job) => !query.orderId || job.orderId === query.orderId)
       .filter((job) => !query.from || (job.scheduledAt && job.scheduledAt >= new Date(query.from).toISOString()))
       .filter((job) => !query.to || (job.scheduledAt && job.scheduledAt <= new Date(query.to).toISOString()))
       .sort(byScheduleThenCreated),
     query
   );
+
+const crewOf = (job: InstallationJob) => job.engineerIds ?? (job.engineerId ? [job.engineerId] : []);
+const onCrew = (job: InstallationJob, engineerId: string) => crewOf(job).includes(engineerId);
+
+/** Mirrors the backend crew validation (Commerce v3 §1.2). */
+const validCrew = (engineerIds: string[]) => {
+  if (engineerIds.length > 10) throw bad("A job can have at most 10 engineers.");
+  if (new Set(engineerIds).size !== engineerIds.length) throw bad("Each engineer can be added once.");
+  engineerIds.forEach(activeEngineer);
+  return engineerIds;
+};
+
+const crewInput = (input: { engineerIds?: string[]; engineerId?: string | null }) =>
+  input.engineerIds !== undefined
+    ? validCrew(input.engineerIds)
+    : input.engineerId !== undefined
+      ? validCrew(input.engineerId ? [input.engineerId] : [])
+      : undefined;
 
 const findJob = (id: string) => {
   const job = jobs.find((item) => item.id === id);
@@ -927,7 +950,10 @@ export const mockCreateJob = (input: JobCreateInput, order?: Order): Installatio
     if (!current.requiresInstallation) throw conflict("Order does not require installation.");
     if (normalizeFulfillmentStatus(current) === "cancelled") throw conflict("Order is cancelled.");
   }
-  if (input.engineerId) activeEngineer(input.engineerId);
+  if (jobs.some((job) => job.orderId === input.orderId && job.status !== "cancelled")) {
+    throw conflict("This order already has an installation job.");
+  }
+  const crew = crewInput(input) ?? (order?.assignedEngineerId ? [order.assignedEngineerId] : []);
   const created: InstallationJob = {
     id: uuid(),
     orderId: input.orderId,
@@ -937,12 +963,11 @@ export const mockCreateJob = (input: JobCreateInput, order?: Order): Installatio
       phoneNumber: order?.phoneNumber || "",
       deliveryAddress: order?.deliveryAddress || "",
     },
-    engineerId: input.engineerId ?? null,
-    engineer: engineerRef(input.engineerId ?? null),
+    ...crewFields(crew),
     scheduledAt: input.scheduledAt ?? null,
     durationEstimateMinutes: input.durationEstimateMinutes ?? null,
     address: input.address ?? order?.deliveryAddress ?? null,
-    status: input.engineerId ? "assigned" : "unassigned",
+    status: crew.length ? "assigned" : "unassigned",
     checklist: (input.checklist || []).map((label) => ({ id: uuid(), label, done: false, doneAt: null, doneBy: null })),
     photos: [],
     notes: input.notes ?? null,
@@ -962,7 +987,12 @@ const isClosed = (job: InstallationJob) => job.status === "completed" || job.sta
 export const mockUpdateJob = (id: string, input: JobUpdateInput) => {
   const job = findJob(id);
   if (isClosed(job)) throw conflict("Job is closed.");
-  const { checklist: nextChecklist, ...rest } = input;
+  const { checklist: nextChecklist, engineerIds, engineerId, ...rest } = input;
+  const crew = crewInput({ engineerIds, engineerId });
+  if (crew) {
+    if (job.status === "in_progress") throw conflict("Cannot change job status from in_progress to assigned.");
+    Object.assign(job, crewFields(crew), { status: crew.length ? "assigned" : "unassigned" });
+  }
   Object.assign(job, rest);
   if (nextChecklist) {
     job.checklist = nextChecklist.map((entry) => {
@@ -977,15 +1007,13 @@ export const mockUpdateJob = (id: string, input: JobUpdateInput) => {
   return clone(job);
 };
 
-export const mockAssignJob = (id: string, engineerId: string | null) => {
+export const mockAssignJob = (id: string, engineerIds: string[]) => {
   const job = findJob(id);
   if (isClosed(job) || job.status === "in_progress") {
-    throw conflict(`Cannot change job status from ${job.status} to ${engineerId ? "assigned" : "unassigned"}.`);
+    throw conflict(`Cannot change job status from ${job.status} to ${engineerIds.length ? "assigned" : "unassigned"}.`);
   }
-  if (engineerId) activeEngineer(engineerId);
-  job.engineerId = engineerId;
-  job.engineer = engineerRef(engineerId);
-  job.status = engineerId ? "assigned" : "unassigned";
+  Object.assign(job, crewFields(validCrew(engineerIds)));
+  job.status = engineerIds.length ? "assigned" : "unassigned";
   job.updatedAt = now();
   return clone(job);
 };
@@ -1019,20 +1047,20 @@ export const mockDeleteJob = (id: string) => {
 /* ---------- Engineer (me) jobs ---------- */
 
 const ownJob = (engineerId: string, id: string) => {
-  const job = jobs.find((item) => item.id === id && item.engineerId === engineerId);
+  const job = jobs.find((item) => item.id === id && onCrew(item, engineerId));
   if (!job) throw notFound("Job");
   return job;
 };
 
 /** Preview jobs belong to the first seeded engineer unless the signed-in admin has jobs of their own. */
 const previewEngineerId = (engineerId: string) =>
-  jobs.some((job) => job.engineerId === engineerId) ? engineerId : "u-engineer-1";
+  jobs.some((job) => onCrew(job, engineerId)) ? engineerId : "u-engineer-1";
 
 export const mockMyJobs = (engineerId: string, query: PageQuery & { status?: JobStatus | "" } = {}) => {
   const owner = previewEngineerId(engineerId);
   return pageOf(
     jobs
-      .filter((job) => job.engineerId === owner)
+      .filter((job) => onCrew(job, owner))
       .filter((job) => (query.status ? job.status === query.status : !isClosed(job)))
       .sort(byScheduleThenCreated),
     query

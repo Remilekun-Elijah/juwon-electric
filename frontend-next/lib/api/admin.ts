@@ -36,6 +36,7 @@ import type {
   NotificationsPage,
   Order,
   OrderChannel,
+  PackageCategoryInput,
   PackageOptionInput,
   Paged,
   PaymentStatus,
@@ -304,7 +305,7 @@ export type PackageInput = {
   options: PackageOptionInput[];
 };
 
-export const savePackage = <T = AdminPackage>(packageId: string | null, input: PackageInput) =>
+export const savePackage = <T = AdminPackage>(packageId: string | null, input: PackageInput & PackageCategoryInput) =>
   packageId ? put<T>(`/packages/${id(packageId)}`, input) : post<T>("/packages", input);
 
 /* ---------- Orders and fulfilment (contract §6) ---------- */
@@ -522,18 +523,22 @@ export const getJobs = (query: mock.JobQuery = {}) =>
 export const getJob = (jobId: string) =>
   withContractFallback("jobs", () => adminFetch<InstallationJob>(`/jobs/${id(jobId)}`), () => mock.mockJob(jobId));
 
-/** `order` is only used by the preview fallback to copy customer details. */
+/**
+ * Commerce v3 §1.2: send `engineerIds` (lead first). A second open job for the same order is refused with
+ * 409 "This order already has an installation job.". `order` is only used by the preview fallback.
+ */
 export const createJob = (input: JobCreateInput, order?: Order) =>
   withContractFallback("jobs", () => post<InstallationJob>("/jobs", input), () => mock.mockCreateJob(input, order));
 
 export const updateJob = (jobId: string, input: JobUpdateInput) =>
   withContractFallback("jobs", () => put<InstallationJob>(`/jobs/${id(jobId)}`, input), () => mock.mockUpdateJob(jobId, input));
 
-export const assignJob = (jobId: string, engineerId: string | null) =>
+/** Commerce v3 §1.2: replaces the crew (lead first); an empty array unassigns. */
+export const assignJob = (jobId: string, engineerIds: string[]) =>
   withContractFallback(
     "jobs",
-    () => post<InstallationJob>(`/jobs/${id(jobId)}/assign`, { engineerId }),
-    () => mock.mockAssignJob(jobId, engineerId)
+    () => post<InstallationJob>(`/jobs/${id(jobId)}/assign`, { engineerIds }),
+    () => mock.mockAssignJob(jobId, engineerIds)
   );
 
 export const setJobStatus = (jobId: string, status: JobStatus, note?: string) =>

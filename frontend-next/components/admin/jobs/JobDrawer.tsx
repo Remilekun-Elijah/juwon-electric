@@ -2,19 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Circle, ExternalLink, Pencil, Trash2, UserMinus, UserPlus, XCircle } from "lucide-react";
+import { CheckCircle2, Circle, ExternalLink, Pencil, Trash2, Users, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAdmin } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
-import { Button, ConfirmDialog, Drawer, Field, Select } from "@/components/ui";
+import { Button, ConfirmDialog, Drawer, Field } from "@/components/ui";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import { formatDateTime } from "@/lib/admin/format";
+import { formatDuration } from "@/lib/admin/lagosTime";
 import { JOB_TRANSITIONS } from "@/lib/admin/transitions";
 import { assignJob, deleteJob, setJobStatus } from "@/lib/api/admin";
 import type { AdminUser, InstallationJob, JobStatus } from "@/lib/api/types";
 import { ChecklistProgress } from "./ChecklistProgress";
+import { CrewList, EngineerCrewPicker } from "./EngineerCrew";
 import { JobEditDialog } from "./JobEditDialog";
-import { errorMessage, isClosedJob, jobAddress, mapsUrl, telHref } from "./jobUtils";
+import { errorMessage, isClosedJob, jobAddress, jobCrew, jobEngineerIds, mapsUrl, telHref } from "./jobUtils";
 
 const statusActionLabels: Partial<Record<JobStatus, string>> = {
   in_progress: "Mark in progress",
@@ -29,12 +31,14 @@ type JobDrawerProps = {
   open: boolean;
   onClose: () => void;
   engineers: AdminUser[];
+  engineersLoading?: boolean;
+  engineersError?: string;
   onChanged: (job: InstallationJob) => void;
   onDeleted: (jobId: string) => void;
 };
 
 /** Job details and admin actions (assign, status, edit, delete). */
-export function JobDrawer({ job, open, onClose, engineers, onChanged, onDeleted }: JobDrawerProps) {
+export function JobDrawer({ job, open, onClose, ...rest }: JobDrawerProps) {
   return (
     <Drawer
       open={open && Boolean(job)}
@@ -44,7 +48,8 @@ export function JobDrawer({ job, open, onClose, engineers, onChanged, onDeleted 
       description={job ? (job.scheduledAt ? `Scheduled ${formatDateTime(job.scheduledAt)}` : "Not scheduled yet") : undefined}
     >
       {job && (
-        <JobDetails key={job.id} job={job} engineers={engineers} onChanged={onChanged} onDeleted={onDeleted} />
+        // Remount after each save so drafts (like the crew) start from the saved job.
+        <JobDetails key={`${job.id}:${job.updatedAt}`} job={job} {...rest} />
       )}
     </Drawer>
   );
@@ -52,12 +57,15 @@ export function JobDrawer({ job, open, onClose, engineers, onChanged, onDeleted 
 
 type JobDetailsProps = Omit<JobDrawerProps, "open" | "onClose"> & { job: InstallationJob };
 
-function JobDetails({ job, engineers, onChanged, onDeleted }: JobDetailsProps) {
+function JobDetails({ job, engineers, engineersLoading, engineersError, onChanged, onDeleted }: JobDetailsProps) {
   const { can } = useAdmin();
   const canAssign = can("jobs:assign");
   const closed = isClosedJob(job.status);
   const [busy, setBusy] = useState("");
-  const [assignee, setAssignee] = useState(job.engineerId ?? "");
+  const currentCrew = jobEngineerIds(job);
+  const crew = jobCrew(job);
+  const [crewDraft, setCrewDraft] = useState<string[]>(currentCrew);
+  const crewChanged = crewDraft.length !== currentCrew.length || crewDraft.some((item, index) => item !== currentCrew[index]);
   const [editing, setEditing] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -82,11 +90,11 @@ function JobDetails({ job, engineers, onChanged, onDeleted }: JobDetailsProps) {
     }
   };
 
-  const assign = (engineerId: string | null) =>
-    run(engineerId ? "assign" : "unassign", () => assignJob(job.id, engineerId), engineerId ? "Job assigned." : "Job unassigned.").then(
-      (ok) => {
-        if (ok && !engineerId) setAssignee("");
-      }
+  const saveCrew = () =>
+    run(
+      "assign",
+      () => assignJob(job.id, crewDraft),
+      crewDraft.length ? (currentCrew.length ? "Engineers updated." : "Job assigned.") : "Job unassigned."
     );
 
   const changeStatus = async (status: JobStatus) => {
@@ -108,11 +116,6 @@ function JobDetails({ job, engineers, onChanged, onDeleted }: JobDetailsProps) {
       setBusy("");
     }
   };
-
-  const engineerOptions = engineers.map((engineer) => ({ value: engineer.id, label: engineer.name }));
-  if (job.engineer && !engineerOptions.some((option) => option.value === job.engineer?.id)) {
-    engineerOptions.unshift({ value: job.engineer.id, label: job.engineer.name });
-  }
 
   return (
     <>
@@ -147,14 +150,14 @@ function JobDetails({ job, engineers, onChanged, onDeleted }: JobDetailsProps) {
                   {phone}
                 </a>
               ) : (
-                "—"
+                "No phone"
               ),
             },
-            { label: "Engineer", value: job.engineer ? `${job.engineer.name} (${job.engineer.email})` : "Unassigned" },
+            { label: crew.length > 1 ? `Engineers (${crew.length})` : "Engineer", full: true, value: <CrewList crew={crew} /> },
             { label: "Scheduled", value: job.scheduledAt ? formatDateTime(job.scheduledAt) : "Not scheduled" },
             {
               label: "Estimated duration",
-              value: job.durationEstimateMinutes ? `${job.durationEstimateMinutes} minutes` : "—",
+              value: formatDuration(job.durationEstimateMinutes) || "—",
             },
             {
               label: "Address",
@@ -240,34 +243,40 @@ function JobDetails({ job, engineers, onChanged, onDeleted }: JobDetailsProps) {
           </h3>
 
           {canChangeEngineer && (
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-              <Field label="Engineer" className="flex-1">
-                <Select
-                  value={assignee}
-                  placeholder={engineerOptions.length ? "Choose an engineer" : "No active engineers"}
-                  options={engineerOptions}
-                  onChange={(event) => setAssignee(event.target.value)}
+            <div className="space-y-2">
+              <Field
+                label="Engineers"
+                helper={
+                  engineersError && !engineers.length
+                    ? `Couldn’t load engineers. ${engineersError}`
+                    : "The first engineer is the lead. Remove everyone to unassign."
+                }
+              >
+                <EngineerCrewPicker
+                  value={crewDraft}
+                  engineers={engineers}
+                  known={crew}
+                  loading={engineersLoading}
+                  error={engineersError}
                   disabled={Boolean(busy)}
+                  onChange={setCrewDraft}
                 />
               </Field>
-              <Button
-                icon={<UserPlus aria-hidden="true" />}
-                onClick={() => assign(assignee)}
-                disabled={!assignee || assignee === job.engineerId || Boolean(busy)}
-                loading={busy === "assign"}
-              >
-                {job.engineerId ? "Reassign" : "Assign"}
-              </Button>
-              {job.engineerId && (
-                <Button
-                  variant="outline"
-                  icon={<UserMinus aria-hidden="true" />}
-                  onClick={() => assign(null)}
-                  disabled={Boolean(busy)}
-                  loading={busy === "unassign"}
-                >
-                  Unassign
-                </Button>
+              {crewChanged && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    icon={<Users aria-hidden="true" />}
+                    onClick={saveCrew}
+                    disabled={Boolean(busy)}
+                    loading={busy === "assign"}
+                    loadingText="Saving…"
+                  >
+                    {crewDraft.length ? "Save engineers" : "Unassign job"}
+                  </Button>
+                  <Button variant="ghost" onClick={() => setCrewDraft(currentCrew)} disabled={Boolean(busy)}>
+                    Undo changes
+                  </Button>
+                </div>
               )}
             </div>
           )}
@@ -323,7 +332,15 @@ function JobDetails({ job, engineers, onChanged, onDeleted }: JobDetailsProps) {
       )}
 
       {canAssign && !closed && (
-        <JobEditDialog open={editing} job={job} onClose={() => setEditing(false)} onSaved={onChanged} />
+        <JobEditDialog
+          open={editing}
+          job={job}
+          engineers={engineers}
+          engineersLoading={engineersLoading}
+          engineersError={engineersError}
+          onClose={() => setEditing(false)}
+          onSaved={onChanged}
+        />
       )}
 
       <ConfirmDialog

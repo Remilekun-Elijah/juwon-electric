@@ -1,18 +1,20 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, ExternalLink, MapPin, Phone, Play, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, ExternalLink, MapPin, Phone, Play, Plus, Trash2, Users } from "lucide-react";
+import { useAdmin } from "@/components/admin/AdminContext";
 import { toast } from "sonner";
 import { Button, Field, Input, Textarea, buttonClasses } from "@/components/ui";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import { formatDateTime } from "@/lib/admin/format";
+import { formatDuration } from "@/lib/admin/lagosTime";
 import { ENGINEER_JOB_TRANSITIONS } from "@/lib/admin/transitions";
 import { setMyJobStatus, updateMyJob } from "@/lib/api/admin";
 import { cn } from "@/lib/cn";
 import type { InstallationJob } from "@/lib/api/types";
 import { LIMITS, validateUrlField } from "@/lib/validation";
 import { ChecklistProgress } from "./ChecklistProgress";
-import { errorMessage, jobAddress, mapsUrl, relativeSchedule, telHref } from "./jobUtils";
+import { crewmatesText, errorMessage, jobAddress, mapsUrl, relativeSchedule, telHref } from "./jobUtils";
 
 type MyJobDetailProps = { initialJob: InstallationJob; onChanged: (job: InstallationJob) => void };
 
@@ -33,6 +35,7 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
   const address = jobAddress(job);
   const phone = job.order?.phoneNumber;
   const name = job.order?.name || "Customer";
+  const crewmates = crewmatesText(job, useAdmin().admin.id);
 
   const publish = (updated: InstallationJob) => {
     setJob(updated);
@@ -130,11 +133,17 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
         <div className="flex flex-wrap items-center gap-2">
           <JobStatusBadge status={job.status} />
           <span className="text-sm text-slate-500">{relativeSchedule(job.scheduledAt)}</span>
-          {job.durationEstimateMinutes != null && (
-            <span className="text-sm text-slate-500">· about {job.durationEstimateMinutes} min</span>
+          {Boolean(job.durationEstimateMinutes) && (
+            <span className="text-sm text-slate-500">· about {formatDuration(job.durationEstimateMinutes)}</span>
           )}
         </div>
         <p className="text-base text-slate-700">{address || "No address on this job."}</p>
+        {crewmates && (
+          <p className="flex items-start gap-2 text-base text-slate-700">
+            <Users aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+            {crewmates}
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-2">
           {address ? (
             <a href={mapsUrl(address)} target="_blank" rel="noopener noreferrer" className={bigLink}>
