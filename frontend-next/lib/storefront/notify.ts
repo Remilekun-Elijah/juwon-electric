@@ -21,6 +21,9 @@ const RULES: [prefix: string, tags: string[]][] = [
   ["/admin/orders", ["products", "packages"]],
   ["/admin/vacancies", ["vacancies"]],
   ["/admin/settings", ["settings"]],
+  ["/admin/faqs", ["faqs"]],
+  ["/admin/testimonials", ["testimonials"]],
+  ["/admin/clients", ["clients"]],
 ];
 
 const matchesPrefix = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);

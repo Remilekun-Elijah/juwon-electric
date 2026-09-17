@@ -50,7 +50,19 @@ export const STORE_REVALIDATE = 60;
 const TIMEOUT_MS = 8000;
 
 /** Every cache tag the storefront uses. The revalidate route only accepts these. */
-export const STORE_TAGS = ["store", "packages", "products", "categories", "services", "portfolio", "vacancies", "settings"] as const;
+export const STORE_TAGS = [
+  "store",
+  "packages",
+  "products",
+  "categories",
+  "services",
+  "portfolio",
+  "vacancies",
+  "settings",
+  "faqs",
+  "testimonials",
+  "clients",
+] as const;
 
 export type StoreTag = (typeof STORE_TAGS)[number];
 
