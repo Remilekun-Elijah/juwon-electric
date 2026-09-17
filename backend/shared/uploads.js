@@ -27,11 +27,33 @@ export const UPLOAD_PURPOSES = [
   "reviews",
   "clients",
   "team",
+  "jobs",
+  "staff",
   "other",
 ];
 
-/** Any one of these lets an admin upload (§2). */
-export const UPLOAD_CAPABILITIES = ["content:write", "products:write", "staff:write"];
+/** Capabilities for the website and catalogue purposes (every purpose except `jobs` and `staff`). */
+export const CONTENT_UPLOAD_CAPABILITIES = ["content:write", "products:write", "staff:write"];
+
+/**
+ * Purpose -> capabilities, any one of which allows the upload. Job photos: engineers on their jobs and
+ * staff who manage jobs. Staff avatars: staff:write. Anything else: the content capabilities.
+ */
+export const PURPOSE_CAPABILITIES = Object.freeze({
+  jobs: ["jobs:update-own", "jobs:assign"],
+  staff: ["staff:write"],
+});
+
+/** Any one of these lets an admin upload at all (§2); the purpose then narrows it. */
+export const UPLOAD_CAPABILITIES = [
+  ...new Set([...CONTENT_UPLOAD_CAPABILITIES, ...Object.values(PURPOSE_CAPABILITIES).flat()]),
+];
+
+/** Capabilities that allow an upload with this (valid) purpose. */
+export const capabilitiesForPurpose = (purpose) => PURPOSE_CAPABILITIES[purpose] || CONTENT_UPLOAD_CAPABILITIES;
+
+/** True when `holds(capability)` is true for one of the purpose's capabilities. */
+export const canUploadPurpose = (holds, purpose) => capabilitiesForPurpose(purpose).some((capability) => holds(capability));
 
 export const UPLOAD_MESSAGES = {
   created: "Image uploaded.",
@@ -42,6 +64,8 @@ export const UPLOAD_MESSAGES = {
   // Neutral on purpose: it never mentions storage, usage or limits (§2).
   unavailable: "Image uploads are unavailable right now. Please use an image link or try again later.",
   notFound: "Image not found.",
+  // 429 from the per-admin upload rate limit.
+  tooMany: "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again.",
 };
 
 export const UPLOAD_CACHE_CONTROL = "public, max-age=31536000, immutable";

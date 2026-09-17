@@ -93,7 +93,8 @@ router.get("/auth/me", me);
 router.get("/dashboard", can("dashboard:read"), adminDashboard);
 
 // Image uploads (UPLOADS_V1 §2): config for any admin; raw image bytes need content:write,
-// products:write or staff:write.
+// products:write or staff:write, or for ?purpose=jobs jobs:update-own or jobs:assign (the handler
+// narrows by purpose).
 router.get("/uploads/config", adminUploadConfig);
 router.post("/uploads", canUpload, adminUploadImage);
 router.get("/audit-logs", can("audit:read"), adminListAuditLogs);

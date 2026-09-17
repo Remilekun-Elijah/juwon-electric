@@ -39,6 +39,7 @@ import {
   UPLOAD_MAX_BYTES,
   UPLOAD_MESSAGES,
   alertAllowed,
+  canUploadPurpose,
   alertRecipients,
   assertDeclaredLength,
   assertImageBytes,
@@ -166,6 +167,8 @@ export const adminUploadConfig = (_req, res) => ok(res, UPLOAD_MESSAGES.config, 
 
 export const adminUploadImage = asyncHandler(async (req, res) => {
   const purpose = uploadPurpose(req.query.purpose);
+  const admin = actingAdmin(req);
+  if (!canUploadPurpose((capability) => hasCapability(admin, capability), purpose)) throw new ApiError(403, FORBIDDEN_MESSAGE);
   const contentType = uploadContentType(req.get("content-type"));
   assertDeclaredLength(req.get("content-length"));
   const actor = actorOf(req);

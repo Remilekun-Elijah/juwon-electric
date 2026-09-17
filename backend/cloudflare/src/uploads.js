@@ -19,6 +19,7 @@ import {
   UPLOAD_MAX_BYTES,
   UPLOAD_MESSAGES,
   USAGE_ID,
+  canUploadPurpose,
   alertAllowed,
   alertRecipients,
   assertDeclaredLength,
@@ -176,6 +177,7 @@ const actorOf = (admin) => (admin ? { id: admin.id, email: admin.email } : null)
 export const handleUploadCreate = async ({ request, env, ctx, admin, url, audit, sendNotification }) => {
   requireUploadCapability(admin);
   const purpose = uploadPurpose(url.searchParams.get("purpose") ?? undefined);
+  if (!canUploadPurpose((capability) => hasCapability(admin, capability), purpose)) throw new ApiError(403, FORBIDDEN_MESSAGE);
   const contentType = uploadContentType(request.headers.get("Content-Type"));
   assertDeclaredLength(request.headers.get("Content-Length"));
   if (!env.IMAGES) throw uploadsUnavailable();

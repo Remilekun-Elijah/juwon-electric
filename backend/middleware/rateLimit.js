@@ -7,6 +7,7 @@
 import { hitCounter } from "../services/counterStore.js";
 import { minutesText, tooManyRequests } from "../services/errors.js";
 import { requestIpPrefix } from "../services/ip.js";
+import { UPLOAD_MESSAGES } from "../shared/uploads.js";
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
@@ -25,7 +26,7 @@ export const LIMITS = {
   resetRequest: { limit: 3, windowMs: HOUR, message: LIMIT_MESSAGES.resetRequest },
   resetConfirm: { limit: 10, windowMs: HOUR, message: LIMIT_MESSAGES.generic },
   // Per admin (UPLOADS_V1 §2).
-  upload: { limit: 60, windowMs: 10 * MINUTE, message: LIMIT_MESSAGES.generic },
+  upload: { limit: 60, windowMs: 10 * MINUTE, message: () => UPLOAD_MESSAGES.tooMany },
 };
 
 /**
