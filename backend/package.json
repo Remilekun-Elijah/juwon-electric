@@ -6,6 +6,7 @@
     "test": "node --test \"test/**/*.test.js\" \"cloudflare/test/**/*.test.js\"",
     "lint": "eslint . && node scripts/check-chars.mjs",
     "dev": "nodemon app",
+    "seed:sample": "node scripts/seed-sample-website.mjs",
     "start": "node app.js"
   },
   "keywords": [],
