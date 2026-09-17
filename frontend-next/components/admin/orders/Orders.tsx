@@ -318,7 +318,7 @@ export function Orders() {
               <span className="truncate">{item.phoneNumber || item.deliveryAddress}</span>
               <ChannelBadge channel={orderChannel(item)} />
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 sm:hidden">
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 xl:hidden">
               <FulfillmentBadge status={orderFulfillment(item)} />
               <span className="text-xs text-slate-500">Payment: {paymentLabels[orderPayment(item)]}</span>
               {isRefundDue(item) && <RefundDueBadge />}
@@ -329,10 +329,10 @@ export function Orders() {
           <TD align="right" className="whitespace-nowrap font-medium tabular-nums text-slate-900">
             {formatCurrency(getOrderRevenue(item))}
           </TD>
-          <TD className="hidden sm:table-cell">
+          <TD className="hidden xl:table-cell">
             <FulfillmentBadge status={orderFulfillment(item)} />
           </TD>
-          <TD className="hidden sm:table-cell">
+          <TD className="hidden xl:table-cell">
             <div className="flex flex-col items-start gap-1">
               <PaymentBadge status={orderPayment(item)} />
               {isRefundDue(item) && <RefundDueBadge />}
@@ -340,7 +340,7 @@ export function Orders() {
           </TD>
           <TD align="right">
             <div className="flex items-center justify-end gap-2" onClick={(event) => event.stopPropagation()}>
-              <Button variant="outline" size="sm" onClick={() => openOrder(item)}>
+              <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={() => openOrder(item)}>
                 View
                 <span className="sr-only"> {item.name}</span>
               </Button>
@@ -444,8 +444,8 @@ export function Orders() {
           <TH className="hidden md:table-cell">Date</TH>
           <TH className="hidden lg:table-cell">Items</TH>
           <TH align="right">Total</TH>
-          <TH className="hidden sm:table-cell">Fulfilment</TH>
-          <TH className="hidden sm:table-cell">Payment</TH>
+          <TH className="hidden xl:table-cell">Fulfilment</TH>
+          <TH className="hidden xl:table-cell">Payment</TH>
           <TH align="right" srOnly>
             Actions
           </TH>

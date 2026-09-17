@@ -183,7 +183,7 @@ Persona: HR
 - Payment status at creation: pending, partially paid or paid (paid records the paid date).
 - Optional internal note (up to 500 characters).
 - Records: channel `in_store` and the creating staff member. The website channel is `website`. The orders list filters by channel.
-- Orders list display: fulfilment status and payment status are shown in separate labelled columns (on phones both appear under the customer name, payment as a labelled "Payment:" line). Payment labels shown to staff: Unpaid (pending), Part-paid (partial), Paid, Failed, Refunded. A cancelled order whose payment is Paid or Part-paid is flagged "Refund due" in the list and in the order details until payment is set to Refunded.
+- Orders list display: fulfilment status and payment status are shown in separate labelled columns (on narrower screens both appear under the customer name, payment as a labelled "Payment:" line). Payment labels shown to staff: Unpaid (pending), Part-paid (partial), Paid, Failed, Refunded. A cancelled order whose payment is Paid or Part-paid is flagged "Refund due" in the list and in the order details until payment is set to Refunded.
 - Returns (decision 2026-09-17): an in-store order can be cancelled even after it is delivered (for example a walk-in customer returns the goods). Cancelling restores the stock taken for it through Sale reversed movements and is written to the activity log. Payment status is not changed automatically; if money is given back, staff set the payment status to Refunded. Website orders still cannot be cancelled once delivered.
 - Dashboard revenue uses order totals, so discounts are reflected.
 
