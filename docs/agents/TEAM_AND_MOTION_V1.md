@@ -231,3 +231,49 @@ Alternate surfaces so no two adjacent sections share the same white background:
 - Header: the transparent→solid transition.
 - Floating actions: slide in.
 - `prefers-reduced-motion` turns off all movement: no autoplay, marquee, count-up or zoom. Content still shows instantly.
+
+## 8. Addendum (owner, 2026-09-17): animate every storefront page like the home page
+
+Owner: "can we make the rest of all the frontend animate like the homepage?" This covers the public storefront only; the admin console stays calm.
+
+### 8.1 Inner page hero (`PageIntro`)
+- **Look:** a compact dark band that shares the home hero's style.
+  - `slate-950` background with one of our installation photos (`public/panel-*.webp`) at low opacity, under the same left-to-right dark gradient.
+  - Gold eyebrow, white h1, white/75 description.
+  - Breadcrumbs in white/60, with the current item white.
+  - Actions and children styled for dark: gold primary, glass secondary.
+- **Height:** about `pt-28 pb-12 sm:pt-32 sm:pb-16`, so it sits under the transparent header.
+- **Photo:** each page may pass `image` to `PageIntro`; there's a sensible default. The photo gets the slow zoom (disabled under reduced motion).
+- **Entrance:** the same as the home hero: breadcrumbs, then eyebrow, then h1 lines rising from a mask, then description, then actions. Content stays visible without JS.
+- **Header:** mark the band with `data-store-hero`. `StoreHeader` becomes transparent at the top of **any** page whose first element has `data-store-hero`, not only `/`. Everything else about §7.2 stays the same. The existing `FloatingActions` phone-hiding stays home-only.
+- **Checkout and success pages:** keep the band compact (`pt-24 pb-8`) so the form stays near the top.
+
+### 8.2 Page by page
+Every page gets:
+- section heading reveals
+- staggered card, grid and list reveals
+- hover polish (lift, image zoom, arrow nudge, button press)
+- the darker section rhythm where the page has several sections: alternate white/slate-50, with one dark or brand band where it fits
+
+| Page | Specific motion |
+|---|---|
+| Packages list | Filters bar fades in; package cards stagger. When a filter changes, cards cross-fade (opacity and short translate). The empty state reveals. |
+| Package detail | Price card slides in from the right; option picker selection animates (the selected ring scales in); "What's included" rows stagger; the price tweens with `AnimatedNumber` when the option changes; related packages stagger. |
+| Products list and category | Category nav slides in from the left; product cards stagger; pagination fades; "Packages in <category>" cards stagger. |
+| Product detail | Gallery fades in with a gentle zoom; thumbnails stagger; specs table rows stagger; "Added" pulse on Add to cart; quantity stepper number tween; "Included in these packages" stagger. |
+| Services | Offering cards stagger with image zoom on hover; segments use the home "Who we power" image cards. |
+| Portfolio | Category chips stagger; cards cross-fade when the filter changes; case-study overlay slides up on hover. |
+| Vacancies list and detail | Filters and cards stagger. On the detail page, the meta sidebar slides in and the responsibilities and requirements lists stagger. The Apply button has a gentle attention pulse once, on reveal. |
+| Contact | Business details card and form slide in from opposite sides. Field focus gets an animated ring; submit shows a success check draw animation; errors shake once (small, and not under reduced motion). |
+| Cart | Lines stagger in. Removing a line collapses its height and fades it; undo restores it with a slide. The quantity stepper tweens; the summary total tweens with `AnimatedNumber`; the empty-state illustration floats gently. |
+| Checkout | Form sections reveal in sequence; the summary slides in; the "Place order" button has a loading shimmer. |
+| Order success | Check-mark draw animation; the fulfilment steps stagger with a line draw; a small confetti-free celebration (scale and fade on the heading only). |
+| FAQ, calculator, team | Already animated. Only bring their intros onto the new `PageIntro`. |
+| 404 | Heading and illustration float in; the links stagger. |
+
+### 8.3 Rules (unchanged from §5 and §7)
+- CSS and `IntersectionObserver` only, with no new dependencies. Animate transform and opacity only, except for the collapse on cart removal.
+- Honour `prefers-reduced-motion`: no movement, and content shows instantly.
+- Content must be visible without JS. No layout shift. No horizontal scroll at 375 px.
+- Brand colours plus gold on dark only. Everyday lucide icons only.
+- The cart and checkout must never feel slow: every animation there is 300 ms or less, and none of them delay input.
