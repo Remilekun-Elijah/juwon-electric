@@ -30,6 +30,7 @@ import {
   getStorePackages,
   getStorePortfolio,
   getStoreProducts,
+  getStoreReasons,
   getStoreServices,
   getStoreSettings,
   getStoreTestimonials,
@@ -63,7 +64,7 @@ const seeAll = (href: string, label: string) => (
  * the hero hides itself when it has no data (the static "Why choose us" and "How it works" always show).
  */
 export default async function HomePage() {
-  const [allPackages, categories, products, services, portfolio, settings, testimonials, clients, faqs, vacancies] = await Promise.all([
+  const [allPackages, categories, products, services, portfolio, settings, testimonials, clients, faqs, vacancies, reasons] = await Promise.all([
     getStorePackages(),
     getStoreCategories(),
     getStoreProducts({ page: 1 }),
@@ -74,6 +75,7 @@ export default async function HomePage() {
     getStoreClients(),
     getStoreFaqs(),
     getStoreVacancies(),
+    getStoreReasons(),
   ]);
 
   // Commerce v2 §4: packages with no available option stay out of the home page.
@@ -108,7 +110,7 @@ export default async function HomePage() {
 
       <ClientLogos clients={clients} />
 
-      <WhyChooseUs />
+      <WhyChooseUs reasons={reasons} />
 
       <Solutions segments={segments} />
 

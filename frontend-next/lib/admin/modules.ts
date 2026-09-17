@@ -21,6 +21,7 @@ import {
   ReceiptText,
   Settings,
   ShoppingCart,
+  Sparkles,
   Store,
   UserCog,
   UsersRound,
@@ -43,6 +44,7 @@ export type ModuleId =
   | "services"
   | "portfolio"
   | "faqs"
+  | "reasons"
   | "reviews"
   | "clients"
   | "team"
@@ -213,6 +215,17 @@ export const modules: AdminModule[] = [
     eyebrow: "Website",
     title: "FAQs",
     description: "Questions and answers shown on the home page and the FAQ page.",
+  },
+  {
+    id: "reasons",
+    href: "/admin/reasons",
+    capability: "content:read",
+    label: "Why choose us",
+    icon: Sparkles,
+    group: "website",
+    eyebrow: "Website",
+    title: "Why customers choose us",
+    description: "The four cards on the home page that say why customers buy from Juwon Electric.",
   },
   {
     id: "reviews",

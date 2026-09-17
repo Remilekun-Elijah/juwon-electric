@@ -149,6 +149,31 @@ export const runLandingScenario = async (client) => {
   assert.deepEqual(publicClients.map((item) => item.name), ["Palmgrove Farm"]);
   await expect("unknown client", "PUT", "/admin/clients/missing", { body: {} }, 404, "Client not found.");
 
+  // ---- why customers choose us (§1.5) ----------------------------------------------------------
+  await expect("reason title required", "POST", "/admin/reasons", { body: { text: "Our own team fits your system." } }, 400, "Title is required.");
+  await expect("reason text too short", "POST", "/admin/reasons", { body: { title: "Installed by us", text: "Short" } }, 400, "Text must be at least 10 characters.");
+  await expect("reason icon must be known", "POST", "/admin/reasons", {
+    body: { title: "Installed by us", text: "Our own team fits your system.", icon: "rocket" },
+  }, 400, "Icon must be one of: wrench, clipboard, phone, badge, shield, truck, battery, sun, clock, users, spark, thumbs-up.");
+  const reason = (
+    await expect("create reason", "POST", "/admin/reasons", {
+      body: { title: "Installed by our engineers", text: "Our own team fits your system and tests it on site." },
+    }, 201, "Reason created.")
+  ).body.data;
+  assert.deepEqual(Object.keys(reason).sort(), [...CONTENT_KEYS, "icon", "text", "title"].sort());
+  assert.equal(reason.icon, "wrench", "the first icon is the default");
+  const hiddenReason = (
+    await expect("hide reason", "PUT", `/admin/reasons/${reason.id}`, { body: { icon: "shield", isActive: false } }, 200, "Reason updated.")
+  ).body.data;
+  assert.deepEqual([hiddenReason.icon, hiddenReason.isActive], ["shield", false]);
+  const publicReasons = (await expect("public reasons", "GET", "/reasons", { token: null }, 200, "Reasons retrieved.")).body.data;
+  assert.deepEqual(publicReasons, [], "hidden reasons stay off the website");
+  await expect("show reason again", "PUT", `/admin/reasons/${reason.id}`, { body: { isActive: true } }, 200);
+  const shown = (await expect("public reasons after showing", "GET", "/reasons", { token: null }, 200)).body.data;
+  assert.deepEqual(shown.map((item) => item.title), ["Installed by our engineers"]);
+  await expect("unknown reason", "PUT", "/admin/reasons/missing", { body: {} }, 404, "Reason not found.");
+  await expect("support cannot create reasons", "POST", "/admin/reasons", { token: support.token, body: {} }, 403, FORBIDDEN);
+
   const auditActions = (
     await expect("content audit entries", "GET", "/admin/audit-logs?entity=faq", {
       project: (body) => ({ actions: body?.data?.items?.map((item) => item.action).sort() }),

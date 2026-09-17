@@ -102,6 +102,8 @@ const models = {
   clients: mongoose.models.Client || mongoose.model("Client", flexibleSchema, "clients"),
   // Team and motion v1 team members.
   teamMembers: mongoose.models.TeamMember || mongoose.model("TeamMember", flexibleSchema, "teamMembers"),
+  // "Why customers choose us" reasons.
+  reasons: mongoose.models.Reason || mongoose.model("Reason", flexibleSchema, "reasons"),
   // Uploads v1: image records and the system/uploads-usage total.
   uploads: mongoose.models.Upload || mongoose.model("Upload", flexibleSchema, "uploads"),
   system: mongoose.models.SystemRecord || mongoose.model("SystemRecord", flexibleSchema, "system"),
@@ -300,6 +302,7 @@ const defaultDb = async () => {
     testimonials: [],
     clients: [],
     teamMembers: [],
+    reasons: [],
     uploads: [],
     system: [],
   };

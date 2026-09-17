@@ -4,7 +4,23 @@
 import { badRequest } from "./errors.js";
 import { OPS_LIMITS, boolean, integer, isPlainObject, oneOf, queryText, sortOrder, text } from "./fields.js";
 
-export const CONTENT_COLLECTIONS = ["faqs", "testimonials", "clients", "teamMembers"];
+export const CONTENT_COLLECTIONS = ["faqs", "testimonials", "clients", "teamMembers", "reasons"];
+
+/** Icons a "Why customers choose us" reason can use (the storefront maps each key to a lucide icon). */
+export const REASON_ICONS = [
+  "wrench",
+  "clipboard",
+  "phone",
+  "badge",
+  "shield",
+  "truck",
+  "battery",
+  "sun",
+  "clock",
+  "users",
+  "spark",
+  "thumbs-up",
+];
 export const TESTIMONIAL_SOURCES = ["website", "whatsapp", "google", "facebook", "in_person"];
 
 export const CONTENT_LIMITS = {
@@ -25,6 +41,10 @@ export const CONTENT_LIMITS = {
   teamRole: 80,
   teamGroup: 60,
   teamBio: 300,
+  reasonTitleMin: 3,
+  reasonTitle: 80,
+  reasonTextMin: 10,
+  reasonText: 300,
 };
 
 const SITE_PATH = /^\/[A-Za-z0-9._/-]{1,200}$/;
@@ -220,6 +240,33 @@ function commonFields(item) {
   };
 }
 
+// ---- Why customers choose us (§1.5) -----------------------------------------------------
+
+export const reasonPayload = (body, { isUpdate = false } = {}) =>
+  buildPayload(body, isUpdate, {
+    title: (input) =>
+      minLength(
+        text(input, "title", { label: "Title", required: true, max: CONTENT_LIMITS.reasonTitle }),
+        CONTENT_LIMITS.reasonTitleMin,
+        "Title"
+      ),
+    text: (input) =>
+      minLength(
+        text(input, "text", { label: "Text", required: true, max: CONTENT_LIMITS.reasonText, multiline: true }),
+        CONTENT_LIMITS.reasonTextMin,
+        "Text"
+      ),
+    icon: (input) => oneOf(input, "icon", REASON_ICONS, { label: "Icon" }) ?? REASON_ICONS[0],
+  });
+
+export const serializeReason = (item) => ({
+  id: item.id,
+  title: item.title ?? "",
+  text: item.text ?? "",
+  icon: REASON_ICONS.includes(item.icon) ? item.icon : REASON_ICONS[0],
+  ...commonFields(item),
+});
+
 /**
  * Per collection: URL path (`/<path>` public, `/admin/<path>` admin), payload builder, serializer,
  * audit entity, messages and the audit label.
@@ -251,6 +298,15 @@ export const CONTENT_MODULES = {
     serialize: serializeClient,
     label: (item) => item?.name,
     messages: { list: "Clients retrieved.", create: "Client created.", update: "Client updated.", delete: "Client deleted." },
+  },
+  reasons: {
+    path: "reasons",
+    entity: "reason",
+    noun: "reason",
+    payload: reasonPayload,
+    serialize: serializeReason,
+    label: (item) => item?.title,
+    messages: { list: "Reasons retrieved.", create: "Reason created.", update: "Reason updated.", delete: "Reason deleted." },
   },
   teamMembers: {
     path: "team",

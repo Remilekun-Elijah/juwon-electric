@@ -279,6 +279,10 @@ Every portfolio response (public and admin) includes the Landing v1 case-study f
 
 - `GET /team`: active team members only, sorted by `sortOrder`, then `createdAt`. See [Team members](#team-members-team-and-motion-v1).
 
+### Why customers choose us
+
+- `GET /reasons`: active reasons only, sorted by `sortOrder`, then `createdAt`. See [Reasons](#reasons-why-customers-choose-us).
+
 ### Contact
 
 - `POST /contact`
@@ -456,7 +460,7 @@ Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `
 | `audit:read` | admin | `GET /admin/audit-logs` |
 | `users:read` | admin | `GET /admin/users`, `GET /admin/users/:id` |
 | `users:manage` | admin | `POST /admin/users`, `PUT /admin/users/:id`, `POST /admin/users/:id/role`, `/deactivate`, `/reactivate` |
-| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio`, `/admin/faqs`, `/admin/testimonials`, `/admin/clients`, `/admin/team` |
+| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio`, `/admin/faqs`, `/admin/testimonials`, `/admin/clients`, `/admin/team`, `/admin/reasons` |
 | `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio, FAQs, reviews, client logos, team members |
 | `orders:read` | admin, inventory, sales, support | `GET /admin/orders`, `GET /admin/orders/:id`, `GET /admin/carts` |
 | `orders:create` | admin, sales | `POST /admin/orders` (in-store orders) |
@@ -894,12 +898,40 @@ Saving a section (sending it in the body, even as `{}`) stores its `sample: fals
 
 ### Sample seeds (local only)
 
-Data: `backend/shared/sampleWebsite.js` (8 FAQs, 6 reviews, 6 client logos using `/samples/client-N.svg`, 12 fictional team members in 4 groups using `/samples/team/member-N.svg`, case-study fields for the 15 existing portfolio records, and sample `website`, `financing` and `calculator` sections). All of it is `sample: true` and must be replaced before launch.
+Data: `backend/shared/sampleWebsite.js` (8 FAQs, 6 reviews, 6 client logos using `/samples/client-N.svg`, 12 fictional team members in 4 groups using `/samples/team/member-N.svg`, the 4 "Why customers choose us" reasons, case-study fields for the 15 existing portfolio records, and sample `website`, `financing` and `calculator` sections). All of it is `sample: true` and must be replaced before launch.
 
 - **Express:** `npm run seed:sample` (JSON store, or MongoDB when `MONGODB_URI` is set). Refuses `NODE_ENV=production`.
 - **Worker local D1:** `cd backend/cloudflare && npm run d1:seed:sample:export` regenerates `seeds/sample-website.sql`; `npm run d1:seed:sample:local` applies it with `--local`. Never run it with `--remote`, and never add it to migrations, `seed.sql` or CI.
 
 Both are idempotent: records use fixed `sample-` ids and are upserted; records and portfolio items an admin has saved since (`sample: false`) are kept; a settings section is replaced only while it is missing, empty or still sample content.
+
+## Reasons (Why customers choose us)
+
+The cards in the "Why customers choose us" band on the home page. Same rules as [Website content](#website-content-landing-v1) (shared in `backend/shared/content.js`, including the sample flag). Collection `reasons`.
+
+| Admin (`content:read` GET, `content:write` POST/PUT/DELETE) | Public | Audit entity | Not found |
+|---|---|---|---|
+| `/admin/reasons`, `/admin/reasons/:id` | `GET /reasons` | `reason` | `"Reason not found."` |
+
+- `GET /reasons` returns active reasons sorted by `sortOrder`, then `createdAt`; `GET /admin/reasons` includes hidden ones. With no active reasons the storefront shows its four built-in cards.
+- Messages: `"Reasons retrieved."`, `"Reason created."` (`201`), `"Reason updated."`, `"Reason deleted."`.
+- Audited as `reason.create|update|delete`, e.g. `Created reason "Installed and tested by our engineers"`.
+
+```json
+{
+  "id": "sample-reason-1",
+  "title": "Installed and tested by our engineers",
+  "text": "Our own team fits your system, tests it on site and shows you how to use it.",
+  "icon": "wrench",
+  "sortOrder": 1,
+  "isActive": true,
+  "sample": true,
+  "createdAt": "2026-09-17T08:00:00.000Z",
+  "updatedAt": "2026-09-17T08:00:00.000Z"
+}
+```
+
+Fields: `title` (3–80, required), `text` (10–300, required, may span lines), `icon` (one of `wrench`, `clipboard`, `phone`, `badge`, `shield`, `truck`, `battery`, `sun`, `clock`, `users`, `spark`, `thumbs-up`; defaults to `wrench`). Errors: `"Title is required."`, `"Title must be at least 3 characters."`, `"Text must be at least 10 characters."`, `"Icon must be one of: …"`.
 
 ## Team members (Team and motion v1)
 

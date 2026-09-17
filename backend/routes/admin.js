@@ -17,7 +17,7 @@ import {
   adminReplyMessage,
   adminUpdateMessage,
 } from "../controllers/contact.js";
-import { clients, faqs, teamMembers, testimonials } from "../controllers/content.js";
+import { clients, faqs, reasons, teamMembers, testimonials } from "../controllers/content.js";
 import { adminDashboard } from "../controllers/dashboard.js";
 import {
   adminDeleteSubscriber,
@@ -147,6 +147,7 @@ for (const [path, handlers] of [
   ["/testimonials", testimonials],
   ["/clients", clients],
   ["/team", teamMembers],
+  ["/reasons", reasons],
 ]) {
   router.get(path, contentRead, handlers.adminList);
   router.post(path, contentWrite, handlers.create);

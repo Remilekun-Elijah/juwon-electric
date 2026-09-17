@@ -48,6 +48,8 @@ import type {
   PortfolioItemInput,
   Product,
   ProductInput,
+  Reason,
+  ReasonInput,
   Role,
   SessionResponse,
   Settings,
@@ -738,6 +740,14 @@ export const saveFaq = (faqId: string | null, input: FaqInput) =>
   withoutFallback(() => (faqId ? put<Faq>(`/faqs/${id(faqId)}`, input) : post<Faq>("/faqs", input)));
 
 export const deleteFaq = (faqId: string) => withoutFallback(() => del<Faq>(`/faqs/${id(faqId)}`));
+
+/** "Why customers choose us" cards (content:read / content:write). */
+export const getReasons = async () => (await withoutFallback(() => adminFetch<Reason[]>("/reasons"))).data || [];
+
+export const saveReason = (reasonId: string | null, input: ReasonInput) =>
+  withoutFallback(() => (reasonId ? put<Reason>(`/reasons/${id(reasonId)}`, input) : post<Reason>("/reasons", input)));
+
+export const deleteReason = (reasonId: string) => withoutFallback(() => del<Reason>(`/reasons/${id(reasonId)}`));
 
 export const getTestimonials = async () =>
   (await withoutFallback(() => adminFetch<Testimonial[]>("/testimonials"))).data || [];

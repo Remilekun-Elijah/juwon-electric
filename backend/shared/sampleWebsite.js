@@ -385,12 +385,39 @@ export const SAMPLE_SETTINGS = {
   },
 };
 
+// ---- Why customers choose us (4) ------------------------------------------------------------
+// The wording the storefront shipped with: only claims the platform can back up.
+
+export const SAMPLE_REASONS = records("reason", [
+  {
+    icon: "wrench",
+    title: "Installed and tested by our engineers",
+    text: "Our own team fits your system, tests it on site and shows you how to use it.",
+  },
+  {
+    icon: "clipboard",
+    title: "Quality equipment, specs shown",
+    text: "Inverters, batteries and panels with the specifications listed on every product page.",
+  },
+  {
+    icon: "phone",
+    title: "No payment to place an order",
+    text: "Place your order online and we call you to confirm the details before anything is paid.",
+  },
+  {
+    icon: "badge",
+    title: "Live stock and prices",
+    text: "What you see on the website is what we have and what it costs today.",
+  },
+]);
+
 /** Sample records per content collection. */
 export const SAMPLE_COLLECTIONS = {
   faqs: SAMPLE_FAQS,
   testimonials: SAMPLE_TESTIMONIALS,
   clients: SAMPLE_CLIENTS,
   teamMembers: SAMPLE_TEAM_MEMBERS,
+  reasons: SAMPLE_REASONS,
 };
 
 export const SAMPLE_SEEDED_AT = SEEDED_AT;

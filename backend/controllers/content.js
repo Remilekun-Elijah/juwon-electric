@@ -79,3 +79,4 @@ export const faqs = handlersFor("faqs");
 export const testimonials = handlersFor("testimonials");
 export const clients = handlersFor("clients");
 export const teamMembers = handlersFor("teamMembers");
+export const reasons = handlersFor("reasons");
