@@ -1,6 +1,6 @@
 # How to use the Juwon Electric platform
 
-Last updated: 2026-09-17 (Image uploads)
+Last updated: 2026-09-17 (Upload follow-ups)
 
 This guide explains, in plain steps, how to do everyday work on the Juwon Electric platform: the **admin console** (for staff) and the **public website** (for customers). Each chapter is written for one kind of user.
 
@@ -97,7 +97,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 
 ### Adding images
 
-Most forms with a picture (products, categories, services, portfolio, customer segments, reviews, client logos and team members) let you upload an image from your computer or phone.
+Every form with a picture (products, categories, services, portfolio, customer segments, reviews, client logos, team members, staff profiles and job photos) lets you upload an image from your computer or phone.
 
 1. In the image field, select **Choose image** (**Choose images** on products), or drag the file from your computer and drop it on the box that says "Drag an image here, or choose one."
 2. Wait while the field shows **Preparing image…** and then **Uploading…** with a progress bar. To stop, select the cross (**Cancel**).
@@ -114,11 +114,13 @@ Most forms with a picture (products, categories, services, portfolio, customer s
 
 | Message | What to do |
 |---|---|
-| "That file isn't an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image." | Choose a JPEG, PNG or WebP picture. If you only have another kind of file, open it and save or export it as JPEG or PNG first. |
-| "Couldn't read that image. Choose a JPEG, PNG or WebP image." | The file may be damaged or in a format the browser can't open. Save it again as JPEG or PNG, or choose another picture. |
+| "That file isn’t an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image." | Choose a JPEG, PNG or WebP picture. If you only have another kind of file, open it and save or export it as JPEG or PNG first. |
+| "Couldn’t read that image. Choose a JPEG, PNG or WebP image." | The file may be damaged or in a format the browser can't open. Save it again as JPEG or PNG, or choose another picture. |
 | "That image is over 15 MB. Choose a smaller image." | Choose a smaller copy of the picture (for example, send it to yourself on WhatsApp or email and save that copy). |
-| "Couldn't make that image small enough to upload. Choose a different image." or "Image must be 2 MB or smaller." | Choose a different, simpler picture, or a smaller copy of it. |
-| "Couldn't upload the image. Try again." | Check your internet connection and try again. |
+| "That file is empty. Choose another image." | The file has nothing in it, often because it didn't finish downloading. Download or save it again, or choose another picture. |
+| "Couldn’t make that image small enough to upload. Choose a different image." or "Image must be 2 MB or smaller." | Choose a different, simpler picture, or a smaller copy of it. |
+| "Couldn’t upload the image. Try again." | Check your internet connection and try again. |
+| "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again." | You've uploaded many pictures in the last few minutes. Wait a few minutes, then choose the picture again. Pictures that already uploaded are kept. |
 | "Image uploads are unavailable right now. Please use an image link or try again later." | The link box opens for you. Use an image link instead, or try uploading again later. |
 
 ---
@@ -462,8 +464,9 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 3. Fill in the specifications for the category, and add any extra details.
 4. Add **Images** (up to 10):
    - Select **Choose images**, or drag several photos onto the box ("Drag images here, or choose them."). They upload one after another, in the order you chose them.
-   - The first image has a **Main** badge. It's the one customers see first. Use the up and down arrows (**Move up** / **Move down**) on a row to change the order.
-   - On each row, **Replace** swaps the picture, **Edit link** shows its link, and **Remove** (the bin) takes it off.
+   - The first image has a **Main** badge. It's the one customers see first. Use **Move up** and **Move down** on a row to change the order.
+   - On each row, **Replace** swaps the picture, **Edit link** shows its link, and **Remove** takes it off.
+   - On a computer or tablet the row buttons show their names. On a phone they are icons only: up arrow (**Move up**), down arrow (**Move down**), circular arrows (**Replace**), pencil (**Edit link**) and bin (**Remove**).
    - To add a picture by link, select **Use an image link instead** and type the link.
 5. Add **Tags** (separated by commas) and a **Description**.
 6. Set **Opening stock** and **Reorder level** (low-stock alerts start at this quantity).
@@ -579,7 +582,11 @@ Use **My jobs** on your phone on site. It shows only jobs where you are on the c
 
 *As an engineer, I want to leave evidence and notes so that the office can close the order.*
 
-1. Add a photo by pasting its link in **Photo URL**. Job photos are still added as links; uploading from your phone isn't available on this screen yet.
+1. Under **Photos**, tap **Add photos**. Your phone offers to take a photo with the camera or choose photos you already have; you can pick several. On a computer you can also drag photos onto the box.
+   - Each photo shows "Preparing image…", then "Uploading…", and is added to the job as soon as it's uploaded ("Photo added.", or for example "3 photos added."). To stop, tap the cross (**Cancel**).
+   - Each photo shows as a small picture in the list. Tap one to open it, or the bin to remove it.
+   - A job can have up to 20 photos. If you pick more than fit, only the first ones are added and a message says so.
+   - No signal, or uploads not working? Tap **Use a photo link instead**, paste a link to the photo in **Photo link** and tap **Add photo link**. If the screen shows only **Photo link** and no **Add photos** button, uploading isn't available right now: use a link, or try again later.
 2. Type what you did and anything the office should know in **Notes for the office**, and save.
 3. When **every** checklist item is ticked, tap **Mark complete**.
 
@@ -590,6 +597,7 @@ Use **My jobs** on your phone on site. It shows only jobs where you are on the c
 **Tips and common mistakes**
 
 - **Mark complete** stays greyed out until every checklist item is ticked.
+- If a photo won't upload, read the message under the photo box and see [Adding images](#adding-images).
 - If a job disappears from your list, the office may have taken you off the crew, reassigned it or cancelled it. Call the office.
 - When you are added to a job, you get a job-assigned notification. You're not notified again if the office only changes other crew members.
 - If you're signed out on site, sign in again. Sessions end after 8 hours, or after 2 hours without use.
@@ -652,8 +660,9 @@ The description editor's toolbar offers:
 *As an HR officer, I want engineers' coverage areas and certifications recorded so that the office assigns the right person.*
 
 1. Go to **Staff & roles** → **Team** and open a profile.
-2. Select **Edit profile** and update **Phone**, **Areas covered**, **Certifications**, **Bio** and **Photo URL**.
-3. Select **Save profile**.
+2. Select **Edit profile** and update **Phone**, **Areas covered**, **Certifications** and **Bio**.
+3. **Photo** (optional): select **Choose image** or drag their photo onto the box. It shows as a round preview; use **Replace** or **Remove** to change it. Or select **Use an image link instead** and type an `https://` link or a path starting with `/`. See [Adding images](#adding-images).
+4. Select **Save profile**.
 
 **Tip:** roles and account status are managed on the **Accounts** tab by the owner or an admin.
 
@@ -1196,7 +1205,7 @@ When staff change something in the admin console (a price, a product, a package,
 | **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings** → **Website** (home stats) or the team list (team page figures are counted from it). |
 | **Image won't upload** | The file isn't a supported picture, the connection dropped, or uploads are unavailable for a while ("Image uploads are unavailable right now. Please use an image link or try again later."). | Read the message under the field and follow [Adding images](#adding-images). Check your connection and try again. If uploads are unavailable, select **Use an image link instead**, or try again later. |
 | **Image looks blurry** (website) | The original picture was small or low quality. Large photos are shrunk to a sensible size, but small ones can't be made sharper. | Upload a larger, sharper original with **Replace**. Use the photo straight from the camera, not a screenshot or a copy from a chat. |
-| **Wrong file type** ("That file isn't an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image.") | Only JPEG, PNG and WebP pictures can be uploaded. SVG drawings, PDFs and documents can't. | Save or export the picture as JPEG or PNG and upload that, or ask whoever sent it for a PNG or JPEG. You can also use an image link. |
+| **Wrong file type** ("That file isn’t an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image.") | Only JPEG, PNG and WebP pictures can be uploaded. SVG drawings, PDFs and documents can't. | Save or export the picture as JPEG or PNG and upload that, or ask whoever sent it for a PNG or JPEG. You can also use an image link. |
 | **Team page shows drawings instead of photos** | These are the sample team members' placeholder portraits, or a member has no **Photo** (initials show instead). | Replace the sample team with real people (story 10A.9) and add each person's photo. |
 
 ---
@@ -1212,6 +1221,13 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (Upload follow-ups)**
+- Engineers add job photos by uploading or taking a photo on the phone (**Add photos**), with **Use a photo link instead** as a fallback (story 8.3).
+- Staff profile photos are uploaded with **Choose image**; the field is now **Photo** (story 9.4).
+- Adding images: new message "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again." and what to do, plus "That file is empty. Choose another image."; staff profiles and job photos added to the list of forms.
+- Product image rows: the buttons now show their names (**Move up**, **Move down**, **Replace**, **Edit link**, **Remove**) on computers and tablets; phones keep the icons (story 7.2).
+- Messages are now quoted exactly as the console shows them, including curly apostrophes.
 
 **2026-09-17 (Image uploads)**
 - New section in chapter 3, Adding images: **Choose image** or drag and drop, progress, **Replace** and **Remove**, JPEG, PNG and WebP only, big photos shrunk automatically, what each error message means, and **Use an image link instead**.
