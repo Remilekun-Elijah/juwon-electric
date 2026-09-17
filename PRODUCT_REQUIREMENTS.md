@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Image uploads (see section 12, Change log)
+Last updated: 2026-09-17, Upload follow-ups (see section 12, Change log)
 
 1. Executive summary
 
@@ -37,7 +37,7 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Orders: lifecycle and basic payment status
 - Inventory: stock tracking, reorder level, low-stock alerts
 - Staff & engineer management and job assignment
-- Installation job workflow (basic checklist and photo attachments; job photos are added as links)
+- Installation job workflow (basic checklist and photo attachments; job photos are uploaded or taken on the phone, or added as links, since Upload follow-ups 2026-09-17)
 - Vacancies module with rich-text job descriptions (admin CRUD + public listing)
 - Admin dashboard & reporting (basic KPIs)
 - Port frontend to Next.js (public pages SSG)
@@ -53,7 +53,7 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Clearly labelled sample content for local development and review, seeded locally only and replaced before launch (§6.11, §11 Before launch checklist)
 - Team page (2026-09-17): team members managed in the admin (Website → Team) and a public "Meet the team" page at `/team` (§6.11)
 - Home page redesign (2026-09-17): a transparent header over a full-bleed photo hero, hero stats, floating "Size your system" and WhatsApp buttons, a darker section rhythm, a dark footer, and storefront-wide motion that respects reduced motion (§6.10)
-- Image uploads (2026-09-17): staff upload images (JPEG, PNG or WebP) from the product, category, services, portfolio, customer segment, review, client logo and team forms, with an image link as a fallback (§6.1, §6.7, §6.8, §6.11)
+- Image uploads (2026-09-17): staff upload images (JPEG, PNG or WebP) from the product, category, services, portfolio, customer segment, review, client logo and team forms, with an image link as a fallback (§6.1, §6.7, §6.8, §6.11). Upload follow-ups (2026-09-17) added staff profile photos and engineers' job photos (§6.4, §6.6)
 
 Out of scope (initial release)
 - Complex promotions engine, loyalty, multi-currency pricing, advanced analytics
@@ -62,7 +62,7 @@ Out of scope (initial release)
 - Selling packages through in-store orders (in-store orders sell individual products only)
 - ~~Buying individual products on the website~~: moved in scope in Commerce v3 (2026-09-17). Customers can now buy active, in-stock products online (§4, §6.10).
 - Customer-facing stock reservation: placing a website order does not hold stock; stock is taken when staff move the order to processing
-- ~~File uploads (images and job photos are added as links)~~: moved in scope in Image uploads (2026-09-17) for catalogue and website content images (§4, §6.1, §6.11). Still out of scope: uploading job photos and staff profile photos, which are still added as links.
+- ~~File uploads (images and job photos are added as links)~~: moved in scope in Image uploads (2026-09-17) for catalogue and website content images (§4, §6.1, §6.11). ~~Still out of scope: uploading job photos and staff profile photos, which are still added as links.~~ Job photos and staff profile photos moved in scope in Upload follow-ups (2026-09-17) (§6.4, §6.6).
 - Online financing applications, credit checks or loan approval: the financing section only shows terms set in Settings; customers talk to the team to apply (Landing v1)
 - Saving calculator results or collecting customer details from the calculator (Landing v1)
 - Copying any wording, images, logos, statistics, reviews, prices, office lists or financing numbers from the reference site used for layout ideas (Landing v1)
@@ -128,13 +128,16 @@ Persona: HR
 6.1 Core commerce
 - Products & Categories: CRUD, images, sanitized rich descriptions, attributes per category
   - Images (Image uploads, 2026-09-17): image fields support uploads (upload or link). The shared upload field applies to every admin image field listed in §6.1 and §6.11:
-    - Staff choose a file with **Choose image** (**Choose images** for products) or drag and drop it. Only JPEG, PNG and WebP are accepted. SVG and non-image files are refused ("That file isn't an image. Choose a JPEG, PNG or WebP image." in the browser; "Upload a JPEG, PNG or WebP image." from the server, which checks the file's real content, not only its declared type).
+    - Staff choose a file with **Choose image** (**Choose images** for products) or drag and drop it. Only JPEG, PNG and WebP are accepted. SVG and non-image files are refused ("That file isn’t an image. Choose a JPEG, PNG or WebP image." in the browser; "Upload a JPEG, PNG or WebP image." from the server, which checks the file's real content, not only its declared type).
     - The browser resizes and compresses each image before upload: longest side at most 1600 px, saved as WebP at quality 0.82 (JPEG when the browser can't make WebP). It steps down in size if needed, and camera metadata is dropped. Originals over 15 MB are refused before processing ("That image is over 15 MB. Choose a smaller image.").
     - The server accepts at most 2 MB per file after processing ("Image must be 2 MB or smaller.").
+    - Other browser messages, quoted exactly: "That file is empty. Choose another image.", "Couldn’t read that image. Choose a JPEG, PNG or WebP image.", "Couldn’t make that image small enough to upload. Choose a different image." and, when the upload fails without a server message, "Couldn’t upload the image. Try again."
+    - Too many uploads (Upload follow-ups, 2026-09-17): each account can upload 60 images per 10 minutes. The next one is refused with `429` and "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again." The admin shows the same text under the field, including when the response has no message. Images already uploaded are kept.
     - While working the field shows "Preparing image…", then "Uploading…" with a progress bar and a cancel button. After upload it shows a preview with **Replace** and **Remove**. Error messages show under the field.
     - Link fallback: **Use an image link instead** opens the image link field (an `https://` link or a site path starting with `/`, as before). Existing records keep their links. When uploads are unavailable, the field shows only the link input, and a refused upload opens the link field with "Image uploads are unavailable right now. Please use an image link or try again later."
     - The stored value is still the image URL, so the storefront shows uploaded and linked images the same way.
-  - Product images: up to 10. Several files can be chosen or dropped at once and upload one after another in order. Each row has **Move up** / **Move down** buttons (the first image carries a **Main** badge and is the main image), **Replace**, **Edit link** and **Remove**. Adding more than fit adds the first ones and shows "Only N more images fit, so the first N were added."; at 10, "A product can have up to 10 images. Remove one to add another."
+    - Server messages for an invalid image link, quoted exactly (checked 2026-09-17): category **Image** "Image URL must be an https:// URL or a path starting with /."; product images "Each entry in Images must be an https:// URL or a path starting with /."; services, portfolio and customer segment **Image** "Image must be an https:// URL or a path starting with /."; job photos "Each entry in Photos must be an https:// URL or a path starting with /."; staff profile photo "Avatar URL must be an https:// URL or a path starting with /.". These fields also accept `http://` on `localhost` or `127.0.0.1` (images uploaded to a local API in development). Reviews, client logos and team photos use the §6.11 rules and messages.
+  - Product images: up to 10. Several files can be chosen or dropped at once and upload one after another in order. Each row has **Move up** / **Move down** buttons (the first image carries a **Main** badge and is the main image), **Replace**, **Edit link** and **Remove**. From the `sm` breakpoint (640 px) each button shows its icon and text label; on phones the buttons are 44 px icons with the same name as their accessible label and tooltip (Upload follow-ups, 2026-09-17). Adding more than fit adds the first ones and shows "Only N more images fit, so the first N were added."; at 10, "A product can have up to 10 images. Remove one to add another."
   - Category image: a single upload field (**Image**).
   - A category can't be deleted while it has subcategories, products or packages ("Category has subcategories, products or packages."). (Packages added in Commerce v3.)
   - Products with status Active are sold on the website when in stock (§6.10). Hidden products are not sold online but can still be package components and in-store sale lines. Archived products are not sold anywhere.
@@ -176,7 +179,13 @@ Persona: HR
 - Orders have a channel: `website` or `in_store` (orders placed before this change read as `website`). The orders list can be filtered by channel and shows a channel badge; order details show who created an in-store order, subtotal, and discount with reason.
 
 6.4 Installation jobs
-- Job assignment, scheduling, checklist, photos (added as links; job photo uploads are not part of Image uploads, 2026-09-17), completion notes
+- Job assignment, scheduling, checklist, photos, completion notes
+- Job photos (Upload follow-ups, 2026-09-17; ~~added as links; job photo uploads are not part of Image uploads~~):
+  - In My jobs, while a job is Assigned or In progress, **Add photos** opens the phone's camera or photo picker (several photos can be chosen; on a computer they can also be dropped on the box, "Take a photo or choose photos. On a computer, you can also drag them here."). Each photo is resized in the browser like other images (§6.1), uploaded with purpose `jobs`, and saved to the job as soon as it has uploaded ("Photo added." or, for several, "N photos added."). The job keeps the same `photos` list of URLs and the same save request.
+  - Up to 20 photos per job ("You can add up to 20 photos."); choosing more than fit uploads the first ones ("You can add up to 20 photos, so only the first N will be added.").
+  - Photos show as thumbnails that open the full image, each with a remove button. Buttons are at least 44 px tall.
+  - Link fallback: **Use a photo link instead** opens **Photo link** and **Add photo link**. When uploads are unavailable, only the link field shows.
+  - Upload permission: `jobs:update-own` (engineers) or `jobs:assign`. An engineer who isn't on the job can upload a file but can't save it to the job; unsaved uploads are removed by the daily cleanup after 24 hours (§6.8).
 - Engineer mobile-friendly UI showing assigned jobs and ability to update
 - Crews (Commerce v3):
   - A job has a crew of 0 to 10 engineers, each listed once. Every crew member must be an active account with the Engineer role ("Assignee must be an active engineer."). Adding the same engineer twice is refused ("Each engineer can be added once."), and more than 10 is refused ("A job can have at most 10 engineers.").
@@ -213,6 +222,8 @@ Persona: HR
 | hr | Dashboard; view settings; view and edit staff profiles; create, edit, publish, close and delete vacancies |
 | support | Dashboard; view settings; view packages, services, portfolio and products; view orders and carts; read and reply to messages and manage newsletter subscribers; view installation jobs |
 
+- Staff profile photo (Upload follow-ups, 2026-09-17): in **Staff & roles** → **Team** → **Edit profile**, the ~~Photo URL~~ field is now **Photo**, an upload field with a round preview, **Replace**, **Remove** and **Use an image link instead** (§6.1). Helper: "Optional. Square photos look best. Without one, their initials show." Uploads use purpose `staff` and need `staff:write`. The saved value is still `profile.avatarUrl`.
+
 - All roles receive the admin notifications relevant to them (new orders for roles that can see orders, low stock for roles that can see inventory, vacancy posted for HR/admin, job assigned for each engineer newly added to a job's crew). Only superadmin and admin can see the activity log, manage accounts and change settings.
 
 6.7 Settings & Notifications
@@ -233,7 +244,7 @@ Image storage safeguards (developer-facing; Image uploads, 2026-09-17)
 
 This subsection is for developers and whoever runs the hosting. None of it is shown to admins or described in the user guide: the project is handed to a client, so admins never see storage usage, limits, percentages or alerts. Setup and operations: docs/DEPLOYMENT.md §1.7. Contract: docs/agents/UPLOADS_V1.md. Endpoints: backend/docs/API.md → Image uploads.
 - Storage: the Worker stores uploads in the Cloudflare R2 bucket `juwon-electric-images` (binding `IMAGES`). Images are served from a public image domain set in `IMAGES_PUBLIC_BASE_URL` (for example `https://images.<domain>`); when it is unset, the API serves them at `/uploads/<key>` with a one-year immutable cache header. Express (local and self-host) stores files on disk under `UPLOADS_DIR` with the same API.
-- Upload rules: `POST /admin/uploads` needs `content:write`, `products:write` or `staff:write`; JPEG, PNG or WebP only, checked by the file's magic bytes (SVG refused); 2 MB per file; 60 uploads per admin per 10 minutes. Each upload is recorded and written to the activity log (`upload.create`). `GET /admin/uploads/config` returns only whether uploads are enabled, the per-file limit, accepted types and maximum dimension; nothing about usage.
+- Upload rules: `POST /admin/uploads` needs a capability that matches `?purpose=`: `jobs` needs `jobs:update-own` or `jobs:assign`; `staff` needs `staff:write`; every other purpose needs `content:write`, `products:write` or `staff:write` (a mismatch is refused with `403` "You do not have permission to perform this action."). Upload follow-ups (2026-09-17) added the `jobs` and `staff` purposes; JPEG, PNG or WebP only, checked by the file's magic bytes (SVG refused); 2 MB per file; 60 uploads per admin per 10 minutes, then `429` "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again.". Each upload is recorded and written to the activity log (`upload.create`). `GET /admin/uploads/config` returns only whether uploads are enabled, the per-file limit, accepted types and maximum dimension; nothing about usage.
 - Hidden storage cap: before storing, the server checks total stored bytes against `IMAGE_STORAGE_LIMIT_BYTES` (default 9 GB, `9000000000`; unset or `0` means the default). Over the cap the upload is refused with `507` and the neutral message "Image uploads are unavailable right now. Please use an image link or try again later." Nothing is stored, and staff can keep working with image links. The message never mentions storage or limits.
 - Daily cleanup: the Worker cron and the Express daily timer delete uploads that no stored image field references and that are older than 24 hours (at most 500 per run), then recompute the usage total. Referenced images are never deleted.
 - Private developer alert: when usage reaches `STORAGE_ALERT_BYTES` (default 8 GB, `8000000000`), or an upload is refused at the cap, one plain email goes to `STORAGE_ALERT_EMAIL` (optional; unset means no alert), at most once every 7 days. It is never sent to admin addresses (`ADMIN_NOTIFY_EMAIL`, `SMTP_FROM`, admin accounts or Settings notification lists, which are dropped if listed) and never appears in the admin UI, notifications or activity log summaries.
@@ -357,7 +368,7 @@ Managed collections
   - The website shows active items only. Inactive items stay in the admin.
   - Each screen has a create/edit drawer, the active switch and a delete confirmation.
   - Every create, update and delete is written to the activity log (`faq.*`, `testimonial.*`, `client.*`).
-  - Image and logo fields support upload or link (Image uploads, 2026-09-17; §6.1): staff upload a JPEG, PNG or WebP image, or use **Use an image link instead** to enter a full `http(s)` link or a site path starting with `/` (letters, numbers, `.`, `_`, `-` and `/`, up to 200 characters), for example `/samples/client-1.svg`. The services, portfolio and customer segment **Image** fields work the same way.
+  - Image and logo fields support upload or link (Image uploads, 2026-09-17; §6.1): staff upload a JPEG, PNG or WebP image, or use **Use an image link instead** to enter a full `http(s)` link or a site path starting with `/` (letters, numbers, `.`, `_`, `-` and `/`, up to 200 characters), for example `/samples/client-1.svg`. The server refuses anything else with "Image URL must be an http(s) URL or a path starting with /." (review **Photo**) or "Logo URL must be an http(s) URL or a path starting with /." (client **Logo**). The services, portfolio and customer segment **Image** fields also upload or link, but follow the §6.1 link rules: an `https://` link or a site path ("Image must be an https:// URL or a path starting with /.").
 - FAQs:
   - Fields: Question (5–200 characters, required), Answer (1–2000 characters, plain text, line breaks kept, required), Category (optional, up to 60 characters, for example "Ordering", "Installation", "Products").
   - Admin list: category filter and **Move up** / **Move down** (▲▼) buttons to change the order (no drag and drop). The Category field suggests existing categories. Reviews and Client logos use the same Move up / Move down buttons.
@@ -456,7 +467,7 @@ Team members collection
   - Sort order and the Sample flag, as for the other collections.
 - Admin list ("All team members"): a round photo (initials when there is none), name and role, group, status, a Sample badge, a **Filter by group** select ("All groups" or one group), **Move up** / **Move down** (▲▼) buttons, and edit and delete (with confirmation). **Add team member** opens the drawer. The Sample banner shows while any member is sample.
 - Rules: the same shared rules as FAQs, Reviews and Client logos (sort order, active switch, sample flag cleared on save, activity log entries `team_member.create`, `team_member.update`, `team_member.delete`). Moving a sample member up or down, or hiding it, keeps the Sample flag; editing and saving clears it.
-- Messages: "Team retrieved.", "Team member created.", "Team member updated.", "Team member deleted.", "Team member not found."; field errors such as "LinkedIn URL must be an https URL." and "Photo URL must be an http(s) URL or a path starting with /."
+- Messages: "Team retrieved.", "Team member created.", "Team member updated.", "Team member deleted.", "Team member not found."; field errors such as "LinkedIn URL must be an https URL." and "Photo URL must be an http(s) URL or a path starting with /." (both checked against the server on 2026-09-17: team photos still accept any `http(s)` link or a site path, so this message did not change with the local `http://` image work)
 - Public read: `GET /team` returns active members only, sorted by sort order, then oldest first. Groups show on the website in the order in which each group first appears in that list, so moving a member to the top of the list also moves their group up.
 - Sample data: 12 fictional members with made-up Nigerian names across the 4 groups above (Leadership 2, Engineering & installations 4, Sales & customer care 3, Operations 3), with one-sentence bios about real kinds of work (sizing systems, installations, after-sales). Photos are illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg` (abstract head-and-shoulders drawings, no real faces, no text). LinkedIn is empty. Seeded with the same local-only sample seeds as Landing v1 (fixed ids starting `sample-team-`).
 - Changes reach the storefront through the `team` revalidation tag (admin path `/admin/team`).
@@ -533,6 +544,9 @@ Sample content
 - Upload type checks (Image uploads): choosing an SVG, a PDF or a text file is refused with an inline message and nothing is uploaded; sending SVG bytes or a file whose content doesn't match its declared type straight to `POST /admin/uploads` returns `415` "Upload a JPEG, PNG or WebP image." and stores nothing.
 - Upload size (Image uploads): a file over 2 MB after processing is refused by the server with `413` "Image must be 2 MB or smaller." and nothing is stored; an original over 15 MB is refused in the browser with "That image is over 15 MB. Choose a smaller image."
 - Link fallback (Image uploads): **Use an image link instead** accepts an `https://` link or a site path starting with `/`, which saves and displays as before; existing records with links keep working. When uploads are refused (for example at the hidden storage cap, tested with a small `IMAGE_STORAGE_LIMIT_BYTES`), the field shows "Image uploads are unavailable right now. Please use an image link or try again later.", opens the link field, and saving with a link succeeds.
+- Job photo upload (Upload follow-ups, 2026-09-17): an engineer on a phone opens an In progress job in **My jobs**, taps **Add photos**, takes a photo with the camera and sees "Preparing image…", "Uploading…", then "Photo added." and a thumbnail in **Photos**; after a refresh the photo is still there and the office sees it on the job. Choosing 3 photos adds all 3 in order ("3 photos added."). **Use a photo link instead** with an `https://` link and **Add photo link** still adds a photo. A Support or Inventory account sending `POST /admin/uploads?purpose=jobs` gets `403` "You do not have permission to perform this action."; an engineer sending `?purpose=products` or `?purpose=staff` gets the same `403`. A job photo that is uploaded but never saved to a job is deleted by the daily cleanup after 24 hours; a saved one is kept.
+- Staff profile photo upload (Upload follow-ups): an HR account opens a staff profile, selects **Edit profile**, uploads a photo under **Photo** with **Choose image** and selects **Save profile**; the profile shows the new round photo and `profile.avatarUrl` holds the uploaded image URL. A Sales account sending `POST /admin/uploads?purpose=staff` gets `403`. A saved staff photo is never removed by the daily cleanup.
+- Too many uploads (Upload follow-ups): after 60 uploads in 10 minutes from one account, the 61st is refused with `429` and the field shows exactly "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again."; another account can still upload.
 - No storage information in the admin (Image uploads): with usage at, near or over any limit, no admin screen, Settings section, notification, activity log summary or API response for the admin (including `GET /admin/uploads/config`) shows storage usage, a limit, a percentage or an alert; Settings has no Uploads card; the storage alert email goes only to `STORAGE_ALERT_EMAIL` and never to an admin address.
 - Floating actions (2026-09-17): with the calculator on and a WhatsApp number set, every storefront page except the calculator page shows **Size your system** and **Chat on WhatsApp** at the bottom right (round buttons on phones, labelled pills from 640 px); the calculator page shows only WhatsApp; `/cart` and `/checkout` show neither. With the calculator off and no WhatsApp number, no floating buttons show. Neither button shows an "online" status or a badge.
 
@@ -653,6 +667,15 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (Upload follow-ups)
+- §4: job photos and staff profile photos moved in scope (struck through the remaining out-of-scope note).
+- §6.1: too-many-uploads message "You’ve uploaded a lot of images in a short time. Wait a few minutes, then try again." (server `429` and admin fallback); other browser messages quoted exactly, with curly apostrophes; exact server messages for invalid image links; product image row buttons show text labels from 640 px and stay 44 px icons on phones.
+- §6.4: engineers upload or take job photos on the phone (**Add photos**), saved to the job as each one uploads, with **Use a photo link instead** as the fallback; upload permission `jobs:update-own` or `jobs:assign`.
+- §6.6: staff profile **Photo** upload (was Photo URL), purpose `staff`, needs `staff:write`; the saved field is still `profile.avatarUrl`.
+- §6.8: upload capabilities now depend on the purpose (`jobs`, `staff`, everything else); the 429 message.
+- §6.11: checked server messages for invalid image links: team "Photo URL must be an http(s) URL or a path starting with /." is still correct; added the review and client logo messages and corrected the services, portfolio and customer segment link rule (`https://` or a site path, not any `http(s)` link).
+- §7: added acceptance criteria for job photo upload, staff profile photo upload and the too-many-uploads message.
 
 2026-09-17 (Image uploads)
 - §4: file uploads moved in scope for catalogue and website content images (struck through in Out of scope); job photos and staff profile photos are still added as links.
