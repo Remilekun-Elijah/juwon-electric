@@ -731,7 +731,7 @@ This chapter covers the content on the home page and the new website pages: FAQs
 
 | Task | Who |
 |---|---|
-| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Team** members; add case-study details to **Portfolio** | Super admin, Admin, Sales |
+| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Our Team** members; add case-study details to **Portfolio** | Super admin, Admin, Sales |
 | View FAQs, Reviews, Client logos and Team | Also Inventory and Support (view only) |
 | Change **Settings → Website → Homepage & contact**, **Financing** and **Load calculator** | Super admin, Admin |
 
@@ -979,7 +979,7 @@ The public page is **Our Team** at `/team`. It lists every team member whose **S
 
 **Add or edit a team member**
 
-1. Go to **Website** → **Team**.
+1. Go to **Website** → **Our Team**.
 2. To add someone, select **Add team member**. To change someone, select **Edit** (the pencil) on their row.
 3. Fill in:
    - **Name** (required, up to 100 characters): their full name.
@@ -1026,7 +1026,7 @@ This chapter describes the public website for customers. Staff can use it to gui
 
 **On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Team** and **Contact**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Team**). **Careers** is in the footer too.
+On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Our Team** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Our Team**). **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
@@ -1112,7 +1112,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a customer, I want to ask a question so that I get advice before buying.*
 
-1. Select **Contact** (or **Talk to an engineer**, or **Ask about this product** on a product page, which fills in the topic).
+1. Select **Contact us** (or **Talk to an engineer**, or **Ask about this product** on a product page, which fills in the topic).
 2. Enter your name, phone, email and message, complete the security check and send.
 3. The page also shows the business phone, email and address.
 4. To get updates, subscribe with your email in the website footer.
@@ -1149,7 +1149,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 
 1. Scroll to the questions near the bottom of the home page and select a question to open its answer. Select it again to close it.
 2. For more, select **See all questions** (or **FAQ** in the footer). The FAQ page shows every question, grouped by topic, for example "Ordering" or "Installation".
-3. Can't find your answer? Use **Contact** or WhatsApp.
+3. Can't find your answer? Use **Contact us** or WhatsApp.
 
 ### Story 11.10: Message us on WhatsApp
 
@@ -1273,6 +1273,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-18 (contact us in the menu)**
+- Customer: the top menu item **Contact** now reads **Contact us**.
 
 **2026-09-18 (youtube and social icons)**
 - Customer: the footer now links to the YouTube channel as well, and on a phone the social links show their logos instead of their names so they all fit.

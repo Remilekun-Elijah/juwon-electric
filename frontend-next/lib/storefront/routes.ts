@@ -24,7 +24,7 @@ export const storeNav: StoreNavItem[] = [
   { label: "Services", href: storeRoutes.services },
   { label: "Our work", href: storeRoutes.portfolio },
   { label: "Our Team", href: storeRoutes.team },
-  { label: "Contact", href: storeRoutes.contact },
+  { label: "Contact us", href: storeRoutes.contact },
 ];
 
 /** Mobile drawer navigation: the header items plus Careers, placed after Team. */

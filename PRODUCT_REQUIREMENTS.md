@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, YouTube and social icons (see section 12, Change log)
+Last updated: 2026-09-18, Contact us in the menu (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (contact us in the menu)
+- §6.10: the storefront menu item **Contact** now reads **Contact us**, in the header and the phone menu. The page and its address are unchanged.
 
 2026-09-18 (youtube and social icons)
 - §6.10: added the YouTube channel (`https://www.youtube.com/@juwonelectric`) to the footer and contact page social links. In the footer the links show brand icons on phones and the network names from 640 px, so five networks fit on a narrow screen.
