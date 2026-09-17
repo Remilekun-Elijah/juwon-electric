@@ -12,7 +12,7 @@ import type { AdminSelf } from "@/lib/admin/capabilities";
 import { config } from "@/lib/config";
 import * as mock from "@/lib/admin/mocks";
 import { notifyStorefront } from "@/lib/storefront/notify";
-import { ApiError, apiRequest, toQuery, type ApiEnvelope, type ApiRequestInit, type QueryParams } from "./client";
+import { ApiError, apiRequest, backendUrl, toQuery, type ApiEnvelope, type ApiRequestInit, type QueryParams } from "./client";
 import type {
   AdminNotification,
   AdminPackage,
@@ -59,6 +59,9 @@ import type {
   TeamMemberInput,
   Testimonial,
   TestimonialInput,
+  Upload,
+  UploadConfig,
+  UploadPurpose,
   Vacancy,
   VacancyInput,
   VacancyStatus,
@@ -269,6 +272,89 @@ export const getSession = async (): Promise<AdminSelf | null> => {
     return { ...stored, capabilities: [...mock.PREVIEW_CAPABILITIES] };
   }
 };
+
+/* ---------- Image uploads (UPLOADS_V1 §2) ---------- */
+
+/** `GET /admin/uploads/config`: whether uploads are on, the accepted types and the byte and pixel caps per image. */
+export const getUploadConfig = async () => (await adminFetch<UploadConfig>("/uploads/config")).data;
+
+export type UploadImageOptions = {
+  /** Called with the fraction (0 to 1) of bytes sent. */
+  onProgress?: (fraction: number) => void;
+  signal?: AbortSignal;
+};
+
+/** Messages for upload failures whose response carries no message of its own (for example a proxy's 413). */
+const UPLOAD_FALLBACK_MESSAGES: Record<number, string> = {
+  413: "Image must be 2 MB or smaller.",
+  415: "Upload a JPEG, PNG or WebP image.",
+  429: "Too many images uploaded in a short time. Wait a few minutes and try again.",
+  507: "Image uploads are unavailable right now. Please use an image link or try again later.",
+};
+
+/** True for the rejection `uploadImage` gives when its signal aborts. */
+export const isUploadAborted = (error: unknown) => error instanceof DOMException && error.name === "AbortError";
+
+/**
+ * `POST /admin/uploads?purpose=`: sends the raw image bytes with their `Content-Type` and the session token.
+ * Uses XMLHttpRequest so progress can be reported. 401 and 403 call the same handlers as `adminFetch`; the server's
+ * message is kept for every error (413, 415, 429, 507 fall back to the contract wording when it's missing).
+ * No storefront notify: an upload changes no public content until a record that uses it is saved.
+ */
+export function uploadImage(
+  file: Blob,
+  purpose: UploadPurpose = "other",
+  { onProgress, signal }: UploadImageOptions = {}
+): Promise<ApiEnvelope<Upload>> {
+  const token = readAdminToken();
+  return new Promise((resolve, reject) => {
+    const aborted = () => new DOMException("Upload cancelled.", "AbortError");
+    if (signal?.aborted) {
+      reject(aborted());
+      return;
+    }
+    const xhr = new XMLHttpRequest();
+    const abort = () => xhr.abort();
+    const cleanup = () => signal?.removeEventListener("abort", abort);
+    signal?.addEventListener("abort", abort, { once: true });
+
+    xhr.open("POST", `${backendUrl}/admin/uploads${toQuery({ purpose })}`);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && event.total > 0) onProgress?.(event.loaded / event.total);
+    };
+    xhr.onload = () => {
+      cleanup();
+      let data: ApiEnvelope<Upload> | null = null;
+      try {
+        data = JSON.parse(xhr.responseText) as ApiEnvelope<Upload>;
+      } catch {
+        data = null;
+      }
+      const status = xhr.status;
+      if (status >= 200 && status < 300 && data && data.success !== false && data.data?.url) {
+        onProgress?.(1);
+        resolve(data);
+        return;
+      }
+      if (status === 401 && readAdminToken() === token) unauthorizedHandler?.();
+      if (status === 403 && token && readAdminToken() === token) forbiddenHandler?.();
+      const message = data?.message || UPLOAD_FALLBACK_MESSAGES[status] || "Couldn’t upload the image. Try again.";
+      reject(new ApiError(message, status, data));
+    };
+    xhr.onerror = () => {
+      cleanup();
+      reject(new ApiError("Couldn’t reach the server. Check your connection and try again.", 0));
+    };
+    xhr.onabort = () => {
+      cleanup();
+      reject(aborted());
+    };
+    xhr.send(file);
+  });
+}
 
 /* ---------- Existing modules ---------- */
 
