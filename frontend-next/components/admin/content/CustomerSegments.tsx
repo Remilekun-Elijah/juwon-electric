@@ -26,6 +26,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   ApiError,
   deleteCustomerSegment,
@@ -35,7 +36,8 @@ import {
 } from "@/lib/api/admin";
 import type { CustomerSegment } from "@/lib/api/types";
 import { matchesQuery } from "@/lib/admin/format";
-import { LIMITS, isAllowedUrl, validateUrlField } from "@/lib/validation";
+import { isImageLocation } from "@/lib/admin/website";
+import { LIMITS, validateUrlField } from "@/lib/validation";
 
 type SegmentModel = Pick<CustomerSegment, "title" | "subtitle" | "image" | "isActive">;
 type SegmentErrors = Partial<Record<keyof SegmentModel, string>>;
@@ -63,7 +65,7 @@ const errorText = (error: unknown) => (error instanceof Error ? error.message : 
 const isForbidden = (error: unknown) => error instanceof ApiError && error.status === 403;
 
 function Thumbnail({ src, title }: { src: string; title: string }) {
-  const valid = isAllowedUrl(src);
+  const valid = isImageLocation(src);
   return (
     <span
       role="img"
@@ -367,25 +369,17 @@ export function CustomerSegments() {
               maxLength={LIMITS.serviceSubtitle}
             />
           </Field>
-          <Field
-            label="Image path"
-            helper="A photo in the site’s public folder, e.g. /panel-4.webp, or a full https:// URL."
-            error={fieldErrors.image}
+          <ImageUpload
+            label="Image"
             required
-          >
-            <Input
-              value={model.image}
-              onChange={(event) => setModel({ ...model, image: event.target.value })}
-              placeholder="/panel-4.webp"
-              maxLength={LIMITS.url}
-            />
-          </Field>
-          {isAllowedUrl(model.image) && (
-            <div className="flex items-center gap-3">
-              <Thumbnail src={model.image} title={model.title || "this segment"} />
-              <p className="text-xs text-slate-500">Preview</p>
-            </div>
-          )}
+            value={model.image}
+            onChange={(image) => setModel((current) => ({ ...current, image }))}
+            purpose="segments"
+            error={fieldErrors.image}
+            linkHelper="A photo in the site’s public folder, e.g. /panel-4.webp, or a full https:// URL."
+            linkPlaceholder="/panel-4.webp"
+            previewAlt={model.title ? `Image for ${model.title}` : "Segment image"}
+          />
           <Switch
             label="Show on the Services page"
             description="Hidden segments stay here but aren’t shown to customers."

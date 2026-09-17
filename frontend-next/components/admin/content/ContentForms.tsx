@@ -2,6 +2,7 @@
 
 import type { ChangeEvent } from "react";
 import { useAdminQuery } from "@/components/admin/AdminContext";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { categoryOptions } from "@/components/admin/catalog/categoryTree";
 import { Alert, Field, Input, Select, Switch, Textarea } from "@/components/ui";
 import { getCategories, getServicesAdmin } from "@/lib/api/admin";
@@ -117,14 +118,17 @@ export function ServiceForm({ model, setModel, errors = {} }: ContentFormProps) 
       <Field label="Description" required error={errors.subtitle}>
         <Textarea rows={4} value={text(model.subtitle)} onChange={set("subtitle")} maxLength={LIMITS.serviceSubtitle} />
       </Field>
-      <Field
-        label="Image path"
-        helper="A photo in the site’s public folder, e.g. /panel-4.webp, or a full https:// URL."
-        error={errors.image}
+      <ImageUpload
+        label="Image"
         required
-      >
-        <Input value={text(model.image)} onChange={set("image")} placeholder="/panel-4.webp" maxLength={LIMITS.url} />
-      </Field>
+        value={text(model.image)}
+        onChange={(image) => setModel({ ...model, image })}
+        purpose="services"
+        error={errors.image}
+        linkHelper="A photo in the site’s public folder, e.g. /panel-4.webp, or a full https:// URL."
+        linkPlaceholder="/panel-4.webp"
+        previewAlt={model.title ? `Image for ${model.title}` : "Service image"}
+      />
       <div className={grid}>
         <Field label="Button label" error={errors.ctaLabel}>
           <Input value={text(model.ctaLabel)} onChange={set("ctaLabel")} maxLength={LIMITS.serviceCtaLabel} />
@@ -171,14 +175,16 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
           maxLength={LIMITS.portfolioName}
         />
       </Field>
-      <Field
-        label="Image path"
-        helper="A photo in the site’s public folder, e.g. /image-1.svg, or a full https:// URL."
-        error={errors.image}
+      <ImageUpload
+        label="Image"
         required
-      >
-        <Input value={text(model.image)} onChange={set("image")} maxLength={LIMITS.url} />
-      </Field>
+        value={text(model.image)}
+        onChange={(image) => setModel({ ...model, image })}
+        purpose="portfolio"
+        error={errors.image}
+        linkHelper="A photo in the site’s public folder, e.g. /image-1.svg, or a full https:// URL."
+        previewAlt={model.name ? `Image for ${model.name}` : "Portfolio image"}
+      />
       <fieldset className="space-y-4 rounded-lg border border-slate-200 p-4">
         <legend className="px-1 text-sm font-medium text-slate-700">Case study</legend>
         <p className="text-sm text-slate-500">
