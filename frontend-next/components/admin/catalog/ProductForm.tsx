@@ -10,7 +10,8 @@ import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { saveProduct } from "@/lib/api/admin";
 import type { Category, Product, ProductInput, ProductStatus } from "@/lib/api/types";
 import { errorMessage } from "@/lib/admin/format";
-import { LIMITS, validateUrlField } from "@/lib/validation";
+import { validateImageUrl } from "@/lib/admin/imageUpload";
+import { LIMITS } from "@/lib/validation";
 import { ATTRIBUTE_KEY_PATTERN } from "./CategoryForm";
 import { categoryOptions, nextRowId } from "./categoryTree";
 import { productStatusOptions } from "./productBadges";
@@ -149,7 +150,7 @@ const build = (model: Model, category: Category | undefined, creating: boolean):
   for (const row of model.images) {
     const value = row.value.trim();
     if (!value) continue;
-    const error = validateUrlField(value, "Image link");
+    const error = validateImageUrl(value, "Image link");
     if (error) imageRows[row.rowId] = error;
     images.push(value);
   }

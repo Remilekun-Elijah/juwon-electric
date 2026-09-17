@@ -12,7 +12,8 @@ import { ENGINEER_JOB_TRANSITIONS } from "@/lib/admin/transitions";
 import { setMyJobStatus, updateMyJob } from "@/lib/api/admin";
 import { cn } from "@/lib/cn";
 import type { InstallationJob } from "@/lib/api/types";
-import { LIMITS, validateUrlField } from "@/lib/validation";
+import { validateImageUrl } from "@/lib/admin/imageUpload";
+import { LIMITS } from "@/lib/validation";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { crewmatesText, errorMessage, jobAddress, mapsUrl, relativeSchedule, telHref } from "./jobUtils";
 
@@ -101,7 +102,7 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
     event.preventDefault();
     const url = photoUrl.trim();
     const problem =
-      validateUrlField(url, "Photo URL", { required: true }) ||
+      validateImageUrl(url, "Photo URL", { required: true }) ||
       (job.photos.includes(url) ? "This photo is already added." : "") ||
       (job.photos.length >= LIMITS.jobPhotos ? `You can add up to ${LIMITS.jobPhotos} photos.` : "");
     setPhotoError(problem);

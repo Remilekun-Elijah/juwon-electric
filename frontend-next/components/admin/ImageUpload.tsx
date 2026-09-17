@@ -7,6 +7,7 @@ import type { UploadConfig, UploadPurpose } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import {
   isUploadUnavailable,
+  isUsableImageUrl,
   prepareAndUpload,
   uploadErrorMessage,
   useUploadConfig,
@@ -39,7 +40,7 @@ export function ImagePreview({
 }) {
   const [failed, setFailed] = useState("");
   const location = src.trim();
-  const broken = !location || failed === location;
+  const broken = !location || failed === location || !isUsableImageUrl(location);
   return (
     <div
       className={cn(

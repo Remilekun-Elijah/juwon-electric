@@ -7,6 +7,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { ApiError, getUploadConfig, isUploadAborted, uploadImage } from "@/lib/api/admin";
 import type { UploadConfig, UploadPurpose } from "@/lib/api/types";
+import { isAllowedUrl, validateUrlField } from "@/lib/validation";
 
 /** Originals above this are refused before decoding. */
 export const MAX_ORIGINAL_BYTES = 15 * 1024 * 1024;
@@ -19,6 +20,18 @@ const DEFAULT_MAX_BYTES = 2_000_000;
 
 /** `photo` re-encodes to WebP (JPEG fallback); `logo` keeps a transparent PNG as PNG at 800 px. */
 export type ImageKind = "photo" | "logo";
+
+/* ---------- Image links ---------- */
+
+/**
+ * Image link fields accept an https:// URL, a site path, or http:// on `localhost` / `127.0.0.1` (images uploaded to
+ * a local API in development). Other URL fields (website, links, buttons) stay https-only.
+ */
+export const isUsableImageUrl = (value: unknown) => isAllowedUrl(value, { allowLocalHttp: true });
+
+/** Returns an error message for an image link field, or "" when valid. Empty values are allowed unless `required`. */
+export const validateImageUrl = (value: unknown, label: string, { required = false } = {}) =>
+  validateUrlField(value, label, { required, allowLocalHttp: true });
 
 /* ---------- Upload config (loaded once per page) ---------- */
 

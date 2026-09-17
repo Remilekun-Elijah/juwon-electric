@@ -100,10 +100,33 @@ const hasControlOrWhitespace = (value: string) =>
     return code <= 0x1f || code === 0x7f || /\s/.test(char);
   });
 
-export const isAllowedUrl = (value: unknown): boolean => {
+export type UrlOptions = {
+  /**
+   * Image fields only: also accept `http://localhost` and `http://127.0.0.1` (any port, no user or password), so
+   * images uploaded to a local API work in development. Mirrors `isImageUrl` in backend/shared/fields.js.
+   */
+  allowLocalHttp?: boolean;
+};
+
+const LOCAL_HOSTS = ["localhost", "127.0.0.1"];
+
+/** `http://localhost` or `http://127.0.0.1` with no credentials, whitespace, control characters or backslashes. */
+export const isLocalHttpUrl = (value: unknown): boolean => {
+  const url = String(value ?? "").trim();
+  if (!url || url.length > LIMITS.url || !/^http:\/\//i.test(url) || url.includes("\\") || hasControlOrWhitespace(url)) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" && LOCAL_HOSTS.includes(parsed.hostname) && !parsed.username && !parsed.password;
+  } catch {
+    return false;
+  }
+};
+
+export const isAllowedUrl = (value: unknown, { allowLocalHttp = false }: UrlOptions = {}): boolean => {
   const url = String(value ?? "").trim();
   if (!url || url.length > LIMITS.url) return false;
   if (url.startsWith("/")) return !url.startsWith("//") && !url.includes("\\") && !hasControlOrWhitespace(url);
+  if (allowLocalHttp && isLocalHttpUrl(url)) return true;
   if (!/^https:\/\//i.test(url)) return false;
   try {
     return new URL(url).protocol === "https:";
@@ -112,11 +135,18 @@ export const isAllowedUrl = (value: unknown): boolean => {
   }
 };
 
-/** Returns an error message for a URL field, or "" when valid. Empty values are allowed unless `required`. */
-export const validateUrlField = (value: unknown, label: string, { required = false } = {}) => {
+/**
+ * Returns an error message for a URL field, or "" when valid. Empty values are allowed unless `required`.
+ * Pass `allowLocalHttp` for image fields only (see `validateImageUrl` in lib/admin/imageUpload.ts).
+ */
+export const validateUrlField = (
+  value: unknown,
+  label: string,
+  { required = false, allowLocalHttp = false }: { required?: boolean } & UrlOptions = {}
+) => {
   const url = String(value ?? "").trim();
   if (!url) return required ? `${label} is required.` : "";
-  return isAllowedUrl(url) ? "" : urlFieldMessage(label);
+  return isAllowedUrl(url, { allowLocalHttp }) ? "" : urlFieldMessage(label);
 };
 
 /* ---------- Admin passwords ---------- */

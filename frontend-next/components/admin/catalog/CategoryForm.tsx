@@ -8,7 +8,8 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { saveCategory } from "@/lib/api/admin";
 import type { Category, CategoryAttribute, CategoryInput } from "@/lib/api/types";
 import { errorMessage } from "@/lib/admin/format";
-import { LIMITS, validateUrlField } from "@/lib/validation";
+import { validateImageUrl } from "@/lib/admin/imageUpload";
+import { LIMITS } from "@/lib/validation";
 import { categoryOptions, descendantIds, nextRowId } from "./categoryTree";
 
 export const ATTRIBUTE_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
@@ -68,7 +69,7 @@ const validate = (model: Model): Errors => {
   if (model.description.trim().length > LIMITS.categoryDescription) {
     errors.description = `Description must be ${LIMITS.categoryDescription} characters or fewer.`;
   }
-  const urlError = validateUrlField(model.imageUrl, "Image link");
+  const urlError = validateImageUrl(model.imageUrl, "Image link");
   if (urlError) errors.imageUrl = urlError;
   const sortOrder = Number(model.sortOrder);
   if (model.sortOrder.trim() === "" || !Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 1_000_000) {

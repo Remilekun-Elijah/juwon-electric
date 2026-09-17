@@ -7,6 +7,7 @@ import type { UploadPurpose } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import {
   isUploadUnavailable,
+  isUsableImageUrl,
   prepareAndUpload,
   uploadErrorMessage,
   useUploadConfig,
@@ -245,7 +246,8 @@ export function ImageListUpload({
             const location = row.value.trim();
             const rowError = rowErrors[row.rowId];
             const replacing = pending.find((item) => item.rowId === row.rowId);
-            const showLink = uploadsOff || !location || Boolean(rowError) || editing.has(row.rowId);
+            const showLink =
+              uploadsOff || !isUsableImageUrl(location) || Boolean(rowError) || editing.has(row.rowId);
             const name = `image ${index + 1}`;
             return (
               <li key={row.rowId} className="rounded-lg border border-slate-200 bg-white p-3">

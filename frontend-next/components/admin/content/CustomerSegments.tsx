@@ -37,7 +37,8 @@ import {
 import type { CustomerSegment } from "@/lib/api/types";
 import { matchesQuery } from "@/lib/admin/format";
 import { isImageLocation } from "@/lib/admin/website";
-import { LIMITS, validateUrlField } from "@/lib/validation";
+import { validateImageUrl } from "@/lib/admin/imageUpload";
+import { LIMITS } from "@/lib/validation";
 
 type SegmentModel = Pick<CustomerSegment, "title" | "subtitle" | "image" | "isActive">;
 type SegmentErrors = Partial<Record<keyof SegmentModel, string>>;
@@ -56,7 +57,7 @@ const validateSegment = (model: SegmentModel): SegmentErrors => {
   const errors: SegmentErrors = {
     title: textError(model.title, LIMITS.serviceTitle, "Title"),
     subtitle: textError(model.subtitle, LIMITS.serviceSubtitle, "Subtitle"),
-    image: validateUrlField(model.image, "Image", { required: true }),
+    image: validateImageUrl(model.image, "Image", { required: true }),
   };
   return Object.fromEntries(Object.entries(errors).filter(([, message]) => message)) as SegmentErrors;
 };

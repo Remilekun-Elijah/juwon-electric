@@ -168,12 +168,12 @@ export const validateModel = (type: ContentType, model: ContentItem): FieldError
             title: textError(model.title, LIMITS.serviceTitle, "Title", { required: true }),
             subtitle: textError(model.subtitle, LIMITS.serviceSubtitle, "Description", { required: true }),
             ctaLabel: textError(model.ctaLabel, LIMITS.serviceCtaLabel, "Button label"),
-            image: validateUrlField(model.image, "Image", { required: true }),
+            image: validateUrlField(model.image, "Image", { required: true, allowLocalHttp: true }),
             ctaUrl: validateUrlField(model.ctaUrl, "Button link"),
           }
         : {
             name: textError(model.name, LIMITS.portfolioName, "Name", { required: true }),
-            image: validateUrlField(model.image, "Image", { required: true }),
+            image: validateUrlField(model.image, "Image", { required: true, allowLocalHttp: true }),
             link: validateUrlField(model.link, "Link"),
             category: textError(model.category, WEBSITE_LIMITS.portfolioCategory, "Category"),
             summary: textError(model.summary, WEBSITE_LIMITS.portfolioSummary, "Summary"),

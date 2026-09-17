@@ -10,7 +10,8 @@ import { normalizeRole, roleLabels } from "@/lib/admin/capabilities";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
 import { ApiError, getStaffMember, updateStaff } from "@/lib/api/admin";
 import type { AdminUser, StaffMember } from "@/lib/api/types";
-import { LIMITS, PHONE_MESSAGE, isValidPhone, linesOf, validateUrlField } from "@/lib/validation";
+import { validateImageUrl } from "@/lib/admin/imageUpload";
+import { LIMITS, PHONE_MESSAGE, isValidPhone, linesOf } from "@/lib/validation";
 
 type StaffProfileDrawerProps = {
   staffId: string | null;
@@ -167,7 +168,7 @@ function ProfileForm({
         areas: listError(areaList, "Areas covered", LIMITS.staffAreas, LIMITS.staffArea),
         certifications: listError(certificationList, "Certifications", LIMITS.staffCertifications, LIMITS.staffCertification),
         bio: bio.trim().length > LIMITS.staffBio ? `Bio must be ${LIMITS.staffBio} characters or fewer.` : "",
-        avatarUrl: validateUrlField(avatarUrl, "Photo URL"),
+        avatarUrl: validateImageUrl(avatarUrl, "Photo URL"),
       }).filter(([, value]) => value)
     ) as Errors;
     setErrors(found);
