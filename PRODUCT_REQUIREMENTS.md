@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Landing v1 (see section 12, Change log)
+Last updated: 2026-09-17, Team page and home redesign (see section 12, Change log)
 
 1. Executive summary
 
@@ -51,6 +51,8 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Website content managed in the admin (Landing v1, 2026-09-17): FAQs, customer reviews and client logos; case-study details on portfolio items; homepage stats, WhatsApp number and business hours; financing terms; and the solar calculator settings (§6.11)
 - A richer home page built from that content, with every section hidden when it has no data, plus new public pages `/calculator` and `/faq`, a portfolio category filter and a floating WhatsApp button (§6.11)
 - Clearly labelled sample content for local development and review, seeded locally only and replaced before launch (§6.11, §11 Before launch checklist)
+- Team page (2026-09-17): team members managed in the admin (Website → Team) and a public "Meet the team" page at `/team` (§6.11)
+- Home page redesign (2026-09-17): a transparent header over a full-bleed photo hero, hero stats, floating "Size your system" and WhatsApp buttons, a darker section rhythm, a dark footer, and storefront-wide motion that respects reduced motion (§6.10)
 
 Out of scope (initial release)
 - Complex promotions engine, loyalty, multi-currency pricing, advanced analytics
@@ -237,8 +239,8 @@ Persona: HR
 - Dashboard revenue uses order totals, so discounts are reflected.
 
 6.10 Public storefront (added 2026-09-17)
-- Home hero (2026-09-17): headline, "Shop packages" and "Talk to an engineer" calls to action, reassurance points (no payment to place an order, confirmation call, installation included), "Shop by battery type" shortcuts with live package counts, an installation photo with the live starting package price ("Complete packages from ₦…"), and a strip of three trust points.
-- Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with type and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product", and since Commerce v3 "Add to cart"), buy (one cart for packages and products, and checkout with the payment note), trust (services, customer segments, portfolio), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
+- ~~Home hero (2026-09-17): headline, "Shop packages" and "Talk to an engineer" calls to action, reassurance points (no payment to place an order, confirmation call, installation included), "Shop by battery type" shortcuts with live package counts, an installation photo with the live starting package price ("Complete packages from ₦…"), and a strip of three trust points.~~ Replaced by the home page redesign below (2026-09-17). The "Shop by battery type" shortcuts moved to the "Find your package" section header.
+- Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with type and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product", and since Commerce v3 "Add to cart"), buy (one cart for packages and products, and checkout with the payment note), trust (services, customer segments, portfolio, and since 2026-09-17 the team page), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
 - Design: matches the admin console (same font, colours, cards, badges and components); plain everyday icons only; mobile-first and checked at phone, tablet and desktop widths.
 - Default and switch: the new storefront is the default public site. Setting the environment variable `NEXT_PUBLIC_PUBLIC_UI=classic` serves the classic public UI instead. Both share the same public URLs, cart storage and order payloads, so a cart started in one works in the other.
 - ~~Only packages are purchasable online~~ (replaced in Commerce v3). Products show price and stock status ("In stock" / "Out of stock"; low stock is never shown publicly), an enquiry link and the packages that include them, and can be bought online:
@@ -262,6 +264,58 @@ Persona: HR
 - SEO: canonical public URLs, sitemap and robots shared with the classic site, structured data (Product on product pages, JobPosting on vacancy pages when a location is given, Organization), and noindex on cart, checkout and confirmation pages.
 - Checkout payment note follows Settings: with online payments off, "No payment now: we'll call to confirm and arrange payment"; with them on, "You'll receive a secure payment link after we confirm your order". Bot protection (Turnstile) applies to orders, contact and newsletter sign-up.
 
+Home page redesign (added 2026-09-17)
+
+Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a less white home page and a header area like a reference screenshot, with animations. We match the look and motion only. None of the reference's registration number, founding year, customer counts, city list, wording or photos are used.
+
+- Colour: a gold accent scale taken from the Juwon Electric logo. Gold is used only as an accent on dark surfaces (slate-950, slate-900 or brand-950): highlighted headline words, stat numbers and primary buttons on dark. Text on gold buttons is dark (slate-950). Body text keeps a contrast of at least 4.5:1.
+- Header:
+  - On the home page, while the page is at the top (scrolled less than 24 px), the header is transparent over the hero: white nav links with a gold underline on the active item, the logo on a small white chip, a white phone link, a glass cart button and a gold **Get a quote** pill linking to `/contact?topic=Quote`. On phones the menu button is glass too.
+  - After scrolling, and on every other page, it is the solid white header. The change fades over 250 ms. The header height never changes, and the hero reserves room for it, so nothing shifts.
+  - This is the only scroll listener on the storefront (passive, at most one check per animation frame).
+- Hero (full-bleed):
+  - Edge to edge, about one screen tall (at least 640 px, at most 920 px), under the transparent header.
+  - Background slideshow of 4 of our own installation photos. The first loads straight away; the others load later. Photos crossfade every 7 seconds, and the photo on screen zooms in slowly. Dark gradients keep the text readable on every photo.
+  - Progress bars: 4 thin bars at the bottom centre. The current bar fills in gold over 7 seconds. Selecting a bar shows that photo. A visible pause/play button sits next to the bars ("Pause the photo slideshow" / "Play the photo slideshow"). The slideshow also pauses while the mouse is over the hero or keyboard focus is inside it.
+  - Content: a glass pill "Inverter, battery & solar systems in Lagos" with a softly pulsing green dot; the headline "Reliable power for Lagos homes and **businesses**" with the last word in a gold gradient, each line rising into view; the lead paragraph; a gold **Shop packages** button and a glass **Chat on WhatsApp** button (when a WhatsApp number is set; otherwise **Talk to an engineer**, which calls).
+  - Stats: up to 4 figures from Settings → Website stats, in large gold numbers that count up, with uppercase labels. A Sample label shows while the stats are sample. With no stats, the three reassurance ticks show instead (no payment to place an order, we call to confirm, installation included). The separate stats band below the hero is removed.
+  - Glass price card: "Complete packages from ₦…" in gold with an arrow link to the packages, bottom right of the hero. It shows only on wide screens (1280 px and up, so it doesn't cover the stats or the floating buttons) and only when there is a priced package.
+  - Scroll cue: "Scroll" with a gold dot sliding down a line, bottom left, on screens 640 px and wider. It scrolls to the next section. Hidden under reduced motion.
+  - On load the pill, headline lines, lead, buttons, stats and price card appear one after another (about 100 ms apart). All of it is in the page HTML.
+- Floating actions (replace the single floating WhatsApp button): a stack at the bottom right, clear of the phone's safe area.
+  - **Size your system** (sub-label "Load calculator"): a gold pill linking to `/calculator`. Shown only when the calculator is switched on, and not on the calculator page itself.
+  - **Chat on WhatsApp** (sub-label "We reply during business hours"): a brand-red pill opening WhatsApp. Shown only when a WhatsApp number is set.
+  - Hidden on `/cart` and `/checkout`, so they never cover the order buttons.
+  - They slide in from the right about 1.2 seconds after the page loads. On phones they are 56 px round buttons with an accessible name; on screens 640 px and wider they show the label and sub-label. While the footer is on screen they fade, so footer links stay readable.
+  - No "online" status, no notification badge.
+- Section rhythm (no two neighbouring sections share a white background), in page order:
+  1. Hero: dark photo.
+  2. Client logos: white; a slow marquee when there are more logos than fit.
+  3. Why choose us: dark (slate-950), gold icon circles.
+  4. Solutions ("Who we power"): light grey, image-led cards with the title on the photo.
+  5. Find your package: white, with the "Shop by battery type" chips in the section header.
+  6. Shop by category (restored): light grey.
+  7. Popular products (restored; in-stock products with Add to cart): white.
+  8. Size your system teaser: brand panel (brand-900) with a gold accent and a preview of calculator figures.
+  9. Case studies: white, image cards.
+  10. Reviews: light brand tint; stars fill one by one when the cards come into view.
+  11. How it works: dark (slate-950), gold step numbers, the connecting line draws across.
+  12. Financing (when switched on): white.
+  13. FAQ: light grey; answers open smoothly.
+  14. Careers teaser (restored; only when there are open vacancies): white, "We're hiring: N open roles" with up to 3 role titles and **See open roles**.
+  15. Final call to action: brand red panel over an installation photo, eyebrow "Ready when you are", a gold **Shop packages** button, **Call**, and **Chat on WhatsApp** when set, followed by the business phone numbers, email, address and opening hours (the home page has no separate contact band).
+  - Section eyebrows are gold on dark and brand red on light.
+- Footer: dark (slate-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Meet the team**, Careers, FAQ and Contact us.
+
+Motion and accessibility (storefront-wide, 2026-09-17)
+- Built with CSS transitions and keyframes plus a small `IntersectionObserver` helper. No animation libraries and no scroll listeners (except the header check above).
+- What moves: sections and card grids fade and slide in as they scroll into view (staggered, once); numbers count up (hero stats, team stats, the calculator teaser preview, the financing worked example); client logos marquee; cards lift, images zoom gently and arrows nudge on hover; buttons have a press state; How it works draws its line; review stars fill; FAQ answers open smoothly; calculator results tween; the header fades from transparent to solid; the floating actions slide in.
+- Content stays visible without JavaScript and to search engines: everything is in the HTML and visible by default. The hidden "before" state is applied only after the page loads, and only to content that starts below the screen. Counting figures keep their final value in the markup; if scripts never run, the figures show within 3 seconds.
+- Reduced motion (`prefers-reduced-motion: reduce`): no slideshow autoplay and no photo zoom (the bars still switch photos), no marquee (the static logo grid shows), no count-up (final values show at once), no entrance animations, no hover zoom or lift, no scroll cue. Fades are at most 150 ms.
+- No layout shift: only `transform` and `opacity` animate, counting numbers reserve their final width, and the header height is fixed.
+- Nothing flashes more than 3 times a second. Focus styles are unchanged and visible on dark surfaces.
+- Honesty: no invented badges, counts, "online" status or claims. Figures come only from Settings or the data.
+
 6.11 Website content and landing page (added 2026-09-17, Landing v1)
 
 Contract: docs/agents/LANDING_V1.md.
@@ -272,7 +326,7 @@ Ground rules
 - Everything new is managed in the admin console. Nothing on the new home sections needs a developer to change.
 
 Managed collections
-- Three new collections under a new **Website** group in the admin menu: **FAQs**, **Reviews** and **Client logos**.
+- Three new collections under a new **Website** group in the admin menu: **FAQs**, **Reviews** and **Client logos**. A fourth, **Team**, was added on 2026-09-17 (see Team page below).
 - Access: viewing needs `content:read` (Super admin, Admin, Inventory, Sales, Support); adding, editing, reordering and deleting need `content:write` (Super admin, Admin, Sales).
 - Shared rules for all three:
   - Each item has a **Sort order** (lower shows first; ties show oldest first), an active switch (labelled **Show on the website** in the admin) and a **Sample** flag.
@@ -307,7 +361,7 @@ Settings sections (Super admin and Admin change them; other staff view)
   - Stats: up to 4 rows (**Add stat**), each a Label (1–40 characters) and a Figure (the value, 1–20, for example "500+"). Saved with **Save website**.
   - WhatsApp number: optional, same phone rule as the business phone.
   - Business hours: optional, up to 200 characters, several lines (for example "Mon–Fri 8am–6pm" on one line and "Sat 9am–3pm" on the next).
-  - Public: all of it. Stats appear in the home stats band; WhatsApp and business hours in the footer; WhatsApp also drives the floating button and the final call to action.
+  - Public: all of it. Stats appear in the home hero (the separate stats band was removed on 2026-09-17, §6.10); WhatsApp and business hours in the footer; WhatsApp also drives the floating **Chat on WhatsApp** button, the hero button and the final call to action.
 - Financing (off by default):
   - Fields: Enabled switch (**Show financing on the website**); Deposit (%) (whole number 0–100); Terms (months) (up to 6 different month counts, 1–60, shown in ascending order as chips); Monthly rate (%) (0–20, up to 2 decimals); Approval time (up to 60 characters, for example "24–48 hours"); Note (up to 300 characters). Saved with **Save financing**.
   - Public: every field only when Enabled is on. When off, the website receives nothing but "not enabled" and the financing section is hidden.
@@ -321,21 +375,23 @@ Settings sections (Super admin and Admin change them; other staff view)
 - Notification emails and other private settings are never public.
 - Each new section shows a **Sample** badge while it holds sample values.
 
-Home page (section order)
-Every section hides itself when it has no data, so an empty collection or unset setting leaves no blank block.
-1. Hero (unchanged, §6.10).
-2. Stats band: up to 4 large figures from Website stats.
-3. Client logos.
-4. Why choose us: 4 fixed cards stating only verifiable claims: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
-5. Solutions ("Who we power"): the customer segments as cards linking to `/portfolio?category=<segment>`.
-6. Packages: the existing package finder; package cards show up to 3 included products and "What it powers".
-7. Size your system: a teaser linking to `/calculator` (only when the calculator is enabled).
-8. Case studies: up to 3 portfolio items with a Summary.
-9. Reviews.
-10. How it works: 6 steps: order or call → confirmation call → processing → delivery → installation → after-sales support.
-11. Financing (only when enabled): a terms table (deposit, terms, monthly rate, approval time), a worked example calculated live on the cheapest available package, the note, and calls to action. Worked example: deposit = price × deposit % (rounded to the naira); balance = price − deposit; interest is flat = balance × monthly rate % × months; monthly instalment = (balance + interest) ÷ months, rounded up to the naira; one row per term.
-12. FAQ: the first 6 FAQs as an accessible accordion, and "See all questions" linking to `/faq`.
-13. Final call to action: Shop packages, Call, and WhatsApp (only when a WhatsApp number is set).
+Home page (section order; updated 2026-09-17 for the home page redesign, §6.10)
+Every section hides itself when it has no data, so an empty collection or unset setting leaves no blank block (the fixed "Why choose us" and "How it works" always show).
+1. Hero (§6.10), with up to 4 stats from Website stats. ~~Stats band: up to 4 large figures from Website stats.~~ The separate stats band was removed; the stats now show in the hero.
+2. Client logos.
+3. Why choose us: 4 fixed cards stating only verifiable claims: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
+4. Solutions ("Who we power"): the customer segments as cards linking to `/portfolio?category=<segment>`.
+5. Packages ("Find your package"): the existing package finder, with "Shop by battery type" chips in the header; package cards show up to 3 included products and "What it powers".
+6. Shop by category (restored 2026-09-17): top-level catalogue categories.
+7. Popular products (restored 2026-09-17): up to 8 in-stock products with Add to cart.
+8. Size your system: a teaser linking to `/calculator` (only when the calculator is enabled).
+9. Case studies: up to 3 portfolio items with a Summary.
+10. Reviews.
+11. How it works: 6 steps: order or call → confirmation call → processing → delivery → installation → after-sales support.
+12. Financing (only when enabled): a terms table (deposit, terms, monthly rate, approval time), a worked example calculated live on the cheapest available package, the note, and calls to action. Worked example: deposit = price × deposit % (rounded to the naira); balance = price − deposit; interest is flat = balance × monthly rate % × months; monthly instalment = (balance + interest) ÷ months, rounded up to the naira; one row per term.
+13. FAQ: the first 6 FAQs as an accessible accordion, and "See all questions" linking to `/faq`.
+14. Careers teaser (restored 2026-09-17; only when there are open vacancies).
+15. Final call to action: Shop packages, Call, and WhatsApp (only when a WhatsApp number is set), then the business phone numbers, email, address and opening hours.
 
 `/calculator` page (only when the calculator is enabled)
 - The customer starts with the appliance rows from Settings at their default quantity and hours, changes quantity and hours with steppers, and can **Add appliance** with their own label and watts.
@@ -354,15 +410,54 @@ Every section hides itself when it has no data, so an empty collection or unset 
 `/faq` page, portfolio filter and WhatsApp
 - `/faq`: all active FAQs grouped by category, with FAQPage structured data for search engines.
 - `/portfolio`: category filter and case-study details, as above.
-- Floating **WhatsApp** button on every storefront page when a WhatsApp number is set: bottom right, 56 px, clear of the phone's safe area. It opens `https://wa.me/<digits>` with the message "Hello Juwon Electric". No number, no button.
+- Floating **WhatsApp** button on every storefront page when a WhatsApp number is set: bottom right, 56 px, clear of the phone's safe area. It opens `https://wa.me/<digits>` with the message "Hello Juwon Electric". No number, no button. (2026-09-17: now part of the floating actions, with **Size your system**, and hidden on the cart and checkout; §6.10.)
 - The footer shows business hours and WhatsApp when set. `/calculator` and `/faq` are in the sitemap and linked from the footer (and the header when there is room).
-- FAQs, reviews and client logos changes reach the storefront the same way as other admin changes (§6.10, realtime and revalidation).
+- FAQs, reviews, client logos and team member changes reach the storefront the same way as other admin changes (§6.10, realtime and revalidation).
+
+Team page (added 2026-09-17)
+
+Contract: docs/agents/TEAM_AND_MOTION_V1.md §1–§4. The owner asked for a team page with placeholder pictures. The idea (grouped headshot cards) comes from a reference site; none of its names, photos or structure are copied.
+
+Team members collection
+- A fourth collection in the admin's **Website** group: **Team** (`/admin/team`), described as "The people shown on the website's Meet the team page, in groups." Same access as the other Website collections: viewing needs `content:read`; adding, editing, reordering and deleting need `content:write` (Super admin, Admin, Sales).
+- Fields (admin labels):
+  - **Name** (required, 1–100 characters).
+  - **Role** (required, 1–80), for example "Lead installation engineer".
+  - **Group** (required, 1–60, free text): the heading the member is listed under on the website. The field suggests existing groups first, then "Leadership", "Engineering & installations", "Sales & customer care" and "Operations".
+  - **Bio** (optional, up to 300 characters, one line of plain text; line breaks become spaces). The admin shows a character count.
+  - **Photo URL** (optional): an `http(s)` link or a site path starting with `/`, as for other Website images. The drawer shows a square preview; with no usable photo it shows the member's initials ("No photo yet. The website shows their initials instead.").
+  - **LinkedIn URL** (optional): an `https` link.
+  - **Show on the website** switch ("Hidden team members stay here but aren't shown on the team page.").
+  - Sort order and the Sample flag, as for the other collections.
+- Admin list ("All team members"): a round photo (initials when there is none), name and role, group, status, a Sample badge, a **Filter by group** select ("All groups" or one group), **Move up** / **Move down** (▲▼) buttons, and edit and delete (with confirmation). **Add team member** opens the drawer. The Sample banner shows while any member is sample.
+- Rules: the same shared rules as FAQs, Reviews and Client logos (sort order, active switch, sample flag cleared on save, activity log entries `team_member.create`, `team_member.update`, `team_member.delete`). Moving a sample member up or down, or hiding it, keeps the Sample flag; editing and saving clears it.
+- Messages: "Team retrieved.", "Team member created.", "Team member updated.", "Team member deleted.", "Team member not found."; field errors such as "LinkedIn URL must be an https URL." and "Photo URL must be an http(s) URL or a path starting with /."
+- Public read: `GET /team` returns active members only, sorted by sort order, then oldest first. Groups show on the website in the order in which each group first appears in that list, so moving a member to the top of the list also moves their group up.
+- Sample data: 12 fictional members with made-up Nigerian names across the 4 groups above (Leadership 2, Engineering & installations 4, Sales & customer care 3, Operations 3), with one-sentence bios about real kinds of work (sizing systems, installations, after-sales). Photos are illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg` (abstract head-and-shoulders drawings, no real faces, no text). LinkedIn is empty. Seeded with the same local-only sample seeds as Landing v1 (fixed ids starting `sample-team-`).
+- Changes reach the storefront through the `team` revalidation tag (admin path `/admin/team`).
+
+`/team` page ("Meet the team")
+- Intro: eyebrow "Our people", title "Meet the team", and "The engineers, installers and customer care staff behind every Juwon Electric system." Page title "Meet the team", with a canonical URL, a loading state and a sitemap entry.
+- Stats: worked out from the list only, and counting up when shown: **Team members** (how many), **Teams** (how many groups) and **Engineers and installers** (members of groups whose name contains "Engineer" or "Install"; left out when there are none). A Sample label shows when every member is sample. No invented figures.
+- Groups: one section per group, with the group name as a heading and a card grid of 2 columns on phones, 3 from 768 px and 4 from 1280 px.
+- Card: a square photo with rounded corners (or the initials on a soft background), name and role, and a Sample pill on sample members.
+  - On devices that can hover: on hover or keyboard focus the card lifts, the photo zooms gently and a brand-red gradient slides up showing the bio and a **LinkedIn** link (when set; opens in a new tab). A card with a bio but no link can take keyboard focus so keyboard users can read it.
+  - On touch devices (no hover): no overlay; the bio and LinkedIn link show under the role.
+  - Cards reveal in a stagger as they scroll into view.
+- No members: "Our team page is being updated" with a **Contact us** button.
+- Join-us band: "Want to join us?" with **See open roles** linking to `/vacancies`.
+- Structured data: an `Organization` with `employee` entries (name and job title) for **non-sample members only**. With only sample members, no team structured data is output.
+
+Header and footer navigation (2026-09-17)
+- Desktop header nav: Packages, Products, Calculator, Services, Our work, **Team**, Contact. **Team replaces Careers** in the desktop nav.
+- Careers stays in the mobile menu (right after Team) and in the footer's Company column. The footer also links **Meet the team**.
+
 
 Sample content
 - Flagged: every seeded record and settings section carries a sample flag.
-- Labelled in the admin: a **Sample** badge on each sample record and settings section; the edit form notes "Saving your changes turns this into real content and removes the Sample badge."; and on FAQs, Reviews, Client logos and Portfolio, while they have sample records, the banner "Sample content is showing on the website. Edit or replace it before launch."
-- Labelled on the website: a small neutral "Sample" label on sample stats, reviews, client logos, case-study details, financing and the calculator notes. Sample FAQs are not labelled on the website, so they must be checked in the admin.
-- Cleared on save: when staff edit and save a sample record or settings section, it becomes real content (the flag is cleared), even if no value changed. Deleting sample records is allowed.
+- Labelled in the admin: a **Sample** badge on each sample record and settings section; the edit form notes "Saving your changes turns this into real content and removes the Sample badge."; and on FAQs, Reviews, Client logos, Team (added 2026-09-17) and Portfolio, while they have sample records, the banner "Sample content is showing on the website. Edit or replace it before launch."
+- Labelled on the website: a small neutral "Sample" label on sample stats, reviews, client logos, case-study details, financing, the calculator notes and (2026-09-17) sample team member cards and the team stats when every member is sample. Sample FAQs are not labelled on the website, so they must be checked in the admin.
+- Cleared on save: when staff change a sample record or settings section and save, it becomes real content (the flag is cleared). ~~even if no value changed~~ Corrected 2026-09-17 to match the system: saving without changing any content, moving an item up or down, or switching **Show on the website** on or off keeps the Sample flag. Deleting sample records is allowed.
 - Seeded locally only: `npm run seed:sample` (backend) and `npm run d1:seed:sample:local` (Worker, local D1) load the same sample data. The seed refuses to run when `NODE_ENV=production`, is never part of migrations, `seed.sql` or CI, and the D1 seed file warns never to run it with `--remote`. Running it again updates the same sample records (fixed ids starting `sample-`) and never overwrites settings sections that already hold real content.
 - Production must never show sample content (§11 Before launch checklist).
 
@@ -394,12 +489,21 @@ Sample content
 - Reviews (Landing v1): an admin adds a review with rating 5 and source WhatsApp; it shows in the home reviews section with 5 stars, name, context and a WhatsApp badge, and the section never rotates by itself. A quote under 10 characters or a rating outside 1–5 is rejected. With no active reviews, the reviews section is not shown.
 - Client logos (Landing v1): a logo saved with a site path such as `/logos/acme.svg` or an `https://` link appears in the client logos grid with the client name as alt text; a logo value that is neither is rejected; with no active clients, the section is not shown.
 - Case studies (Landing v1): adding Category, Summary, Location and System to a portfolio item shows it among the home case studies (up to 3) and on `/portfolio?category=<segment>` with those details; a portfolio item without a Summary is not shown as a case study; older items without the new fields still display.
-- Website settings (Landing v1): saving 4 stats shows the stats band with 4 figures; a fifth stat is rejected; with no stats the band is hidden. Setting a WhatsApp number shows the floating WhatsApp button on every storefront page, the footer link and the WhatsApp call to action, opening `https://wa.me/<digits>` with "Hello Juwon Electric"; clearing it removes all three. Business hours show in the footer with their line breaks.
+- Website settings (Landing v1): saving 4 stats shows the stats band with 4 figures (in the hero since 2026-09-17); a fifth stat is rejected; with no stats the band is hidden (the hero shows the reassurance ticks instead). Setting a WhatsApp number shows the floating WhatsApp button on every storefront page (except the cart and checkout since 2026-09-17), the footer link and the WhatsApp call to action, opening `https://wa.me/<digits>` with "Hello Juwon Electric"; clearing it removes all three. Business hours show in the footer with their line breaks.
 - Financing (Landing v1): with Enabled off, the home financing section is hidden and the public settings contain only "not enabled"; with it on and deposit 40%, terms 3, 6 and 12 months, rate 3.5% and approval "48 hours", the section shows those terms, a worked example and the note. Terms with more than 6 values, duplicates or a value above 60 are rejected.
 - Calculator (Landing v1): with Enabled off, `/calculator` and the home teaser are not shown. With it on and the default parameters, a load of 1,000 W recommends 2 kVA; 5 kWh a day gives a 6.25 kWh (about 130 Ah at 48 V) battery and 3 × 550 W panels; with fuel ₦1,000, 0.25 litres per kVA-hour, 8 hours a day and ₦20,000 maintenance the generator costs ₦140,000 a month, and a ₦1,400,000 matching package shows a 10-month payback. Matching packages list at most 3 available packages of at least 2 kVA, cheapest first. The disclaimer "Estimates only — an engineer confirms your size before installation." is always visible, and nothing entered is stored.
 - Home page order (Landing v1): with all content present the sections appear in the §6.11 order; removing the data behind any section hides that section without leaving an empty heading or gap.
 - Sample content (Landing v1): after running the local seed, every seeded record and settings section shows a Sample badge in the admin, the banner "Sample content is showing on the website. Edit or replace it before launch." shows on screens with sample records, and the website shows "Sample" labels on sample stats, reviews, client logos, case-study details, financing and calculator notes. Editing and saving a sample record or section removes its badge and label. The seed refuses to run with `NODE_ENV=production`.
-- No sample content visible before launch (Landing v1): on the production website at launch, no "Sample" label appears on any page, no FAQ, review, client logo, portfolio item or settings section in the admin shows a Sample badge, no screen shows the sample banner, the WhatsApp link does not use `+2348000000000`, and no files under `/samples/` are referenced. Every item in the §11 Before launch checklist is ticked.
+- No sample content visible before launch (Landing v1): on the production website at launch, no "Sample" label appears on any page, no FAQ, review, client logo, team member (added 2026-09-17), portfolio item or settings section in the admin shows a Sample badge, no screen shows the sample banner, the WhatsApp link does not use `+2348000000000`, and no files under `/samples/` are referenced. Every item in the §11 Before launch checklist is ticked.
+- Team members admin (2026-09-17): a Sales account opens **Website → Team**, selects **Add team member**, enters Name, Role, Group "Engineering & installations", a Bio, a Photo URL such as `/team/ada.jpg` and a LinkedIn URL, leaves **Show on the website** on and saves; the member appears in the list with a round photo and in that group on `/team` on the next page view. A LinkedIn URL that isn't `https`, a Photo URL that is neither a link nor a path starting with `/`, or a Bio over 300 characters is rejected. Switching **Show on the website** off removes the member from `/team` and from `GET /team`. A Support account can view Team but has no add, edit, move or delete buttons, and the server refuses changes with "You do not have permission to perform this action."
+- Team order and groups (2026-09-17): moving the first member of "Operations" to the top of the list with ▲ makes "Operations" the first group on `/team`. **Filter by group** shows only that group's members.
+- Team page (2026-09-17): with the 12 sample members, `/team` shows "Meet the team", stats of 12 team members, 4 teams and 4 engineers and installers counting up, 4 group sections in seed order with 2 cards a row at 375 px, 3 at 768 px and 4 at 1280 px, a Sample pill on every card, and "Want to join us?" linking to `/vacancies`. On a mouse device, hovering or tabbing to a card zooms the photo and shows the bio overlay; on a touch device the bio shows under the role with no overlay. A member with no photo shows their initials. The page's structured data lists no sample members; after one member is edited and saved as real content, the `Organization` `employee` list contains exactly that member's name and job title. With no active members the page shows "Our team page is being updated" and no stats.
+- Header navigation (2026-09-17): at 1280 px the desktop header shows Team and no Careers; the mobile menu lists Careers right after Team; the footer's Company column links both **Meet the team** and Careers; `/team` is in the sitemap.
+- Home header and hero (2026-09-17): on the home page at the top, the header is transparent with white links and a gold **Get a quote** pill; after scrolling 24 px it turns solid white, and on every other page it is always solid, with no change in page layout. The hero photos crossfade every 7 seconds while the gold progress bar fills; selecting a bar shows that photo; the pause button stops the bar and the photos, and play resumes; hovering over the hero or tabbing into it also pauses. With 4 website stats the hero shows 4 gold figures that count up to exactly the saved values (for example "500+"); with none it shows the three reassurance ticks. The glass price card shows at 1280 px and wider only.
+- Reduced motion (2026-09-17): with the operating system's reduce-motion setting on, the home hero stays on the first photo with no zoom (the bars still switch photos) and has no pause button, client logos don't scroll, every count-up figure shows its final value straight away, hover zoom and lift are off, the scroll cue is hidden, and no content waits for an animation to appear.
+- No JavaScript (2026-09-17): with JavaScript disabled, the home page, team page and all sections show their full content and final figures straight away, with the first hero photo. If scripts are on but fail to start, counting figures still show their final values within 3 seconds.
+- Layout at 375 px (2026-09-17): on a 375 px wide screen, the home page, `/team`, `/calculator`, `/faq`, the catalogue and the cart have no horizontal scroll, and no animation causes layout shift (Cumulative Layout Shift from animations is 0).
+- Floating actions (2026-09-17): with the calculator on and a WhatsApp number set, every storefront page except the calculator page shows **Size your system** and **Chat on WhatsApp** at the bottom right (round buttons on phones, labelled pills from 640 px); the calculator page shows only WhatsApp; `/cart` and `/checkout` show neither. With the calculator off and no WhatsApp number, no floating buttons show. Neither button shows an "online" status or a badge.
 
 8. Metrics & success criteria
 
@@ -451,6 +555,11 @@ Landing v1 round (2026-09-17)
 - Richer home page, `/calculator`, `/faq`, portfolio category filter and WhatsApp button
 - Local-only sample content, and the Before launch checklist (§11)
 
+Team page and home redesign round (2026-09-17)
+- Team members in the admin Website group and the public `/team` page; Team replaces Careers in the desktop nav
+- Home page redesign: transparent header, full-bleed photo hero with stats, floating actions, darker section rhythm and dark footer
+- Storefront motion system that respects reduced motion
+
 10. Risks & mitigation
 
 - Rich-text security: sanitize server-side and limit allowed tags/attributes. Use `sanitize-html` and disallow scripts.
@@ -469,7 +578,7 @@ Landing v1 round (2026-09-17)
 11. Appendix
 - Link to technical plan: /PLATFORM_PLAN.md
 - Vacancy schema example and sanitization guidance included in PLATFORM_PLAN.md
-- API contract: docs/agents/API_CONTRACT_V3.md; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md; landing page and website content: docs/agents/LANDING_V1.md
+- API contract: docs/agents/API_CONTRACT_V3.md; commerce addenda: docs/agents/COMMERCE_V2.md and docs/agents/COMMERCE_V3.md; storefront spec: docs/agents/fe-storefront.md; landing page and website content: docs/agents/LANDING_V1.md; team page, home redesign and motion: docs/agents/TEAM_AND_MOTION_V1.md
 - Staff user guide: docs/USER_GUIDE.md (website content: chapter 10A)
 
 Before launch checklist (Landing v1)
@@ -486,6 +595,7 @@ Complete every item before the website goes live. The local seed never runs in p
   - Sample FAQs have no "Sample" label on the website, so check them in the admin (Website → FAQs).
 - [ ] Reviews (6 sample, made-up names such as "Adaeze O."): delete all; add only real reviews from customers who agreed to be quoted.
 - [ ] Client logos (6 sample, fictional clients using `/samples/client-1.svg` to `/samples/client-6.svg`): delete all; add only real clients who gave permission, with their own logo files or links.
+- [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo URL with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
 - [ ] Portfolio case-study details: for each portfolio item marked Sample, replace Category, Summary, Location and System with the real project details, or clear them.
 - [ ] Settings → Website:
   - [ ] Stats (4 sample: Installations, Years in Lagos, Engineers, Average install time): enter true figures or remove the rows.
@@ -494,12 +604,21 @@ Complete every item before the website goes live. The local seed never runs in p
   - [ ] Save the section.
 - [ ] Settings → Financing (sample: enabled, 40% deposit, 3/6/12 months, 3.5% a month, "48 hours", note "Sample terms — not an offer."): enter real, approved terms and save, or switch **Show financing on the website** off and save.
 - [ ] Settings → Calculator (sample: enabled, 12 appliances, default parameters, fuel ₦1,000 per litre, 0.25 litres per kVA-hour, ₦20,000 maintenance a month): check each appliance's watts and default hours and quantity, the parameters and the current fuel price and maintenance cost, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
-- [ ] Walk through the website (home, `/calculator`, `/faq`, `/portfolio`, footer) on a phone and a computer and confirm no "Sample" label remains.
+- [ ] Walk through the website (home, `/calculator`, `/faq`, `/portfolio`, `/team`, footer) on a phone and a computer and confirm no "Sample" label remains.
 
 Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (Team page and home redesign)
+- §4: in scope: the team page and the home page redesign.
+- §6.10: the earlier home hero is replaced by the home page redesign: gold accent from the logo (dark surfaces only), a transparent home header that turns solid on scroll with a **Get a quote** pill, a full-bleed photo slideshow hero with gold progress bars and a pause button, a gold headline accent, hero stats from Settings with count-up, a glass price card, a scroll cue, floating **Size your system** and **Chat on WhatsApp** buttons (hidden on cart and checkout), the darker section rhythm with shop by category, popular products and the careers teaser restored, a final call to action with full contact details, and a dark footer. Added storefront-wide motion and accessibility rules (CSS and `IntersectionObserver` only, visible without JavaScript, reduced motion, no layout shift, no invented badges or status).
+- §6.11: new Team page section (team members collection, fields, rules, public `GET /team`, sample flag, 12 sample members with placeholder portraits, the `/team` page, JSON-LD for non-sample members only) and header and footer navigation (Team replaces Careers in the desktop nav; Careers stays in the mobile menu and footer). Home section order updated (stats in the hero; shop by category, popular products and careers teaser restored). Website settings stats now show in the hero; the floating WhatsApp button is part of the floating actions. Team added to sample labels and banners.
+- §6.11 correction: saving a sample record or section without changing its content, reordering it or showing/hiding it keeps the Sample flag (the system has worked this way since the "keep sample labels" fix); only a real content change clears it.
+- §7: added acceptance criteria for the team admin, team order and groups, the team page, header navigation, the home header and hero, reduced motion, no JavaScript, no horizontal scroll at 375 px, and floating actions; the "no sample content before launch" criterion now covers team members.
+- §9: added the Team page and home redesign milestone.
+- §11: added the link to the TEAM_AND_MOTION_V1 contract, sample team members to the Before launch checklist, and `/team` to the final walk-through.
 
 2026-09-17 (Landing v1)
 - §4: in scope: website content managed in the admin, the richer home page with `/calculator`, `/faq`, the portfolio filter and WhatsApp button, and labelled local-only sample content; out of scope: online financing applications, saving calculator results, and copying anything from the reference site.
