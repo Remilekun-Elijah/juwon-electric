@@ -324,6 +324,17 @@ export const runCommerceScenario = async (client) => {
   const returned = (await expect("cancel a delivered in-store sale", "POST", `/admin/orders/${returnId}/fulfillment`, { token: roles.sales.token, body: { status: "cancelled" }, project: orderParts }, 200, "Fulfilment status updated.")).body.data;
   assert.deepEqual({ status: returned.status, fulfillmentStatus: returned.fulfillmentStatus, stockCommittedAt: returned.stockCommittedAt }, { status: "cancelled", fulfillmentStatus: "cancelled", stockCommittedAt: null });
   assert.deepEqual(stockOf((await expect("return restores stock", "GET", "/admin/inventory?q=COM-", {}, 200)).body.data), beforeReturn);
+  // ---- delivered -> installed without the flag: one PUT turns installation on and moves it ------------------------
+  await expect("collected sale to install", "POST", "/admin/orders", {
+    token: roles.sales.token,
+    body: inStore({ customer: { name: "Install Buyer", phoneNumber: "08056789012" }, lines: [{ productId: battery.id, quantity: 1 }] }),
+    project: orderParts,
+  }, 201, "Order created.");
+  const installId = (await client.request("GET", "/admin/orders?channel=in_store", { token: STATIC_TOKEN })).body.data.find((order) => order.name === "Install Buyer").id;
+  await expect("installed needs the flag", "POST", `/admin/orders/${installId}/fulfillment`, { body: { status: "installed" } }, 409, "Order does not require installation.");
+  const installed = (await expect("flag and install in one update", "PUT", `/admin/orders/${installId}`, { token: roles.sales.token, body: { requiresInstallation: true, fulfillmentStatus: "installed" }, project: orderParts }, 200, "Order updated.")).body.data;
+  assert.deepEqual({ fulfillmentStatus: installed.fulfillmentStatus, requiresInstallation: installed.requiresInstallation, status: installed.status }, { fulfillmentStatus: "installed", requiresInstallation: true, status: "completed" });
+
   assert.deepEqual(allowedFulfillmentTransitions({ channel: "website", fulfillmentStatus: "delivered" }), ["installed"]);
   assert.deepEqual(allowedFulfillmentTransitions({ channel: "in_store", fulfillmentStatus: "delivered" }), ["installed", "cancelled"]);
   assert.deepEqual(allowedFulfillmentTransitions({ channel: "in_store", fulfillmentStatus: "installed" }), []);

@@ -192,7 +192,7 @@ function SignedIn({ token, storedAdmin, children }: { token: string; storedAdmin
   return (
     <AdminContext.Provider value={context}>
       <AdminShell
-        activeId={active?.id ?? null}
+        activeId={active?.navParent ?? active?.id ?? null}
         counts={counts}
         onRefresh={refresh}
         onSignOut={signOut}

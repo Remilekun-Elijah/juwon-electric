@@ -355,6 +355,14 @@ export const setFulfillmentStatus = (order: Order, status: FulfillmentStatus, no
     () => mock.mockFulfilOrder(order, status)
   );
 
+/** Delivered -> installed for an order not yet flagged for installation: one PUT turns the flag on and moves it (contract §6.4). */
+export const markOrderInstalled = (order: Order) =>
+  withContractFallback(
+    "orders",
+    () => put<Order>(`/orders/${id(order.id)}`, { requiresInstallation: true, fulfillmentStatus: "installed" }),
+    () => mock.mockFulfilOrder(order, "installed")
+  );
+
 export const markOrderPaid = (order: Order, note?: string) =>
   withContractFallback(
     "orders",

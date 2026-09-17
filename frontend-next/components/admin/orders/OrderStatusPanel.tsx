@@ -7,7 +7,7 @@ import { DetailList } from "@/components/admin/DetailList";
 import { Alert, Button, ConfirmDialog, Field, Select } from "@/components/ui";
 import { formatDateTime } from "@/lib/admin/format";
 import { PAYMENT_TRANSITIONS, allowedFulfillmentTransitions, fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
-import { ApiError, errorDetails, markOrderPaid, setFulfillmentStatus, setOrderPaymentStatus } from "@/lib/api/admin";
+import { ApiError, errorDetails, markOrderInstalled, markOrderPaid, setFulfillmentStatus, setOrderPaymentStatus } from "@/lib/api/admin";
 import type { FulfillmentStatus, InsufficientStockDetail, Order, PaymentStatus } from "@/lib/api/types";
 import { FulfillmentBadge, PaymentBadge, isRefundDue, orderFulfillment, orderPayment } from "./orderStatus";
 import { useOrderAction } from "./useOrderAction";
@@ -24,12 +24,12 @@ export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props
   const { busy, run } = useOrderAction(onChange, onReload);
   const [stockIssue, setStockIssue] = useState<{ message: string; details: InsufficientStockDetail[] } | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmInstall, setConfirmInstall] = useState(false);
 
   const fulfillment = orderFulfillment(order);
   const payment = orderPayment(order);
-  const nextFulfillment = allowedFulfillmentTransitions({ fulfillmentStatus: fulfillment, channel: order.channel }).filter(
-    (status) => status !== "installed" || order.requiresInstallation
-  );
+  // Delivered orders always offer "Installed"; if the order wasn't flagged for installation, confirming turns it on.
+  const nextFulfillment = allowedFulfillmentTransitions({ fulfillmentStatus: fulfillment, channel: order.channel });
   const nextPayment = PAYMENT_TRANSITIONS[payment];
 
   const changeFulfillment = async (status: FulfillmentStatus) => {
@@ -47,6 +47,11 @@ export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props
       }
     );
     if (status === "cancelled") setConfirmCancel(false);
+  };
+
+  const installWithoutFlag = async () => {
+    await run("fulfillment:installed", () => markOrderInstalled(order), "Order marked as installed");
+    setConfirmInstall(false);
   };
 
   const changePayment = (status: PaymentStatus) =>
@@ -105,7 +110,9 @@ export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props
                     variant="outline"
                     loading={busy === `fulfillment:${status}`}
                     disabled={Boolean(busy)}
-                    onClick={() => changeFulfillment(status)}
+                    onClick={() =>
+                      status === "installed" && !order.requiresInstallation ? setConfirmInstall(true) : changeFulfillment(status)
+                    }
                   >
                     Mark as {fulfillmentLabels[status].toLowerCase()}
                   </Button>
@@ -185,6 +192,18 @@ export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props
         description={`Are you sure you want to cancel the order from “${order.name || "this customer"}”? Any stock taken for it goes back into inventory. This can’t be undone.`}
         confirmLabel="Cancel order"
         cancelLabel="Keep order"
+      />
+      <ConfirmDialog
+        open={confirmInstall}
+        onClose={() => setConfirmInstall(false)}
+        onConfirm={installWithoutFlag}
+        loading={busy === "fulfillment:installed"}
+        loadingText="Saving…"
+        title="Mark as installed"
+        description={`This order from “${order.name || "this customer"}” isn’t marked as needing installation yet. Marking it installed will also turn on Requires installation.`}
+        confirmLabel="Mark as installed"
+        cancelLabel="Not yet"
+        tone="warning"
       />
     </>
   );

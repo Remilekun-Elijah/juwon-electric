@@ -57,6 +57,8 @@ export type AdminModule = {
   eyebrow: string;
   title: string;
   description: string;
+  /** Sub-page reached from another module (not listed in the sidebar); that module stays highlighted. */
+  navParent?: ModuleId;
 };
 
 export const modules: AdminModule[] = [
@@ -100,6 +102,7 @@ export const modules: AdminModule[] = [
     label: "New sale",
     icon: Store,
     group: "sales",
+    navParent: "orders",
     eyebrow: "Sales",
     title: "New in-store sale",
     description: "Record a sale made in the store. Prices come from the products.",

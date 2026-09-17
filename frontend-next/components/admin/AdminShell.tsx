@@ -79,7 +79,7 @@ function SidebarContent({
   onClose?: () => void;
 }) {
   const { can } = useAdmin();
-  const visible = modules.filter((module) => can(module.capability));
+  const visible = modules.filter((module) => !module.navParent && can(module.capability));
 
   return (
     <>
