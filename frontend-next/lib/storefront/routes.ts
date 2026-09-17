@@ -6,6 +6,8 @@ export const storeRoutes = {
   ...routes,
   checkout: "/checkout",
   checkoutSuccess: "/checkout/success",
+  calculator: "/calculator",
+  faq: "/faq",
 } as const;
 
 export type StoreNavItem = { label: string; href: string };
@@ -14,6 +16,7 @@ export type StoreNavItem = { label: string; href: string };
 export const storeNav: StoreNavItem[] = [
   { label: "Packages", href: storeRoutes.packages },
   { label: "Products", href: storeRoutes.products },
+  { label: "Calculator", href: storeRoutes.calculator },
   { label: "Services", href: storeRoutes.services },
   { label: "Our work", href: storeRoutes.portfolio },
   { label: "Careers", href: storeRoutes.vacancies },
@@ -52,3 +55,16 @@ export const phoneNumbers = (phone: string | null | undefined) =>
 
 /** `tel:` href for a display phone number. */
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
+
+/** Digits of a phone number for wa.me links: "+234 800 000 0000" gives "2348000000000". Empty when there are none. */
+export const whatsappDigits = (phone: string | null | undefined) => (phone || "").replace(/\D/g, "");
+
+/** `https://wa.me/<digits>` with a greeting, or "" when the number has no digits. */
+export const whatsappHref = (phone: string | null | undefined, text = "Hello Juwon Electric") => {
+  const digits = whatsappDigits(phone);
+  return digits ? `https://wa.me/${digits}?text=${encodeURIComponent(text)}` : "";
+};
+
+/** `/portfolio?category=<slug>`, or `/portfolio` without a slug. */
+export const portfolioCategoryPath = (category: string | null | undefined) =>
+  category ? `${storeRoutes.portfolio}?category=${encodeURIComponent(category)}` : storeRoutes.portfolio;
