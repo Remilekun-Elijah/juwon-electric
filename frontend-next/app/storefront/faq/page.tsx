@@ -6,6 +6,7 @@ import PageIntro from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import FaqList from "@/components/storefront/landing/FaqList";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { slugify } from "@/lib/format";
@@ -77,10 +78,12 @@ export default async function FaqPage() {
           <div className="mx-auto max-w-3xl space-y-12">
             {withIds.map((group) => (
               <section key={group.id} id={group.id} aria-labelledby={`${group.id}-heading`} className="scroll-mt-24">
-                <h2 id={`${group.id}-heading`} className={cn(storeH2, "mb-5 text-xl sm:text-2xl")}>
-                  {group.category}
-                </h2>
-                <FaqList faqs={group.items} />
+                <Reveal>
+                  <h2 id={`${group.id}-heading`} className={cn(storeH2, "mb-5 text-xl sm:text-2xl")}>
+                    {group.category}
+                  </h2>
+                  <FaqList faqs={group.items} />
+                </Reveal>
               </section>
             ))}
           </div>

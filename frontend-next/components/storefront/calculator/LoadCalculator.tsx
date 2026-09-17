@@ -4,6 +4,8 @@ import { useId, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Fuel, Minus, Phone, Plus, RotateCcw, Sun, Trash2, Zap } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
+import AnimatedNumber from "@/components/storefront/motion/AnimatedNumber";
+import Reveal from "@/components/storefront/motion/Reveal";
 import { Button, Field, Input, buttonClasses } from "@/components/ui";
 import { formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
@@ -18,7 +20,7 @@ import {
   sizeSystem,
 } from "@/lib/storefront/calculator";
 import { contactTopicPath, telHref } from "@/lib/storefront/routes";
-import { storeCard, storeFocus } from "@/lib/storefront/styles";
+import { storeCard, storeFocus, storePress } from "@/lib/storefront/styles";
 
 /** A package the calculator can suggest: only what the island needs. */
 export type CalculatorPackage = { id: string; name: string; kva: number; price: number; href: string; typeLabel: string };
@@ -76,7 +78,12 @@ function Stepper({
   );
 }
 
-function Result({ icon: Icon, label, value, detail }: { icon: typeof Zap; label: string; value: string; detail?: string }) {
+/** Result figure that tweens to each new value (TEAM_AND_MOTION_V1 §5.9): `digits` decimals plus a unit. */
+type ResultValue = { amount: number; digits: number; unit?: string };
+
+const formatResult = ({ digits, unit = "" }: ResultValue) => (amount: number) => `${formatNumber(amount, digits)}${unit}`;
+
+function Result({ icon: Icon, label, value, detail }: { icon: typeof Zap; label: string; value: ResultValue; detail?: string }) {
   return (
     <div className="flex gap-3 rounded-xl bg-slate-50 p-4">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-brand-700 ring-1 ring-slate-200">
@@ -84,7 +91,9 @@ function Result({ icon: Icon, label, value, detail }: { icon: typeof Zap; label:
       </span>
       <div className="min-w-0">
         <dt className="text-xs font-medium text-slate-500">{label}</dt>
-        <dd className="mt-0.5 text-lg font-semibold tabular-nums tracking-tight text-slate-900">{value}</dd>
+        <dd className="mt-0.5 text-lg font-semibold tabular-nums tracking-tight text-slate-900">
+          <AnimatedNumber value={value.amount} format={formatResult(value)} />
+        </dd>
         {detail && <dd className="text-xs text-slate-500">{detail}</dd>}
       </div>
     </div>
@@ -234,7 +243,7 @@ export default function LoadCalculator({ settings, packages, phone }: LoadCalcul
         </section>
       </div>
 
-      <div className="min-w-0 space-y-6 lg:sticky lg:top-24">
+      <Reveal className="min-w-0 space-y-6 lg:sticky lg:top-24">
         <section aria-labelledby={`${formId}-results`} className={cn(storeCard, "p-4 sm:p-6")}>
           <div className="flex items-center justify-between gap-3">
             <h2 id={`${formId}-results`} className="text-lg font-semibold tracking-tight text-slate-900">
@@ -245,16 +254,16 @@ export default function LoadCalculator({ settings, packages, phone }: LoadCalcul
           <div aria-live="polite">
             {hasLoad ? (
               <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <Result icon={Zap} label="Total load" value={`${formatNumber(result.loadWatts, 0)}W`} />
-                <Result icon={Zap} label="Inverter" value={`${formatNumber(result.inverterKva, 1)}kVA`} detail={`Includes ${settings.inverterHeadroomPercent}% headroom`} />
-                <Result icon={Sun} label="Daily energy" value={`${formatNumber(result.dailyKwh, 2)}kWh`} />
+                <Result icon={Zap} label="Total load" value={{ amount: result.loadWatts, digits: 0, unit: "W" }} />
+                <Result icon={Zap} label="Inverter" value={{ amount: result.inverterKva, digits: 1, unit: "kVA" }} detail={`Includes ${settings.inverterHeadroomPercent}% headroom`} />
+                <Result icon={Sun} label="Daily energy" value={{ amount: result.dailyKwh, digits: 2, unit: "kWh" }} />
                 <Result
                   icon={BatteryCharging}
                   label="Battery"
-                  value={`${formatNumber(result.batteryKwh, 2)}kWh`}
+                  value={{ amount: result.batteryKwh, digits: 2, unit: "kWh" }}
                   detail={`About ${formatNumber(Math.ceil(result.batteryAh), 0)}Ah at ${settings.batteryVoltage}V`}
                 />
-                <Result icon={Sun} label="Solar panels" value={`${formatNumber(result.panels, 0)}`} detail={`${settings.panelWatts}W panels, ${formatNumber(settings.peakSunHours, 1)} sun hours`} />
+                <Result icon={Sun} label="Solar panels" value={{ amount: result.panels, digits: 0 }} detail={`${settings.panelWatts}W panels, ${formatNumber(settings.peakSunHours, 1)} sun hours`} />
               </dl>
             ) : (
               <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">Add at least one appliance to see a suggested size.</p>
@@ -317,7 +326,9 @@ export default function LoadCalculator({ settings, packages, phone }: LoadCalcul
                 <dt className="text-slate-600">
                   Fuel and maintenance for a {formatNumber(result.inverterKva, 1)}kVA generator
                 </dt>
-                <dd className="shrink-0 font-semibold tabular-nums text-slate-900">{formatPrice(Math.round(monthlyGenerator))}/month</dd>
+                <dd className="shrink-0 font-semibold tabular-nums text-slate-900">
+                  <AnimatedNumber value={Math.round(monthlyGenerator)} format={(amount) => `${formatPrice(Math.round(amount))}/month`} />
+                </dd>
               </div>
               {cheapest && (
                 <div className="flex justify-between gap-3 py-2.5">
@@ -346,7 +357,7 @@ export default function LoadCalculator({ settings, packages, phone }: LoadCalcul
           <p className="mt-1 text-sm leading-relaxed text-slate-600">We’ll check your appliances, confirm the size and recommend the right package. Nothing you enter here is saved.</p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
             {phone && (
-              <a href={telHref(phone)} className={buttonClasses({ size: "lg", className: "w-full sm:flex-1" })}>
+              <a href={telHref(phone)} className={buttonClasses({ size: "lg", className: cn("w-full sm:flex-1", storePress) })}>
                 <Phone aria-hidden="true" />
                 <span className="tabular-nums">Call {phone}</span>
               </a>
@@ -359,7 +370,7 @@ export default function LoadCalculator({ settings, packages, phone }: LoadCalcul
             </Link>
           </div>
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

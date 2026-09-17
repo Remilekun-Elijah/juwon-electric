@@ -7,7 +7,7 @@ import type { PortfolioItem } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { categoryLabel, hasCaseStudyDetails } from "@/lib/storefront/content";
 import { portfolioCategoryPath } from "@/lib/storefront/routes";
-import { storeArrowNudge, storeCard, storeFocus, storeHoverLift, storeImageZoom, storeLink } from "@/lib/storefront/styles";
+import { storeCard, storeFocus, storeHoverLift, storeImageZoom, storeLink } from "@/lib/storefront/styles";
 import { isAllowedUrl } from "@/lib/validation";
 import ContentImage from "./ContentImage";
 
