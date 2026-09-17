@@ -30,6 +30,8 @@ export type CountUpProps = {
   value: string;
   /** Count duration in ms. */
   duration?: number;
+  /** Wait this long (ms) after the value comes into view before counting, e.g. to follow an entrance animation. */
+  delay?: number;
   className?: string;
 };
 
@@ -43,7 +45,7 @@ export type CountUpProps = {
  *   JavaScript the value shows as normal, and if hydration never happens a CSS fallback shows it after 3 s.
  * - Reduced motion and values without a number show the final value straight away.
  */
-export default function CountUp({ value, duration = 1200, className }: CountUpProps) {
+export default function CountUp({ value, duration = 1200, delay = 0, className }: CountUpProps) {
   const valueRef = useRef<HTMLSpanElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
 
@@ -58,6 +60,7 @@ export default function CountUp({ value, duration = 1200, className }: CountUpPr
     }
 
     let frame = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const finish = () => {
       counter.textContent = "";
       real.style.opacity = "";
@@ -71,16 +74,20 @@ export default function CountUp({ value, duration = 1200, className }: CountUpPr
       ([entry]) => {
         if (!entry?.isIntersecting) return;
         observer.disconnect();
-        const start = performance.now();
-        const tick = (now: number) => {
-          const progress = Math.min(1, (now - start) / duration);
-          if (progress >= 1) return finish();
-          const eased = 1 - Math.pow(1 - progress, 3);
-          const current = figure.decimals ? figure.number * eased : Math.floor(figure.number * eased);
-          counter.textContent = formatFigure(figure, current, false);
+        const run = () => {
+          const start = performance.now();
+          const tick = (now: number) => {
+            const progress = Math.min(1, (now - start) / duration);
+            if (progress >= 1) return finish();
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = figure.decimals ? figure.number * eased : Math.floor(figure.number * eased);
+            counter.textContent = formatFigure(figure, current, false);
+            frame = requestAnimationFrame(tick);
+          };
           frame = requestAnimationFrame(tick);
         };
-        frame = requestAnimationFrame(tick);
+        if (delay > 0) timer = setTimeout(run, delay);
+        else run();
       },
       { rootMargin: REVEAL_ROOT_MARGIN, threshold: 0 }
     );
@@ -88,10 +95,11 @@ export default function CountUp({ value, duration = 1200, className }: CountUpPr
 
     return () => {
       observer.disconnect();
+      if (timer) clearTimeout(timer);
       cancelAnimationFrame(frame);
       finish();
     };
-  }, [value, duration]);
+  }, [value, duration, delay]);
 
   return (
     <span className={cn("inline-grid", className)}>

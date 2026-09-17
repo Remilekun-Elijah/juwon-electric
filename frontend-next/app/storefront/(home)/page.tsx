@@ -18,7 +18,6 @@ import Financing from "@/components/storefront/landing/Financing";
 import FinalCta from "@/components/storefront/landing/FinalCta";
 import Reviews from "@/components/storefront/landing/Reviews";
 import Solutions from "@/components/storefront/landing/Solutions";
-import StatsBand from "@/components/storefront/landing/StatsBand";
 import WhyChooseUs from "@/components/storefront/landing/WhyChooseUs";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { buildCategoryTree } from "@/lib/catalog";
@@ -37,7 +36,7 @@ import {
   getStoreVacancies,
 } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeArrowNudge, storeLink } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeFocus, storeLink, storePress } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -97,9 +96,13 @@ export default async function HomePage() {
   return (
     <>
       <OrganizationJsonLd settings={settings} />
-      <HomeHero phone={settings.business.phone} fromPrice={heroFromPrice} packageTypes={heroPackageTypes} />
-
-      {website.stats.length > 0 && <StatsBand stats={website.stats} sample={website.sample} />}
+      <HomeHero
+        phone={settings.business.phone}
+        whatsappNumber={website.whatsappNumber}
+        fromPrice={heroFromPrice}
+        stats={website.stats}
+        statsSample={website.sample}
+      />
 
       <ClientLogos clients={clients} />
 
@@ -114,7 +117,32 @@ export default async function HomePage() {
           eyebrow="Packages"
           title="Find your package"
           description="Complete systems with the inverter, batteries and installation included. Choose a battery type to see options from entry level to premium."
-          actions={seeAll(storeRoutes.packages, "All packages")}
+          actions={
+            <>
+              {heroPackageTypes.length > 0 && (
+                <nav aria-label="Shop packages by battery type">
+                  <ul className="flex flex-wrap gap-2">
+                    {heroPackageTypes.map((type) => (
+                      <li key={type.value}>
+                        <Link
+                          href={`${storeRoutes.packages}?type=${type.value}`}
+                          className={cn(
+                            "inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 md:min-h-10",
+                            storeFocus,
+                            storePress
+                          )}
+                        >
+                          {type.label}
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs tabular-nums text-slate-600">{type.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+              {seeAll(storeRoutes.packages, "All packages")}
+            </>
+          }
         >
           <PackageFinder packages={packages} />
         </Section>
