@@ -40,13 +40,13 @@ const socialLinks = [
 ];
 
 /** Focus ring for the dark footer. */
-const darkFocus = cn(storeFocus, "focus-visible:ring-gold-400 focus-visible:ring-offset-slate-950");
+const darkFocus = cn(storeFocus, "focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950");
 const footerLink = cn("inline-flex min-h-11 items-center rounded-sm text-sm md:min-h-0 text-white/70 transition-colors hover:text-gold-300", darkFocus);
 const columnTitle = "text-xs font-semibold uppercase tracking-[0.14em] text-white/50";
 const contactIcon = "h-4 w-4 shrink-0 text-gold-400";
 
 /**
- * Dark slate-950 footer (TEAM_AND_MOTION_V1 §7.5): Shop / Company / Contact columns, newsletter, socials and ©, with
+ * Dark brand-950 footer (TEAM_AND_MOTION_V1 §7.5): Shop / Company / Contact columns, newsletter, socials and ©, with
  * white/70 text and gold hover links. The logo sits on a white chip so its colours stay legible. Server component.
  *
  * Motion: the brand column slides in from the left, the link and contact columns follow one after another (sliding in
@@ -58,7 +58,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
   const whatsapp = whatsappHref(website.whatsappNumber);
 
   return (
-    <footer className="bg-slate-950 text-white/70">
+    <footer className="bg-brand-950 text-white/70">
       {/* Extra bottom room on phones so the floating action circles never cover the last footer row. */}
       <div className={cn(storeContainer, "py-12 sm:py-16", (whatsapp || settings.calculator) && "pb-40 sm:pb-20")}>
         <div className="grid gap-10 lg:grid-cols-12">

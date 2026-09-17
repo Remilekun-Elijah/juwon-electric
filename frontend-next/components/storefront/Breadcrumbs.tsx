@@ -12,7 +12,7 @@ export type BreadcrumbsProps = {
   items: Crumb[];
   /** Adds a schema.org BreadcrumbList. Default true. */
   jsonLd?: boolean;
-  /** `dark` for the slate-950 page intro: white/60 links and a white current item. */
+  /** `dark` for the brand-950 page intro: white/60 links and a white current item. */
   tone?: "light" | "dark";
   className?: string;
 };

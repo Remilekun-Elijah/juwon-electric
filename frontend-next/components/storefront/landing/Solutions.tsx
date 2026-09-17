@@ -23,7 +23,7 @@ export function SolutionCards({ segments, headingAs: Heading = "h3" }: { segment
           <li key={contentKey(segment, index)} className="min-w-0">
             <article
               className={cn(
-                "group relative isolate flex aspect-[4/3] h-full min-h-64 flex-col justify-end overflow-hidden rounded-2xl bg-slate-900 text-white shadow-elev-2",
+                "group relative isolate flex aspect-[4/3] h-full min-h-64 flex-col justify-end overflow-hidden rounded-2xl bg-brand-950 text-white shadow-elev-2",
                 "transition-[translate,box-shadow] duration-300 ease-out hover:shadow-elev-4 focus-within:shadow-elev-4 motion-safe:hover:-translate-y-0.5"
               )}
             >
@@ -31,10 +31,10 @@ export function SolutionCards({ segments, headingAs: Heading = "h3" }: { segment
                 src={segment.image}
                 alt=""
                 sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
-                className="!absolute inset-0 -z-10 h-full bg-slate-800"
+                className="!absolute inset-0 -z-10 h-full bg-brand-900"
                 imageClassName={storeImageZoom}
               />
-              <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/55 to-slate-950/10" />
+              <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-950/95 via-brand-950/55 to-brand-950/10" />
               <div className="p-5 sm:p-6">
                 <Heading className="text-xl font-semibold tracking-tight">
                   <Link
@@ -42,7 +42,7 @@ export function SolutionCards({ segments, headingAs: Heading = "h3" }: { segment
                     className={cn(
                       "rounded-sm after:absolute after:inset-0 after:rounded-2xl after:content-['']",
                       storeFocus,
-                      "focus-visible:ring-gold-400 focus-visible:ring-offset-slate-950"
+                      "focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950"
                     )}
                   >
                     {segment.title}

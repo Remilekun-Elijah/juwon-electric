@@ -86,7 +86,7 @@ export default function FloatingActions({ whatsappNumber, calculatorEnabled }: F
             aria-label="Size your system with the load calculator"
             className={cn(pillBase, "bg-gold-400 text-slate-950 hover:bg-gold-300 focus-visible:ring-gold-500", faded)}
           >
-            <span className={cn(iconCircle, "bg-slate-950 text-gold-400")}>
+            <span className={cn(iconCircle, "bg-brand-950 text-gold-400")}>
               <Calculator aria-hidden="true" className="h-5 w-5" />
             </span>
             <span aria-hidden="true" className="hidden text-left sm:block">

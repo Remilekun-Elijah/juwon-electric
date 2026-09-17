@@ -24,7 +24,7 @@ const reassurances = ["No payment to place an order", "We call to confirm", "Ins
 const HEADLINE = ["Reliable power for", "Nigerian homes and"];
 const HEADLINE_ACCENT = "businesses";
 
-const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
+const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
 const pill = "inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold transition-[background-color,translate,box-shadow] duration-200 ease-out motion-safe:hover:-translate-y-0.5";
 
 export type HomeHeroProps = {
@@ -58,12 +58,12 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
       id="home-hero"
       aria-labelledby="home-hero-heading"
       data-store-hero=""
-      className="relative isolate -mt-[65px] flex min-h-[max(640px,min(100svh,920px))] flex-col overflow-hidden bg-slate-950 text-white md:-mt-[73px]"
+      className="relative isolate -mt-[65px] flex min-h-[max(640px,min(100svh,920px))] flex-col overflow-hidden bg-brand-950 text-white md:-mt-[73px]"
     >
       <HeroSlideshow slides={HERO_SLIDES} />
       {/* Overlays: left-to-right for the text column, bottom for the stats and controls. */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-950/40" />
-      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-slate-950/80 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950/90 via-brand-950/70 to-brand-950/40" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-brand-950/80 to-transparent" />
 
       <div className={cn(storeContainer, "flex flex-1 flex-col justify-center pb-24 pt-28 sm:pb-28 md:pt-36")}>
         <div className="max-w-3xl">

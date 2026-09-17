@@ -15,7 +15,7 @@ export type SectionProps = {
   actions?: ReactNode;
   /**
    * Surface (TEAM_AND_MOTION_V1 §7.5): `slate` (default) sits on the page background; `white` is a white band with top
-   * and bottom borders; `dark` is a slate-950 band with white text and a gold eyebrow; `tint` is a brand-50 band.
+   * and bottom borders; `dark` is a brand-950 band with white text and a gold eyebrow; `tint` is a brand-50 band.
    */
   tone?: "slate" | "white" | "dark" | "tint";
   className?: string;
@@ -51,7 +51,7 @@ export default function Section({
       className={cn(
         storeSection,
         tone === "white" && "border-y border-slate-200 bg-white",
-        tone === "dark" && "bg-slate-950 text-white",
+        tone === "dark" && "bg-brand-950 text-white",
         tone === "tint" && "border-y border-brand-100 bg-brand-50",
         className
       )}

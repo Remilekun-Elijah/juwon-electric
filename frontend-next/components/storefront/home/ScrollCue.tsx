@@ -27,7 +27,7 @@ export default function ScrollCue({ className }: { className?: string }) {
       onClick={scrollOn}
       className={cn(
         "group flex items-center gap-3 rounded-md p-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 transition-colors hover:text-white",
-        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950",
         className
       )}
     >

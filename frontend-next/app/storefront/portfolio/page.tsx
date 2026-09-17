@@ -36,7 +36,7 @@ function FilterChip({ href, active, label, count }: { href: string; active: bool
       className={storeDarkChip(active)}
     >
       {label}
-      <span className={cn("rounded-full px-2 py-0.5 text-xs tabular-nums", active ? "bg-slate-950/15 text-slate-950" : "bg-white/15 text-white")}>{count}</span>
+      <span className={cn("rounded-full px-2 py-0.5 text-xs tabular-nums", active ? "bg-brand-950/15 text-slate-950" : "bg-white/15 text-white")}>{count}</span>
     </Link>
   );
 }

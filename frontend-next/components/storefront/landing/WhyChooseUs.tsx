@@ -31,7 +31,7 @@ const reasons = [
 ];
 
 /**
- * "Why choose us": four static cards with verifiable claims on a dark slate-950 band (TEAM_AND_MOTION_V1 §7.5): glass
+ * "Why choose us": four static cards with verifiable claims on a dark brand-950 band (TEAM_AND_MOTION_V1 §7.5): glass
  * cards, gold icon circles and a soft gold glow on hover. Server component.
  */
 export default function WhyChooseUs() {
