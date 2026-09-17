@@ -9,7 +9,7 @@ import {
   optionalString,
   optionalUrl,
   requiredString,
-  requiredUrl,
+  requiredImageUrl,
   sortOrderField,
 } from "../services/validators.js";
 
@@ -18,7 +18,7 @@ const servicePayload = (body, { isUpdate }) => {
   const title = requiredString(body, "title", "Title", { max: LIMITS.serviceTitle });
   const slug = optionalSlug(body);
   const subtitle = requiredString(body, "subtitle", "Subtitle", { max: LIMITS.serviceSubtitle });
-  const image = requiredUrl(body, "image", "Image");
+  const image = requiredImageUrl(body, "image", "Image");
   const ctaLabel = optionalString(body, "ctaLabel", { label: "CTA label", max: LIMITS.ctaLabel });
   const ctaUrl = optionalUrl(body, "ctaUrl", "CTA URL");
   const isActive = optionalBoolean(body, "isActive", undefined);
@@ -40,7 +40,7 @@ const segmentPayload = (body, { isUpdate }) => {
   const title = requiredString(body, "title", "Title", { max: LIMITS.serviceTitle });
   const slug = optionalSlug(body);
   const subtitle = requiredString(body, "subtitle", "Subtitle", { max: LIMITS.serviceSubtitle });
-  const image = requiredUrl(body, "image", "Image");
+  const image = requiredImageUrl(body, "image", "Image");
   const isActive = optionalBoolean(body, "isActive", undefined);
   const sortOrder = sortOrderField(body);
 

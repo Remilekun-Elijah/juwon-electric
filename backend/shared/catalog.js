@@ -5,6 +5,8 @@ import {
   OPS_LIMITS,
   boolean,
   idRef,
+  imageUrl,
+  imageUrlList,
   integer,
   isPlainObject,
   number,
@@ -15,8 +17,6 @@ import {
   sortOrder,
   text,
   textList,
-  url,
-  urlList,
 } from "./fields.js";
 import { packageProductIds } from "./packagePricing.js";
 import { RICH_TEXT_MAX_LENGTH, RICH_TEXT_TOO_LONG_MESSAGE, sanitizeRichText } from "./richText.js";
@@ -74,7 +74,7 @@ export const categoryPayload = (body, { isUpdate = false } = {}) => {
   if (!isUpdate || sent(input, "description")) {
     payload.description = text(input, "description", { label: "Description", max: 1000, multiline: true }) || null;
   }
-  if (!isUpdate || sent(input, "imageUrl")) payload.imageUrl = url(input, "imageUrl", { label: "Image URL" }) || null;
+  if (!isUpdate || sent(input, "imageUrl")) payload.imageUrl = imageUrl(input, "imageUrl", { label: "Image URL" }) || null;
   if (!isUpdate || sent(input, "attributes")) payload.attributes = sent(input, "attributes") ? categoryAttributes(input) : [];
   if (!isUpdate || sent(input, "isActive")) payload.isActive = boolean(input, "isActive", { label: "isActive" }) ?? true;
   if (sent(input, "sortOrder")) payload.sortOrder = sortOrder(input);
@@ -217,7 +217,7 @@ export const productPayload = (body, { existing = null, defaultReorderLevel = 0 
     payload.reorderLevel =
       integer(input, "reorderLevel", { label: "Reorder level", min: 0, max: 1_000_000 }) ?? defaultReorderLevel;
   }
-  if (has("images")) payload.images = urlList(input, "images", { label: "Images", max: 10 }) ?? [];
+  if (has("images")) payload.images = imageUrlList(input, "images", { label: "Images", max: 10 }) ?? [];
   if (has("status")) payload.status = oneOf(input, "status", PRODUCT_STATUSES, { label: "Status" }) ?? "active";
   if (has("tags")) payload.tags = textList(input, "tags", { label: "Tags", max: 20, itemMax: 50 }) ?? [];
 

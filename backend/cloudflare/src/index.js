@@ -53,6 +53,7 @@ import {
   slugField,
   stringField,
   stripInvalidChars,
+  imageUrlField,
   urlField,
   validateEmail,
   validateItems,
@@ -255,7 +256,7 @@ const contentPayload = async (env, body, existing, kind) => {
     max: isPortfolio ? LIMITS.portfolioName : LIMITS.serviceTitle,
   });
   slugField(body);
-  const image = urlField(body, "image", { label: "Image", required: true });
+  const image = imageUrlField(body, "image", { label: "Image", required: true });
   let extra;
   if (isPortfolio) {
     const link = urlField(body, "link", { label: "Link" });
@@ -294,7 +295,7 @@ const segmentPayload = async (env, body, existing = null) => {
   const title = stringField(body, "title", { label: "Title", required: true, max: LIMITS.serviceTitle });
   slugField(body);
   const subtitle = stringField(body, "subtitle", { label: "Subtitle", required: true, max: LIMITS.serviceSubtitle });
-  const image = urlField(body, "image", { label: "Image", required: true });
+  const image = imageUrlField(body, "image", { label: "Image", required: true });
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   return {

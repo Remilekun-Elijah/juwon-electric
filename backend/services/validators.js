@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import { ApiError, badRequest } from "./errors.js";
+import { isImageUrl } from "../shared/fields.js";
 
 // Shared email rule (same regex in the Worker and the frontend), plus: total
 // length <= 254 and no leading/trailing/consecutive dots in the local part.
@@ -217,6 +218,14 @@ const checkUrl = (value, label) => {
 
 export const requiredUrl = (body, field, label) =>
   checkUrl(requiredString(body, field, label, { max: LIMITS.url }), label);
+
+/** Image fields: also http:// on localhost / 127.0.0.1 (shared/fields.js isImageUrl). */
+export const requiredImageUrl = (body, field, label) => {
+  const value = requiredString(body, field, label, { max: LIMITS.url });
+  checkMax(value, label, LIMITS.url);
+  if (!isImageUrl(value)) throw badRequest(`${label} must be an https:// URL or a path starting with /.`);
+  return value;
+};
 
 export const optionalUrl = (body, field, label) => {
   const value = optionalString(body, field, { label, max: LIMITS.url });

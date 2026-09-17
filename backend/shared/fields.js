@@ -155,6 +155,34 @@ export const url = (body, key, { label = key, required = false } = {}) => {
   return value ? checkUrl(value, label) : "";
 };
 
+// Image fields also accept http:// when the host is exactly localhost or 127.0.0.1 (any port):
+// local development serves uploads from the API origin (UPLOADS_V1). Everything else stays
+// https-only. Non-image URL fields (websites, links) keep isSafeUrl.
+const LOCAL_HOSTS = ["localhost", "127.0.0.1"];
+export const isLocalHttpUrl = (value) => {
+  if (typeof value !== "string" || !/^http:\/\//i.test(value) || UNSAFE_PATH_CHARS.test(value)) return false;
+  try {
+    const parsed = new globalThis.URL(value);
+    return parsed.protocol === "http:" && LOCAL_HOSTS.includes(parsed.hostname) && !parsed.username && !parsed.password;
+  } catch {
+    return false;
+  }
+};
+
+/** A site path, an https:// URL, or http:// on localhost / 127.0.0.1. */
+export const isImageUrl = (value) => isSafeUrl(value) || isLocalHttpUrl(value);
+
+const checkImageUrl = (value, label) => {
+  if (value.length > OPS_LIMITS.url) throw tooLong(label, OPS_LIMITS.url);
+  if (!isImageUrl(value)) throw badRequest(`${label} must be an https:// URL or a path starting with /.`);
+  return value;
+};
+
+export const imageUrl = (body, key, { label = key, required = false } = {}) => {
+  const value = text(body, key, { label, required, max: OPS_LIMITS.url });
+  return value ? checkImageUrl(value, label) : "";
+};
+
 /** Array field; undefined when absent. `each(item, index)` validates one entry. */
 export const list = (body, key, { label = key, max, each }) => {
   const raw = body?.[key];
@@ -172,6 +200,16 @@ export const urlList = (body, key, { label = key, max }) =>
     each: (item) => {
       if (typeof item !== "string") throw badRequest(`${label} must be a list of URLs.`);
       return checkUrl(item.trim(), `Each entry in ${label}`);
+    },
+  });
+
+export const imageUrlList = (body, key, { label = key, max }) =>
+  list(body, key, {
+    label,
+    max,
+    each: (item) => {
+      if (typeof item !== "string") throw badRequest(`${label} must be a list of URLs.`);
+      return checkImageUrl(item.trim(), `Each entry in ${label}`);
     },
   });
 

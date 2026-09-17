@@ -9,7 +9,7 @@ import {
   optionalSlug,
   optionalUrl,
   requiredString,
-  requiredUrl,
+  requiredImageUrl,
   sortOrderField,
 } from "../services/validators.js";
 import { filterPortfolio, portfolioCaseStudyPayload, serializePortfolio } from "../shared/content.js";
@@ -18,7 +18,7 @@ import { filterPortfolio, portfolioCaseStudyPayload, serializePortfolio } from "
 const portfolioPayload = (body, { isUpdate }) => {
   const name = requiredString(body, "name", "Name", { max: LIMITS.portfolioName });
   const slug = optionalSlug(body);
-  const image = requiredUrl(body, "image", "Image");
+  const image = requiredImageUrl(body, "image", "Image");
   const link = optionalUrl(body, "link", "Link");
   const featured = optionalBoolean(body, "featured", undefined);
   const mobile = optionalBoolean(body, "mobile", undefined);

@@ -1,6 +1,7 @@
 // Input validation helpers. Every limit and message here mirrors the Express backend
 // so both reject the same payloads with the same responses.
 import { badRequest } from "./http.js";
+import { isImageUrl } from "../../shared/fields.js";
 
 export const LIMITS = {
   personName: 100,
@@ -200,6 +201,13 @@ export const isSafeUrl = (value) => {
   } catch {
     return false;
   }
+};
+
+/** Image fields: also http:// on localhost / 127.0.0.1 (shared/fields.js isImageUrl). */
+export const imageUrlField = (body, key, { label, required = false } = {}) => {
+  const value = stringField(body, key, { label, required, max: LIMITS.url });
+  if (value && !isImageUrl(value)) badRequest(`${label} must be an https:// URL or a path starting with /.`);
+  return value;
 };
 
 export const urlField = (body, key, { label, required = false } = {}) => {

@@ -6,6 +6,8 @@ import { badRequest, conflict, notFound } from "./errors.js";
 import {
   OPS_LIMITS,
   dateTime,
+  imageUrl,
+  imageUrlList,
   integer,
   isPlainObject,
   list,
@@ -14,8 +16,6 @@ import {
   queryText,
   text,
   textList,
-  url,
-  urlList,
 } from "./fields.js";
 
 export const JOB_STATUSES = ["unassigned", "assigned", "in_progress", "completed", "cancelled"];
@@ -237,7 +237,7 @@ export const engineerJobPayload = (body, job, { actorId, timestamp }) => {
     }
     patch.checklist = checklist;
   }
-  if (input.photos !== undefined) patch.photos = urlList(input, "photos", { label: "Photos", max: 20 });
+  if (input.photos !== undefined) patch.photos = imageUrlList(input, "photos", { label: "Photos", max: 20 });
   if (input.completionNotes !== undefined) patch.completionNotes = nullableText(input, "completionNotes", "Completion notes", 5000);
   if (!["assigned", "in_progress"].includes(job.status)) throw conflict("Job is closed.");
   return patch;
@@ -382,7 +382,7 @@ export const staffPayload = (body, admin) => {
       profile.certifications = textList(source, "certifications", { label: "Certifications", max: 20, itemMax: 150 }) ?? [];
     }
     if (source.bio !== undefined) profile.bio = text(source, "bio", { label: "Bio", max: 1000, multiline: true }) || null;
-    if (source.avatarUrl !== undefined) profile.avatarUrl = url(source, "avatarUrl", { label: "Avatar URL" }) || null;
+    if (source.avatarUrl !== undefined) profile.avatarUrl = imageUrl(source, "avatarUrl", { label: "Avatar URL" }) || null;
     patch.profile = profile;
   }
   return patch;
