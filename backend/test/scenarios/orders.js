@@ -50,7 +50,7 @@ export const runOrdersScenario = async (client) => {
   const order1 = await place("place order 1", 2);
   assert.deepEqual(
     { status: order1.status, paymentStatus: order1.paymentStatus, fulfillmentStatus: order1.fulfillmentStatus, requiresInstallation: order1.requiresInstallation, assignedEngineerId: order1.assignedEngineerId },
-    { status: "pending", paymentStatus: "pending", fulfillmentStatus: "pending", requiresInstallation: false, assignedEngineerId: null }
+    { status: "pending", paymentStatus: "pending", fulfillmentStatus: "pending", requiresInstallation: true, assignedEngineerId: null }
   );
   const order2 = await place("place order 2", 3);
 
@@ -135,6 +135,7 @@ export const runOrdersScenario = async (client) => {
 
   // ---- engineer assignment -------------------------------------------------------------------------------
   const assign = (id, engineerId) => ["POST", `/admin/orders/${id}/assign-engineer`, { body: { engineerId }, project: orderParts }];
+  await expect("turn installation off", ...put(order1.id, { requiresInstallation: false }), 200);
   await expect("assign needs requiresInstallation", ...assign(order1.id, engineer.id), 409, "Order does not require installation.");
   await expect("require installation", ...put(order1.id, { requiresInstallation: true }), 200);
   await expect("assign a non-engineer", ...assign(order1.id, sales.id), 400, "Assignee must be an active engineer.");

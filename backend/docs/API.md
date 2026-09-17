@@ -403,7 +403,7 @@ Package resolution (identical in the Node backend and the Cloudflare Worker):
 
 Option selection: `optionName`/`option` → `withSolar` (`true`/`"true"` = "With solar", otherwise "Without solar") → the kits text at the end of `package`. An explicit option name that doesn't exist falls back to `withSolar` and then the kits text; if neither is given or matches, the item is unavailable. With none of the three given, the first option is used.
 
-The order is persisted in `orders` with `channel: "website"`, `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: false` and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
+The order is persisted in `orders` with `channel: "website"`, `status: "pending"`, `paymentStatus: "pending"`, `fulfillmentStatus: "pending"`, `requiresInstallation: true` (packages are sold installed; staff can turn it off) and `assignedEngineerId: null`, then sent through the existing email template using the server-computed values. Placing an order never changes stock (stock is committed when the order moves to `processing`).
 
 ### Vacancies
 
@@ -654,7 +654,7 @@ Enums, transitions and stock rules: contract §6. Every admin order response is 
 
 - **Legacy payment status:** `unpaid` reads as `pending` with `legacyPaymentStatus: "unpaid"`. A missing or unknown value reads as `pending` with `legacyPaymentStatus` set to the original value or `null`.
 - **Legacy status:** `completed` reads as `fulfillmentStatus: "delivered"`, `cancelled` as `cancelled`, and anything else as `pending`.
-- **Defaults:** `requiresInstallation: false`; `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
+- **Defaults:** new website orders store `requiresInstallation: true`; older orders without the field read as `false`. `assignedEngineerId`, `paidAt` and `stockCommittedAt` are `null`.
 - **`status`:** always derived from `fulfillmentStatus`.
 - **Persistence:** D1 migration `0011_orders_fulfilment.sql` writes the same values, and Express writes them on the next change.
 - **Removed field:** the internal `sortOrder` is no longer part of order responses.

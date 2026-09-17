@@ -32,6 +32,7 @@ export const runJobsScenario = async (client) => {
 
   // ---- create -----------------------------------------------------------------------------------------
   const jobs = "/admin/jobs";
+  await expect("turn installation off", "PUT", `/admin/orders/${order.id}`, { body: { requiresInstallation: false }, project: (body) => ({ message: body?.message }) }, 200);
   await expect("order without installation", "POST", jobs, { body: { orderId: order.id } }, 409, "Order does not require installation.");
   await expect("require installation", "PUT", `/admin/orders/${order.id}`, { body: { requiresInstallation: true }, project: (body) => ({ message: body?.message }) }, 200);
   await expect("require installation on order 2", "PUT", `/admin/orders/${order2.id}`, { body: { requiresInstallation: true }, project: (body) => ({ message: body?.message }) }, 200);

@@ -79,13 +79,16 @@ export const serializeOrder = (order) => {
   return { ...normalized, ...orderCommerceDefaults(normalized), status: derivedStatus(normalized.fulfillmentStatus) };
 };
 
-/** Fields every new public order is stored with (§6.1). */
+/**
+ * Fields every new public order is stored with (§6.1). Website orders are packages, which are sold installed,
+ * so they start with requiresInstallation: true (owner decision 2026-09-17). Older orders keep their stored value.
+ */
 export const NEW_ORDER_FIELDS = Object.freeze({
   channel: "website",
   status: "pending",
   paymentStatus: "pending",
   fulfillmentStatus: "pending",
-  requiresInstallation: false,
+  requiresInstallation: true,
   assignedEngineerId: null,
 });
 

@@ -178,3 +178,7 @@ type InStoreOrderInput = {
 ## 5. Docs (required every round, owner instruction)
 - `PRODUCT_REQUIREMENTS.md`: add or modify the requirement sections for composed packages, pricing adjustment, in-store sales, the sales rep role capability, the storefront switch and realtime updates. Record changes in a "Change log" section at the end with the date.
 - `docs/USER_GUIDE.md` ("How to use the Juwon Electric platform"): user stories and step-by-step guides per persona: Owner/Super admin, Admin, Sales rep, Inventory manager, Engineer, HR, Support, Customer. Keep it in plain language, and update it whenever features change.
+
+## 6. Later decisions (2026-09-17)
+- In-store orders may go `delivered → cancelled` (returns); see §2.2.
+- New website orders store `requiresInstallation: true` (packages are sold installed). Orders placed before this keep their stored value; a missing value still reads as `false`. The admin offers "Mark as installed" on every delivered order, and a PUT with `{ requiresInstallation: true, fulfillmentStatus: "installed" }` moves an unflagged delivered order in one update.
