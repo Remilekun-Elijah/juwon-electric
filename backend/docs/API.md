@@ -273,6 +273,10 @@ Every portfolio response (public and admin) includes the Landing v1 case-study f
 
 - `GET /faqs?category=`, `GET /testimonials`, `GET /clients`: active items only. See [Website content (Landing v1)](#website-content-landing-v1).
 
+### Team
+
+- `GET /team`: active team members only, sorted by `sortOrder`, then `createdAt`. See [Team members](#team-members-team-and-motion-v1).
+
 ### Contact
 
 - `POST /contact`
@@ -450,8 +454,8 @@ Every admin account has a `role`: `superadmin`, `admin`, `inventory`, `sales`, `
 | `audit:read` | admin | `GET /admin/audit-logs` |
 | `users:read` | admin | `GET /admin/users`, `GET /admin/users/:id` |
 | `users:manage` | admin | `POST /admin/users`, `PUT /admin/users/:id`, `POST /admin/users/:id/role`, `/deactivate`, `/reactivate` |
-| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio`, `/admin/faqs`, `/admin/testimonials`, `/admin/clients` |
-| `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio, FAQs, reviews, client logos |
+| `content:read` | admin, inventory, sales, support | `GET /admin/packages`, `/admin/services`, `/admin/portfolio`, `/admin/faqs`, `/admin/testimonials`, `/admin/clients`, `/admin/team` |
+| `content:write` | admin, sales | create/update/delete packages, services, customer segments, portfolio, FAQs, reviews, client logos, team members |
 | `orders:read` | admin, inventory, sales, support | `GET /admin/orders`, `GET /admin/orders/:id`, `GET /admin/carts` |
 | `orders:create` | admin, sales | `POST /admin/orders` (in-store orders) |
 | `orders:update` | admin, sales | `PUT /admin/orders/:id` |
@@ -495,7 +499,7 @@ Returns `{ "success": true, "message", "data": { "items", "page", "limit", "tota
 
 Each entry: `id`, `createdAt`, `adminId`, `adminEmail`, `action`, `entity`, `entityId`, `summary`, `changes` (changed field names only, never values), `ip`, `userAgent`.
 
-Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`, `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`, `vacancy`, `faq`, `testimonial`, `client`.
+Actions: `auth.login`, `auth.login_failed` (email only, `adminId` null), `auth.logout`, `auth.password_reset_requested`, `auth.password_reset`, `<entity>.create`, `<entity>.update`, `<entity>.delete`, `contact.reply`, `order.status_change` (when `status` changes; other order edits are `order.update`), `newsletter.update`, `order.delete`, `contact.delete`, `newsletter.delete`, `user.create`, `user.update`, `user.role_change`, `user.deactivate`, `user.reactivate`, `vacancy.create`, `vacancy.update`, `vacancy.publish`, `vacancy.unpublish`, `vacancy.close`, `vacancy.delete`. Entities: `package`, `service`, `portfolio`, `customerSegment`, `order`, `contact`, `newsletter`, `user`, `vacancy`, `faq`, `testimonial`, `client`, `team_member`.
 
 Audit writes are best-effort and never fail the admin action. Entries older than 180 days are deleted opportunistically. Requests made with the static `ADMIN_TOKEN` are logged with `adminId` and `adminEmail` `"static-token"`.
 
@@ -849,7 +853,7 @@ Errors: `400` `"from must be a valid date."`, `"to must be a valid date."`, `"Da
 
 Contract: `docs/agents/LANDING_V1.md`. Rules are shared by Express and the Worker (`backend/shared/content.js`, `backend/shared/settings.js`) and covered by the parity scenario `backend/test/scenarios/landing.js`.
 
-**Sample content.** Records and settings sections seeded by the local sample seed carry `sample: true`. `sample` is never accepted from a request: records created through the API have `sample: false`, and any `PUT` on a record (including a sort-order or active-toggle change) stores `sample: false`. Deleting sample records is allowed.
+**Sample content.** Records and settings sections seeded by the local sample seed carry `sample: true`. `sample` is never accepted from a request: records created through the API have `sample: false`. A `PUT` that changes a content field of a sample record stores `sample: false`; a `PUT` that only moves it (`sortOrder`), shows or hides it (`isActive`), or re-sends unchanged values keeps `sample: true`. Deleting sample records is allowed.
 
 ### FAQs, reviews and client logos
 
@@ -888,9 +892,41 @@ Saving a section (sending it in the body, even as `{}`) stores its `sample: fals
 
 ### Sample seeds (local only)
 
-Data: `backend/shared/sampleWebsite.js` (8 FAQs, 6 reviews, 6 client logos using `/samples/client-N.svg`, case-study fields for the 15 existing portfolio records, and sample `website`, `financing` and `calculator` sections). All of it is `sample: true` and must be replaced before launch.
+Data: `backend/shared/sampleWebsite.js` (8 FAQs, 6 reviews, 6 client logos using `/samples/client-N.svg`, 12 fictional team members in 4 groups using `/samples/team/member-N.svg`, case-study fields for the 15 existing portfolio records, and sample `website`, `financing` and `calculator` sections). All of it is `sample: true` and must be replaced before launch.
 
 - **Express:** `npm run seed:sample` (JSON store, or MongoDB when `MONGODB_URI` is set). Refuses `NODE_ENV=production`.
 - **Worker local D1:** `cd backend/cloudflare && npm run d1:seed:sample:export` regenerates `seeds/sample-website.sql`; `npm run d1:seed:sample:local` applies it with `--local`. Never run it with `--remote`, and never add it to migrations, `seed.sql` or CI.
 
 Both are idempotent: records use fixed `sample-` ids and are upserted; records and portfolio items an admin has saved since (`sample: false`) are kept; a settings section is replaced only while it is missing, empty or still sample content.
+
+## Team members (Team and motion v1)
+
+Contract: `docs/agents/TEAM_AND_MOTION_V1.md` §1. Same rules as [Website content](#website-content-landing-v1) (shared in `backend/shared/content.js`, including the sample flag), covered by the parity scenario `backend/test/scenarios/team.js`. Collection `teamMembers`.
+
+| Admin (`content:read` GET, `content:write` POST/PUT/DELETE) | Public | Audit entity | Not found |
+|---|---|---|---|
+| `/admin/team`, `/admin/team/:id` | `GET /team` | `team_member` | `"Team member not found."` |
+
+- `GET /team` returns an array of active members sorted by `sortOrder`, then `createdAt`; `GET /admin/team` includes inactive ones. Groups display in the order in which each group first appears in that list.
+- Messages: `"Team retrieved."`, `"Team member created."` (`201`), `"Team member updated."`, `"Team member deleted."`.
+- Create defaults: `isActive: true`, `sortOrder` = last + 1, optional fields `null`. Update is partial; `""` or `null` clears an optional field. Unknown fields are ignored.
+- Audited as `team_member.create|update|delete`, e.g. `Created team member "Adebayo Ogunleye"`.
+
+```json
+{
+  "id": "sample-team-3",
+  "name": "Ifeanyi Obi",
+  "role": "Lead installation engineer",
+  "group": "Engineering & installations",
+  "bio": "Plans installation days and leads the crew that mounts panels, wires inverters and tests each system.",
+  "photoUrl": "/samples/team/member-3.svg",
+  "linkedinUrl": null,
+  "sortOrder": 3,
+  "isActive": true,
+  "sample": true,
+  "createdAt": "2026-09-17T08:00:02.000Z",
+  "updatedAt": "2026-09-17T08:00:02.000Z"
+}
+```
+
+Fields: `name` (1–100, required), `role` (1–80, required), `group` (1–60, required, free text), `bio` (≤300, single-line plain text, or `null`), `photoUrl` (`null` or an image reference), `linkedinUrl` (`https` URL or `null`). Errors: `"<Field> is required."`, `"<Field> must be N characters or fewer."`, `"Bio contains invalid characters."` (line breaks and control characters), `"Photo URL must be an http(s) URL or a path starting with /."`, `"LinkedIn URL must be an https URL."`.
