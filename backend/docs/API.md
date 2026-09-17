@@ -721,6 +721,8 @@ Stored order: the customer fields (absent email or address stored as `null`), `o
 - **`later`:** `fulfillmentStatus: "pending"`, no stock change. Stock is committed at `processing`, as for website orders.
 - **`collected`:** the `sale` movements, the stock updates and the order insert are one atomic write (the JSON store lock; Mongo conditional `$inc` with compensation; one D1 batch with guard rows). The order is stored `fulfillmentStatus: "delivered"` (`status: "completed"`) with `stockCommittedAt` set. On a shortfall the answer is `409` `"Insufficient stock to process this order."` with `details: [{ productId, sku, required, available }]`, and no order is created.
 
+Returns: an in-store order (`channel: "in_store"`) may also move `delivered → cancelled` through `POST /admin/orders/:id/fulfillment` or `PUT /admin/orders/:id`. Cancelling restores committed stock with `sale_reversal` movements and clears `stockCommittedAt`; payment status is not changed. Website orders keep `delivered → installed` only (`409` otherwise).
+
 Audit: `order.create` with summary `In-store order for <name>: <n> items, ₦<total>` (n = total quantity), plus `; discount ₦<amount> (<reason>)` when discounted. Collected orders also log `order.fulfillment_change` `pending → delivered`. Notification: `new_order` with `data: { channel: "in_store" }`.
 
 ### Installation jobs, engineer endpoints and staff

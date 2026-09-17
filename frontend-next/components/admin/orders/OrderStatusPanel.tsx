@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { DetailList } from "@/components/admin/DetailList";
 import { Alert, Button, ConfirmDialog, Field, Select } from "@/components/ui";
 import { formatDateTime } from "@/lib/admin/format";
-import { FULFILLMENT_TRANSITIONS, PAYMENT_TRANSITIONS, fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
+import { PAYMENT_TRANSITIONS, allowedFulfillmentTransitions, fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
 import { ApiError, errorDetails, markOrderPaid, setFulfillmentStatus, setOrderPaymentStatus } from "@/lib/api/admin";
 import type { FulfillmentStatus, InsufficientStockDetail, Order, PaymentStatus } from "@/lib/api/types";
 import { FulfillmentBadge, PaymentBadge, orderFulfillment, orderPayment } from "./orderStatus";
@@ -27,7 +27,7 @@ export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props
 
   const fulfillment = orderFulfillment(order);
   const payment = orderPayment(order);
-  const nextFulfillment = FULFILLMENT_TRANSITIONS[fulfillment].filter(
+  const nextFulfillment = allowedFulfillmentTransitions({ fulfillmentStatus: fulfillment, channel: order.channel }).filter(
     (status) => status !== "installed" || order.requiresInstallation
   );
   const nextPayment = PAYMENT_TRANSITIONS[payment];

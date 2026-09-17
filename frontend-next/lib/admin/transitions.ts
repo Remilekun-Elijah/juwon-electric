@@ -13,6 +13,15 @@ export const FULFILLMENT_TRANSITIONS: Record<FulfillmentStatus, readonly Fulfill
   cancelled: [],
 };
 
+/** Next fulfilment statuses, mirroring backend/shared/orders.js: in-store sales may also go delivered -> cancelled (a return). */
+export const allowedFulfillmentTransitions = (order: {
+  fulfillmentStatus: FulfillmentStatus;
+  channel?: string | null;
+}): readonly FulfillmentStatus[] => {
+  const base = FULFILLMENT_TRANSITIONS[order.fulfillmentStatus] ?? [];
+  return order.channel === "in_store" && order.fulfillmentStatus === "delivered" ? [...base, "cancelled"] : base;
+};
+
 export const PAYMENT_TRANSITIONS: Record<PaymentStatus, readonly PaymentStatus[]> = {
   pending: ["partial", "paid", "failed"],
   partial: ["paid", "refunded", "failed"],

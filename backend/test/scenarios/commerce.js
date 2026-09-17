@@ -4,6 +4,7 @@
 // orders:create capability. Runtime-agnostic scenario; returns the transcript for parity.
 import assert from "node:assert/strict";
 import { STATIC_TOKEN, recorder } from "./opsKit.js";
+import { allowedFulfillmentTransitions } from "../../shared/orders.js";
 
 const FORBIDDEN = "You do not have permission to perform this action.";
 const UNAVAILABLE = "Some items in your cart are no longer available. Please refresh your cart.";
@@ -310,6 +311,22 @@ export const runCommerceScenario = async (client) => {
     cancelAudit.body.data.items.some((item) => item.entityId === laterId && item.summary === "Order from Later Buyer: fulfilment processing → cancelled; stock not restored for deleted product COM-TMP"),
     JSON.stringify(cancelAudit.body.data.items.map((item) => item.summary))
   );
+
+  // ---- in-store return: delivered -> cancelled restores stock (owner decision 2026-09-17) ------------------------
+  const beforeReturn = stockOf((await expect("stock before return sale", "GET", "/admin/inventory?q=COM-", {}, 200)).body.data);
+  await expect("collected sale to return", "POST", "/admin/orders", {
+    token: roles.sales.token,
+    body: inStore({ customer: { name: "Return Buyer", phoneNumber: "08045678901" }, lines: [{ productId: battery.id, quantity: 2 }] }),
+    project: orderParts,
+  }, 201, "Order created.");
+  const returnId = (await client.request("GET", "/admin/orders?channel=in_store", { token: STATIC_TOKEN })).body.data.find((order) => order.name === "Return Buyer").id;
+  assert.equal(stockOf((await expect("return sale committed", "GET", "/admin/inventory?q=COM-", {}, 200)).body.data)["COM-BAT"], beforeReturn["COM-BAT"] - 2);
+  const returned = (await expect("cancel a delivered in-store sale", "POST", `/admin/orders/${returnId}/fulfillment`, { token: roles.sales.token, body: { status: "cancelled" }, project: orderParts }, 200, "Fulfilment status updated.")).body.data;
+  assert.deepEqual({ status: returned.status, fulfillmentStatus: returned.fulfillmentStatus, stockCommittedAt: returned.stockCommittedAt }, { status: "cancelled", fulfillmentStatus: "cancelled", stockCommittedAt: null });
+  assert.deepEqual(stockOf((await expect("return restores stock", "GET", "/admin/inventory?q=COM-", {}, 200)).body.data), beforeReturn);
+  assert.deepEqual(allowedFulfillmentTransitions({ channel: "website", fulfillmentStatus: "delivered" }), ["installed"]);
+  assert.deepEqual(allowedFulfillmentTransitions({ channel: "in_store", fulfillmentStatus: "delivered" }), ["installed", "cancelled"]);
+  assert.deepEqual(allowedFulfillmentTransitions({ channel: "in_store", fulfillmentStatus: "installed" }), []);
 
   return transcript;
 };

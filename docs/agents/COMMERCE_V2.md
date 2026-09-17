@@ -123,7 +123,7 @@ type InStoreOrderInput = {
 - **Audit:** `order.create`, summary `In-store order for <name>: <n> items, ₦<total>` plus `; discount ₦<amount> (<reason>)` when a discount applies. For collected orders, also `order.fulfillment_change` from `pending` to `delivered`.
 - **Notification:** the existing `new_order` notification, with `channel` in its data.
 - **Listing:** `GET /admin/orders?channel=website|in_store` (invalid gives `400 "Channel is not valid."`). Order responses always include `channel`, `subtotal` (null for legacy), `discount` (null) and `createdBy` (null for website).
-- **Later lifecycle:** in-store orders use the existing transitions. Cancelling a collected order restores stock through movements, as today. Engineer assignment and jobs work when `requiresInstallation`.
+- **Later lifecycle:** in-store orders use the existing transitions, plus `delivered → cancelled` (returns; owner decision 2026-09-17, shared `allowedFulfillmentTransitions`). Cancelling restores stock through movements, and payment status is updated separately. Engineer assignment and jobs work when `requiresInstallation`.
 - **Dashboard revenue:** unchanged (it uses `totalAmount`, so discounts are respected).
 
 ### 2.3 Parity and tests

@@ -113,9 +113,19 @@ const paymentField = (body) => {
 const noteField = (body) =>
   body?.note === undefined || body?.note === null ? undefined : text(body, "note", { label: "Note", max: OPS_LIMITS.note, multiline: true });
 
+/**
+ * Next fulfilment statuses for an order. In-store orders may also go delivered -> cancelled
+ * (a walk-in customer returns the goods), which restores committed stock like any cancel.
+ */
+export const allowedFulfillmentTransitions = (order) => {
+  const from = order?.fulfillmentStatus;
+  const base = FULFILLMENT_TRANSITIONS[from] || [];
+  return order?.channel === "in_store" && from === "delivered" ? [...base, "cancelled"] : base;
+};
+
 export const assertFulfillmentTransition = (order, to) => {
   const from = order.fulfillmentStatus;
-  if (!FULFILLMENT_TRANSITIONS[from]?.includes(to)) throw conflict(`Cannot change fulfilment status from ${from} to ${to}.`);
+  if (!allowedFulfillmentTransitions(order).includes(to)) throw conflict(`Cannot change fulfilment status from ${from} to ${to}.`);
   if (to === "installed" && order.requiresInstallation !== true) throw conflict("Order does not require installation.");
 };
 
