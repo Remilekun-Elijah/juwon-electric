@@ -41,6 +41,8 @@ import {
   orderChannel,
   orderFulfillment,
   orderPayment,
+  isRefundDue,
+  RefundDueBadge,
 } from "./orderStatus";
 
 const PAGE_SIZE = 20;
@@ -233,7 +235,7 @@ export function Orders() {
     })),
   ];
 
-  const colSpan = 6;
+  const colSpan = 7;
 
   const newSaleButton = (size?: "sm") =>
     can("orders:create") ? (
@@ -325,9 +327,18 @@ export function Orders() {
           <TD>
             <div className="flex flex-col items-start gap-1">
               <FulfillmentBadge status={orderFulfillment(item)} />
-              <span className="hidden sm:inline-flex">
-                <PaymentBadge status={orderPayment(item)} />
-              </span>
+              <span className="text-xs text-slate-500 sm:hidden">Payment: {paymentLabels[orderPayment(item)]}</span>
+              {isRefundDue(item) && (
+                <span className="sm:hidden">
+                  <RefundDueBadge />
+                </span>
+              )}
+            </div>
+          </TD>
+          <TD className="hidden sm:table-cell">
+            <div className="flex flex-col items-start gap-1">
+              <PaymentBadge status={orderPayment(item)} />
+              {isRefundDue(item) && <RefundDueBadge />}
             </div>
           </TD>
           <TD align="right">
@@ -436,7 +447,8 @@ export function Orders() {
           <TH className="hidden md:table-cell">Date</TH>
           <TH className="hidden lg:table-cell">Items</TH>
           <TH align="right">Total</TH>
-          <TH>Status</TH>
+          <TH>Fulfilment</TH>
+          <TH className="hidden sm:table-cell">Payment</TH>
           <TH align="right" srOnly>
             Actions
           </TH>

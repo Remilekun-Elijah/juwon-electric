@@ -61,8 +61,8 @@ export const fulfillmentLabels: Record<FulfillmentStatus, string> = {
 };
 
 export const paymentLabels: Record<PaymentStatus, string> = {
-  pending: "Pending",
-  partial: "Partially paid",
+  pending: "Unpaid",
+  partial: "Part-paid",
   paid: "Paid",
   failed: "Failed",
   refunded: "Refunded",

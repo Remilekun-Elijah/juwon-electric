@@ -58,6 +58,18 @@ export function PaymentBadge({ status }: { status: PaymentStatus }) {
   return <Badge tone={paymentTones[status]}>{paymentLabels[status]}</Badge>;
 }
 
+/** A cancelled order that took money still needs the customer refunded (payment isn't changed on cancel). */
+export const isRefundDue = (order: Order) =>
+  orderFulfillment(order) === "cancelled" && ["paid", "partial"].includes(orderPayment(order));
+
+export function RefundDueBadge() {
+  return (
+    <Badge tone="warning" dot>
+      Refund due
+    </Badge>
+  );
+}
+
 export function JobStatusBadge({ status }: { status: JobStatus }) {
   return <Badge tone={jobTones[status] ?? "neutral"}>{jobStatusLabels[status] ?? status}</Badge>;
 }

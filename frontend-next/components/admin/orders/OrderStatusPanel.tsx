@@ -9,7 +9,7 @@ import { formatDateTime } from "@/lib/admin/format";
 import { PAYMENT_TRANSITIONS, allowedFulfillmentTransitions, fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
 import { ApiError, errorDetails, markOrderPaid, setFulfillmentStatus, setOrderPaymentStatus } from "@/lib/api/admin";
 import type { FulfillmentStatus, InsufficientStockDetail, Order, PaymentStatus } from "@/lib/api/types";
-import { FulfillmentBadge, PaymentBadge, orderFulfillment, orderPayment } from "./orderStatus";
+import { FulfillmentBadge, PaymentBadge, isRefundDue, orderFulfillment, orderPayment } from "./orderStatus";
 import { useOrderAction } from "./useOrderAction";
 
 type Props = { order: Order; canUpdate: boolean; onChange: (order: Order) => void; onReload: () => Promise<void> };
@@ -127,6 +127,11 @@ export function OrderStatusPanel({ order, canUpdate, onChange, onReload }: Props
           </h3>
           <PaymentBadge status={payment} />
         </div>
+        {isRefundDue(order) && (
+          <Alert tone="warning" title="Refund due">
+            This order was cancelled after payment. Refund the customer, then set payment to Refunded.
+          </Alert>
+        )}
 
         {canUpdate && nextPayment.length > 0 && (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
