@@ -102,7 +102,15 @@ import {
   serializePublicPackage,
   withComposedOptions,
 } from "../../shared/packagePricing.js";
-import { NEW_ORDER_FIELDS } from "../../shared/orders.js";
+import {
+  NEW_ORDER_FIELDS,
+  isProductOrderItem,
+  priceProductItem,
+  productCartLine,
+  productItemIds,
+  productOrderLine,
+  websiteRequiresInstallation,
+} from "../../shared/orders.js";
 
 const CONTACT_THREAD_PATTERN = /\[JE-CONTACT:([A-Za-z0-9-]{1,64})\]/i;
 const DEFAULT_CONTACT_REPLY_SUBJECT = "Re: Your message to Juwon Electric";
@@ -436,6 +444,18 @@ const loadActivePackages = async (env) => {
   return packages.map((pack) => withComposedOptions(pack, products));
 };
 
+// Packages (only when some item is a package) and the products named by product items
+// (COMMERCE_V3 §3), at parity with loadPricingCatalog in backend/controllers/_pricing.js.
+const loadPricingCatalog = async (env, validated) => {
+  const needsPackages = validated.some((entry) => !isProductOrderItem(entry.item));
+  const needsProducts = productItemIds(validated).length > 0;
+  const [packages, products] = await Promise.all([
+    needsPackages ? loadActivePackages(env) : [],
+    needsProducts ? allProductsById(env) : new Map(),
+  ]);
+  return { packages, products };
+};
+
 const formatNaira = (amount) => `₦${new Intl.NumberFormat("en-US").format(amount)}`;
 
 const describeKva = (pack) => `${pack.kva}kva ${pack.volt ? `+ ${pack.volt}volt` : ""}`.trim();
@@ -443,8 +463,14 @@ const describeType = (pack) =>
   matchText(pack.type) === "hybrid lithium" ? "Hybrid inverter + lithium" : `Inverter + ${pack.type}`;
 
 const priceOrderItems = async (env, validated) => {
-  const packages = await loadActivePackages(env);
-  const priced = validated.map(({ item, quantity }) => {
+  const { packages, products } = await loadPricingCatalog(env, validated);
+  const priced = validated.map((entry) => {
+    const { item, quantity } = entry;
+    if (isProductOrderItem(item)) {
+      const product = priceProductItem(products, entry);
+      if (!product) badRequest(UNAVAILABLE_ITEMS_MESSAGE);
+      return productOrderLine(product);
+    }
     const pack = resolvePackage(packages, item);
     const option = pack && selectPackageOption(pack, item);
     const unitPrice = option ? Number(option.price) || 0 : 0;
@@ -476,8 +502,13 @@ const ITEM_UNAVAILABLE_MESSAGE = "This item is no longer available.";
 // Prices each validated cart line. Lines that cannot be priced (inactive, removed or
 // unmatched package/option) come back as { available: false, message }.
 const quoteLines = async (env, validated) => {
-  const packages = await loadActivePackages(env);
-  return validated.map(({ item, quantity }) => {
+  const { packages, products } = await loadPricingCatalog(env, validated);
+  return validated.map((entry) => {
+    const { item, quantity } = entry;
+    if (isProductOrderItem(item)) {
+      const product = priceProductItem(products, entry);
+      return product ? { ...productCartLine(product), available: true } : { available: false, message: ITEM_UNAVAILABLE_MESSAGE };
+    }
     const pack =
       (hasValue(item.packageId) && packages.find((entry) => entry.id === String(item.packageId))) ||
       resolvePackage(packages, item);
@@ -950,6 +981,7 @@ const handlePublic = async (request, env, ctx, path, body, url) => {
       total: pricing.total,
       totalAmount: pricing.totalAmount,
       ...NEW_ORDER_FIELDS,
+      requiresInstallation: websiteRequiresInstallation(pricing.items),
       source,
       receivedAt: now(),
     });

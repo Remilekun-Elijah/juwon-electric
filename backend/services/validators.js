@@ -329,6 +329,12 @@ export const validatePricingItems = (items, kind = "order") => {
   const invalid = () => badRequest(isOrder ? "Invalid order item." : "Invalid cart item.");
   return items.map((item) => {
     if (!isPlainObject(item)) throw invalid();
+    // Product item (COMMERCE_V3 §3.1): only productId and quantity are read.
+    if (item.type === "product") {
+      const productId = typeof item.productId === "string" ? item.productId.trim() : "";
+      if (!productId || productId.length > LIMITS.itemId) throw invalid();
+      return { item, quantity: quantityField(item), productId };
+    }
     if (
       !ITEM_TEXT_FIELDS.every((field) => scalarWithin(item[field], LIMITS.itemText)) ||
       !ITEM_ID_FIELDS.every((field) => scalarWithin(item[field], LIMITS.itemId)) ||

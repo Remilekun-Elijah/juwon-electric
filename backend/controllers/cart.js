@@ -1,4 +1,5 @@
-import { loadPricingPackages, priceItem, priceItems } from "./_pricing.js";
+import { loadPricingCatalog, priceEntry, priceItems } from "./_pricing.js";
+import { productCartLine } from "../shared/orders.js";
 import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
 import { asyncHandler } from "../services/asyncHandler.js";
@@ -37,7 +38,7 @@ const pruneOldCarts = () => {
 
 export const ITEM_UNAVAILABLE_MESSAGE = "This item is no longer available.";
 
-const cartLine = ({ pack, option, unitPrice, quantity, lineTotal }) => ({
+const packageCartLine = ({ pack, option, unitPrice, quantity, lineTotal }) => ({
   packageId: pack.id,
   legacyId: pack.legacyId,
   name: pack.name,
@@ -52,10 +53,12 @@ const cartLine = ({ pack, option, unitPrice, quantity, lineTotal }) => ({
   lineTotal,
 });
 
-// Prices are always taken from the active package catalog.
+const cartLine = (priced) => (priced.product ? productCartLine(priced) : packageCartLine(priced));
+
+// Prices are always taken from the active package catalog and current product prices.
 const quoteItems = async (validated) => {
-  const packages = await loadPricingPackages();
-  return priceItems(packages, validated, { kind: "cart" }).map((line) => ({ ...cartLine(line), available: true }));
+  const catalog = await loadPricingCatalog(validated);
+  return priceItems(catalog, validated, { kind: "cart" }).map((line) => ({ ...cartLine(line), available: true }));
 };
 
 const bodyItems = (body) => body?.items ?? body?.cart;
@@ -66,10 +69,10 @@ const bodyItems = (body) => body?.items ?? body?.cart;
 export const quoteCart = asyncHandler(async (req, res) => {
   const validated = validatePricingItems(bodyItems(req.body), "cart");
   await enforceLimit(req, res, "public-quote", RATE_LIMITS.quote);
-  const packages = await loadPricingPackages();
+  const catalog = await loadPricingCatalog(validated);
   const unavailable = [];
   const items = validated.map((entry, index) => {
-    const priced = priceItem(packages, entry, { kind: "cart" });
+    const priced = priceEntry(catalog, entry, { kind: "cart" });
     if (!priced) {
       unavailable.push(index);
       return { available: false, message: ITEM_UNAVAILABLE_MESSAGE };

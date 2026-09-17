@@ -4,6 +4,7 @@
 // (COMMERCE_V2 §1.2, shared/packagePricing.js).
 import { badRequest } from "../services/errors.js";
 import { listCollection } from "../services/store.js";
+import { isProductOrderItem, priceProductItem, productItemIds } from "../shared/orders.js";
 import { packagesNeedProducts, withComposedOptions } from "../shared/packagePricing.js";
 
 export const UNAVAILABLE_ITEMS_MESSAGE =
@@ -159,12 +160,33 @@ export const priceItem = (packages, { item, quantity }, { kind = "order" } = {})
 };
 
 /**
- * Prices every item (validatePricingItems output) against the active catalog.
+ * What a cart or order is priced against: active packages (only loaded when some item is a
+ * package) and the products referenced by product items (COMMERCE_V3 §3), by id.
+ */
+export const loadPricingCatalog = async (validated) => {
+  const needsPackages = validated.some((entry) => !isProductOrderItem(entry.item));
+  const needsProducts = productItemIds(validated).length > 0;
+  const [packages, products] = await Promise.all([
+    needsPackages ? loadPricingPackages() : [],
+    needsProducts ? listCollection("products", { includeInactive: true }) : [],
+  ]);
+  return { packages, products: new Map(products.map((product) => [product.id, product])) };
+};
+
+/**
+ * Prices one validated entry: a product item gives { product, unitPrice, quantity, lineTotal },
+ * a package item { pack, option, unitPrice, quantity, lineTotal }; null when it can't be sold.
+ */
+export const priceEntry = (catalog, entry, options = {}) =>
+  isProductOrderItem(entry.item) ? priceProductItem(catalog.products, entry) : priceItem(catalog.packages, entry, options);
+
+/**
+ * Prices every item (validatePricingItems output) against loadPricingCatalog() output.
  * Throws 400 UNAVAILABLE_ITEMS_MESSAGE if any item cannot be priced.
  */
-export const priceItems = (packages, validated, options = {}) =>
+export const priceItems = (catalog, validated, options = {}) =>
   validated.map((entry) => {
-    const priced = priceItem(packages, entry, options);
+    const priced = priceEntry(catalog, entry, options);
     if (!priced) throw badRequest(UNAVAILABLE_ITEMS_MESSAGE);
     return priced;
   });

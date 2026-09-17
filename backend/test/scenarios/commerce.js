@@ -175,7 +175,7 @@ export const runCommerceScenario = async (client) => {
   // ---- orders:create per role ----------------------------------------------------------------------------
   for (const [role, admin] of Object.entries(roles)) {
     const allowed = ["superadmin", "admin", "sales"].includes(role);
-    await expect(`orders:create as ${role}`, "POST", "/admin/orders", { token: admin.token, body: {} }, allowed ? 400 : 403, allowed ? "Name is required." : FORBIDDEN);
+    await expect(`orders:create as ${role}`, "POST", "/admin/orders", { token: admin.token, body: {} }, allowed ? 400 : 403, allowed ? "Add at least one product." : FORBIDDEN);
   }
   const salesSession = await call("sales capabilities", "GET", "/admin/auth/me", { token: roles.sales.token, project: (body) => ({ has: body.data.admin.capabilities.includes("orders:create") }) });
   assert.ok(salesSession.body.data.admin.capabilities.includes("orders:create"));

@@ -1,6 +1,6 @@
 import orderTemplate from "../mail/_orderTemplate.js";
 import { sendMail } from "../mail/mail.js";
-import { formatMoney, loadPricingPackages, priceItems } from "./_pricing.js";
+import { formatMoney, loadPricingCatalog, priceItems } from "./_pricing.js";
 import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js";
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
 import { forgetRecordReads } from "./adminReads.js";
@@ -46,9 +46,11 @@ import {
   orderUpdatePayload,
   planOrderChanges,
   priceInStoreOrder,
+  productOrderLine,
   restorableLines,
   reversalLines,
   serializeOrder,
+  websiteRequiresInstallation,
 } from "../shared/orders.js";
 import { randomUUID } from "crypto";
 import { conflict } from "../shared/errors.js";
@@ -70,12 +72,12 @@ const typeLabel = (type) =>
 // "₦1,150,000" money strings) so the admin UI and order email keep working.
 // Each line also stores its snapshot (COMMERCE_V2 §1.3): type "package", the option's
 // components per package, productsTotal and priceAdjustment. The display type label moves
-// to `typeLabel`.
+// to `typeLabel`. Product items (COMMERCE_V3 §3) store the in-store product snapshot.
 const priceOrderItems = async (validated) => {
-  const packages = await loadPricingPackages();
-  const priced = priceItems(packages, validated, { kind: "order" });
+  const catalog = await loadPricingCatalog(validated);
+  const priced = priceItems(catalog, validated, { kind: "order" });
 
-  const order = priced.map(({ pack, option, unitPrice, quantity, lineTotal }) => ({
+  const packageLine = ({ pack, option, unitPrice, quantity, lineTotal }) => ({
     package: option.kits
       ? `${kvaLabel(pack)} inverter with ${option.kits}`
       : `${kvaLabel(pack)} ${pack.name}`,
@@ -91,7 +93,8 @@ const priceOrderItems = async (validated) => {
     optionName: option.name,
     unitPrice,
     lineTotal,
-  }));
+  });
+  const order = priced.map((line) => (line.product ? productOrderLine(line) : packageLine(line)));
   const total = priced.reduce((sum, item) => sum + item.lineTotal, 0);
 
   return { order, total: formatMoney(total), totalAmount: total };
@@ -117,10 +120,12 @@ export const placeOrder = asyncHandler(async (req, res) => {
   await enforceLimit(req, res, "public-order", RATE_LIMITS.publicWrite);
   await verifyTurnstile(req, turnstileToken, "order");
 
+  const priced = await priceOrderItems(validated);
   const payload = {
     ...customer,
-    ...(await priceOrderItems(validated)),
+    ...priced,
     ...NEW_ORDER_FIELDS,
+    requiresInstallation: websiteRequiresInstallation(priced.order),
     source,
   };
 

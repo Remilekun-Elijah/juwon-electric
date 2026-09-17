@@ -261,6 +261,12 @@ export const validateItems = (items, kind) => {
   }
   return items.map((item) => {
     if (!item || typeof item !== "object" || Array.isArray(item)) badRequest(invalid);
+    // Product item (COMMERCE_V3 §3.1): only productId and quantity are read.
+    if (item.type === "product") {
+      const productId = typeof item.productId === "string" ? item.productId.trim() : "";
+      if (!productId || productId.length > LIMITS.itemId) badRequest(invalid);
+      return { item, quantity: quantityField(item), productId };
+    }
     for (const key of ITEM_TEXT_FIELDS) {
       if (!isMissing(item[key]) && !isTextOrNumber(item[key], LIMITS.itemText)) badRequest(invalid);
     }

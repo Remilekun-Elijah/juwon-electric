@@ -81,8 +81,9 @@ export const serializeOrder = (order) => {
 };
 
 /**
- * Fields every new public order is stored with (§6.1). Website orders are packages, which are sold installed,
- * so they start with requiresInstallation: true (owner decision 2026-09-17). Older orders keep their stored value.
+ * Fields every new public order is stored with (§6.1). `requiresInstallation` is the default for
+ * package orders; runtimes store websiteRequiresInstallation(lines) instead (COMMERCE_V3 §3.3).
+ * Older orders keep their stored value.
  */
 export const NEW_ORDER_FIELDS = Object.freeze({
   channel: "website",
@@ -413,14 +414,22 @@ const discountInput = (raw) => {
   return { amount, reason };
 };
 
-/** Validated POST /admin/orders body (shape only; products and totals: priceInStoreOrder). */
+/** Stored name of an in-store customer who gave none (COMMERCE_V3 §2). */
+export const WALK_IN_CUSTOMER = "Walk-in customer";
+
+/**
+ * Validated POST /admin/orders body (shape only; products and totals: priceInStoreOrder).
+ * `customer`, its name and its phone number are optional (COMMERCE_V3 §2): a blank name is
+ * stored as "Walk-in customer" and a blank phone number as null. Given values keep their rules.
+ */
 export const inStoreOrderPayload = (body) => {
   const input = isPlainObject(body) ? body : {};
-  if (!isPlainObject(input.customer)) throw badRequest("Name is required.");
-  const customer = input.customer;
-  const name = text(customer, "name", { label: "Name", required: true, max: IN_STORE_LIMITS.personName });
-  const phoneNumber = phone(customer, "phoneNumber");
-  if (!phoneNumber) throw badRequest("Phone number is required.");
+  if (input.customer !== undefined && input.customer !== null && !isPlainObject(input.customer)) {
+    throw badRequest("Customer is not valid.");
+  }
+  const customer = isPlainObject(input.customer) ? input.customer : {};
+  const name = text(customer, "name", { label: "Name", max: IN_STORE_LIMITS.personName }) || WALK_IN_CUSTOMER;
+  const phoneNumber = phone(customer, "phoneNumber") || null;
   const emailAddress = email(customer, "emailAddress", { label: "Email address" }) || null;
   const deliveryAddress =
     text(customer, "deliveryAddress", { label: "Delivery address", max: IN_STORE_LIMITS.deliveryAddress, multiline: true }) || null;
@@ -513,3 +522,53 @@ export const inStoreAuditEntries = (order) => {
   }
   return entries;
 };
+
+// ---- website product lines (COMMERCE_V3 §3) ----------------------------------------------------
+
+/** True for a request item that orders a catalogue product ({ type: "product", productId, quantity }). */
+export const isProductOrderItem = (item) => isPlainObject(item) && item.type === "product";
+
+/** Product ids referenced by validated cart or order entries ({ item, quantity, productId? }). */
+export const productItemIds = (entries) => [...new Set(entries.filter((entry) => isProductOrderItem(entry.item)).map((entry) => entry.productId))];
+
+/**
+ * Prices a validated product entry, or null when it can't be sold online: the product is
+ * missing, not active (hidden and archived products are not sold on the website), priced at 0,
+ * or has less stock than the quantity.
+ */
+export const priceProductItem = (productsById, { productId, quantity }) => {
+  const product = productsById.get(productId);
+  if (!product || (product.status || "active") !== "active") return null;
+  if ((Number(product.stockQuantity) || 0) < quantity) return null;
+  const unitPrice = Number(product.price) || 0;
+  if (unitPrice <= 0) return null;
+  return { product, unitPrice, quantity, lineTotal: unitPrice * quantity };
+};
+
+/** POST /cart/quote and saved cart line for a priced product entry. */
+export const productCartLine = ({ product, unitPrice, quantity, lineTotal }) => ({
+  type: "product",
+  productId: product.id,
+  sku: product.sku ?? "",
+  slug: product.slug ?? "",
+  name: product.name ?? "",
+  price: unitPrice,
+  unitPrice,
+  quantity,
+  lineTotal,
+});
+
+/** Stored website order line (snapshot) for a priced product entry: the in-store shape plus typeLabel. */
+export const productOrderLine = ({ product, unitPrice, quantity, lineTotal }) => ({
+  type: "product",
+  productId: product.id,
+  sku: product.sku ?? "",
+  name: product.name ?? "",
+  quantity,
+  unitPrice,
+  lineTotal,
+  typeLabel: "Product",
+});
+
+/** New website orders need installation only when they include at least one package line. */
+export const websiteRequiresInstallation = (lines) => lines.some((line) => !isProductLine(line));
