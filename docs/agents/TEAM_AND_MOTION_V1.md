@@ -5,7 +5,7 @@ Branch: `agents/v3-commerce`.
 Owner request (2026-09-17): a team page with dummy pictures and nice animations, "just like the sample site", plus nice animations across the landing page.
 Builds on `LANDING_V1.md`. Its sample and copying rules apply here too: sample data is flagged, seeds are local only, and **nothing is copied from the reference site**. That includes its names, photos and org structure.
 
-Reference observation: the reference "Meet the team" is a grid of headshot cards (name and role) grouped into tiers, with almost no motion. We keep the idea (grouped headshot cards) and add our own tasteful motion.
+Reference observation: the reference "Our Team" is a grid of headshot cards (name and role) grouped into tiers, with almost no motion. We keep the idea (grouped headshot cards) and add our own tasteful motion.
 
 ## 1. Team members (backend, both runtimes)
 
@@ -56,7 +56,7 @@ Add `frontend-next/public/samples/team/member-1.svg` … `member-12.svg`.
 
 ## 4. Team page `/team` (storefront)
 
-- **Header:** `PageIntro` with eyebrow "Our people", title "Meet the team", and the description "The engineers, installers and customer care staff behind every Juwon Electric system."
+- **Header:** `PageIntro` with eyebrow "Our people", title "Our Team", and the description "The engineers, installers and customer care staff behind every Juwon Electric system."
 - **Stats strip:** team size, number of groups and engineers count, computed from the data (members in groups whose name contains "Engineer" or "Install"). Uses the count-up animation (§5). No invented figures.
 - **Groups:** each group is a section with an h2 group name and a responsive card grid (2 columns at 375 px, 3 at 768, 4 at 1280).
 - **Card:**

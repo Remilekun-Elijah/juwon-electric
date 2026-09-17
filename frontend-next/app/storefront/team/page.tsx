@@ -21,7 +21,7 @@ import { groupTeam, teamStats } from "@/lib/storefront/team";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Meet the team",
+  title: "Our Team",
   description: "The engineers, installers and customer care staff behind every Juwon Electric system.",
   alternates: { canonical: "/team" },
 };
@@ -60,7 +60,7 @@ export default async function TeamPage() {
 
       <PageIntro
         eyebrow="Our people"
-        title="Meet the team"
+        title="Our Team"
         description="The engineers, installers and customer care staff behind every Juwon Electric system."
         image={INTRO_IMAGES.commercial}
       >
@@ -107,7 +107,7 @@ export default async function TeamPage() {
           <EmptyState
             standalone
             icon={Users}
-            title="Our team page is being updated"
+            title="Our Team page is being updated"
             description="Call or message us and one of our engineers or customer care staff will help you."
             action={
               <Link href={storeRoutes.contact} className={buttonClasses()}>

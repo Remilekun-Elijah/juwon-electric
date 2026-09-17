@@ -113,7 +113,7 @@ export function TeamMembers() {
           colSpan={colSpan}
           icon={UsersRound}
           title="No team members yet"
-          description="Add the people behind your installations. Active team members show on the Meet the team page."
+          description="Add the people behind your installations. Active team members show on the Our Team page."
           action={addButton("sm")}
         />
       );
@@ -414,7 +414,7 @@ function TeamMemberForm({
       </Field>
       <Switch
         label="Show on the website"
-        description="Hidden team members stay here but aren’t shown on the team page."
+        description="Hidden team members stay here but aren’t shown on the Our Team page."
         checked={isActive}
         onChange={setIsActive}
       />

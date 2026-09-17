@@ -7,7 +7,7 @@ export type TeamGroup = { name: string; members: TeamMember[] };
 export function groupTeam(members: TeamMember[]): TeamGroup[] {
   const groups = new Map<string, TeamGroup>();
   for (const member of members) {
-    const name = member.group?.trim() || "Our team";
+    const name = member.group?.trim() || "Our Team";
     const group = groups.get(name) ?? { name, members: [] };
     group.members.push(member);
     groups.set(name, group);
