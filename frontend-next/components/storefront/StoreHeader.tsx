@@ -19,8 +19,9 @@ const withCalculator = <T extends { href: string }>(items: T[], calculatorEnable
 const SOLID_AFTER_PX = 24;
 
 /**
- * Height of the header bar. HomeHero, PageIntro and their loading placeholders pull themselves up by the same amount
- * (`-mt-16 md:-mt-[72px]`) to sit under it.
+ * Height of the header bar. With its 1px bottom border the header is 65px (73px from md), and HomeHero, PageIntro and
+ * their loading placeholders pull themselves up by exactly that (`-mt-[65px] md:-mt-[73px]`) to sit under it, with no
+ * strip of page background above them.
  */
 const HEADER_HEIGHT = "h-16 md:h-[72px]";
 

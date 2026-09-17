@@ -72,7 +72,7 @@ export default function PageIntro({
   return (
     <header
       data-store-hero=""
-      className={cn("relative isolate -mt-16 overflow-hidden bg-slate-950 text-white md:-mt-[72px]", className)}
+      className={cn("relative isolate -mt-[65px] overflow-hidden bg-slate-950 text-white md:-mt-[73px]", className)}
     >
       <div aria-hidden="true" className="absolute inset-0 -z-20 overflow-hidden">
         <Image src={image} alt="" fill sizes="100vw" loading="eager" className="je-kenburns object-cover opacity-40" />

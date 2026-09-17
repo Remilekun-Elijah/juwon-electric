@@ -10,7 +10,7 @@ export default function Loading() {
         Loading the home page
       </p>
       {/* Full-bleed dark hero placeholder under the transparent header, the same height as HomeHero. */}
-      <div data-store-hero="" className="-mt-16 flex min-h-[max(640px,min(100svh,920px))] flex-col bg-slate-950 md:-mt-[72px]">
+      <div data-store-hero="" className="-mt-[65px] flex min-h-[max(640px,min(100svh,920px))] flex-col bg-slate-950 md:-mt-[73px]">
         <div className={cn(storeContainer, "flex flex-1 flex-col justify-center pb-24 pt-28 sm:pb-28 md:pt-36")}>
           <div className="max-w-3xl space-y-5">
             <Skeleton className="h-8 w-72 max-w-full rounded-full bg-white/10 motion-reduce:animate-none" />
