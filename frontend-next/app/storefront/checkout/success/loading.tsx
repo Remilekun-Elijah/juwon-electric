@@ -6,7 +6,7 @@ import { storeContainer } from "@/lib/storefront/styles";
 export default function Loading() {
   return (
     <>
-      <PageIntro eyebrow="Checkout" title="Order confirmation" />
+      <PageIntro eyebrow="Checkout" title="Order confirmation" headingAs="p" />
       <div className={cn(storeContainer, "py-8 sm:py-12")} aria-busy="true">
         <p className="sr-only" role="status">
           Loading your order

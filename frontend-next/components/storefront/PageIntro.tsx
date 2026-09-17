@@ -15,17 +15,20 @@ export type PageIntroProps = {
   /** Extra content under the header row (filters, meta, badges). */
   children?: ReactNode;
   className?: string;
+  /** Loading placeholders pass "p" so a streamed fallback never adds a second `h1`. */
+  headingAs?: "h1" | "p";
 };
 
 /** Page header band: white with a bottom border, breadcrumbs, eyebrow, h1, description and actions. Server component. */
-export default function PageIntro({ eyebrow, title, description, breadcrumbs, actions, children, className }: PageIntroProps) {
+export default function PageIntro({ eyebrow, title, description, breadcrumbs, actions, children, className, headingAs = "h1" }: PageIntroProps) {
+  const Heading = headingAs;
   return (
     <header className={cn("border-b border-slate-200 bg-white", className)}>
       <div className={cn(storeContainer, storeFadeUp, "py-10 sm:py-14")}>
         {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} className="mb-6" /> : null}
         <div className="max-w-3xl">
           {eyebrow && <p className={storeEyebrow}>{eyebrow}</p>}
-          <h1 className={cn(storeH1, eyebrow && "mt-3")}>{title}</h1>
+          <Heading className={cn(storeH1, eyebrow && "mt-3")}>{title}</Heading>
           {description && <p className={cn(storeBody, "mt-4 text-base leading-relaxed sm:text-lg")}>{description}</p>}
         </div>
         {actions && <div className="mt-6 flex flex-wrap items-center gap-3">{actions}</div>}

@@ -64,7 +64,7 @@ export default function StoreNewsletter() {
             if (error) setError("");
           }}
           disabled={loading}
-          className="min-w-0 flex-1"
+          className="min-w-0 sm:flex-1"
         />
         <Button type="submit" size="lg" loading={loading} loadingText="Subscribing…" icon={<Mail aria-hidden="true" />}>
           Subscribe
