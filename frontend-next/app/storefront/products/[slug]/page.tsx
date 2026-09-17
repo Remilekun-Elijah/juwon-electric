@@ -5,6 +5,7 @@ import { ArrowRight, MessageSquare, Package as PackageIcon, Wrench } from "lucid
 import RichText from "@/components/public/RichText";
 import CatalogHelpBand from "@/components/storefront/catalog/CatalogHelpBand";
 import PackageGrid from "@/components/storefront/catalog/PackageGrid";
+import { packageIncludesProduct } from "@/components/storefront/catalog/packageMeta";
 import ProductGallery from "@/components/storefront/catalog/ProductGallery";
 import SpecsTable from "@/components/storefront/catalog/SpecsTable";
 import JsonLd from "@/components/storefront/JsonLd";
@@ -80,9 +81,9 @@ function productJsonLd(product: PublicProduct) {
   };
 }
 
-/** Packages whose `items` list this product. */
+/** Packages with an available option listing this product (plus the deprecated top-level `items`, if still sent). */
 const packagesIncluding = (packages: Package[], product: PublicProduct) =>
-  packages.filter((pkg) => pkg.items?.some((line) => line.productId === product.id));
+  packages.filter((pkg) => packageIncludesProduct(pkg, product.id));
 
 export default async function ProductPage({ params }: PageProps<"/storefront/products/[slug]">) {
   const { slug } = await params;
