@@ -10,7 +10,7 @@ import Reveal from "@/components/storefront/motion/Reveal";
 import { categoryPath, categoryTrail, findCategory } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { SITE_NAME } from "@/lib/site";
-import { getStoreCategories, getStorePackages, getStoreProducts } from "@/lib/storefront/data";
+import { getStoreCategories, getStorePackages, getStoreProducts, storeProductsEnabled } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeArrowNudge, storeContainer, storeH2, storeLink, storeMeta } from "@/lib/storefront/styles";
 
@@ -47,6 +47,7 @@ export async function generateMetadata({ params, searchParams }: PageProps<"/sto
  * there are any.
  */
 export default async function CategoryPage({ params, searchParams }: PageProps<"/storefront/products/category/[slug]">) {
+  if (!(await storeProductsEnabled())) notFound();
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const categories = await getStoreCategories();
   const category = findCategory(categories, slug);

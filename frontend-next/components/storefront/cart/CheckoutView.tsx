@@ -68,7 +68,7 @@ export default function CheckoutView({ gatewayEnabled, phone }: CheckoutViewProp
     return (
       <CartEmpty
         title="There’s nothing to check out"
-        description="Your cart is empty. Add a package or product to your cart, then come back here to enter your delivery details."
+        description="Your cart is empty. Add something to your cart, then come back here to enter your delivery details."
         backToCart
       />
     );

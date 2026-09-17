@@ -515,7 +515,7 @@ let settings: Settings = {
   inventory: { defaultReorderLevel: 0, lowStockAlertsEnabled: true },
   uploads: { provider: "url" },
   // LANDING_V1 §3 defaults.
-  website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+  website: { stats: [], whatsappNumber: null, businessHours: null, productsEnabled: true, sample: false },
   financing: {
     enabled: false,
     depositPercent: null,

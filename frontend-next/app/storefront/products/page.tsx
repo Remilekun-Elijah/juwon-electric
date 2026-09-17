@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ProductListing, { readListingParams } from "@/components/storefront/catalog/ProductListing";
 import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import { findCategory } from "@/lib/catalog";
 import { SITE_NAME } from "@/lib/site";
-import { getStoreCategories, getStoreProducts } from "@/lib/storefront/data";
+import { getStoreCategories, getStoreProducts, storeProductsEnabled } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeContainer } from "@/lib/storefront/styles";
 
@@ -26,6 +27,7 @@ export async function generateMetadata({ searchParams }: PageProps<"/storefront/
 
 /** Product catalogue (spec §4): category sidebar, `?q=` search, `?category=` scope and `?page=` pagination. */
 export default async function ProductsPage({ searchParams }: PageProps<"/storefront/products">) {
+  if (!(await storeProductsEnabled())) notFound();
   const { q, page, category: categoryParam } = readListingParams(await searchParams);
   const categories = await getStoreCategories();
   const category = categoryParam ? (findCategory(categories, categoryParam) ?? null) : null;

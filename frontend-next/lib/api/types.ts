@@ -255,6 +255,8 @@ export type WebsiteSettings = {
   whatsappNumber: string | null;
   /** Multiline, e.g. "Mon–Fri 8am–6pm\nSat 9am–3pm". */
   businessHours: string | null;
+  /** False hides the Products area of the public site (navigation, home sections and pages). Packages are unaffected. */
+  productsEnabled: boolean;
   sample: boolean;
 };
 

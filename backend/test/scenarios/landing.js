@@ -271,7 +271,23 @@ export const runLandingScenario = async (client) => {
   const publicSaved = (await expect("public settings after save", "GET", "/settings/public", { token: null }, 200)).body.data;
   assert.deepEqual(publicSaved.financing, saved2.financing, "enabled financing is public in full");
   assert.deepEqual(publicSaved.calculator, { enabled: false });
-  assert.deepEqual(publicSaved.website, { stats: [{ label: "Installations", value: "500+" }], whatsappNumber: "+2348000000000", businessHours: "Mon–Fri 8am–6pm\nSat 9am–3pm", sample: false });
+  assert.deepEqual(publicSaved.website, {
+    stats: [{ label: "Installations", value: "500+" }],
+    whatsappNumber: "+2348000000000",
+    businessHours: "Mon–Fri 8am–6pm\nSat 9am–3pm",
+    productsEnabled: true,
+    sample: false,
+  });
+
+  // Products on the website: a boolean in the website section, public so the storefront can hide its Products area.
+  await bad("products flag must be boolean", { website: { productsEnabled: "no" } }, "Products on the website must be true or false.");
+  const productsOff = (
+    await expect("switch products off", "PUT", "/admin/settings", { body: { website: { productsEnabled: false } } }, 200, "Settings updated.")
+  ).body.data;
+  assert.equal(productsOff.website.productsEnabled, false);
+  const publicOff = (await expect("public settings with products off", "GET", "/settings/public", { token: null }, 200)).body.data;
+  assert.equal(publicOff.website.productsEnabled, false, "the storefront reads the flag from public settings");
+  await expect("switch products back on", "PUT", "/admin/settings", { body: { website: { productsEnabled: true } } }, 200);
 
   const auditChanges = (
     await expect("settings audit lists the cleared sample flag", "GET", "/admin/audit-logs?entity=settings", {

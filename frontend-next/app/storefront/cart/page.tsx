@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import CartView from "@/components/storefront/cart/CartView";
+import { getStoreChromeSettings } from "@/lib/storefront/data";
 
 export const revalidate = 60;
 
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 };
 
 /** `/cart`: static shell with the stored cart rendered by a client island (the cart lives in the browser). */
-export default function Page() {
+export default async function Page() {
+  const settings = await getStoreChromeSettings();
+
   return (
     <>
       <PageIntro
@@ -22,7 +25,7 @@ export default function Page() {
         image={INTRO_IMAGES.home}
         quick
       />
-      <CartView />
+      <CartView productsEnabled={settings.website.productsEnabled} />
     </>
   );
 }

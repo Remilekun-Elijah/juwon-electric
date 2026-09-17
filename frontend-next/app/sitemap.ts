@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getPackages, getVacancies } from "@/lib/api/public";
+import { getPackages, getPublicSettings, getVacancies } from "@/lib/api/public";
 import { isr, readOr } from "@/lib/api/server";
 import type { PublicVacancy } from "@/lib/api/types";
 import { categoryPath, productPath } from "@/lib/catalog";
@@ -16,18 +16,20 @@ const url = (path: string) => `${SITE_URL}${path === "/" ? "" : path}`;
 
 /** Public pages, packages, open vacancies, product categories and the first 100 products (FE_ACCEPTANCE §C). */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [packages, vacancies, categories, products] = await Promise.all([
+  const [packages, vacancies, categories, products, settings] = await Promise.all([
     readOr("GET /packages (sitemap)", () => getPackages(isr(["packages"])), fallbackPackages, (items) => items.length === 0),
     readOr<PublicVacancy[]>("GET /vacancies (sitemap)", () => getVacancies({}, isr(["vacancies"])), []),
     loadCategories(),
     loadProductPage({ page: 1, limit: 100 }),
+    readOr("GET /settings/public (sitemap)", () => getPublicSettings(isr(["settings"])), null),
   ]);
+  // Settings → Website: with products off, no product page is listed.
+  const productsEnabled = settings.data?.website?.productsEnabled !== false;
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: url(routes.home), changeFrequency: "weekly", priority: 1 },
     { url: url(routes.packages), changeFrequency: "weekly", priority: 0.9 },
     { url: url(routes.services), changeFrequency: "monthly", priority: 0.8 },
-    { url: url(routes.products), changeFrequency: "weekly", priority: 0.8 },
     { url: url(routes.portfolio), changeFrequency: "monthly", priority: 0.7 },
     { url: url("/calculator"), changeFrequency: "monthly", priority: 0.7 },
     { url: url("/faq"), changeFrequency: "monthly", priority: 0.6 },
@@ -38,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages,
+    ...(productsEnabled ? [{ url: url(routes.products), changeFrequency: "weekly" as const, priority: 0.8 }] : []),
     ...packages.data.map((item) => ({ url: url(packagePath(item)), changeFrequency: "monthly" as const, priority: 0.7 })),
     ...vacancies.data.filter(isOpenVacancy).map((vacancy) => ({
       url: url(vacancyPath(vacancy)),
@@ -45,13 +48,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.6,
     })),
-    ...categories.map((category) => ({
+    ...(productsEnabled ? categories : []).map((category) => ({
       url: url(categoryPath(category)),
       lastModified: category.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.6,
     })),
-    ...products.data.items.map((product) => ({
+    ...(productsEnabled ? products.data.items : []).map((product) => ({
       url: url(productPath(product)),
       lastModified: product.updatedAt,
       changeFrequency: "weekly" as const,

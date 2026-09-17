@@ -111,10 +111,11 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
   );
   const [whatsappNumber, setWhatsappNumber] = useState(value.whatsappNumber ?? "");
   const [businessHours, setBusinessHours] = useState(value.businessHours ?? "");
+  const [productsEnabled, setProductsEnabled] = useState(value.productsEnabled !== false);
   const [errors, setErrors] = useState<WebsiteErrors>({});
   const [statErrors, setStatErrors] = useState<RowErrors<"label" | "value">>({});
   const section = useSection(save);
-  const dirty = useDirty({ stats: stats.map(({ label, value }) => ({ label, value })), whatsappNumber, businessHours });
+  const dirty = useDirty({ stats: stats.map(({ label, value }) => ({ label, value })), whatsappNumber, businessHours, productsEnabled });
   const full = stats.length >= WEBSITE_LIMITS.stats;
 
   const updateStat = (id: string, patch: Partial<StatRow>) =>
@@ -142,6 +143,7 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
         stats: stats.map((row) => ({ label: row.label.trim(), value: row.value.trim() })),
         whatsappNumber: blankToNull(whatsappNumber),
         businessHours: blankToNull(businessHours),
+        productsEnabled,
       },
     });
   };
@@ -155,6 +157,18 @@ export function WebsiteSection({ value, canWrite, save }: SectionProps<"website"
       alert={section.alert}
       onSubmit={onSubmit}
     >
+      <SettingsCard
+        title="Products on the website"
+        description="Whether customers can browse and order single products. Packages are not affected either way."
+      >
+        <Switch
+          checked={productsEnabled}
+          onChange={setProductsEnabled}
+          disabled={!canWrite}
+          label="Show products on the website"
+          description="When off, the Products link, the product sections on the home page and every product page are hidden from customers. Products, categories and stock stay in the admin, and packages keep their products."
+        />
+      </SettingsCard>
       <SettingsCard
         title="Homepage stats"
         description={`Up to ${WEBSITE_LIMITS.stats} figures in the home page hero, e.g. “500+” installations. Only use numbers you can stand behind.`}

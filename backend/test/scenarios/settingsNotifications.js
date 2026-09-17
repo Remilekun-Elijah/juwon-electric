@@ -28,7 +28,7 @@ export const runSettingsNotificationsScenario = async (client) => {
     payments: { gatewayEnabled: false, provider: null },
     inventory: { defaultReorderLevel: 0, lowStockAlertsEnabled: true },
     uploads: { provider: "url" },
-    website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+    website: { stats: [], whatsappNumber: null, businessHours: null, productsEnabled: true, sample: false },
     financing: { enabled: false, depositPercent: null, termsMonths: [], monthlyRatePercent: null, approvalTime: null, note: null, sample: false },
     calculator: {
       enabled: false,
@@ -75,7 +75,7 @@ export const runSettingsNotificationsScenario = async (client) => {
   assert.deepEqual(publicView, {
     business: { name: "Juwon Electric", phone: "08012345678", email: null, address: null, website: "https://juwon.test" },
     payments: { gatewayEnabled: true },
-    website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+    website: { stats: [], whatsappNumber: null, businessHours: null, productsEnabled: true, sample: false },
     financing: { enabled: false },
     calculator: { enabled: false },
   });
