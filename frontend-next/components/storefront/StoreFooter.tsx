@@ -6,6 +6,7 @@ import { SITE_NAME, socials } from "@/lib/site";
 import type { StoreSettings } from "@/lib/storefront/data";
 import { phoneNumbers, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
 import { storeContainer, storeFocus } from "@/lib/storefront/styles";
+import Reveal from "./motion/Reveal";
 import StoreNewsletter from "./StoreNewsletter";
 
 const columns: { title: string; links: { label: string; href: string }[] }[] = [
@@ -47,6 +48,9 @@ const contactIcon = "h-4 w-4 shrink-0 text-gold-400";
 /**
  * Dark slate-950 footer (TEAM_AND_MOTION_V1 §7.5): Shop / Company / Contact columns, newsletter, socials and ©, with
  * white/70 text and gold hover links. The logo sits on a white chip so its colours stay legible. Server component.
+ *
+ * Motion: the brand column slides in from the left, the link and contact columns follow one after another (sliding in
+ * alternately from each side on phones), and the bottom bar fades in with the social pills popping in one by one.
  */
 export default function StoreFooter({ settings }: { settings: StoreSettings }) {
   const { business, website } = settings;
@@ -58,7 +62,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
       {/* Extra bottom room on phones so the floating action circles never cover the last footer row. */}
       <div className={cn(storeContainer, "py-12 sm:py-16", (whatsapp || settings.calculator) && "pb-40 sm:pb-20")}>
         <div className="grid gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-4">
+          <Reveal from="left" className="lg:col-span-4">
             <Link href={storeRoutes.home} className={cn("inline-block rounded-xl bg-white px-3 py-2", darkFocus)}>
               <Image src="/logo.svg" alt={`${SITE_NAME} home`} width={88} height={62} className="h-10 w-auto" />
             </Link>
@@ -72,9 +76,9 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                 <StoreNewsletter tone="dark" />
               </div>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="grid gap-10 sm:grid-cols-3 lg:col-span-8">
+          <Reveal stagger staggerStep={90} className="grid gap-10 sm:grid-cols-3 lg:col-span-8">
             {columns.map((column) => (
               <nav key={column.title} aria-label={column.title}>
                 <h2 className={columnTitle}>{column.title}</h2>
@@ -137,14 +141,14 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                 )}
               </address>
             </div>
-          </div>
+          </Reveal>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <Reveal from="fade" className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-white/60">
             © {new Date().getFullYear()} {business.name || SITE_NAME}. All rights reserved.
           </p>
-          <ul aria-label="Social media" className="flex flex-wrap gap-2">
+          <Reveal as="ul" stagger from="zoom" delay={150} aria-label="Social media" className="flex flex-wrap gap-2">
             {socialLinks.map((social) => (
               <li key={social.label}>
                 <a
@@ -161,8 +165,8 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                 </a>
               </li>
             ))}
-          </ul>
-        </div>
+          </Reveal>
+        </Reveal>
       </div>
     </footer>
   );
