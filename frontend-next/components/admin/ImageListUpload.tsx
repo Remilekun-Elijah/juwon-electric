@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronUp, Link2, Pencil, Plus, RefreshCw, Trash2, X } from "lucide-react";
 import { Badge, Button, Field, Input } from "@/components/ui";
-import type { UploadPurpose } from "@/lib/api/types";
+import type { AdminUploadPurpose } from "@/lib/api/admin";
 import { cn } from "@/lib/cn";
 import {
   isUploadUnavailable,
@@ -39,7 +39,7 @@ export type ImageListUploadProps = {
   /** Receives an updater so uploads that finish later never overwrite newer edits. */
   onChange: (update: (rows: ImageRow[]) => ImageRow[]) => void;
   newRowId: () => string;
-  purpose: UploadPurpose;
+  purpose: AdminUploadPurpose;
   kind?: ImageKind;
   max?: number;
   /** Form validation messages by `rowId`. */
@@ -50,6 +50,10 @@ export type ImageListUploadProps = {
 };
 
 let pendingSeq = 0;
+
+/** Row actions: a 44 px icon button on phones (aria-label and tooltip), icon plus visible text from `sm` up. */
+const rowActionButton = "h-11 w-11 px-0 sm:h-9 sm:w-auto sm:px-3";
+const RowActionText = ({ children }: { children: ReactNode }) => <span className="hidden sm:inline">{children}</span>;
 
 /**
  * Up to `max` images (products). Drop or choose several files at once; each is resized in the browser and uploaded
@@ -265,64 +269,64 @@ export function ImageListUpload({
                   <div className="flex flex-wrap items-center gap-1">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className={touchIconButton}
-                      aria-label={`Move ${name} up`}
+                      className={rowActionButton}
+                      aria-label={`Move up: ${name}`}
                       title="Move up"
+                      icon={<ChevronUp aria-hidden="true" />}
                       disabled={index === 0}
                       onClick={() => move(index, -1)}
                     >
-                      <ChevronUp aria-hidden="true" />
+                      <RowActionText>Move up</RowActionText>
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className={touchIconButton}
-                      aria-label={`Move ${name} down`}
+                      className={rowActionButton}
+                      aria-label={`Move down: ${name}`}
                       title="Move down"
+                      icon={<ChevronDown aria-hidden="true" />}
                       disabled={index === rows.length - 1}
                       onClick={() => move(index, 1)}
                     >
-                      <ChevronDown aria-hidden="true" />
+                      <RowActionText>Move down</RowActionText>
                     </Button>
                     {uploadsReady && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className={touchIconButton}
-                        aria-label={`Replace ${name}`}
+                        className={rowActionButton}
+                        aria-label={`Replace: ${name}`}
                         title="Replace"
+                        icon={<RefreshCw aria-hidden="true" />}
                         disabled={Boolean(replacing)}
                         onClick={() => {
                           replaceTargetRef.current = row.rowId;
                           replaceInputRef.current?.click();
                         }}
                       >
-                        <RefreshCw aria-hidden="true" />
+                        <RowActionText>Replace</RowActionText>
                       </Button>
                     )}
                     {!uploadsOff && location && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className={touchIconButton}
-                        aria-label={`Edit link for ${name}`}
+                        className={rowActionButton}
+                        aria-label={`Edit link: ${name}`}
                         aria-expanded={showLink}
                         title="Edit link"
+                        icon={<Pencil aria-hidden="true" />}
                         onClick={() => toggleEditing(row.rowId, !editing.has(row.rowId))}
                       >
-                        <Pencil aria-hidden="true" />
+                        <RowActionText>Edit link</RowActionText>
                       </Button>
                     )}
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className={cn(touchIconButton, "hover:bg-red-50 hover:text-red-700")}
-                      aria-label={`Remove ${name}`}
+                      className={cn(rowActionButton, "hover:bg-red-50 hover:text-red-700")}
+                      aria-label={`Remove: ${name}`}
                       title="Remove"
+                      icon={<Trash2 aria-hidden="true" />}
                       onClick={() => remove(row, index)}
                     >
-                      <Trash2 aria-hidden="true" />
+                      <RowActionText>Remove</RowActionText>
                     </Button>
                   </div>
                 </div>
