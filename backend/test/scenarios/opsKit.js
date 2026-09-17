@@ -3,6 +3,9 @@
 //   { request(method, path, { token, body }), seedAdmin(role, extra?) -> { id, email, token },
 //     seedRecord(collection, record) -> stored record (bypasses the API), emails }
 // `emails` collects every email the runtime sends as { to: string[], subject, html }.
+// Maintenance hooks (uploads): setEnv(vars) (undefined unsets), runScheduled() (the daily cron /
+// timer work), getRecord(collection, id), listRecords(collection), patchRecord(collection, id,
+// patch) (bypasses the API, may move createdAt) and hasStoredImage(key).
 // Runners: backend/test/<module>.test.js (Express), backend/cloudflare/test/<module>.test.js
 // (Worker) and backend/test/parity/<module>.parity.test.js (both, deep-compared after masking).
 import assert from "node:assert/strict";
@@ -36,7 +39,7 @@ const login = async (request, email) => {
 };
 
 /** Express client: in-process app (backend/test/helpers/express.js) plus admin seeding and mail capture. */
-export const expressOpsClient = async () => {
+export const expressOpsClient = async (extraEnv = {}) => {
   const nodemailer = (await import("nodemailer")).default;
   const emails = [];
   nodemailer.createTransport = () => ({
@@ -46,8 +49,9 @@ export const expressOpsClient = async () => {
     },
   });
   const { startExpress } = await import("../helpers/express.js");
-  const server = await startExpress({ ...OPS_ENV, ...EXPRESS_MAIL_ENV });
+  const server = await startExpress({ ...OPS_ENV, ...EXPRESS_MAIL_ENV, ...extraEnv });
   const store = await import("../../services/store.js");
+  const { waitForPending } = await import("../../services/runtime.js");
   const { hashPassword } = await import("../../services/adminAuthService.js");
   const seedEmail = emailSequence();
   return {
@@ -56,6 +60,34 @@ export const expressOpsClient = async () => {
     emails,
     close: server.close,
     seedRecord: (collection, record) => store.createCollectionItem(collection, record),
+    setEnv: (vars) => {
+      for (const [key, value] of Object.entries(vars)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = String(value);
+      }
+    },
+    async runScheduled() {
+      const { runLowStockCheck } = await import("../../controllers/inventory.js");
+      const { runUploadsMaintenance } = await import("../../controllers/uploads.js");
+      await runLowStockCheck();
+      await runUploadsMaintenance();
+      await waitForPending(2000);
+    },
+    getRecord: async (collection, id) => (await store.findCollectionItem(collection, { id })) || null,
+    listRecords: (collection) => store.listCollection(collection, { includeInactive: true }),
+    patchRecord: async (collection, id, patch) => {
+      const { readDb, saveDb } = store;
+      const db = await readDb();
+      const item = (db[collection] || []).find((entry) => entry.id === id);
+      Object.assign(item, patch);
+      await saveDb(db);
+      return item;
+    },
+    async hasStoredImage(key) {
+      const { stat } = await import("node:fs/promises");
+      const { uploadsDir } = await import("../../controllers/uploads.js");
+      return stat(`${uploadsDir()}/${key}`).then(() => true, () => false);
+    },
     async seedAdmin(role, extra = {}) {
       const email = seedEmail(role);
       const admin = await store.createCollectionItem("admins", {
@@ -72,7 +104,7 @@ export const expressOpsClient = async () => {
 };
 
 /** Worker client: default export against the node:sqlite D1 stand-in, with Resend captured. */
-export const workerOpsClient = async () => {
+export const workerOpsClient = async (extraEnv = {}) => {
   const emails = [];
   const realFetch = globalThis.fetch;
   if (!realFetch.opsCapture) {
@@ -92,7 +124,7 @@ export const workerOpsClient = async () => {
   globalThis.fetch.sinks.push(emails);
 
   const { createWorkerClient } = await import("../../cloudflare/test/helpers/worker.js");
-  const client = createWorkerClient({ ...OPS_ENV, ...WORKER_MAIL_ENV });
+  const client = createWorkerClient({ ...OPS_ENV, ...WORKER_MAIL_ENV, ...extraEnv });
   const store = await import("../../cloudflare/src/store.js");
   const { hashPassword } = await import("../../cloudflare/src/auth.js");
   const seedEmail = emailSequence();
@@ -106,6 +138,23 @@ export const workerOpsClient = async () => {
     },
     // A record's own id is kept (as the Express store does).
     seedRecord: (collection, record) => store.createCollectionItem(client.env, collection, record, { id: record.id }),
+    setEnv: (vars) => {
+      for (const [key, value] of Object.entries(vars)) {
+        if (value === undefined) delete client.env[key];
+        else client.env[key] = String(value);
+      }
+    },
+    runScheduled: () => client.scheduled(),
+    getRecord: (collection, id) => store.getById(client.env, collection, id),
+    listRecords: (collection) => store.listCollection(client.env, collection, { includeInactive: true }),
+    patchRecord: async (collection, id, patch) => {
+      const item = { ...(await store.getById(client.env, collection, id)), ...patch };
+      await client.env.DB.prepare("UPDATE records SET data = ?, created_at = ? WHERE collection = ? AND id = ?")
+        .bind(JSON.stringify(item), item.createdAt, collection, id)
+        .run();
+      return item;
+    },
+    hasStoredImage: async (key) => Boolean(await client.env.IMAGES?.head(key)),
     async seedAdmin(role, extra = {}) {
       const email = seedEmail(role);
       const admin = await store.createCollectionItem(client.env, "admins", {
