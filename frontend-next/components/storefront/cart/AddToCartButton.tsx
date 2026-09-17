@@ -28,7 +28,7 @@ const packageTitle = (pkg: Package) => `${pkg.name} ${pkg.kva}kVA`;
  *
  * States:
  * - before hydration the stored cart isn't known yet, so the button is disabled and marked busy;
- * - an option without a price is "Unavailable";
+ * - an option without a price, or marked `available: false`, is "Unavailable";
  * - a package already in the cart shows "In cart" and links to it (cart lines are keyed per package, not per option;
  *   switch with or without solar on the cart page);
  * - a full cart explains the limit in a toast instead of adding.
@@ -45,7 +45,8 @@ export default function AddToCartButton({ pkg, optionIndex = 0, className, size 
   const inCart = cart.some((line) => getCartItemKey(line) === getCartItemKey(pkg));
   const withSolar = optionIndex === 1 ? ("true" as const) : ("false" as const);
   const option = pkg.options?.[withSolar === "true" ? 1 : 0];
-  const unavailable = !option || !(Number(option.price) > 0);
+  // Commerce v2 §1.2: `available: false` (archived or missing component product) can't be ordered.
+  const unavailable = !option || option.available === false || !(Number(option.price) > 0);
   const title = packageTitle(pkg);
 
   const viewCart = { label: "View cart", onClick: () => router.push(storeRoutes.cart) };

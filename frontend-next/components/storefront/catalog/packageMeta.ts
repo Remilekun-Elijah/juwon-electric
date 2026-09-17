@@ -1,5 +1,5 @@
 // Pure package helpers for the storefront catalogue (server and client safe).
-import type { Package } from "@/lib/api/types";
+import type { ComposedItem, Package, PackageOption } from "@/lib/api/types";
 import { packageTabIndex } from "@/lib/packages";
 
 export type PackageTypeFilter = "all" | "tubular" | "lithium" | "hybrid-lithium";
@@ -53,33 +53,78 @@ const toNumber = (value: number | string | null | undefined) => {
 
 export const kvaValue = (pkg: Pick<Package, "kva">) => toNumber(pkg.kva);
 
-/** Options with a real price, keeping their index into `pkg.options` (the cart uses the index). */
+/**
+ * Commerce v2 §1.2: an option can be bought when the API hasn't marked it `available: false` and it has a price.
+ * Older responses and build fallbacks have no `available` field, so a missing flag counts as available.
+ */
+export const isOptionAvailable = (option: Pick<PackageOption, "price"> & { available?: boolean }) =>
+  option.available !== false && toNumber(option.price) > 0;
+
+/** Available options with their price, keeping their ORIGINAL index into `pkg.options` (the cart uses the index). */
 export const pricedOptions = (pkg: Pick<Package, "options">) =>
   (pkg.options ?? [])
     .map((option, index) => ({ ...option, index, amount: toNumber(option.price) }))
-    .filter((option) => option.amount > 0);
+    .filter((option) => isOptionAvailable(option));
 
-/** Lowest option price, or 0 when no option has a price. */
+export type PricedOption = ReturnType<typeof pricedOptions>[number];
+
+/** True when at least one option can be bought. Unavailable packages are left out of listings and the home finder. */
+export const isPackageAvailable = (pkg: Pick<Package, "options">) => pricedOptions(pkg).length > 0;
+
+export const availablePackages = <T extends Pick<Package, "options">>(packages: T[]) => packages.filter(isPackageAvailable);
+
+/** Lowest available option price, or 0 when no option is available. */
 export const lowestPrice = (pkg: Pick<Package, "options">) => {
   const prices = pricedOptions(pkg).map((option) => option.amount);
   return prices.length ? Math.min(...prices) : 0;
 };
 
-/** Highest option price, or 0 when no option has a price. */
+/** Highest available option price, or 0 when no option is available. */
 export const highestPrice = (pkg: Pick<Package, "options">) => {
   const prices = pricedOptions(pkg).map((option) => option.amount);
   return prices.length ? Math.max(...prices) : 0;
 };
 
 /** Option index 1 is "with solar" in the cart contract. */
-export const hasSolarOption = (pkg: Pick<Package, "options">) => toNumber(pkg.options?.[1]?.price) > 0;
+export const hasSolarOption = (pkg: Pick<Package, "options">) => pricedOptions(pkg).some((option) => option.index === 1);
 
-/** The cheapest option's index, used as the default choice. */
-export const cheapestOptionIndex = (pkg: Pick<Package, "options">) => {
-  const options = pricedOptions(pkg);
+/** The cart contract knows two options: index 0 without solar, index 1 with solar. */
+export const CART_OPTION_COUNT = 2;
+
+/** Available options the cart can take (original index 0 or 1), in API order. */
+export const cartOptions = (pkg: Pick<Package, "options">) => pricedOptions(pkg).filter((option) => option.index < CART_OPTION_COUNT);
+
+/** Default choice for the picker and cards: the cheapest option the cart can take (its original index, 0 when none). */
+export const defaultCartOptionIndex = (pkg: Pick<Package, "options">) => {
+  const options = cartOptions(pkg);
   if (!options.length) return 0;
   return options.reduce((best, option) => (option.amount < best.amount ? option : best)).index;
 };
+
+/** The option's products (`[]` for legacy options and older responses without `items`). */
+export const optionItems = (option: { items?: ComposedItem[] | null }): ComposedItem[] => option.items ?? [];
+
+/** Composed options list products; legacy options only have the kits text. */
+export const isComposedOption = (option: { composed?: boolean; items?: ComposedItem[] | null }) => optionItems(option).length > 0;
+
+/**
+ * Number of distinct products in the cheapest available composed option, for the card hint "Includes N products".
+ * 0 when that option is legacy (no products listed).
+ */
+export const includedProductCount = (pkg: Pick<Package, "options">) => {
+  const options = pricedOptions(pkg);
+  if (!options.length) return 0;
+  const cheapest = options.reduce((best, option) => (option.amount < best.amount ? option : best));
+  return optionItems(cheapest).length;
+};
+
+/**
+ * True when an available option lists the product. Also reads the deprecated top-level `items` (contract §4.3) in
+ * case an older API still returns it.
+ */
+export const packageIncludesProduct = (pkg: Pick<Package, "options" | "items">, productId: string) =>
+  pricedOptions(pkg).some((option) => optionItems(option).some((line) => line.productId === productId)) ||
+  (isPackageAvailable(pkg) && (pkg.items ?? []).some((line) => line.productId === productId));
 
 /** "1.1kVA" or "1.1kVA · 24V". */
 export const packageRating = (pkg: Pick<Package, "kva" | "volt">) =>
