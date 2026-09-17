@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
-import { ReceiptText, SearchX, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Plus, ReceiptText, SearchX, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
@@ -30,9 +31,17 @@ import {
 import { formatCurrency, formatDate, getOrderRevenue, getRecordDate, matchesQuery } from "@/lib/admin/format";
 import { fulfillmentLabels, paymentLabels } from "@/lib/admin/transitions";
 import { adminFetch, ApiError, getOrder, getOrders } from "@/lib/api/admin";
-import type { FulfillmentStatus, Order, PaymentStatus } from "@/lib/api/types";
+import type { FulfillmentStatus, Order, OrderChannel, PaymentStatus } from "@/lib/api/types";
 import { OrderDetails } from "./OrderDetails";
-import { FulfillmentBadge, PaymentBadge, orderFulfillment, orderPayment } from "./orderStatus";
+import {
+  ChannelBadge,
+  FulfillmentBadge,
+  PaymentBadge,
+  channelLabels,
+  orderChannel,
+  orderFulfillment,
+  orderPayment,
+} from "./orderStatus";
 
 const PAGE_SIZE = 20;
 
@@ -52,15 +61,28 @@ const paymentFilterOptions = [
   ...(Object.keys(paymentLabels) as PaymentStatus[]).map((value) => ({ value, label: paymentLabels[value] })),
 ];
 
+const channelFilterOptions = [
+  { value: "all", label: "All channels" },
+  ...(Object.keys(channelLabels) as OrderChannel[]).map((value) => ({ value, label: channelLabels[value] })),
+];
+
 const itemCount = (order: Order) => (order.order || []).reduce((sum, line) => sum + Number(line.quantity || 1), 0);
 
 export function Orders() {
   const { can, notifications } = useAdmin();
-  const query = useAdminQuery("orders", () => getOrders().then((response) => response.data));
-  // Deep link: /admin/orders?order=<id> opens that order once the list has loaded.
-  const [deepLinkId, setDeepLinkId] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("order")
+  const [channelFilter, setChannelFilter] = useState<OrderChannel | "all">("all");
+  const query = useAdminQuery(`orders:${channelFilter}`, () =>
+    getOrders(channelFilter === "all" ? {} : { channel: channelFilter }).then((response) => response.data)
   );
+  // Deep link: /admin/orders?order=<id> opens that order once the list has loaded. Read after mount: on a client
+  // navigation (for example after recording an in-store sale) the URL is only updated once the new page commits.
+  const [deepLinkId, setDeepLinkId] = useState<string | null>(null);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("order");
+    if (!id) return undefined;
+    const timer = window.setTimeout(() => setDeepLinkId(id), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const items = useMemo(() => query.data ?? [], [query.data]);
   const firstLoad = query.data === undefined;
   const canDelete = can("orders:delete");
@@ -96,18 +118,21 @@ export function Orders() {
         (item) =>
           (statusFilter === "all" || orderFulfillment(item) === statusFilter) &&
           (paymentFilter === "all" || orderPayment(item) === paymentFilter) &&
+          (channelFilter === "all" || orderChannel(item) === channelFilter) &&
           matchesQuery(search, item.name, item.phoneNumber, item.emailAddress, item.deliveryAddress)
       ),
-    [items, statusFilter, paymentFilter, search]
+    [items, statusFilter, paymentFilter, channelFilter, search]
   );
 
   const pageData = paginate(visibleItems, page, PAGE_SIZE);
-  const filtersActive = Boolean(search.trim()) || statusFilter !== "all" || paymentFilter !== "all";
+  const filtersActive =
+    Boolean(search.trim()) || statusFilter !== "all" || paymentFilter !== "all" || channelFilter !== "all";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("all");
     setPaymentFilter("all");
+    setChannelFilter("all");
     setPage(1);
   };
 
@@ -210,6 +235,13 @@ export function Orders() {
 
   const colSpan = 6;
 
+  const newSaleButton = (size?: "sm") =>
+    can("orders:create") ? (
+      <Button as={Link} href="/admin/orders/new" size={size} icon={<Plus aria-hidden="true" />}>
+        New in-store sale
+      </Button>
+    ) : undefined;
+
   const renderRows = () => {
     if (firstLoad && query.error) {
       return (
@@ -240,7 +272,8 @@ export function Orders() {
           colSpan={colSpan}
           icon={ReceiptText}
           title="No orders yet"
-          description="Orders placed on the shop will show up here."
+          description="Orders placed on the shop and sales recorded in the store will show up here."
+          action={newSaleButton("sm")}
         />
       );
     }
@@ -279,7 +312,10 @@ export function Orders() {
                 </Badge>
               )}
             </p>
-            <p className="truncate text-sm text-slate-500">{item.phoneNumber || item.deliveryAddress}</p>
+            <p className="flex min-w-0 items-center gap-2 text-sm text-slate-500">
+              <span className="truncate">{item.phoneNumber || item.deliveryAddress}</span>
+              <ChannelBadge channel={orderChannel(item)} />
+            </p>
           </TD>
           <TD className="hidden whitespace-nowrap md:table-cell">{formatDate(getRecordDate(item))}</TD>
           <TD className="hidden whitespace-nowrap tabular-nums lg:table-cell">{itemCount(item)}</TD>
@@ -322,6 +358,7 @@ export function Orders() {
   return (
     <AdminPage
       module="orders"
+      actions={newSaleButton()}
       error={firstLoad ? undefined : query.error}
       onRetry={query.reload}
       retrying={query.loading}
@@ -350,6 +387,16 @@ export function Orders() {
                   wrapperClassName="sm:max-w-xs"
                   onChange={(event) => {
                     setSearch(event.target.value);
+                    setPage(1);
+                  }}
+                />
+                <Select
+                  aria-label="Filter orders by channel"
+                  className="sm:w-44"
+                  value={channelFilter}
+                  options={channelFilterOptions}
+                  onChange={(event) => {
+                    setChannelFilter(event.target.value as OrderChannel | "all");
                     setPage(1);
                   }}
                 />
@@ -404,7 +451,7 @@ export function Orders() {
         title={selected?.name || "Order details"}
         description={
           selected
-            ? `${formatCurrency(getOrderRevenue(selected))} · placed ${formatDate(getRecordDate(selected))}`
+            ? `${formatCurrency(getOrderRevenue(selected))} · ${orderChannel(selected) === "in_store" ? "sold in store" : "placed"} ${formatDate(getRecordDate(selected))}`
             : "Customer, delivery and item details."
         }
       >

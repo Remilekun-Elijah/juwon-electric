@@ -6,7 +6,7 @@ import {
   normalizePaymentStatus,
   paymentLabels,
 } from "@/lib/admin/transitions";
-import type { FulfillmentStatus, JobStatus, Order, PaymentStatus } from "@/lib/api/types";
+import type { FulfillmentStatus, JobStatus, Order, OrderChannel, PaymentStatus } from "@/lib/api/types";
 
 const fulfillmentTones: Record<FulfillmentStatus, Tone> = {
   pending: "warning",
@@ -32,6 +32,16 @@ const jobTones: Record<JobStatus, Tone> = {
   completed: "success",
   cancelled: "danger",
 };
+
+export const channelLabels: Record<OrderChannel, string> = { website: "Website", in_store: "In store" };
+
+/** Commerce v2 §2.2: orders without `channel` came from the website. */
+export const orderChannel = (order: Pick<Order, "channel">): OrderChannel =>
+  order.channel === "in_store" ? "in_store" : "website";
+
+export function ChannelBadge({ channel }: { channel: OrderChannel }) {
+  return <Badge tone={channel === "in_store" ? "info" : "neutral"}>{channelLabels[channel]}</Badge>;
+}
 
 export const orderFulfillment = (order: Order) => normalizeFulfillmentStatus(order);
 export const orderPayment = (order: Order) => normalizePaymentStatus(order.paymentStatus);

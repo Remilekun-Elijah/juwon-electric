@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Mail, MapPin, Package, Phone, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Mail, MapPin, Package, PackageSearch, Phone, Store, Trash2, UserRound } from "lucide-react";
 import { useAdmin } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
 import { Alert, Button, Field, LoadingState, Textarea } from "@/components/ui";
@@ -11,6 +11,7 @@ import type { Order, OrderLine } from "@/lib/api/types";
 import { LIMITS } from "@/lib/validation";
 import { OrderInstallation } from "./OrderInstallation";
 import { OrderStatusPanel } from "./OrderStatusPanel";
+import { ChannelBadge, orderChannel } from "./orderStatus";
 import { useOrderAction } from "./useOrderAction";
 
 
@@ -31,6 +32,63 @@ const text = (value: unknown) => (value == null || value === "" ? "" : String(va
 const lineName = (line: OrderLine) => text(line.name) || text(line.package) || "Item";
 const lineDetail = (line: OrderLine) => text(line.optionName) || text(line.type) || text(line.kva);
 const lineUnitPrice = (line: OrderLine) => (typeof line.unitPrice === "number" ? line.unitPrice : parseMoney(line.price));
+/** Commerce v2 §1.3: lines without `type` are package lines. */
+const isProductLine = (line: OrderLine) => line.type === "product";
+
+function OrderLineItem({ line }: { line: OrderLine }) {
+  const quantity = Number(line.quantity || 1);
+  const unitPrice = lineUnitPrice(line);
+  const lineTotal = typeof line.lineTotal === "number" ? line.lineTotal : unitPrice * quantity;
+  const product = isProductLine(line);
+  const components = Array.isArray(line.components) ? line.components : [];
+  const Icon = product ? PackageSearch : Package;
+
+  return (
+    <li className="px-4 py-3">
+      <div className="flex items-start gap-3">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+          <Icon aria-hidden="true" className="h-4 w-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="break-words text-sm font-medium text-slate-900">{lineName(line)}</p>
+          {product ? (
+            line.sku && <p className="font-mono text-xs text-slate-500">{line.sku}</p>
+          ) : (
+            lineDetail(line) && <p className="text-xs text-slate-500">{lineDetail(line)}</p>
+          )}
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-sm font-medium tabular-nums text-slate-900">{formatCurrency(lineTotal)}</p>
+          <p className="text-xs tabular-nums text-slate-500">
+            {formatCurrency(unitPrice)} × {quantity}
+          </p>
+        </div>
+      </div>
+      {!product && components.length > 0 && (
+        <details className="group mt-2 pl-12">
+          <summary className="flex min-h-8 cursor-pointer list-none items-center gap-1 text-xs font-medium text-brand-700 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 [&::-webkit-details-marker]:hidden">
+            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
+            Products in this package ({components.length})
+          </summary>
+          <ul className="mt-1 space-y-1 rounded-lg bg-slate-50 px-3 py-2">
+            {components.map((component, index) => (
+              <li key={`${component.productId}-${index}`} className="flex items-start justify-between gap-3 text-xs">
+                <span className="min-w-0">
+                  <span className="text-slate-700">
+                    {component.quantity} × {component.name}
+                  </span>{" "}
+                  <span className="font-mono text-slate-500">{component.sku}</span>
+                </span>
+                <span className="shrink-0 tabular-nums text-slate-500">{formatCurrency(component.unitPrice)} each</span>
+              </li>
+            ))}
+            <li className="pt-1 text-[11px] text-slate-500">Per package, as priced when the order was placed.</li>
+          </ul>
+        </details>
+      )}
+    </li>
+  );
+}
 
 export function OrderDetails({ order, loading, error, onChange, onReload, onDelete }: Props) {
   const { can } = useAdmin();
@@ -86,6 +144,10 @@ export function OrderDetails({ order, loading, error, onChange, onReload, onDele
               ),
             },
             { label: "Placed on", icon: CalendarDays, value: formatDateTime(getRecordDate(order)) },
+            { label: "Channel", icon: Store, value: <ChannelBadge channel={orderChannel(order)} /> },
+            ...(order.createdBy
+              ? [{ label: "Recorded by", icon: UserRound, value: order.createdBy.email || "Staff member" }]
+              : []),
             { label: "Delivery address", icon: MapPin, value: order.deliveryAddress || "Not provided", full: true },
           ]}
         />
@@ -97,28 +159,30 @@ export function OrderDetails({ order, loading, error, onChange, onReload, onDele
         </h3>
         {items.length ? (
           <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200">
-            {items.map((item, index) => {
-              const quantity = Number(item.quantity || 1);
-              const unitPrice = lineUnitPrice(item);
-              const lineTotal = typeof item.lineTotal === "number" ? item.lineTotal : unitPrice * quantity;
-              return (
-                <li key={`${lineName(item)}-${index}`} className="flex items-start gap-3 px-4 py-3">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                    <Package aria-hidden="true" className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="break-words text-sm font-medium text-slate-900">{lineName(item)}</p>
-                    {lineDetail(item) && <p className="text-xs text-slate-500">{lineDetail(item)}</p>}
+            {items.map((item, index) => (
+              <OrderLineItem key={`${lineName(item)}-${index}`} line={item} />
+            ))}
+            {(typeof order.subtotal === "number" || order.discount) && (
+              <li className="space-y-1.5 px-4 py-3 text-sm">
+                {typeof order.subtotal === "number" && (
+                  <p className="flex items-center justify-between gap-3">
+                    <span className="text-slate-600">Subtotal</span>
+                    <span className="tabular-nums text-slate-900">{formatCurrency(order.subtotal)}</span>
+                  </p>
+                )}
+                {order.discount && order.discount.amount > 0 && (
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 text-slate-600">
+                      Discount
+                      {order.discount.reason && (
+                        <span className="block break-words text-xs text-slate-500">{order.discount.reason}</span>
+                      )}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-red-700">−{formatCurrency(order.discount.amount)}</span>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-medium tabular-nums text-slate-900">{formatCurrency(lineTotal)}</p>
-                    <p className="text-xs tabular-nums text-slate-500">
-                      {formatCurrency(unitPrice)} × {quantity}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
+                )}
+              </li>
+            )}
             <li className="flex items-center justify-between gap-3 bg-slate-50 px-4 py-3">
               <span className="text-sm font-medium text-slate-700">Total</span>
               <span className="text-base font-bold tabular-nums text-slate-900">{formatCurrency(getOrderRevenue(order))}</span>
