@@ -55,6 +55,8 @@ import type {
   StaffMember,
   StaffProfile,
   StockAdjustmentInput,
+  TeamMember,
+  TeamMemberInput,
   Testimonial,
   TestimonialInput,
   Vacancy,
@@ -663,6 +665,19 @@ export const saveClient = (clientId: string | null, input: ClientInput) =>
   withoutFallback(() => (clientId ? put<Client>(`/clients/${id(clientId)}`, input) : post<Client>("/clients", input)));
 
 export const deleteClient = (clientId: string) => withoutFallback(() => del<Client>(`/clients/${id(clientId)}`));
+
+/* ---------- Team members (TEAM_AND_MOTION_V1 §1) ---------- */
+
+export const getTeamMembers = async () =>
+  (await withoutFallback(() => adminFetch<TeamMember[]>("/team"))).data || [];
+
+export const saveTeamMember = (memberId: string | null, input: TeamMemberInput) =>
+  withoutFallback(() =>
+    memberId ? put<TeamMember>(`/team/${id(memberId)}`, input) : post<TeamMember>("/team", input)
+  );
+
+export const deleteTeamMember = (memberId: string) =>
+  withoutFallback(() => del<TeamMember>(`/team/${id(memberId)}`));
 
 /** Portfolio create/update, including the case-study fields (LANDING_V1 §2). `sample` is server-owned. */
 export const savePortfolioItem = (itemId: string | null, input: PortfolioItemInput) =>

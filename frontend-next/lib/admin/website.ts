@@ -1,5 +1,6 @@
 /**
- * Website content (LANDING_V1): limits, field rules and list helpers for FAQs, reviews, client logos, the portfolio
+ * Website content (LANDING_V1, TEAM_AND_MOTION_V1): limits, field rules and list helpers for FAQs, reviews, client
+ * logos, team members, the portfolio
  * case-study fields and the website, financing and calculator settings. Mirrors the contract; the server decides.
  */
 
@@ -13,6 +14,10 @@ export const WEBSITE_LIMITS = {
   reviewQuoteMin: 10,
   reviewQuote: 1000,
   clientName: 100,
+  teamName: 100,
+  teamRole: 80,
+  teamGroup: 60,
+  teamBio: 300,
   portfolioCategory: 60,
   portfolioSummary: 500,
   portfolioLocation: 100,
@@ -52,6 +57,20 @@ export const isImageLocation = (value: string) => {
     return url.protocol === "https:" || url.protocol === "http:";
   } catch {
     return false;
+  }
+};
+
+/** LinkedIn profile links: an absolute https URL (TEAM_AND_MOTION_V1 §1). */
+export const httpsUrlError = (value: string, label: string) => {
+  const text = value.trim();
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    return /^https:\/\//i.test(text) && url.protocol === "https:" && url.hostname && !/\s/.test(text)
+      ? ""
+      : `${label} must be an https URL.`;
+  } catch {
+    return `${label} must be an https URL.`;
   }
 };
 

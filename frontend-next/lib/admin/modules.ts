@@ -23,6 +23,7 @@ import {
   ShoppingCart,
   Store,
   UserCog,
+  UsersRound,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -44,6 +45,7 @@ export type ModuleId =
   | "faqs"
   | "reviews"
   | "clients"
+  | "team"
   | "contacts"
   | "newsletter"
   | "vacancies"
@@ -233,6 +235,17 @@ export const modules: AdminModule[] = [
     eyebrow: "Website",
     title: "Client logos",
     description: "Logos of businesses you’ve worked with, shown on the home page.",
+  },
+  {
+    id: "team",
+    href: "/admin/team",
+    capability: "content:read",
+    label: "Team",
+    icon: UsersRound,
+    group: "website",
+    eyebrow: "Website",
+    title: "Team",
+    description: "The people shown on the website’s Meet the team page, in groups.",
   },
   {
     id: "contacts",
