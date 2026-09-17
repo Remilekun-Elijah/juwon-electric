@@ -73,15 +73,14 @@ export default function CartView() {
               </Link>
             </div>
           </div>
-          {cart.length > 0 && <CartLines cart={cart} quote={quote} focusAfterRemoveRef={headingRef} />}
-          {products.length > 0 && (
-            <ProductCartLines
-              products={products}
-              quote={quote}
-              focusAfterRemoveRef={headingRef}
-              className={cn(cart.length > 0 && "mt-5 border-t border-slate-100 pt-5")}
-            />
-          )}
+          {/* Both lists stay mounted (they render nothing when empty), so removing the last line of one kind still folds away. */}
+          <CartLines cart={cart} quote={quote} focusAfterRemoveRef={headingRef} />
+          <ProductCartLines
+            products={products}
+            quote={quote}
+            focusAfterRemoveRef={headingRef}
+            className={cn(cart.length > 0 && "mt-5 border-t border-slate-100 pt-5")}
+          />
         </section>
 
         <div style={enterDelay(60)} className="je-in je-in-fast je-in-right space-y-4 lg:sticky lg:top-24">

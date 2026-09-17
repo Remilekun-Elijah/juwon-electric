@@ -66,6 +66,8 @@ export default function CartLines({ cart, quote, focusAfterRemoveRef }: CartLine
     for (let count = MIN_QUANTITY; count < Math.min(quantity, MAX_QUANTITY); count += 1) updateCart(cartKey, "increase");
   };
 
+  if (!motion.rows.length) return null;
+
   const remove = (item: CartItem) => {
     motion.leave(item);
     removeFromCart(getCartItemKey(item));

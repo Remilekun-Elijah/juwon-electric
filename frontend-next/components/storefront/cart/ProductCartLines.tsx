@@ -54,6 +54,8 @@ export default function ProductCartLines({ products, quote, focusAfterRemoveRef,
     addProductToCart(rest, quantity);
   };
 
+  if (!motion.rows.length) return null;
+
   const remove = (item: ProductCartItem) => {
     motion.leave(item);
     removeProductFromCart(item.productId);
