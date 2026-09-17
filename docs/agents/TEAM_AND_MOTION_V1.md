@@ -134,8 +134,8 @@ Rules:
   - The phone link is white.
   - The cart button is a glass button (`bg-white/10 border-white/20`).
   - A gold pill CTA reads **"Get a quote"** and links to `/contact?topic=Quote`.
-- **After scrolling, and on pages without a hero:** a dark glass bar (`bg-slate-950/70` with `backdrop-blur-md`, `border-white/10`, `shadow-elev-2`) with the same white nav, glass cart and gold quote pill (revised 2026-09-17; was the solid white header). It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
-- **Mobile:** the same transparent-then-dark-glass behaviour. The menu button is a glass button while transparent.
+- **After scrolling, and on pages without a hero:** the bar lifts: same white nav, glass cart and gold quote pill, in a rounded (`rounded-2xl`) dark glass bar (`bg-slate-950/70`, `backdrop-blur-md`, `border-white/10`, `shadow-elev-4`) inset from the page edges and moved down 8-12 px with a transform (revised 2026-09-17; was the solid white header). Reduced motion skips the movement. It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
+- **Mobile:** the same transparent-then-lifted behaviour. The menu button is a glass button while transparent.
 - The header must not shift layout. The hero reserves the header height at the top.
 
 ### 7.3 Hero (`HomeHero`), full-bleed and immersive
