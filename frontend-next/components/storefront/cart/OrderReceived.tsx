@@ -34,15 +34,13 @@ type Step = { title: string; description: string; icon: LucideIcon };
  * Mirrors the backend fulfilment statuses: pending (confirmation call) → processing → out_for_delivery → delivered →
  * installed. Orders without a package don't need installation (Commerce v3 §3.3), so that step is left out.
  */
-const steps = (gatewayEnabled: boolean, installation: boolean): Step[] => [
+const steps = (installation: boolean): Step[] => [
   {
     title: "Confirmation call",
-    description: gatewayEnabled
-      ? "We call you to confirm your order and delivery address, then send a secure payment link."
-      : "We call you to confirm your order and delivery address, and arrange payment.",
+    description: "We call you to confirm your order and delivery address, and agree how you’d like to pay.",
     icon: Phone,
   },
-  { title: "Processing", description: "We prepare your inverter, batteries and any solar panels from stock.", icon: Package },
+  { title: "Processing", description: "We get the items in your order ready from stock.", icon: Package },
   { title: "Out for delivery", description: "Our team brings your order to your address. Delivery within Lagos is free.", icon: Truck },
   { title: "Delivered", description: "Your order arrives and we check that everything is complete.", icon: CheckCircle2 },
   ...(installation
@@ -65,7 +63,7 @@ const firstName = (name: string) => name.trim().split(/\s+/)[0] || "";
  * A received order gets a small celebration (§8.2): the check mark draws itself, the heading scales in, and the
  * fulfilment steps appear one by one with their connector drawing down. No confetti.
  */
-export default function OrderReceived({ phone, email, gatewayEnabled }: OrderReceivedProps) {
+export default function OrderReceived({ phone, email }: OrderReceivedProps) {
   const raw = useSyncExternalStore(noopSubscribe, readStored, serverSnapshot);
   const order = useMemo(() => (raw === undefined ? undefined : parseLastOrder(raw)), [raw]);
   const numbers = phoneNumbers(phone);
@@ -204,7 +202,7 @@ export default function OrderReceived({ phone, email, gatewayEnabled }: OrderRec
               What happens next
             </h2>
             <ol className="mt-5">
-              {steps(gatewayEnabled, order.items.some((item) => item[2] !== "product")).map((step, index, all) => {
+              {steps(order.items.some((item) => item[2] !== "product")).map((step, index, all) => {
                 const Icon = step.icon;
                 const current = index === 0;
                 const last = index === all.length - 1;

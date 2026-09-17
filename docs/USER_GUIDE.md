@@ -1046,8 +1046,7 @@ On a computer, the top menu has **Packages**, **Products**, **Calculator**, **Se
 2. In the **cart**, packages and products are listed together in one cart. Change quantity (up to 100), switch with/without solar on packages, or remove items. Product lines show the photo, name, SKU and line total. Prices are checked with the latest prices, and anything no longer available (for example a product that has sold out) is flagged.
 3. Select **Checkout** and enter your name, phone, email and delivery address.
 4. Read the **payment note**:
-   - If online payment is off: "No payment now: we'll call to confirm and arrange payment."
-   - If online payment is on: "You'll receive a secure payment link after we confirm your order."
+   - "No payment now. We’ll call to confirm your order and agree how you’d like to pay." Nothing is paid at checkout and no payment link is sent.
 5. Complete the quick security check and place the order.
 
 **What you'll see:** the order summary lists every package and product, and your confirmation email lists each product as, for example, "2 × Lithium battery 5kWh (BAT-5K)" with its price.
@@ -1064,7 +1063,7 @@ On a computer, the top menu has **Packages**, **Products**, **Calculator**, **Se
 
 The **Order received** page shows your order summary and these steps:
 
-1. **Confirmation call:** we call to confirm your order and delivery address, and arrange payment (or send a secure payment link).
+1. **Confirmation call:** we call to confirm your order and delivery address, and agree how you’d like to pay.
 2. **Processing:** we prepare your equipment from stock.
 3. **Out for delivery:** our team brings your order to your address.
 4. **Delivered:** your order arrives and we check everything is complete.
@@ -1243,6 +1242,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (checkout wording)**
+- Customer: checkout and the order confirmation no longer mention a payment link; payment is agreed on the confirmation call. Order steps now describe "the items in your order", which can be a package, single products or both.
 
 **2026-09-17 (Settings redesign)**
 - Settings is now an overview with cards grouped under Business, Communication, Sales and Website, each opening its own page: **Business profile**, **Notification emails**, **Payments**, **Inventory**, **Homepage & contact**, **Financing** and **Load calculator**. New section in chapter 3, Finding your way around Settings.

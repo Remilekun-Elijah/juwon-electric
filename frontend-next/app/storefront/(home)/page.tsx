@@ -193,7 +193,7 @@ export default async function HomePage() {
         title="From your first call to after-sales support"
         description="Every order is confirmed by phone before anything is delivered, and our own engineers do the installation."
       >
-        <HowItWorks gatewayEnabled={settings.payments.gatewayEnabled} />
+        <HowItWorks />
       </Section>
 
       {financing && <Financing financing={financing} examplePackage={cheapestPackage} examplePrice={cheapestPackage ? lowestPrice(cheapestPackage) : 0} />}

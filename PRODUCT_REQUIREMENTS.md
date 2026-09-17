@@ -310,7 +310,7 @@ This subsection is for developers and whoever runs the hosting. None of it is sh
 - Outage behaviour: if the backend is unavailable, visitors keep getting the last good version of each page; a page never cached shows a friendly error with a retry button. Fallback content is never cached over real data.
 - Accessibility: skip link, landmarks, one heading 1 per page, visible focus, labelled inputs, 44 px touch targets, announced cart count changes, and loading, empty and error states for every data view.
 - SEO: canonical public URLs, sitemap and robots shared with the classic site, structured data (Product on product pages, JobPosting on vacancy pages when a location is given, Organization), and noindex on cart, checkout and confirmation pages.
-- Checkout payment note follows Settings: with online payments off, "No payment now: we'll call to confirm and arrange payment"; with them on, "You'll receive a secure payment link after we confirm your order". Bot protection (Turnstile) applies to orders, contact and newsletter sign-up.
+- Checkout payment note (updated 2026-09-17): "No payment now. We’ll call to confirm your order and agree how you’d like to pay." It is the same whatever the online payments setting, because no payment link is sent yet; payment is agreed on the confirmation call. Order-step wording refers to "the items in your order" (a package, single products or both) and installation only when the order includes it. Bot protection (Turnstile) applies to orders, contact and newsletter sign-up.
 
 Home page redesign (added 2026-09-17)
 
@@ -688,6 +688,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (checkout wording)
+- §6.10: removed the "secure payment link" wording from checkout, order confirmation and How it works; order steps describe the items in the order rather than assuming inverter, batteries and panels.
 
 2026-09-17 (Settings redesign)
 - §6.7: Settings is split into a **Settings overview** (cards grouped under Business, Communication, Sales and Website, each with a live summary) and separate pages: Business profile, Notification emails, Payments, Inventory, Homepage & contact, Financing and Load calculator, each with titled cards. Added the settings rail (desktop) and pills (phones and tablets), **Back to settings**, the sticky save bar (**Discard**, **Save changes**), the unsaved-changes guard, view-only and not-available states, and loading and error states. Settings API calls and payloads are unchanged.

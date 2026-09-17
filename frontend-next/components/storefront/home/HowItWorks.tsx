@@ -6,33 +6,31 @@ import Reveal from "@/components/storefront/motion/Reveal";
  * confirmed by phone, prepared (`processing`), delivered (`out_for_delivery` → `delivered`), installed (`installed`),
  * then supported after installation.
  */
-const stepsFor = (gatewayEnabled: boolean) => [
+const steps = [
   {
     icon: ClipboardCheck,
     title: "Order or call",
-    text: gatewayEnabled
-      ? "Choose a package and place your order online, or call us and we’ll size one for you. You pay through a secure link once we confirm."
-      : "Choose a package and place your order online, or call us and we’ll size one for you. You don’t pay anything online.",
+    text: "Order a complete package or individual products online, or call us and we’ll recommend what you need. You don’t pay anything online.",
   },
   {
     icon: PhoneCall,
     title: "Confirmation call",
-    text: "We call to confirm your order and the details of your site, then agree payment and a delivery date.",
+    text: "We call to confirm your order and delivery details, then agree how you’d like to pay and when to deliver.",
   },
   {
     icon: Settings2,
     title: "Processing",
-    text: "We prepare your inverter, batteries and panels and book the installation team.",
+    text: "We get the items in your order ready from stock and, if you need installation, book our engineers.",
   },
   {
     icon: Truck,
     title: "Delivery",
-    text: "Your equipment is delivered to your address on the agreed date.",
+    text: "Your order is delivered to your address on the agreed date.",
   },
   {
     icon: Wrench,
     title: "Installation",
-    text: "Our engineers install and test the system, then show you how to use and look after it.",
+    text: "If your order includes installation, our engineers install and test it, then show you how to use and look after it.",
   },
   {
     icon: Headphones,
@@ -42,14 +40,14 @@ const stepsFor = (gatewayEnabled: boolean) => [
 ];
 
 /**
- * "How it works": six numbered steps (payment copy follows `settings.payments.gatewayEnabled`) for a dark section
+ * "How it works": six numbered steps (nothing is paid online; payment is agreed on the confirmation call) for a dark section
  * (TEAM_AND_MOTION_V1 §7.5): glass cards with large gold step numbers. Steps reveal one after another and the gold line
  * along the top of each card draws across as it appears (§5.7). Server component.
  */
-export default function HowItWorks({ gatewayEnabled }: { gatewayEnabled: boolean }) {
+export default function HowItWorks() {
   return (
     <Reveal as="ol" stagger staggerStep={120} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-      {stepsFor(gatewayEnabled).map(({ icon: Icon, title, text }, index) => (
+      {steps.map(({ icon: Icon, title, text }, index) => (
         <li key={title} className="flex">
           <div className="relative flex w-full gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 transition-colors duration-300 hover:border-white/20 hover:bg-white/[0.08] sm:p-6">
             <span aria-hidden="true" className="je-draw absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-gold-500 via-gold-400 to-gold-300/0" />
