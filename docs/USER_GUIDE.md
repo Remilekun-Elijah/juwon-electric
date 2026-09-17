@@ -1,6 +1,6 @@
 # How to use the Juwon Electric platform
 
-Last updated: 2026-09-17
+Last updated: 2026-09-17 (Commerce v3)
 
 This guide explains, in plain steps, how to do everyday work on the Juwon Electric platform: the **admin console** (for staff) and the **public website** (for customers). Each chapter is written for one kind of user.
 
@@ -33,7 +33,7 @@ Everyone who works on the platform has a **role**. Your role decides which pages
 | **Admin** | Office manager | Everything except the engineer's "My jobs" page. Can't manage Super admin or Admin accounts. |
 | **Sales** | Sales reps, in-store staff | Dashboard; record **in-store sales**; manage orders (payment, fulfilment, engineer); installation jobs; edit packages, services, portfolio and customer segments; see products and stock; messages and newsletter; see staff. |
 | **Inventory** | Store/warehouse manager | Dashboard; add and edit products and categories; stock levels, adjustments and movements; low-stock check; see packages, services, portfolio, orders and carts. |
-| **Engineer** | Field engineers | **My jobs** only: your assigned installations, checklist, photos and notes. |
+| **Engineer** | Field engineers | **My jobs** only: installations where you are on the crew, checklist, photos and notes. |
 | **HR** | HR officer | Dashboard; vacancies (create, publish, close, delete); staff profiles. |
 | **Support** | Customer care | Dashboard; messages (reply) and newsletter; see orders, carts, installation jobs, packages and products. |
 
@@ -244,7 +244,7 @@ The steps are: **Pending → Processing → Out for delivery → Delivered → I
 4. Record payment (chapter 6, story 6.2).
 5. Select **Mark as processing**. This **takes the items out of stock**.
 6. When it leaves the store, select **Mark as out for delivery**, then **Mark as delivered** on arrival.
-7. Website orders start with **Requires installation** already on, because packages come with installation. Create a job for it (chapter 6, story 6.3). If the customer doesn't need our installation (for example they have their own installer), turn **Requires installation** off before creating any job. When every job is completed, the order becomes **Installed** automatically. If the installation was done without a job, open the delivered order and select **Mark as installed**. If **Requires installation** wasn't on, you'll be asked to confirm and it's turned on for you.
+7. Website orders that include a package start with **Requires installation** already on, because packages come with installation. Create a job for it (chapter 6, story 6.3). If the customer doesn't need our installation (for example they have their own installer), turn **Requires installation** off before creating any job. When every job is completed, the order becomes **Installed** automatically. If the installation was done without a job, open the delivered order and select **Mark as installed**. If **Requires installation** wasn't on, you'll be asked to confirm and it's turned on for you.
 8. Add an **Internal note** if needed (only staff see it) and select **Save note**.
 
 **Tips and common mistakes**
@@ -253,6 +253,8 @@ The steps are: **Pending → Processing → Out for delivery → Delivered → I
 - Cancelling an order that was already taken out of stock puts the stock back.
 - Stock follows what the customer ordered at the time, even if the package's products were changed later.
 - You can't turn off **Requires installation** while the order has jobs that aren't cancelled.
+- Website orders with only products (no package) start with **Requires installation** off. Turn it on if the customer wants us to install them.
+- Website orders can now include single products as well as packages. Product lines show the product name, SKU, quantity and price.
 
 ### Story 5.4: Follow up saved carts
 
@@ -273,8 +275,10 @@ The steps are: **Pending → Processing → Out for delivery → Delivered → I
 In-store sales are for **products** (for example an inverter or batteries), not packages.
 
 1. Go to **Orders** and select **New in-store sale**.
-2. Enter the customer's **name** and **phone number** (email is optional).
-3. Search for each product and add it. You'll see its price and stock. Set the **quantity** with the stepper.
+2. Enter the customer's **name**, **phone number** and **email** if they give them. All three are optional ("Leave blank for walk-in customers.").
+   - If you leave the name blank, the sale is saved as **Walk-in customer**, and the summary, order and Activity log show that name.
+   - If you leave the phone blank, the order shows **No phone**.
+3. Click or tap the product search. The first 20 products (A to Z) appear straight away, so you can pick one without typing. Or type a name, SKU or brand to narrow the list. You'll see each product's price, stock and status. Use the arrow keys and Enter to pick, or Esc to close the list. Set the **quantity** with the stepper.
 4. Check the line totals and **subtotal**. Prices come from the catalogue; you can't type a price.
 5. **Discount (optional):** enter the amount and a **reason** (for example "loyal customer" or "bulk purchase"). The reason is required whenever there is a discount.
 6. Choose the fulfilment:
@@ -297,6 +301,8 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 - Discounts and reasons are recorded in the Activity log with your name.
 - "Requires installation" only works with **Deliver or install later**.
 - A delivery address is required for **Deliver or install later**.
+- If you type a phone number, it must be a valid number. Leave it blank rather than typing a made-up one.
+- For **Deliver or install later**, try to take a phone number, so the office and engineers can call the customer.
 - Archived products can't be sold. Ask the inventory manager if a product you need is missing.
 
 ### Story 6.2: Update payment status
@@ -320,26 +326,40 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 
 ### Story 6.3: Assign an engineer and create an installation job
 
-*As a sales rep, I want to book an engineer for an installation so that the customer gets a date and the engineer knows what to do.*
+*As a sales rep, I want to book an engineer or a crew of engineers for an installation so that the customer gets a date and everyone on the crew knows what to do.*
 
-1. Open the order and make sure **Requires installation** is on (website orders start with it on).
+**One job per order:** each order can have only one installation job. If the order already has a job (that isn't cancelled), **Create job** is hidden and the order shows "This order already has an installation job." with a link to the job. Open that job to change it instead.
+
+1. Open the order and make sure **Requires installation** is on (website orders with a package start with it on).
 2. Optionally choose the **Assigned engineer** for the order.
 3. Select **Create job**.
 4. In **Create installation job**, fill in:
-   - **Engineer** (optional; choose "Assign later" if not decided; only active engineers are listed)
-   - **Scheduled for** (date and time)
-   - **Estimated duration (minutes)**
+   - **Engineers** (optional; leave empty to assign later; only active engineers are listed):
+     - Search for an engineer and select them. Each one appears as a chip. Add up to **10** engineers.
+     - The first engineer is marked **Lead**. To make someone else the lead, use the make-lead option on their chip.
+     - To take someone off, select the remove button (**×**) on their chip.
+     - If you leave it empty and the order has an **Assigned engineer**, the job starts with that engineer.
+   - **Scheduled for**: select the field to open the calendar.
+     - Pick the day. Use the arrows to change month. Today is highlighted, and past days are marked but can still be picked.
+     - Pick the time. Times go in 15-minute steps (for example 9:00 AM, 9:15 AM) and are Lagos time.
+     - The field then shows the date and time, for example "Thu 18 Sep 2026, 10:30 AM". Select **Clear** to remove it.
+   - **Estimated duration**: choose the **hours** (0 to 24) and the **minutes** (0, 15, 30 or 45). It shows, for example, "2 h 30 min". The shortest duration is 15 minutes. Use **Clear** if you don't know yet.
    - **Checklist**: one task per line, for example "Mount inverter", "Connect batteries", "Test changeover", "Show customer how to use"
    - **Notes for the engineer**
 5. Select **Create job**.
 
-**What you'll see:** the job under the order and in **Installations**. The engineer sees it in **My jobs**.
+**What you'll see:** the job under the order, with every engineer listed (lead first), and in **Installations**. Every engineer on the crew sees it in **My jobs** and gets a job-assigned notification.
+
+**Changing the crew:** open the job in **Installations** (or from the order), edit it, and add, remove or reorder engineers the same way. Only engineers you **add** get a new notification; the others aren't notified again.
 
 **Tips and common mistakes**
 
 - You can't create a job for a cancelled order or one that doesn't require installation.
-- To change the engineer on a job that has already started, cancel that job and create a new one.
-- Use **Installations** to filter jobs by status, engineer or dates, and to edit, reassign, cancel or delete a job. Started jobs can't be deleted.
+- You can't add the same engineer twice ("Each engineer can be added once.") or more than 10 ("A job can have at most 10 engineers.").
+- Only active accounts with the Engineer role can be added ("Assignee must be an active engineer.").
+- To change the crew on a job that has already started, cancel that job and create a new one. Cancelling the job makes **Create job** show again on the order.
+- If you see "This order already has an installation job.", someone else created one first. Refresh the order and open the existing job.
+- Use **Installations** to filter jobs by status, engineer (finds every job the engineer is on, as lead or crew) or dates, and to edit, reassign, cancel or delete a job. Started jobs can't be deleted.
 
 ### Story 6.4: Reply to customer messages
 
@@ -386,7 +406,9 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 3. Under specifications, add one row per spec: **Key** (for example `capacityKwh`), **Label** (for example "Capacity"), **Type** (Text, Number or Yes / no) and **Unit** (for example "kWh").
 4. Tick **Active** to show it on the website. Save.
 
-**Tip:** a category that still has subcategories or products can't be deleted.
+**Tip:** a category that still has subcategories, products or **packages** can't be deleted ("Category has subcategories, products or packages."). Move the products and packages to another category first (packages are moved by the staff who edit packages, story 7.5).
+
+**On the website:** a category's page lists its packages under "Packages in <category>" above its products, including packages in its subcategories.
 
 ### Story 7.2: Add a product with specs
 
@@ -446,18 +468,19 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 > **Who does this:** packages are edited by **Super admin**, **Admin** and **Sales** accounts. Inventory managers don't edit packages. Your part is keeping products, prices and stock correct, because package prices update from them automatically. The steps below are for the staff who edit packages.
 
 1. Go to **Packages** and open the package (or add one).
-2. For each option (for example "Without solar" and "With solar"):
-   1. Use the product search (type a name, SKU or brand) to add products. You'll see name, SKU, price, stock and status. Archived products are shown but can't be added.
+2. Optionally choose a **Category** from the catalogue (for example "Inverters"). Subcategories are indented under their parent. Choose **No category** if none fits. The package list shows the category name.
+3. For each option (for example "Without solar" and "With solar"):
+   1. Click or tap the product search: the first 20 products (A to Z) appear straight away. Pick one, or type a name, SKU or brand to narrow the list. You'll see name, SKU, price, stock and status. Archived products are shown but can't be added.
    2. Set the **quantity** for each (and a short note if useful). Remove any wrong row.
    3. Read the **Products total** (worked out from current prices).
    4. Set the **Price adjustment (₦)** agreed with the owner: choose **+** or **−**, then type the amount.
    5. Check the **Public price** in bold.
    6. Check the stock hint: **In stock**, or **Short: <SKU>** if a product doesn't have enough for one package.
-3. Save.
+4. Save.
 
 **What you'll see:** in the package list, each option shows its public price and a **Composed** badge. Options still priced by hand show **Manual price**.
 
-**On the website:** customers see the option price and a "What's included" list with each product's quantity, name, brand and key specs. They don't see the products total or adjustment.
+**On the website:** customers see the option price and a "What's included" list with each product's quantity, name, brand and key specs. They don't see the products total or adjustment. If you chose a category, the package page shows it, and the package is listed on that category's page under "Packages in <category>".
 
 **Tips and common mistakes**
 
@@ -465,6 +488,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 - Archived products can't be added.
 - If the public price would be ₦0 or less, the package won't save. Check the adjustment.
 - Orders use each package's own products to take stock out. A package with no products doesn't move stock.
+- A category used by a package can't be deleted. Change the package's category first.
 
 ### Story 7.6: Understand what archiving a product does to packages
 
@@ -473,13 +497,14 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 - **Archiving** a product used in packages shows a warning first. If you confirm, every option that uses it becomes **unavailable**: it disappears from the website and can't be added to a cart or ordered. A package with no available option shows "Currently unavailable — contact us".
 - To make the option available again, replace the archived product in the package (or set the product back to Active or Hidden).
 - **Deleting** a product that any package uses is blocked with "Product is used by a package." Remove it from the packages first, or archive it instead.
-- **Hidden** products stay usable in packages and in-store sales. They just don't have their own product page.
+- **Hidden** products stay usable in packages and in-store sales. They just don't have their own product page and can't be bought on their own online.
+- **Only Active products with stock** can be added to a cart on the website. Setting a product to Hidden or Archived, or stock reaching zero, stops online sales of it straight away; carts that already hold it show it as unavailable.
 
 ---
 
 ## 8. Engineer
 
-Use **My jobs** on your phone on site. It shows only jobs assigned to you.
+Use **My jobs** on your phone on site. It shows only jobs where you are on the crew, whether you are the lead or not.
 
 ### Story 8.1: See my jobs for the day
 
@@ -488,7 +513,8 @@ Use **My jobs** on your phone on site. It shows only jobs assigned to you.
 1. Sign in on your phone. **My jobs** opens.
 2. Use **Active** (to do) or **Completed** (done).
 3. Each card shows the customer, address, scheduled time (for example "Today, 1:00 pm") and checklist progress. Tap to open.
-4. Use the address and phone buttons to get directions or call the customer.
+4. If other engineers are on the job, the card shows **With:** and their names (for example "With: Tunde Bello, Chika Obi"). Call them to agree who brings what.
+5. Use the address and phone buttons to get directions or call the customer.
 
 ### Story 8.2: Start a job and tick the checklist
 
@@ -497,6 +523,8 @@ Use **My jobs** on your phone on site. It shows only jobs assigned to you.
 1. Open the job and tap **Start job** when you begin on site.
 2. Tick each **Checklist** item as you finish it. Each tick saves immediately.
 3. Read the office's notes at the bottom of the job.
+
+**Working as a crew:** everyone on the crew can start the job, tick the checklist, add photos and notes, and mark it complete, not only the lead. Everyone sees the same job, so once a teammate has ticked an item or started the job, you'll see it too after a refresh. Agree on site who updates the phone so you don't undo each other's ticks.
 
 ### Story 8.3: Add photos and completion notes, then complete
 
@@ -513,7 +541,8 @@ Use **My jobs** on your phone on site. It shows only jobs assigned to you.
 **Tips and common mistakes**
 
 - **Mark complete** stays greyed out until every checklist item is ticked.
-- If a job disappears from your list, the office may have reassigned or cancelled it. Call the office.
+- If a job disappears from your list, the office may have taken you off the crew, reassigned it or cancelled it. Call the office.
+- When you are added to a job, you get a job-assigned notification. You're not notified again if the office only changes other crew members.
 - If you're signed out on site, sign in again. Sessions end after 8 hours, or after 2 hours without use.
 
 ---
@@ -621,7 +650,7 @@ The description editor's toolbar offers:
 
 This chapter describes the public website for customers. Staff can use it to guide customers on the phone.
 
-The top menu has **Packages**, **Products**, **Services**, **Our work**, **Careers** and **Contact**, plus the **cart** button with a count.
+The top menu has **Packages**, **Products**, **Services**, **Our work**, **Careers** and **Contact**, plus the **cart** button with a count. The count includes both packages and products in your cart.
 
 ### Story 11.1: Browse packages
 
@@ -639,30 +668,50 @@ The top menu has **Packages**, **Products**, **Services**, **Our work**, **Caree
 2. Under **Choose an option**, pick an option (for example without or with solar). The price updates.
 3. Read **What's included**: each product's quantity, name (tap it for details), brand and key specs.
 4. Check the stock hint: **In stock**, or **Available to order** ("We'll confirm a delivery date when we call.").
+5. If the package belongs to a category (for example Inverters), it is shown at the top of the page. Select it to see other packages and products in that category.
 
 ### Story 11.3: Browse products and specs
 
 *As a customer, I want to check the specifications of inverters, batteries and panels so that I can compare them.*
 
 1. Select **Products**. Use the category list or search.
-2. Open a product to see photos, brand and SKU, price, stock status, a specifications table and the description.
-3. See **Included in these packages** to buy it as part of a package, or **Ask about this product** to send an enquiry about it.
+2. On a category page, any packages in that category are listed first under "Packages in <category>", then the products.
+3. Open a product to see photos, brand and SKU, price, stock status, a specifications table and the description.
+4. See **Included in these packages** to buy it as part of a package, or **Ask about this product** to send an enquiry about it. You can also buy the product on its own (story 11.4a).
 
-**Note:** single products can't be bought online yet. Buy a package, send an enquiry, or visit the store.
+### Story 11.4a: Buy a single product
+
+*As a customer, I want to buy one product, such as a replacement battery, without buying a whole package.*
+
+1. Open the product. If it says **In stock**, choose how many with the quantity stepper (up to 10, or fewer if we have fewer in stock).
+2. Select **Add to cart**. A message offers **View cart**.
+3. From a product list you can also select the small **Add to cart** button on the product's card. It adds 1.
+4. Continue shopping or check out (story 11.4).
+
+**Tips**
+
+- If a product says **Out of stock**, the **Add to cart** button is greyed out and product cards don't show it. Use **Ask about this product** and we'll tell you when it's back.
+- Single products don't include installation. If you need it installed, say so when we call, or buy a package that includes it.
 
 ### Story 11.4: Add to cart and check out
 
-*As a customer, I want to order a package online so that Juwon Electric can deliver and install it.*
+*As a customer, I want to order packages and products online so that Juwon Electric can deliver them, and install packages.*
 
-1. On a package, choose the option and select add to cart. A message offers **View cart**.
-2. In the **cart**, change quantity (up to 100), switch with/without solar, or remove items. Prices are checked with the latest prices, and anything no longer available is flagged.
+1. On a package, choose the option and select add to cart, or add a product (story 11.4a). A message offers **View cart**.
+2. In the **cart**, packages and products are listed together in one cart. Change quantity (up to 100), switch with/without solar on packages, or remove items. Product lines show the photo, name, SKU and line total. Prices are checked with the latest prices, and anything no longer available (for example a product that has sold out) is flagged.
 3. Select **Checkout** and enter your name, phone, email and delivery address.
 4. Read the **payment note**:
    - If online payment is off: "No payment now: we'll call to confirm and arrange payment."
    - If online payment is on: "You'll receive a secure payment link after we confirm your order."
 5. Complete the quick security check and place the order.
 
-**Tips:** a cart can hold up to 50 lines, and it is saved in your browser.
+**What you'll see:** the order summary lists every package and product, and your confirmation email lists each product as, for example, "2 × Lithium battery 5kWh (BAT-5K)" with its price.
+
+**Tips:**
+
+- A cart can hold up to 50 lines in total (packages and products together), and it is saved in your browser.
+- If checkout says "Some items in your cart are no longer available. Please refresh your cart.", a product may have sold out or a package option may have changed. Remove or reduce the flagged lines and try again.
+- Placing an order doesn't hold the stock. We confirm availability when we call.
 
 ### Story 11.5: What happens after ordering
 
@@ -670,11 +719,11 @@ The top menu has **Packages**, **Products**, **Services**, **Our work**, **Caree
 
 The **Order received** page shows your order summary and these steps:
 
-1. **Confirmation call:** we call to confirm your package and delivery address, and arrange payment (or send a secure payment link).
+1. **Confirmation call:** we call to confirm your order and delivery address, and arrange payment (or send a secure payment link).
 2. **Processing:** we prepare your equipment from stock.
 3. **Out for delivery:** our team brings your order to your address.
 4. **Delivered:** your order arrives and we check everything is complete.
-5. **Installation:** our engineers install and test the system and show you how to use it.
+5. **Installation:** for packages, our engineers install and test the system and show you how to use it. Orders with only products don't include installation unless we agree it on the call.
 
 ### Story 11.6: Apply for a job
 
@@ -718,6 +767,10 @@ When staff change something in the admin console (a price, a product, a package,
 | **Stock doesn't move when orders are processed** | The package has **no products yet** (manual price option), so there is nothing to take out of stock. | Build the package from products (chapter 7, story 7.5). Correct any past counts in Inventory with the reason **Correction**. |
 | **"Insufficient stock to process this order."** | Recorded stock is lower than the order needs. | Restock or correct the count in Inventory, then try again. For in-store sales, no order was created. |
 | **A change isn't showing on the website** | Open pages refresh within about a minute. | Reload the page. If it still doesn't show, check the item is set to show (for example "Show on the shop", Active status, or vacancy Open). |
+| **Create job is missing on an order** | The order already has an installation job (only one per order), or the order is cancelled or doesn't require installation. | Look for the note "This order already has an installation job." and open that job to change it. To start again, cancel the existing job; **Create job** then shows again. |
+| **Can't add a product to the cart** (website) | The product is out of stock, or it isn't Active (hidden or archived products aren't sold online). | Customers: use **Ask about this product**. Staff: check its stock in **Inventory** and its **Status** in **Products**. |
+| **Can't delete a category** | Packages, products or subcategories still use it ("Category has subcategories, products or packages."). | Move its products and subcategories to another category, and change the **Category** on its packages (story 7.5), then delete. |
+| **An engineer can't see a job** | They aren't on the job's crew, or the job was cancelled. | Open the job in **Installations** and add them under **Engineers**. |
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
 
 ---
@@ -733,6 +786,16 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (Commerce v3)**
+- Installation jobs: a job can have a crew of up to 10 engineers, with a **Lead**; every crew member sees and can update the job, and newly added engineers are notified (stories 6.3, 8.1, 8.2).
+- One installation job per order: **Create job** is hidden while the order has a job that isn't cancelled (story 6.3, troubleshooting).
+- Job dialogs: **Scheduled for** uses a calendar with 15-minute times in Lagos time and **Clear**; **Estimated duration** uses hours and minutes, at least 15 minutes (story 6.3).
+- In-store sales: customer name and phone are optional; blanks show as **Walk-in customer** and **No phone** (story 6.1).
+- Product search lists the first 20 products as soon as you click into it, on the in-store sale page and in the package editor (stories 6.1, 7.5).
+- Packages can have a **Category**; categories used by packages can't be deleted (stories 7.1, 7.5, troubleshooting).
+- Website: customers can buy single products with **Add to cart**, in the same cart as packages; product-only website orders start with **Requires installation** off (stories 5.3, 11.3, 11.4a, 11.4, 11.5, troubleshooting).
+- Roles table: engineers see jobs where they are on the crew.
 
 **2026-09-17 (installation default)**
 - Orders: new website orders start with **Requires installation** on; turn it off if the customer doesn't need our installation (story 5.3).
