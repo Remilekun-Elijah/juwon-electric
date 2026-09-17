@@ -1,6 +1,7 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import PageIntro from "@/components/storefront/PageIntro";
+import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
@@ -9,7 +10,7 @@ import { cn } from "@/lib/cn";
 import { categoryLabel, segmentSlug, segmentTitles } from "@/lib/storefront/content";
 import { getStorePortfolio, getStoreServices, getStoreSettings } from "@/lib/storefront/data";
 import { portfolioCategoryPath, storeRoutes } from "@/lib/storefront/routes";
-import { storeFocus } from "@/lib/storefront/styles";
+import { staggerDelay, storeDarkChip } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -23,20 +24,19 @@ const firstValue = (value: string | string[] | undefined) => (Array.isArray(valu
 
 type Chip = { value: string; label: string; count: number };
 
+/** Filter change: the new set of projects fades in with a short rise (TEAM_AND_MOTION_V1 §8.2). */
+const CROSS_FADE = { "--in-duration": "350ms", "--in-y": "8px" } as CSSProperties;
+
 function FilterChip({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
       scroll={false}
-      className={cn(
-        "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors md:min-h-10",
-        storeFocus,
-        active ? "border-brand-700 bg-brand-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
-      )}
+      className={storeDarkChip(active)}
     >
       {label}
-      <span className={cn("rounded-full px-2 py-0.5 text-xs tabular-nums", active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600")}>{count}</span>
+      <span className={cn("rounded-full px-2 py-0.5 text-xs tabular-nums", active ? "bg-slate-950/15 text-slate-950" : "bg-white/15 text-white")}>{count}</span>
     </Link>
   );
 }
@@ -80,15 +80,16 @@ export default async function PortfolioPage({ searchParams }: PageProps<"/storef
         eyebrow="Portfolio"
         title={active ? `Our work: ${active.label}` : "Our work"}
         description="Inverter, battery and solar installations we have completed for homes and businesses."
+        image={INTRO_IMAGES.sunset}
       >
         {chips.length > 0 && (
           <nav aria-label="Filter projects by customer type">
             <ul className="flex flex-wrap gap-2">
-              <li>
+              <li style={staggerDelay(0, 50, 450)} className="je-in">
                 <FilterChip href={storeRoutes.portfolio} active={!active} label="All projects" count={portfolio.length} />
               </li>
-              {chips.map((chip) => (
-                <li key={chip.value}>
+              {chips.map((chip, index) => (
+                <li key={chip.value} style={staggerDelay(index + 1, 50, 450)} className="je-in">
                   <FilterChip href={portfolioCategoryPath(chip.value)} active={active?.value === chip.value} label={chip.label} count={chip.count} />
                 </li>
               ))}
@@ -102,20 +103,23 @@ export default async function PortfolioPage({ searchParams }: PageProps<"/storef
           {items.length} {items.length === 1 ? "project" : "projects"}
           {active ? ` for ${active.label}` : ""}
         </p>
-        {items.length > 0 ? (
-          <PortfolioGrid items={items} headingAs="h2" priorityCount={3} categoryTitles={titles} showCategory={!active} />
-        ) : (
-          <EmptyState
-            standalone
-            title={active ? "No projects in this group yet" : "No projects to show yet"}
-            description="We’re adding photos of recent installations. Ask us for examples of systems like the one you need."
-            action={
-              <Link href={active ? storeRoutes.portfolio : storeRoutes.contact} className={buttonClasses()}>
-                {active ? "See all projects" : "Contact us"}
-              </Link>
-            }
-          />
-        )}
+        {/* Keyed by the filter, so choosing another category replays the fade on the new set of projects. */}
+        <div key={active?.value ?? "all"} style={CROSS_FADE} className="je-in">
+          {items.length > 0 ? (
+            <PortfolioGrid items={items} headingAs="h2" priorityCount={3} categoryTitles={titles} showCategory={!active} />
+          ) : (
+            <EmptyState
+              standalone
+              title={active ? "No projects in this group yet" : "No projects to show yet"}
+              description="We’re adding photos of recent installations. Ask us for examples of systems like the one you need."
+              action={
+                <Link href={active ? storeRoutes.portfolio : storeRoutes.contact} className={buttonClasses()}>
+                  {active ? "See all projects" : "Contact us"}
+                </Link>
+              }
+            />
+          )}
+        </div>
       </Section>
 
       <ContactBand
