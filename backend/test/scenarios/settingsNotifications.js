@@ -28,6 +28,19 @@ export const runSettingsNotificationsScenario = async (client) => {
     payments: { gatewayEnabled: false, provider: null },
     inventory: { defaultReorderLevel: 0, lowStockAlertsEnabled: true },
     uploads: { provider: "url" },
+    website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+    financing: { enabled: false, depositPercent: null, termsMonths: [], monthlyRatePercent: null, approvalTime: null, note: null, sample: false },
+    calculator: {
+      enabled: false,
+      appliances: [],
+      inverterHeadroomPercent: 25,
+      batteryDepthOfDischargePercent: 80,
+      batteryVoltage: 48,
+      panelWatts: 550,
+      peakSunHours: 4.5,
+      generator: { fuelPricePerLitre: 0, litresPerKvaHour: 0, maintenancePerMonth: 0 },
+      sample: false,
+    },
     updatedAt: null,
     updatedBy: null,
   });
@@ -62,6 +75,9 @@ export const runSettingsNotificationsScenario = async (client) => {
   assert.deepEqual(publicView, {
     business: { name: "Juwon Electric", phone: "08012345678", email: null, address: null, website: "https://juwon.test" },
     payments: { gatewayEnabled: true },
+    website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+    financing: { enabled: false },
+    calculator: { enabled: false },
   });
 
   // ---- low_stock -----------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { badRequest } from "./errors.js";
-import { OPS_LIMITS, boolean, email, emailList, integer, phone, text, url } from "./fields.js";
+import { OPS_LIMITS, boolean, email, emailList, integer, isPlainObject, list, number, phone, text, url } from "./fields.js";
 
 // Global settings document (API_CONTRACT_V3 §8.1): collection `settings`, fixed id
 // "global". Readers merge the stored document over DEFAULT_SETTINGS, so a missing document
@@ -15,7 +15,55 @@ export const DEFAULT_SETTINGS = Object.freeze({
   payments: { gatewayEnabled: false, provider: null },
   inventory: { defaultReorderLevel: 0, lowStockAlertsEnabled: true },
   uploads: { provider: "url" },
+  // LANDING_V1 §3. `sample` marks seeded sample content; saving a section clears it.
+  website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+  financing: {
+    enabled: false,
+    depositPercent: null,
+    termsMonths: [],
+    monthlyRatePercent: null,
+    approvalTime: null,
+    note: null,
+    sample: false,
+  },
+  calculator: {
+    enabled: false,
+    appliances: [],
+    inverterHeadroomPercent: 25,
+    batteryDepthOfDischargePercent: 80,
+    batteryVoltage: 48,
+    panelWatts: 550,
+    peakSunHours: 4.5,
+    generator: { fuelPricePerLitre: 0, litresPerKvaHour: 0, maintenancePerMonth: 0 },
+    sample: false,
+  },
 });
+
+/** Sections whose `sample` flag is cleared when the section is saved. */
+export const SAMPLE_SECTIONS = ["website", "financing", "calculator"];
+
+export const SETTINGS_LIMITS = {
+  stats: 4,
+  statLabel: 40,
+  statValue: 20,
+  businessHours: 200,
+  terms: 6,
+  termMonthsMax: 60,
+  monthlyRateMax: 20,
+  approvalTime: 60,
+  financingNote: 300,
+  appliances: 40,
+  applianceKey: 40,
+  applianceLabel: 40,
+  applianceWattsMax: 10_000,
+  applianceHoursMax: 24,
+  applianceQuantityMax: 20,
+  fuelPriceMax: 100_000,
+  litresPerKvaHourMax: 2,
+  maintenanceMax: 10_000_000,
+};
+
+export const BATTERY_VOLTAGES = [12, 24, 48];
 
 export const SETTINGS_SECTIONS = Object.keys(DEFAULT_SETTINGS);
 
@@ -38,6 +86,23 @@ export const mergeSettings = (stored) => {
 
 const MESSAGES = {
   section: (name) => `${name} must be an object.`,
+};
+
+const APPLIANCE_KEY = /^[a-z0-9-]{1,40}$/;
+
+const requiredBoolean = (source, key, label) => {
+  const value = boolean(source, key, { label });
+  if (value === undefined) throw badRequest(`${label} must be true or false.`);
+  return value;
+};
+
+/** `value` when it has at most `places` decimal places. */
+const decimals = (value, places, label) => {
+  const scaled = value * 10 ** places;
+  if (Math.abs(scaled - Math.round(scaled)) > 1e-9) {
+    throw badRequest(`${label} can have at most ${places} decimal ${places === 1 ? "place" : "places"}.`);
+  }
+  return value;
 };
 
 const nullableText = (source, key, label, max) => text(source, key, { label, max, multiline: key === "address" }) || null;
@@ -82,6 +147,121 @@ const SECTION_FIELDS = {
       return "url";
     },
   },
+  website: {
+    stats: (source) =>
+      list(source, "stats", {
+        label: "Stats",
+        max: SETTINGS_LIMITS.stats,
+        each: (entry) => {
+          if (!isPlainObject(entry)) throw badRequest("Each stat must have a label and a value.");
+          return {
+            label: text(entry, "label", { label: "Stat label", required: true, max: SETTINGS_LIMITS.statLabel }),
+            value: text(entry, "value", { label: "Stat value", required: true, max: SETTINGS_LIMITS.statValue }),
+          };
+        },
+      }),
+    whatsappNumber: (source) =>
+      source.whatsappNumber === null ? null : phone(source, "whatsappNumber", { label: "WhatsApp number" }) || null,
+    businessHours: (source) =>
+      text(source, "businessHours", { label: "Business hours", max: SETTINGS_LIMITS.businessHours, multiline: true }) || null,
+  },
+  financing: {
+    enabled: (source) => requiredBoolean(source, "enabled", "Financing enabled"),
+    depositPercent: (source) =>
+      source.depositPercent === "" ? null : integer(source, "depositPercent", { label: "Deposit percent", min: 0, max: 100 }) ?? null,
+    termsMonths: (source) => {
+      const values = list(source, "termsMonths", {
+        label: "Terms",
+        max: SETTINGS_LIMITS.terms,
+        each: (entry) =>
+          integer({ value: entry }, "value", {
+            label: "Each term",
+            required: true,
+            min: 1,
+            max: SETTINGS_LIMITS.termMonthsMax,
+          }),
+      });
+      return [...new Set(values)].sort((a, b) => a - b);
+    },
+    monthlyRatePercent: (source) => {
+      if (source.monthlyRatePercent === "") return null;
+      const value = number(source, "monthlyRatePercent", { label: "Monthly rate", min: 0, max: SETTINGS_LIMITS.monthlyRateMax });
+      return value === undefined ? null : decimals(value, 2, "Monthly rate");
+    },
+    approvalTime: (source) => text(source, "approvalTime", { label: "Approval time", max: SETTINGS_LIMITS.approvalTime }) || null,
+    note: (source) =>
+      text(source, "note", { label: "Financing note", max: SETTINGS_LIMITS.financingNote, multiline: true }) || null,
+  },
+  calculator: {
+    enabled: (source) => requiredBoolean(source, "enabled", "Calculator enabled"),
+    appliances: (source) => {
+      const keys = new Set();
+      return list(source, "appliances", {
+        label: "Appliances",
+        max: SETTINGS_LIMITS.appliances,
+        each: (entry) => {
+          if (!isPlainObject(entry)) throw badRequest("Each appliance must be an object.");
+          const key = text(entry, "key", { label: "Appliance key", required: true, max: SETTINGS_LIMITS.applianceKey });
+          if (!APPLIANCE_KEY.test(key)) {
+            throw badRequest("Appliance key must contain only lowercase letters, numbers and hyphens.");
+          }
+          if (keys.has(key)) throw badRequest(`Appliance key "${key}" is used more than once.`);
+          keys.add(key);
+          const defaultHours = number(entry, "defaultHours", {
+            label: "Default hours",
+            required: true,
+            min: 0,
+            max: SETTINGS_LIMITS.applianceHoursMax,
+          });
+          if (!Number.isInteger(defaultHours * 2)) throw badRequest("Default hours must be in steps of 0.5.");
+          return {
+            key,
+            label: text(entry, "label", { label: "Appliance label", required: true, max: SETTINGS_LIMITS.applianceLabel }),
+            watts: integer(entry, "watts", { label: "Watts", required: true, min: 1, max: SETTINGS_LIMITS.applianceWattsMax }),
+            defaultHours,
+            defaultQuantity: integer(entry, "defaultQuantity", {
+              label: "Default quantity",
+              required: true,
+              min: 0,
+              max: SETTINGS_LIMITS.applianceQuantityMax,
+            }),
+          };
+        },
+      });
+    },
+    inverterHeadroomPercent: (source) =>
+      integer(source, "inverterHeadroomPercent", { label: "Inverter headroom", required: true, min: 0, max: 100 }),
+    batteryDepthOfDischargePercent: (source) =>
+      integer(source, "batteryDepthOfDischargePercent", { label: "Battery depth of discharge", required: true, min: 10, max: 100 }),
+    batteryVoltage: (source) => {
+      const value = integer(source, "batteryVoltage", { label: "Battery voltage", required: true });
+      if (!BATTERY_VOLTAGES.includes(value)) throw badRequest("Battery voltage must be 12, 24 or 48.");
+      return value;
+    },
+    panelWatts: (source) => integer(source, "panelWatts", { label: "Panel watts", required: true, min: 100, max: 1000 }),
+    peakSunHours: (source) =>
+      decimals(number(source, "peakSunHours", { label: "Peak sun hours", required: true, min: 1, max: 10 }), 1, "Peak sun hours"),
+    generator: (source, current) => {
+      if (!isPlainObject(source.generator)) throw badRequest("Generator must be an object.");
+      const input = source.generator;
+      const pick = (key, parse) => (input[key] === undefined ? current.generator[key] : parse());
+      return {
+        fuelPricePerLitre: pick("fuelPricePerLitre", () =>
+          integer(input, "fuelPricePerLitre", { label: "Fuel price", required: true, min: 0, max: SETTINGS_LIMITS.fuelPriceMax })
+        ),
+        litresPerKvaHour: pick("litresPerKvaHour", () =>
+          decimals(
+            number(input, "litresPerKvaHour", { label: "Litres per kVA-hour", required: true, min: 0, max: SETTINGS_LIMITS.litresPerKvaHourMax }),
+            2,
+            "Litres per kVA-hour"
+          )
+        ),
+        maintenancePerMonth: pick("maintenancePerMonth", () =>
+          integer(input, "maintenancePerMonth", { label: "Maintenance per month", required: true, min: 0, max: SETTINGS_LIMITS.maintenanceMax })
+        ),
+      };
+    },
+  },
 };
 
 /**
@@ -99,15 +279,20 @@ export const planSettingsUpdate = (current, body) => {
     if (!source || typeof source !== "object" || Array.isArray(source)) throw badRequest(MESSAGES.section(section));
     for (const [key, parse] of Object.entries(SECTION_FIELDS[section])) {
       if (source[key] === undefined) continue;
-      const value = parse(source);
+      const value = parse(source, next[section]);
       if (JSON.stringify(value) !== JSON.stringify(next[section][key])) changes.push(`${section}.${key}`);
       next[section][key] = value;
+    }
+    // Saving a sample section makes it real content (LANDING_V1 §0).
+    if (SAMPLE_SECTIONS.includes(section) && next[section].sample !== false) {
+      next[section].sample = false;
+      changes.push(`${section}.sample`);
     }
   }
   return { settings: next, changes };
 };
 
-/** GET /settings/public: business details and the payment toggle only (never notification emails). */
+/** GET /settings/public: business details, the payment toggle and the website sections (never notification emails). */
 export const publicSettings = (settings) => ({
   business: {
     name: settings.business.name,
@@ -117,6 +302,10 @@ export const publicSettings = (settings) => ({
     website: settings.business.website,
   },
   payments: { gatewayEnabled: settings.payments.gatewayEnabled },
+  // LANDING_V1 §3: website always; financing and calculator in full only when enabled.
+  website: { ...settings.website },
+  financing: settings.financing.enabled === true ? { ...settings.financing } : { enabled: false },
+  calculator: settings.calculator.enabled === true ? { ...settings.calculator } : { enabled: false },
 });
 
 /** Stored document for a merged settings object. */
