@@ -650,6 +650,8 @@ The description editor's toolbar offers:
 
 This chapter describes the public website for customers. Staff can use it to guide customers on the phone.
 
+**On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) and see the lowest package price under "Complete packages from".
+
 The top menu has **Packages**, **Products**, **Services**, **Our work**, **Careers** and **Contact**, plus the **cart** button with a count. The count includes both packages and products in your cart.
 
 ### Story 11.1: Browse packages
@@ -786,6 +788,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (home hero)**
+- Customer: home page shortcuts by battery type and the starting package price (chapter 11).
 
 **2026-09-17 (Commerce v3)**
 - Installation jobs: a job can have a crew of up to 10 engineers, with a **Lead**; every crew member sees and can update the job, and newly added engineers are notified (stories 6.3, 8.1, 8.2).

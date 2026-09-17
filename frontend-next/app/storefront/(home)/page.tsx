@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
-import { availablePackages } from "@/components/storefront/catalog/packageMeta";
+import { PACKAGE_TYPE_FILTERS, availablePackages, lowestPrice, packageTypeKey } from "@/components/storefront/catalog/packageMeta";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
@@ -63,6 +63,11 @@ export default async function HomePage() {
   // Commerce v2 §4: packages with no available option stay out of the home finder.
   const packages = availablePackages(allPackages);
   const topCategories = buildCategoryTree(categories);
+  const heroPrices = packages.map(lowestPrice).filter((price): price is number => typeof price === "number" && price > 0);
+  const heroFromPrice = heroPrices.length ? Math.min(...heroPrices) : null;
+  const heroPackageTypes = PACKAGE_TYPE_FILTERS.filter((type) => type.value !== "all")
+    .map((type) => ({ ...type, count: packages.filter((pkg) => packageTypeKey(pkg) === type.value).length }))
+    .filter((type) => type.count > 0);
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
   const recentWork = featuredFirst(portfolio).slice(0, HOME_PORTFOLIO);
   const offerings = services.offerings.slice(0, HOME_OFFERINGS);
@@ -71,7 +76,7 @@ export default async function HomePage() {
   return (
     <>
       <OrganizationJsonLd settings={settings} />
-      <HomeHero phone={settings.business.phone} />
+      <HomeHero phone={settings.business.phone} fromPrice={heroFromPrice} packageTypes={heroPackageTypes} />
 
       <Section
         id="packages"

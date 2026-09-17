@@ -220,6 +220,7 @@ Persona: HR
 - Dashboard revenue uses order totals, so discounts are reflected.
 
 6.10 Public storefront (added 2026-09-17)
+- Home hero (2026-09-17): headline, "Shop packages" and "Talk to an engineer" calls to action, reassurance points (no payment to place an order, confirmation call, installation included), "Shop by battery type" shortcuts with live package counts, an installation photo with the live starting package price ("Complete packages from ₦…"), and a strip of three trust points.
 - Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with type and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product", and since Commerce v3 "Add to cart"), buy (one cart for packages and products, and checkout with the payment note), trust (services, customer segments, portfolio), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
 - Design: matches the admin console (same font, colours, cards, badges and components); plain everyday icons only; mobile-first and checked at phone, tablet and desktop widths.
 - Default and switch: the new storefront is the default public site. Setting the environment variable `NEXT_PUBLIC_PUBLIC_UI=classic` serves the classic public UI instead. Both share the same public URLs, cart storage and order payloads, so a cart started in one works in the other.
@@ -346,6 +347,9 @@ Open items for owner review
 - §7: added acceptance criteria for crews, one job per order, job pickers, walk-in sales, product search on focus, online product purchase and package categories.
 - §6.6: engineers see jobs where they are on the crew; the job-assigned notification goes to each newly added crew member.
 - §9–§11: added the Commerce v3 milestone, two risks and the link to the Commerce v3 contract.
+
+2026-09-17 (home hero)
+- §6.10: redesigned home hero with battery-type shortcuts, live starting price and trust strip.
 
 2026-09-17 (installation default)
 - §6.3: new website orders start with "Requires installation" on; staff can turn it off; earlier orders unchanged.
