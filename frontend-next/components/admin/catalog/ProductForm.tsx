@@ -2,9 +2,9 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ExternalLink, Plus, Trash2 } from "lucide-react";
+import { Archive, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, Button, Drawer, Field, Input, Select } from "@/components/ui";
+import { Alert, Button, ConfirmDialog, Drawer, Field, Input, Select } from "@/components/ui";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { saveProduct } from "@/lib/api/admin";
 import type { Category, Product, ProductInput, ProductStatus } from "@/lib/api/types";
@@ -223,15 +223,21 @@ type ProductFormProps = {
   categories: readonly Category[];
   onClose: () => void;
   onSaved: (product: Product) => void;
+  /** Package options that include this product (Commerce v2 §3); undefined when packages couldn't be read. */
+  usedInOptions?: number;
 };
 
+const optionsLabel = (count: number) => `${count} package option${count === 1 ? "" : "s"}`;
+
 /** Create/edit drawer for a product. Mount it with a fresh `key` per open so the form starts from `product`. */
-export function ProductForm({ open, product, categories, onClose, onSaved }: ProductFormProps) {
+export function ProductForm({ open, product, categories, onClose, onSaved, usedInOptions }: ProductFormProps) {
   const [model, setModel] = useState<Model>(() => toModel(product, categories));
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [pendingArchive, setPendingArchive] = useState<ProductInput | null>(null);
   const creating = !product;
+  const usage = creating ? 0 : (usedInOptions ?? 0);
   const formId = "product-form";
 
   const options = useMemo(() => [{ value: "", label: "No category" }, ...categoryOptions(categories)], [categories]);
@@ -253,6 +259,16 @@ export function ProductForm({ open, product, categories, onClose, onSaved }: Pro
       setFormError("Check the highlighted fields and try again.");
       return;
     }
+    // Archiving a product used in packages makes those options unavailable: confirm first.
+    if (usage > 0 && product?.status !== "archived" && input.status === "archived") {
+      setPendingArchive(input);
+      return;
+    }
+    await save(input);
+  };
+
+  const save = async (input: ProductInput) => {
+    if (saving) return;
     setSaving(true);
     try {
       const saved = await saveProduct(product?.id ?? null, input);
@@ -339,7 +355,12 @@ export function ProductForm({ open, product, categories, onClose, onSaved }: Pro
         </Field>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Price (NGN)" required error={errors.price}>
+          <Field
+            label="Price (NGN)"
+            required
+            error={errors.price}
+            helper={usage > 0 ? `Used in ${optionsLabel(usage)}. Their prices will update.` : undefined}
+          >
             <Input
               type="number"
               inputMode="decimal"
@@ -593,6 +614,26 @@ export function ProductForm({ open, product, categories, onClose, onSaved }: Pro
           )}
         </Field>
       </form>
+
+      <ConfirmDialog
+        open={Boolean(pendingArchive)}
+        onClose={() => {
+          if (!saving) setPendingArchive(null);
+        }}
+        onConfirm={async () => {
+          const input = pendingArchive;
+          if (!input) return;
+          await save(input);
+          setPendingArchive(null);
+        }}
+        loading={saving}
+        loadingText="Archiving…"
+        tone="warning"
+        title="Archive this product?"
+        description={`“${model.name.trim() || product?.name}” is used in ${optionsLabel(usage)}. While it’s archived, those options are unavailable: customers can’t order them and their packages may disappear from the shop.`}
+        confirmLabel="Archive product"
+        confirmIcon={<Archive aria-hidden="true" />}
+      />
     </Drawer>
   );
 }

@@ -22,9 +22,10 @@ import {
   Table,
   TableEmpty,
 } from "@/components/ui";
-import { deleteProduct, getCategories, getProducts } from "@/lib/api/admin";
+import { deleteProduct, getAdminPackages, getCategories, getProducts } from "@/lib/api/admin";
 import type { Product } from "@/lib/api/types";
 import { errorMessage, formatCurrency } from "@/lib/admin/format";
+import { countProductUsage } from "@/lib/admin/packageOptions";
 import { categoryOptions } from "./categoryTree";
 import { ProductStatusBadge, productStatusOptions, StockBadge } from "./productBadges";
 import { ProductForm } from "./ProductForm";
@@ -88,6 +89,9 @@ export function Products() {
     () => [{ value: "", label: "All categories" }, ...categoryOptions(categories)],
     [categories]
   );
+  // Package usage for price and archive warnings (Commerce v2 §3). Needs content:read; otherwise no warnings.
+  const packagesQuery = useAdminQuery("admin-packages", getAdminPackages, { enabled: can("content:read") });
+  const packageUsage = useMemo(() => (packagesQuery.data ? countProductUsage(packagesQuery.data) : null), [packagesQuery.data]);
   const categoryName = (id: string | null) => (id ? (categories.find((item) => item.id === id)?.name ?? "—") : "—");
 
   const [form, setForm] = useState<{
@@ -339,6 +343,7 @@ export function Products() {
           open={form.open}
           product={form.product}
           categories={categories}
+          usedInOptions={form.product && packageUsage ? (packageUsage.get(form.product.id) ?? 0) : undefined}
           onClose={closeForm}
           onSaved={() => {
             closeForm();
@@ -358,7 +363,9 @@ export function Products() {
         title="Delete product"
         description={
           pendingDelete
-            ? `Are you sure you want to delete “${pendingDelete.name}” (${pendingDelete.sku})? Its stock history is kept. This can’t be undone.`
+            ? packageUsage?.get(pendingDelete.id)
+              ? `“${pendingDelete.name}” (${pendingDelete.sku}) is used in ${packageUsage.get(pendingDelete.id)} package option(s), so the server won’t delete it. Remove it from those packages first, or archive it instead.`
+              : `Are you sure you want to delete “${pendingDelete.name}” (${pendingDelete.sku})? Its stock history is kept. This can’t be undone.`
             : ""
         }
         confirmLabel="Delete product"
