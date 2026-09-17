@@ -35,14 +35,19 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
 
   return (
     <Section eyebrow="Reviews" title="What our customers say">
+      {/*
+        Phones: a swipe row that bleeds to the screen edge. `relative` makes the row the containing block of the
+        absolutely positioned `sr-only` text inside the cards; without it that text escapes the scroll clip and widens
+        the page (375 px scrollWidth was 1767).
+      */}
       <ul
         aria-label="Customer reviews"
-        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 lg:gap-5"
+        className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 lg:gap-5 [&::-webkit-scrollbar]:hidden"
       >
         {reviews.map((review) => {
           const rating = typeof review.rating === "number" ? Math.min(5, Math.max(1, Math.round(review.rating))) : null;
           return (
-            <li key={review.id} className="w-[85%] max-w-sm shrink-0 snap-start sm:w-auto sm:max-w-none">
+            <li key={review.id} className="relative w-[85%] max-w-sm shrink-0 snap-start sm:w-auto sm:max-w-none">
               <figure className={cn(storeCard, "flex h-full flex-col p-5 sm:p-6")}>
                 <div className="flex items-center justify-between gap-3">
                   {rating ? <Rating rating={rating} /> : <Quote aria-hidden="true" className="h-5 w-5 text-brand-200" />}
