@@ -183,7 +183,7 @@ A package option's price is worked out like this:
 
 1. Go to **Packages** and open the package.
 2. For each option (for example "Without solar", "With solar"), check the products and read the **Products total**.
-3. Enter the **Price adjustment (₦)**. Use a minus amount to reduce the price.
+3. Under **Price adjustment (₦)**, choose **+** to add to the products total (for example installation or margin) or **−** to subtract (for example a bundle discount), then type the amount in whole naira.
 4. Check the **Public price** in bold, then save.
 
 **Example:** Products total ₦1,300,000 + adjustment ₦50,000 = Public price ₦1,350,000.
@@ -192,7 +192,7 @@ A package option's price is worked out like this:
 
 - Customers never see the products total or your adjustment, only the public price.
 - When a product's price changes, every package using it changes price automatically. Your adjustment stays the same naira amount.
-- The public price must be more than ₦0, or the package won't save.
+- The public price must be more than ₦0, or the package won't save ("The public price must be greater than 0.").
 - Options with no products still show a manual price field and the note "Add products to calculate the price automatically." Build them from products (chapter 7, story 7.4) to get automatic pricing.
 
 ### Story 4.6: Check the activity log
@@ -426,10 +426,10 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 
 1. Go to **Packages** and open the package (or add one).
 2. For each option (for example "Without solar" and "With solar"):
-   1. Use the product search to add products. You'll see name, SKU, price, stock and status.
+   1. Use the product search (type a name, SKU or brand) to add products. You'll see name, SKU, price, stock and status. Archived products are shown but can't be added.
    2. Set the **quantity** for each (and a short note if useful). Remove any wrong row.
    3. Read the **Products total** (worked out from current prices).
-   4. Enter the **Price adjustment (₦)** agreed with the owner (plus or minus).
+   4. Set the **Price adjustment (₦)** agreed with the owner: choose **+** or **−**, then type the amount.
    5. Check the **Public price** in bold.
    6. Check the stock hint: **In stock**, or **Short: <SKU>** if a product doesn't have enough for one package.
 3. Save.
