@@ -263,7 +263,7 @@ The website was built with **sample content** (made-up FAQs, reviews, client log
 
 1. Work through **story 10A.8, Replace sample content before launch**, or ask an admin to.
 2. Tick off every item on the **Before launch checklist** in `PRODUCT_REQUIREMENTS.md` (section 11).
-3. Check that no **Sample** badge or sample banner is left in the admin, and no "Sample" label is left on the website. This includes **Website → Team** and the **Meet the team** page (`/team`): the 12 sample team members are made-up people and must be replaced with the real team (story 10A.9).
+3. Check that no **Sample** badge or sample banner is left in the admin, and no "Sample" label is left on the website. This includes **Website → Our Team** and the **Our Team** page (`/team`): the 12 sample team members are made-up people and must be replaced with the real team (story 10A.9).
 4. Decide whether **Financing** and the **Calculator** should be on at launch (stories 10A.6 and 10A.7). If you're not sure, leave them off.
 
 **Tip:** website settings (stats, WhatsApp, business hours, financing, calculator) can only be changed by Super admin and Admin accounts.
@@ -961,7 +961,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 6. **Settings → Website → Homepage & contact:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save changes**.
 7. **Settings → Website → Financing:** enter real terms and select **Save changes**, or switch **Show financing on the website** off and select **Save changes**.
 8. **Settings → Website → Load calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save changes**; or switch **Show the calculator on the website** off and select **Save changes**.
-9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work**, **Meet the team** and the footer. No "Sample" label should be left.
+9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work**, **Our Team** and the footer. No "Sample" label should be left.
 
 **What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
 
@@ -973,9 +973,9 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 ### Story 10A.9: Manage the team page
 
-*As an admin, I want the Meet the team page to show our real people, in sensible groups and order, so that customers know who will install and look after their system.*
+*As an admin, I want the Our Team page to show our real people, in sensible groups and order, so that customers know who will install and look after their system.*
 
-The public page is **Meet the team** at `/team`. It lists every team member whose **Show on the website** switch is on, grouped under headings such as "Leadership" or "Engineering & installations".
+The public page is **Our Team** at `/team`. It lists every team member whose **Show on the website** switch is on, grouped under headings such as "Leadership" or "Engineering & installations".
 
 **Add or edit a team member**
 
@@ -1009,7 +1009,7 @@ The team page was built with **12 sample team members**: made-up names with draw
 2. Moving a sample member or switching them off doesn't remove the Sample badge. Only changing their details and saving does.
 3. Check `/team` on your phone: no card should show a "Sample" label, and no photo should be a drawing.
 
-**What you'll see on the website:** the **Meet the team** page with figures counting up (team members, teams, and engineers and installers), a section for each group with photo cards, and a "Want to join us?" band linking to open roles. On a computer, pointing at a card or tabbing to it zooms the photo and shows the bio and LinkedIn link over it; on a phone, the bio and link show under the role. **Team** is in the top menu, and **Meet the team** is in the footer.
+**What you'll see on the website:** the **Our Team** page with figures counting up (team members, teams, and engineers and installers), a section for each group with photo cards, and a "Want to join us?" band linking to open roles. On a computer, pointing at a card or tabbing to it zooms the photo and shows the bio and LinkedIn link over it; on a phone, the bio and link show under the role. **Team** is in the top menu, and **Our Team** is in the footer.
 
 **Tips and common mistakes**
 
@@ -1204,12 +1204,12 @@ At the bottom right of most pages you may see one button. On a phone it is a rou
 - When you reach the footer, they fade so you can read the links underneath. Point at or tab to a button to bring it back.
 - There is no "online" light: WhatsApp replies come during business hours.
 
-### Story 11.14: Meet the team
+### Story 11.14: Our Team
 
 *As a customer, I want to see the people behind Juwon Electric so that I know who I'm dealing with.*
 
-1. Select **Team** in the top menu (or **Meet the team** in the footer).
-2. The **Meet the team** page shows how many team members, teams, and engineers and installers there are. The figures count up when the page opens.
+1. Select **Our Team** in the top menu or the footer.
+2. The **Our Team** page shows how many team members, teams, and engineers and installers there are. The figures count up when the page opens.
 3. People are grouped under headings, for example "Leadership" or "Engineering & installations". Each card shows a photo (or initials), name and role.
 4. To read more about someone:
    - On a computer, point at their card, or tab to it with the keyboard. The photo zooms a little and their bio and a **LinkedIn** link (when they have one) appear over it.
@@ -1273,6 +1273,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-18 (Our Team)**
+- Everywhere: the **Team** menu item, page title and admin page are now called **Our Team**. Nothing else changed; the web address `/team` is the same.
 
 **2026-09-18 (whatsapp button)**
 - Customer: the floating WhatsApp button is now WhatsApp green with the WhatsApp logo.
@@ -1339,7 +1342,7 @@ This guide is a living document. **Update it in the same change as every feature
 - New story 10A.9, manage the team page: add and edit team members (**Name**, **Role**, **Group**, **Bio**, **Photo URL**, **LinkedIn URL**, **Show on the website**), order with **Move up** / **Move down**, **Filter by group**, hide or delete, and replace the 12 sample members.
 - Owner: story 4.7 and story 10A.8 now include the sample team members. Corrected 10A.8: saving without changing anything, moving an item or switching it off keeps the Sample mark; only changing and saving removes it.
 - Website settings: homepage stats now show in the hero and count up; WhatsApp also drives the hero button and the floating **Chat on WhatsApp** button; the calculator adds a floating **Size your system** button (stories 10A.5, 10A.7).
-- Customer: new top menu (**Team** replaces **Careers** on computers; **Careers** stays in the phone menu and the footer) and **Get a quote**; new stories for the home page hero (photos, bars, pause button, stats, price card), the floating buttons (hidden on cart and checkout) and the **Meet the team** page (stories 11.12 to 11.14); stories 11.6 and 11.10 updated.
+- Customer: new top menu (**Team** replaces **Careers** on computers; **Careers** stays in the phone menu and the footer) and **Get a quote**; new stories for the home page hero (photos, bars, pause button, stats, price card), the floating buttons (hidden on cart and checkout) and the **Our Team** page (stories 11.12 to 11.14); stories 11.6 and 11.10 updated.
 - How updates reach the website: team member changes included (chapter 12).
 - Troubleshooting: hero photos aren't changing, team member not showing, numbers show 0 briefly, and team page shows drawings instead of photos; WhatsApp button missing now mentions the cart and checkout.
 

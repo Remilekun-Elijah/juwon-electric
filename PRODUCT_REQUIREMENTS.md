@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Why choose us managed in the admin (see section 12, Change log)
+Last updated: 2026-09-18, Our Team naming (see section 12, Change log)
 
 1. Executive summary
 
@@ -51,7 +51,7 @@ Juwon Electric is an integrated solar commerce and installation platform that en
 - Website content managed in the admin (Landing v1, 2026-09-17): FAQs, customer reviews and client logos; case-study details on portfolio items; homepage stats, WhatsApp number and business hours; financing terms; and the solar calculator settings (§6.11)
 - A richer home page built from that content, with every section hidden when it has no data, plus new public pages `/calculator` and `/faq`, a portfolio category filter and a floating WhatsApp button (§6.11)
 - Clearly labelled sample content for local development and review, seeded locally only and replaced before launch (§6.11, §11 Before launch checklist)
-- Team page (2026-09-17): team members managed in the admin (Website → Team) and a public "Meet the team" page at `/team` (§6.11)
+- Team page (2026-09-17): team members managed in the admin (Website → Our Team) and a public "Our Team" page at `/team` (§6.11)
 - Home page redesign (2026-09-17): a transparent header over a full-bleed photo hero, hero stats, floating "Size your system" and WhatsApp buttons, a darker section rhythm, a dark footer, and storefront-wide motion that respects reduced motion (§6.10)
 - Image uploads (2026-09-17): staff upload images (JPEG, PNG or WebP) from the product, category, services, portfolio, customer segment, review, client logo and team forms, with an image link as a fallback (§6.1, §6.7, §6.8, §6.11). Upload follow-ups (2026-09-17) added staff profile photos and engineers' job photos (§6.4, §6.6)
 
@@ -352,7 +352,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   14. Careers teaser (restored; only when there are open vacancies): white, "We're hiring: N open roles" with up to 3 role titles and **See open roles**.
   15. Final call to action: brand red panel over an installation photo, eyebrow "Ready when you are", a gold **Shop packages** button, **Call**, and **Chat on WhatsApp** when set, followed by the business phone numbers, email, address and opening hours (the home page has no separate contact band).
   - Section eyebrows are gold on dark and brand red on light.
-- Footer: dark (brand-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Meet the team**, Careers, FAQ and Contact us.
+- Footer: dark (brand-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Our Team**, Careers, FAQ and Contact us.
 
 Motion and accessibility (storefront-wide, 2026-09-17)
 - Inner pages (2026-09-17): every storefront page opens with a compact dark page intro in the home hero style (installation photo with slow zoom, gold eyebrow, white heading rising in, breadcrumbs), and the header is transparent over it until you scroll. Cart and checkout use a shorter, faster intro.
@@ -471,7 +471,7 @@ Team page (added 2026-09-17)
 Contract: docs/agents/TEAM_AND_MOTION_V1.md §1–§4. The owner asked for a team page with placeholder pictures. The idea (grouped headshot cards) comes from a reference site; none of its names, photos or structure are copied.
 
 Team members collection
-- A fourth collection in the admin's **Website** group: **Team** (`/admin/team`), described as "The people shown on the website's Meet the team page, in groups." Same access as the other Website collections: viewing needs `content:read`; adding, editing, reordering and deleting need `content:write` (Super admin, Admin, Sales).
+- A fourth collection in the admin's **Website** group: **Team** (`/admin/team`), described as "The people shown on the website's Our Team page, in groups." Same access as the other Website collections: viewing needs `content:read`; adding, editing, reordering and deleting need `content:write` (Super admin, Admin, Sales).
 - Fields (admin labels):
   - **Name** (required, 1–100 characters).
   - **Role** (required, 1–80), for example "Lead installation engineer".
@@ -488,8 +488,8 @@ Team members collection
 - Sample data: 12 fictional members with made-up Nigerian names across the 4 groups above (Leadership 2, Engineering & installations 4, Sales & customer care 3, Operations 3), with one-sentence bios about real kinds of work (sizing systems, installations, after-sales). Photos are illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg` (abstract head-and-shoulders drawings, no real faces, no text). LinkedIn is empty. Seeded with the same local-only sample seeds as Landing v1 (fixed ids starting `sample-team-`).
 - Changes reach the storefront through the `team` revalidation tag (admin path `/admin/team`).
 
-`/team` page ("Meet the team")
-- Intro: eyebrow "Our people", title "Meet the team", and "The engineers, installers and customer care staff behind every Juwon Electric system." Page title "Meet the team", with a canonical URL, a loading state and a sitemap entry.
+`/team` page ("Our Team")
+- Intro: eyebrow "Our people", title "Our Team", and "The engineers, installers and customer care staff behind every Juwon Electric system." Page title "Our Team", with a canonical URL, a loading state and a sitemap entry.
 - Stats: worked out from the list only, and counting up when shown: **Team members** (how many), **Teams** (how many groups) and **Engineers and installers** (members of groups whose name contains "Engineer" or "Install"; left out when there are none). A Sample label shows when every member is sample. No invented figures.
 - Groups: one section per group, with the group name as a heading and a card grid of 2 columns on phones, 3 from 768 px and 4 from 1280 px.
 - Card: a square photo with rounded corners (or the initials on a soft background), name and role, and a Sample pill on sample members.
@@ -502,7 +502,7 @@ Team members collection
 
 Header and footer navigation (2026-09-17)
 - Desktop header nav: Packages, Products, Calculator, Services, Our work, **Team**, Contact. **Team replaces Careers** in the desktop nav. The **Calculator** link (header, phone menu and footer) is hidden while the calculator is switched off in Settings.
-- Careers stays in the mobile menu (right after Team) and in the footer's Company column. The footer also links **Meet the team**.
+- Careers stays in the mobile menu (right after Team) and in the footer's Company column. The footer also links **Our Team**.
 
 
 Sample content
@@ -547,10 +547,10 @@ Sample content
 - Home page order (Landing v1): with all content present the sections appear in the §6.11 order; removing the data behind any section hides that section without leaving an empty heading or gap.
 - Sample content (Landing v1): after running the local seed, every seeded record and settings section shows a Sample badge in the admin, the banner "Sample content is showing on the website. Edit or replace it before launch." shows on screens with sample records, and the website shows "Sample" labels on sample stats, reviews, client logos, case-study details, financing and calculator notes. Editing and saving a sample record or section removes its badge and label. The seed refuses to run with `NODE_ENV=production`.
 - No sample content visible before launch (Landing v1): on the production website at launch, no "Sample" label appears on any page, no FAQ, review, client logo, team member (added 2026-09-17), portfolio item or settings section in the admin shows a Sample badge, no screen shows the sample banner, the WhatsApp link does not use `+2348000000000`, and no files under `/samples/` are referenced. Every item in the §11 Before launch checklist is ticked.
-- Team members admin (2026-09-17): a Sales account opens **Website → Team**, selects **Add team member**, enters Name, Role, Group "Engineering & installations", a Bio, a Photo (uploaded, or a link such as `/team/ada.jpg`) and a LinkedIn URL, leaves **Show on the website** on and saves; the member appears in the list with a round photo and in that group on `/team` on the next page view. A LinkedIn URL that isn't `https`, a Photo URL that is neither a link nor a path starting with `/`, or a Bio over 300 characters is rejected. Switching **Show on the website** off removes the member from `/team` and from `GET /team`. A Support account can view Team but has no add, edit, move or delete buttons, and the server refuses changes with "You do not have permission to perform this action."
+- Team members admin (2026-09-17): a Sales account opens **Website → Our Team**, selects **Add team member**, enters Name, Role, Group "Engineering & installations", a Bio, a Photo (uploaded, or a link such as `/team/ada.jpg`) and a LinkedIn URL, leaves **Show on the website** on and saves; the member appears in the list with a round photo and in that group on `/team` on the next page view. A LinkedIn URL that isn't `https`, a Photo URL that is neither a link nor a path starting with `/`, or a Bio over 300 characters is rejected. Switching **Show on the website** off removes the member from `/team` and from `GET /team`. A Support account can view Team but has no add, edit, move or delete buttons, and the server refuses changes with "You do not have permission to perform this action."
 - Team order and groups (2026-09-17): moving the first member of "Operations" to the top of the list with ▲ makes "Operations" the first group on `/team`. **Filter by group** shows only that group's members.
-- Team page (2026-09-17): with the 12 sample members, `/team` shows "Meet the team", stats of 12 team members, 4 teams and 4 engineers and installers counting up, 4 group sections in seed order with 2 cards a row at 375 px, 3 at 768 px and 4 at 1280 px, a Sample pill on every card, and "Want to join us?" linking to `/vacancies`. On a mouse device, hovering or tabbing to a card zooms the photo and shows the bio overlay; on a touch device the bio shows under the role with no overlay. A member with no photo shows their initials. The page's structured data lists no sample members; after one member is edited and saved as real content, the `Organization` `employee` list contains exactly that member's name and job title. With no active members the page shows "Our team page is being updated" and no stats.
-- Header navigation (2026-09-17): at 1280 px the desktop header shows Team and no Careers; the mobile menu lists Careers right after Team; the footer's Company column links both **Meet the team** and Careers; `/team` is in the sitemap.
+- Team page (2026-09-17): with the 12 sample members, `/team` shows "Our Team", stats of 12 team members, 4 teams and 4 engineers and installers counting up, 4 group sections in seed order with 2 cards a row at 375 px, 3 at 768 px and 4 at 1280 px, a Sample pill on every card, and "Want to join us?" linking to `/vacancies`. On a mouse device, hovering or tabbing to a card zooms the photo and shows the bio overlay; on a touch device the bio shows under the role with no overlay. A member with no photo shows their initials. The page's structured data lists no sample members; after one member is edited and saved as real content, the `Organization` `employee` list contains exactly that member's name and job title. With no active members the page shows "Our team page is being updated" and no stats.
+- Header navigation (2026-09-17): at 1280 px the desktop header shows Team and no Careers; the mobile menu lists Careers right after Team; the footer's Company column links both **Our Team** and Careers; `/team` is in the sitemap.
 - Home header and hero (2026-09-17): on the home page at the top, the header is transparent with white links and a gold **Get a quote** pill; after scrolling 24 px it lifts into a floating dark glass bar, and on every other page it is always lifted, with no change in page layout. The hero photos crossfade every 7 seconds while the gold progress bar fills; selecting a bar shows that photo; the pause button stops the bar and the photos, and play resumes; hovering over the hero or tabbing into it also pauses. With 4 website stats the hero shows 4 gold figures that count up to exactly the saved values (for example "500+"); with none it shows the three reassurance ticks. The glass price card shows at 1280 px and wider only.
 - Reduced motion (2026-09-17): with the operating system's reduce-motion setting on, the home hero stays on the first photo with no zoom (the dots still switch photos) and has no pause button, client logos don't scroll, every count-up figure shows its final value straight away, hover zoom and lift are off, and no content waits for an animation to appear.
 - No JavaScript (2026-09-17): with JavaScript disabled, the home page, team page and all sections show their full content and final figures straight away, with the first hero photo. If scripts are on but fail to start, counting figures still show their final values within 3 seconds.
@@ -666,7 +666,7 @@ Complete every item before the website goes live. The local seed never runs in p
   - Sample FAQs have no "Sample" label on the website, so check them in the admin (Website → FAQs).
 - [ ] Reviews (6 sample, made-up names such as "Adaeze O."): delete all; add only real reviews from customers who agreed to be quoted.
 - [ ] Client logos (6 sample, fictional clients using `/samples/client-1.svg` to `/samples/client-6.svg`): delete all; add only real clients who gave permission, with their own logo files or links.
-- [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo (upload or link) with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
+- [ ] Team members (12 sample, fictional names such as "Adebayo Ogunleye", with illustrated placeholder portraits `/samples/team/member-1.svg` to `member-12.svg`, added 2026-09-17): in **Website → Our Team**, delete every sample member and add the real team, or replace each one's Name, Role, Group, Bio and Photo (upload or link) with real details and save. Use real photos only with each person's agreement, and add LinkedIn links only if the person agrees. Check that no card on `/team` shows a Sample pill and no photo path starts with `/samples/team/`.
 - [ ] Portfolio case-study details: for each portfolio item marked Sample, replace Category, Summary, Location and System with the real project details, or clear them.
 - [ ] Settings → Website → Homepage & contact:
   - [ ] Stats (4 sample: Installations, Years in business, Engineers, Average install time): enter true figures or remove the rows.
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (Our Team naming)
+- §6.10 and §6.11: **Team** is called **Our Team** everywhere it is shown: the storefront header and phone menu, the footer link (was "Meet the team"), the page title and metadata at `/team`, and the admin sidebar item and page title. Routes, ids, the `teamMembers` collection and the API are unchanged. The admin sidebar group that holds Vacancies and Staff is still called Team, since it covers staff, not the public page.
 
 2026-09-18 (whatsapp button)
 - §6.10: the floating **Chat on WhatsApp** button uses WhatsApp green with the WhatsApp mark instead of brand red and a generic chat bubble, so it is recognisable at a glance. Text on it is the deep WhatsApp green for contrast.
