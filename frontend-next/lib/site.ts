@@ -25,6 +25,7 @@ export const socials = {
   fb: "https://www.facebook.com/juwonelectric?mibextid=LQQJ4d",
   insta: "https://www.instagram.com/juwon__electric",
   tt: "https://www.tiktok.com/@juwon_electric",
+  yt: "https://www.youtube.com/@juwonelectric",
   x: "https://x.com/juwon_electric?s=21&t=V5eLolxJSbC7bJ7s6X0dVQ",
 } as const;
 
