@@ -1,24 +1,34 @@
 import { useId } from "react";
 import Link from "next/link";
-import { ArrowRight, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import BrandPanel from "@/components/storefront/BrandPanel";
 import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { primaryPhone, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
-import { storeContainer, storeFadeUp, storeSection } from "@/lib/storefront/styles";
+import { phoneNumbers, primaryPhone, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
+import { storeContainer, storeFadeUp, storeFocus, storeSection } from "@/lib/storefront/styles";
 
 export type FinalCtaProps = {
   phone: string;
+  /** Business email and address, shown under the buttons so the home page keeps full contact details. */
+  email?: string | null;
+  address?: string | null;
   whatsappNumber: string | null;
   businessHours?: string | null;
 };
 
 const onBrand = "focus-visible:ring-white focus-visible:ring-offset-brand-800";
+const detailLink = cn("inline-flex min-h-11 items-center gap-2 rounded-sm text-brand-50 underline-offset-4 hover:text-white hover:underline md:min-h-0", storeFocus, onBrand);
 
-/** Closing call to action on the brand panel (LANDING_V1 §7.13): Shop packages, Call, and WhatsApp when set. Server component. */
-export default function FinalCta({ phone, whatsappNumber, businessHours }: FinalCtaProps) {
+/**
+ * Closing call to action on the brand panel (LANDING_V1 §7.13): Shop packages, Call, and WhatsApp when set, then the
+ * business phone numbers, email, address and opening hours (the home page has no separate contact band). Server component.
+ */
+export default function FinalCta({ phone, email, address, whatsappNumber, businessHours }: FinalCtaProps) {
   const headingId = useId();
   const mainPhone = primaryPhone(phone);
+  const phones = phoneNumbers(phone);
+  const mail = email?.trim() || "";
+  const place = address?.trim() || "";
   const whatsapp = whatsappHref(whatsappNumber);
 
   return (
@@ -70,8 +80,30 @@ export default function FinalCta({ phone, whatsappNumber, businessHours }: Final
               </a>
             )}
           </div>
+          {(phones.length > 0 || mail || place) && (
+            <address className="mx-auto mt-8 flex max-w-3xl flex-col items-center gap-x-6 gap-y-1 border-t border-white/10 pt-6 text-sm not-italic md:flex-row md:flex-wrap md:justify-center md:gap-y-2">
+              {phones.map((number) => (
+                <a key={number} href={telHref(number)} className={detailLink}>
+                  <Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-100" />
+                  <span className="tabular-nums">{number}</span>
+                </a>
+              ))}
+              {mail && (
+                <a href={`mailto:${mail}`} className={cn(detailLink, "break-all")}>
+                  <Mail aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-100" />
+                  {mail}
+                </a>
+              )}
+              {place && (
+                <span className="inline-flex min-h-11 items-center gap-2 text-brand-50 md:min-h-0">
+                  <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-100" />
+                  {place}
+                </span>
+              )}
+            </address>
+          )}
           {businessHours && (
-            <p className="mx-auto mt-6 max-w-md whitespace-pre-line text-sm text-brand-100/90">
+            <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-sm text-brand-100/90">
               <span className="font-medium text-white">Opening hours: </span>
               {businessHours}
             </p>
