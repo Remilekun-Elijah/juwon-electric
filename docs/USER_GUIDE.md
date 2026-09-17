@@ -1243,6 +1243,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-17 (dark scrolled header)**
+- Customer: when you scroll the website, the top bar turns a see-through dark colour so the logo and menu stay easy to read.
+
 **2026-09-17 (nationwide wording)**
 - Customer: the website now describes Juwon Electric as serving homes and businesses across Nigeria.
 

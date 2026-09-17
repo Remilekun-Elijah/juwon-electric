@@ -111,9 +111,11 @@ function useScrolledPast(enabled: boolean, threshold: number) {
  * Sticky header: logo, main navigation, phone (xl), "Get a quote", cart with live count, and a mobile navigation drawer.
  *
  * At the top of any page that starts with a `[data-store-hero]` band (the home hero and every PageIntro) it is
- * transparent over it: white nav with a gold underline on the active item, the logo on a white chip, a glass cart and
- * menu button and a gold quote pill. After scrolling 24px, and on a page without a hero, it is the solid white header. Colours, background and shadow transition over 250ms; the bar height never
- * changes, so nothing shifts.
+ * transparent over it. After scrolling 24px, and on a page without a hero, it is a dark glass bar (translucent slate-950
+ * with a blur) so the gold logo and white nav stay legible over light and dark content alike. Both states use white nav
+ * with a gold underline on the active item, the logo without a chip, a white phone link, a glass cart and menu button
+ * and a gold quote pill. Background, border and shadow transition over 250ms; the bar height never changes, so nothing
+ * shifts.
  */
 export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderProps) {
   const navItems = withCalculator(storeNav, calculatorEnabled);
@@ -126,7 +128,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
   const scrolled = useScrolledPast(hasHero, SOLID_AFTER_PX);
   const overlay = hasHero && !scrolled;
 
-  const glassFocus = overlay ? "focus-visible:ring-white focus-visible:ring-offset-slate-900" : "";
+  const glassFocus = "focus-visible:ring-white focus-visible:ring-offset-slate-900";
 
   return (
     <header
@@ -137,7 +139,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
           ? // Without JavaScript the header can't turn solid, so it scrolls away with the dark hero instead of floating
             // transparent over light content.
             "border-transparent bg-transparent text-white [@media(scripting:none)]:relative"
-          : "border-slate-200 bg-white/95 shadow-elev-2 backdrop-blur supports-[backdrop-filter]:bg-white/85"
+          : "border-white/10 bg-slate-950/90 text-white shadow-elev-2 backdrop-blur-md supports-[backdrop-filter]:bg-slate-950/70"
       )}
     >
       {/* Soft top shade so white nav text stays legible over bright photos. */}
@@ -152,8 +154,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
         <Link
           href={storeRoutes.home}
           className={cn(
-            "-ml-2 shrink-0 rounded-lg px-2 py-1 transition-[background-color,box-shadow] duration-[250ms]",
-            overlay && "bg-white shadow-elev-2",
+            "-ml-2 shrink-0 rounded-lg px-2 py-1",
             storeFocus,
             glassFocus
           )}
@@ -174,14 +175,8 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
                       "relative inline-flex h-10 items-center rounded-lg px-2.5 text-sm font-medium transition-colors duration-[250ms] xl:px-3",
                       storeFocus,
                       glassFocus,
-                      overlay
-                        ? cn(
-                            "text-white/90 hover:bg-white/10 hover:text-white",
-                            active && "text-white after:absolute after:inset-x-2.5 after:bottom-1 after:h-0.5 after:rounded-full after:bg-gold-400 after:content-[''] xl:after:inset-x-3"
-                          )
-                        : active
-                          ? "bg-brand-50 text-brand-700"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      "text-white/90 hover:bg-white/10 hover:text-white",
+                      active && "text-white after:absolute after:inset-x-2.5 after:bottom-1 after:h-0.5 after:rounded-full after:bg-gold-400 after:content-[''] xl:after:inset-x-3"
                     )}
                   >
                     {item.label}
@@ -198,12 +193,12 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
               href={telHref(mainPhone)}
               className={cn(
                 "hidden h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors duration-[250ms] xl:inline-flex",
-                overlay ? "text-white hover:bg-white/10" : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+                "text-white hover:bg-white/10",
                 storeFocus,
                 glassFocus
               )}
             >
-              <Phone aria-hidden="true" className={cn("h-4 w-4", overlay ? "text-gold-400" : "text-brand-700")} />
+              <Phone aria-hidden="true" className="h-4 w-4 text-gold-400" />
               <span className="tabular-nums">{mainPhone}</span>
             </a>
           )}
@@ -212,7 +207,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
             className={cn(
               "hidden h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-[background-color,color,translate] duration-200 lg:inline-flex",
               "motion-safe:hover:-translate-y-0.5",
-              overlay ? "bg-gold-400 text-slate-950 hover:bg-gold-300" : "bg-brand-700 text-white hover:bg-brand-800",
+              "bg-gold-400 text-slate-950 hover:bg-gold-300",
               storeFocus,
               glassFocus,
               storePress
@@ -220,7 +215,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
           >
             Get a quote
           </Link>
-          <CartButton className={overlay ? cn("border-white/20 bg-white/10 text-white shadow-none backdrop-blur hover:bg-white/20 hover:text-white", glassFocus) : undefined} />
+          <CartButton className={cn("border-white/20 bg-white/10 text-white shadow-none backdrop-blur hover:bg-white/20 hover:text-white", glassFocus)} />
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -228,9 +223,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
             aria-expanded={menuOpen}
             className={cn(
               "inline-flex h-11 w-11 items-center justify-center rounded-lg border shadow-xs transition-colors duration-[250ms] lg:hidden",
-              overlay
-                ? "border-white/20 bg-white/10 text-white shadow-none backdrop-blur hover:bg-white/20"
-                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+              "border-white/20 bg-white/10 text-white shadow-none backdrop-blur hover:bg-white/20",
               storeFocus,
               glassFocus
             )}

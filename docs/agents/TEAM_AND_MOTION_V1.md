@@ -130,12 +130,12 @@ Rules:
 - **Home page at the top (scrollY < 24):**
   - The header is transparent and overlays the hero.
   - Nav links are white/90, with a gold underline (2px) on the active item.
-  - The logo sits on a small white rounded chip, so the multicolour logo stays legible.
+  - The logo has no chip (revised 2026-09-17: the gold logo reads better on dark).
   - The phone link is white.
   - The cart button is a glass button (`bg-white/10 border-white/20`).
   - A gold pill CTA reads **"Get a quote"** and links to `/contact?topic=Quote`.
-- **After scrolling, and on every other page:** the solid white header with its bottom border and `shadow-elev-2`, as today. It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
-- **Mobile:** the same transparent-then-solid behaviour. The menu button is a glass button while transparent.
+- **After scrolling, and on pages without a hero:** a dark glass bar (`bg-slate-950/70` with `backdrop-blur-md`, `border-white/10`, `shadow-elev-2`) with the same white nav, glass cart and gold quote pill (revised 2026-09-17; was the solid white header). It transitions smoothly (background, colour and shadow, 250 ms) using a passive scroll check throttled with `requestAnimationFrame`. This is the one scroll listener allowed.
+- **Mobile:** the same transparent-then-dark-glass behaviour. The menu button is a glass button while transparent.
 - The header must not shift layout. The hero reserves the header height at the top.
 
 ### 7.3 Hero (`HomeHero`), full-bleed and immersive
