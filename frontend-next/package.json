@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:sanitize": "node scripts/check-sanitize.mjs"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
