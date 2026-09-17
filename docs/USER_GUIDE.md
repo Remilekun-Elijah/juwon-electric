@@ -95,6 +95,24 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 - **New activity banner:** when new customer messages, customer replies or orders arrive, a banner says, for example, "You have 2 new messages and 1 new order." Open an item to mark it as read, or select **Mark all as read**. Your read status is saved to your account, so it follows you to other devices.
 - **Signing out:** use the account menu at the top.
 
+### Finding your way around Settings
+
+**Settings** (in the **System** group) opens the **Settings overview**: a card for each area, grouped like this. Each card shows a short summary of what's set now (for example "Online payments off"). Select **Edit …** on a card (or **View …** if your role can only view) to open that page.
+
+| Group | Pages |
+|---|---|
+| Business | Business profile |
+| Communication | Notification emails |
+| Sales | Payments, Inventory |
+| Website | Homepage & contact, Financing, Load calculator |
+
+In this guide, a path such as **Settings → Website → Homepage & contact** means: open **Settings**, then the **Homepage & contact** card under **Website**.
+
+- **Moving between settings pages:** on a computer, the list on the left of each settings page jumps straight to another page. On a phone or tablet, use the row of buttons above the page (swipe it sideways to see them all). **Back to settings** returns to the overview.
+- **Saving:** each page saves on its own. As soon as you change something, a bar appears at the bottom with "Unsaved changes". Select **Save changes** to save, or **Discard** to put back what was saved.
+- **Leaving with unsaved changes:** if you open another page before saving, the console asks "You have unsaved changes. Leave without saving?" Select **Keep editing** to go back and save, or **Leave without saving** to drop the changes. Closing or reloading the browser tab asks the same through the browser.
+- **View only:** staff who can view but not change Settings see the same pages with greyed-out fields and no save bar.
+
 ### Adding images
 
 Every form with a picture (products, categories, services, portfolio, customer segments, reviews, client logos, team members, staff profiles and job photos) lets you upload an image from your computer or phone.
@@ -167,17 +185,19 @@ To change a role later: find the person, choose **Change role**, pick the new ro
 
 *As the owner, I want the website and alert emails to use the right contact details so that customers reach us and the right staff get alerts.*
 
-1. Go to **Settings**.
-2. **Business:** fill in Business name, Email address, Phone, Address and Website. These show on the public website and in customer emails.
-3. **Notifications:** add email addresses for **New orders**, **Low stock** and **Vacancies** (up to 10 each).
-4. **Payments:** turn on **Accept online payments** only when a **Payment provider** (Paystack or Flutterwave) is set up. When off, customers order and pay by transfer or on delivery after your call.
-5. **Inventory:** set the **Default reorder level** for new products and switch **Send low-stock alerts** on or off.
-6. Save.
+Each of these is its own page in Settings (see [Finding your way around Settings](#finding-your-way-around-settings)). On each page, select **Save changes** in the bar at the bottom before moving on.
+
+1. **Settings → Business → Business profile:** under **Company details**, fill in **Business name** and **Website**; under **Contact details**, fill in **Email address**, **Phone** and **Address**. These show on the public website and in customer emails. Select **Save changes**.
+2. **Settings → Communication → Notification emails:** add email addresses on the **New orders**, **Low stock** and **Vacancies** cards (up to 10 each). Type an address and select **Add**. Select **Save changes**.
+3. **Settings → Sales → Payments:** turn on **Accept online payments** only when a **Payment provider** (Paystack or Flutterwave) is set up. When off, customers order and pay by transfer or on delivery after your call. Select **Save changes**.
+4. **Settings → Sales → Inventory:** set the **Default reorder level** for new products and switch **Send low-stock alerts** on or off. Select **Save changes**.
 
 **Tips and common mistakes**
 
 - If the New orders or Low stock list is empty, alerts go to the server's default address set up by your developer.
 - Staff other than Super admin and Admin see Settings as **View only**.
+- The overview cards show what's set at a glance, so you can check everything without opening each page.
+- An address typed in the box but not added with **Add** isn't saved.
 - Business details show on the website within about a minute (chapter 12).
 
 ### Story 4.4: Read the dashboard
@@ -508,7 +528,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 *As an inventory manager, I want to know early when products run low so that we reorder in time.*
 
 1. In **Inventory**, filter by **Low stock** or **Out of stock**. Low-stock products are listed first.
-2. When stock drops to or below a product's reorder level, a low-stock email goes to the **Low stock** list in Settings (if alerts are on).
+2. When stock drops to or below a product's reorder level, a low-stock email goes to the **Low stock** list in **Settings → Communication → Notification emails** (if **Send low-stock alerts** is on in **Settings → Sales → Inventory**).
 3. To email the full low-stock list now, select **Run low-stock check**.
 
 **Tip:** a reorder level of 0 only alerts when stock reaches zero. Set a sensible level for each product.
@@ -652,8 +672,8 @@ The description editor's toolbar offers:
 
 - A **draft can't be closed** directly. Publish it first, or just delete it.
 - Changing the URL slug changes the public link, so old shared links stop working.
-- Candidates apply by email, to the business email in Settings, with the subject "Application: <job title>".
-- If a **Vacancies** email list is set in Settings, those addresses are emailed when a vacancy is first published.
+- Candidates apply by email, to the business email in **Settings → Business → Business profile**, with the subject "Application: <job title>".
+- If a **Vacancies** email list is set in **Settings → Communication → Notification emails**, those addresses are emailed when a vacancy is first published.
 
 ### Story 9.4: Keep staff profiles up to date
 
@@ -714,7 +734,7 @@ This chapter covers the content on the home page and the new website pages: FAQs
 |---|---|
 | Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Team** members; add case-study details to **Portfolio** | Super admin, Admin, Sales |
 | View FAQs, Reviews, Client logos and Team | Also Inventory and Support (view only) |
-| Change **Settings → Website**, **Financing** and **Calculator** | Super admin, Admin |
+| Change **Settings → Website → Homepage & contact**, **Financing** and **Load calculator** | Super admin, Admin |
 
 FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
@@ -815,15 +835,15 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 *As the owner, I want the home page and footer to show our real figures, WhatsApp and opening hours so that customers know how to reach us.*
 
-1. Go to **Settings** → **Website**.
-2. **Stats:** select **Add stat** for each row, up to **4**. Each row has a **Label** (up to 40 characters, for example "Installations") and a **Figure** (up to 20 characters, for example "500+"). Only use figures you can prove.
-3. **WhatsApp number:** the business WhatsApp number with the country code, for example `+234 803 000 0000`. Leave it empty to hide the WhatsApp button.
-4. **Business hours:** one line per day range, for example:
+1. Go to **Settings → Website → Homepage & contact**.
+2. **Homepage stats:** select **Add stat** for each row, up to **4**. Each row has a **Label** (up to 40 characters, for example "Installations") and a **Figure** (up to 20 characters, for example "500+"). Only use figures you can prove.
+3. **WhatsApp & business hours** → **WhatsApp number:** the business WhatsApp number with the country code, for example `+234 803 000 0000`. Leave it empty to hide the WhatsApp button.
+4. **WhatsApp & business hours** → **Business hours:** one line per day range, for example:
    ```
    Mon–Fri 8am–6pm
    Sat 9am–3pm
    ```
-5. Select **Save website**.
+5. Select **Save changes** in the bar at the bottom.
 
 **What you'll see on the website:**
 
@@ -839,18 +859,18 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 > **Financing is off unless you switch it on.** Anything shown on the website can be read as an offer. Only switch it on when the terms are agreed and approved (including with any finance partner).
 
-To leave financing off: go to **Settings** → **Financing**, make sure **Show financing on the website** is off, and select **Save financing**. The financing section doesn't show on the website.
+To leave financing off: go to **Settings → Website → Financing** and make sure **Show financing on the website** is off. If you switched it off, select **Save changes**. The financing section doesn't show on the website.
 
 To switch it on:
 
-1. Go to **Settings** → **Financing** and switch **Show financing on the website** on.
-2. Fill in:
+1. Go to **Settings → Website → Financing** and, on the **Show on website** card, switch **Show financing on the website** on.
+2. Fill in, on the **Terms** and **Note** cards:
    - **Deposit (%)**: a whole number from 0 to 100, for example 40.
    - **Terms (months)**: type a number of months and add it; each shows as a chip (up to 6, each 1 to 60, for example 3, 6 and 12).
    - **Monthly rate (%)**: 0 to 20, for example 3.5.
    - **Approval time**: for example "24–48 hours".
    - **Note** (up to 300 characters): conditions in plain words, for example "Subject to approval. Terms may change."
-3. Select **Save financing**.
+3. Select **Save changes** in the bar at the bottom.
 
 **What you'll see on the website:** a financing section near the end of the home page with a table of the terms, a worked example on the cheapest package (deposit today, balance and the monthly instalment for each term), your note and buttons to contact us. Interest in the example is worked out simply: balance × monthly rate × number of months. Customers can't apply online; they call, message or visit.
 
@@ -860,7 +880,7 @@ To switch it on:
 
 The calculator is at `/calculator`. It's **off unless you switch it on**.
 
-1. Go to **Settings** → **Calculator** and switch **Show the calculator on the website** on.
+1. Go to **Settings → Website → Load calculator** and, on the **Show on website** card, switch **Show the calculator on the website** on.
 2. **Appliances** (up to 40): the list customers start from. Select **Add appliance** for each row, and fill in:
    - **Appliance**: the name customers see, for example "Standing fan".
    - **Watts**: the appliance's power, a whole number, for example 75.
@@ -881,7 +901,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
    - **Fuel price per litre (₦)**: today's petrol or diesel price.
    - **Litres per kVA-hour**: how much fuel a generator uses, for example 0.25.
    - **Maintenance per month (₦)**: typical servicing cost.
-5. Select **Save calculator**.
+5. Select **Save changes** in the bar at the bottom.
 
 **What you'll see on the website:** a "Size your system" teaser on the home page, a gold **Size your system** button at the bottom right of every page (except the calculator itself, the cart and checkout), and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
 
@@ -897,7 +917,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 **How to spot sample content**
 
-- In the admin: a **Sample** badge on the item or settings section, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
+- In the admin: a **Sample** badge on the item, or on a settings page and its card on the Settings overview, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
 - On the website: a small "Sample" label on stats, reviews, client logos, team member cards, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
 
 **What to do**
@@ -907,9 +927,9 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
 4. **Team:** delete every Sample team member and add the real team, or replace each one's details, upload their real photo and save (story 10A.9).
 5. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
-6. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save website**.
-7. **Settings → Financing:** enter real terms and select **Save financing**, or switch **Show financing on the website** off and save.
-8. **Settings → Calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
+6. **Settings → Website → Homepage & contact:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save changes**.
+7. **Settings → Website → Financing:** enter real terms and select **Save changes**, or switch **Show financing on the website** off and select **Save changes**.
+8. **Settings → Website → Load calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save changes**; or switch **Show the calculator on the website** off and select **Save changes**.
 9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work**, **Meet the team** and the footer. No "Sample" label should be left.
 
 **What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
@@ -1196,13 +1216,15 @@ When staff change something in the admin console (a price, a product, a package,
 | **Can't delete a category** | Packages, products or subcategories still use it ("Category has subcategories, products or packages."). | Move its products and subcategories to another category, and change the **Category** on its packages (story 7.5), then delete. |
 | **An engineer can't see a job** | They aren't on the job's crew, or the job was cancelled. | Open the job in **Installations** and add them under **Engineers**. |
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
-| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings** → Website, Financing and Calculator. |
-| **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings** → **Calculator** or **Financing**, switches on **Show the calculator on the website** or **Show financing on the website**, checks the values and saves (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
-| **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings** → **Website**, or the page hasn't refreshed yet. The floating buttons never show on the cart and checkout pages. | Enter the number, save, and reload the website (story 10A.5). On the cart or checkout, this is expected. |
+| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings → Website** → Homepage & contact, Financing and Load calculator. |
+| **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings → Website → Load calculator** or **Financing**, switches on **Show the calculator on the website** or **Show financing on the website**, checks the values and selects **Save changes** (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
+| **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings → Website → Homepage & contact**, or the page hasn't refreshed yet. The floating buttons never show on the cart and checkout pages. | Enter the number, save, and reload the website (story 10A.5). On the cart or checkout, this is expected. |
+| **Can't leave a settings page** ("You have unsaved changes. Leave without saving?") | You changed something on that page and haven't saved it. | Select **Keep editing**, then **Save changes** (or **Discard**). Or select **Leave without saving** if you don't want the change. |
+| **No Save button in Settings** | The save bar only appears after you change something. If fields are greyed out, your role can only view Settings. | Change a field to see **Save changes**. For view-only accounts, ask a Super admin or Admin to make the change. |
 | **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Show on the website** is on, and reload the website. |
 | **Hero photos aren't changing** (home page) | The slideshow is paused: someone selected the pause button, or the mouse is resting over the photo area, or keyboard focus is inside it. Or the device is set to reduce motion, which turns off automatic changes. | Select the **play** button next to the bars, or move the mouse away. With reduce motion on, this is expected: select a bar to see each photo. |
 | **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're under the right heading. |
-| **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings** → **Website** (home stats) or the team list (team page figures are counted from it). |
+| **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings → Website → Homepage & contact** (home stats) or the team list (team page figures are counted from it). |
 | **Image won't upload** | The file isn't a supported picture, the connection dropped, or uploads are unavailable for a while ("Image uploads are unavailable right now. Please use an image link or try again later."). | Read the message under the field and follow [Adding images](#adding-images). Check your connection and try again. If uploads are unavailable, select **Use an image link instead**, or try again later. |
 | **Image looks blurry** (website) | The original picture was small or low quality. Large photos are shrunk to a sensible size, but small ones can't be made sharper. | Upload a larger, sharper original with **Replace**. Use the photo straight from the camera, not a screenshot or a copy from a chat. |
 | **Wrong file type** ("That file isn’t an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image.") | Only JPEG, PNG and WebP pictures can be uploaded. SVG drawings, PDFs and documents can't. | Save or export the picture as JPEG or PNG and upload that, or ask whoever sent it for a PNG or JPEG. You can also use an image link. |
@@ -1221,6 +1243,11 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (Settings redesign)**
+- Settings is now an overview with cards grouped under Business, Communication, Sales and Website, each opening its own page: **Business profile**, **Notification emails**, **Payments**, **Inventory**, **Homepage & contact**, **Financing** and **Load calculator**. New section in chapter 3, Finding your way around Settings.
+- Each settings page has one **Save changes** button in a bar that appears when you change something, with **Discard**; it replaces **Save website**, **Save financing**, **Save calculator** and the other per-section buttons. Leaving with unsaved changes asks first.
+- Updated the Settings paths in stories 4.3, 7.4, 9.3, 10A.5 to 10A.8, the chapter 10A roles table and troubleshooting; added troubleshooting for the unsaved-changes question and the missing Save button.
 
 **2026-09-17 (Upload follow-ups)**
 - Engineers add job photos by uploading or taking a photo on the phone (**Add photos**), with **Use a photo link instead** as a fallback (story 8.3).
