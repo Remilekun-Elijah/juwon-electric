@@ -335,3 +335,92 @@
     animation: none;
   }
 }
+
+/*
+ * ---------- Storefront motion (docs/agents/TEAM_AND_MOTION_V1.md §5) ----------
+ * Only transform and opacity move. Markup is visible by default: `data-reveal="hidden"` is added by
+ * components/storefront/motion/Reveal.tsx after mount, and only to elements that start below the fold.
+ */
+@keyframes je-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes je-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Page-load entrance (hero). Pure CSS, so it also runs without JavaScript. Delay: `--enter-delay`. */
+.je-enter {
+  animation: je-enter 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* Scroll reveal: fade and 16px rise, 500ms ease-out, per-element delay in `--reveal-delay`. */
+[data-reveal] {
+  transition:
+    opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+/* A line inside a revealed element that draws from the left once it appears (How it works). */
+.je-draw {
+  transform-origin: left center;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--reveal-delay, 0ms) + 250ms);
+}
+[data-reveal="hidden"] .je-draw {
+  transform: scaleX(0);
+}
+
+/* Client logos marquee: two identical lists slide by half the track, pausing on hover and keyboard focus. */
+.je-marquee-track {
+  animation: je-marquee var(--marquee-duration, 40s) linear infinite;
+}
+.je-marquee:hover .je-marquee-track,
+.je-marquee:focus-within .je-marquee-track {
+  animation-play-state: paused;
+}
+.je-marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .je-enter {
+    animation: none;
+  }
+  [data-reveal] {
+    transition: opacity 150ms linear;
+  }
+  [data-reveal="hidden"] {
+    transform: none;
+  }
+  .je-draw {
+    transition: none;
+  }
+  [data-reveal="hidden"] .je-draw {
+    transform: none;
+  }
+  .je-marquee-track {
+    animation: none;
+  }
+  .je-marquee-mask {
+    mask-image: none;
+  }
+}
