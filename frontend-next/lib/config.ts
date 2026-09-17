@@ -8,4 +8,12 @@ export const config = {
   siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || "https://juwonelectric.com").replace(/\/+$/, ""),
   /** Admin preview: contract mock fallback for backend routes that don't exist yet. Never enable in production. */
   adminPreview: process.env.NEXT_PUBLIC_ADMIN_PREVIEW === "true",
+  /**
+   * Public UI: "classic" serves the ported Vite-look site in app/(public); anything else (including unset) serves the
+   * storefront in app/storefront. proxy.ts applies the same rule. Inlined at build time, so changing it needs a rebuild.
+   */
+  publicUi: (process.env.NEXT_PUBLIC_PUBLIC_UI === "classic" ? "classic" : "storefront") as "classic" | "storefront",
 };
+
+/** True only while `next build` prerenders pages (server only; NEXT_PHASE is not inlined). */
+export const isBuildPhase = () => process.env.NEXT_PHASE === "phase-production-build";
