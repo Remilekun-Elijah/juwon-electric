@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { FacebookIcon, InstagramIcon, TikTokIcon, XIcon, YouTubeIcon } from "@/components/public/icons";
 import { SITE_NAME, socials } from "@/lib/site";
 import type { StoreSettings } from "@/lib/storefront/data";
 import { phoneNumbers, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
@@ -33,10 +34,11 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
 ];
 
 const socialLinks = [
-  { label: "Facebook", href: socials.fb },
-  { label: "Instagram", href: socials.insta },
-  { label: "TikTok", href: socials.tt },
-  { label: "X", href: socials.x },
+  { label: "Facebook", href: socials.fb, Icon: FacebookIcon },
+  { label: "Instagram", href: socials.insta, Icon: InstagramIcon },
+  { label: "TikTok", href: socials.tt, Icon: TikTokIcon },
+  { label: "X", href: socials.x, Icon: XIcon },
+  { label: "YouTube", href: socials.yt, Icon: YouTubeIcon },
 ];
 
 /** Hides links to areas switched off in Settings (Load calculator, Products). */
@@ -153,19 +155,21 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
             © {new Date().getFullYear()} {business.name || SITE_NAME}. All rights reserved.
           </p>
           <Reveal as="ul" stagger from="zoom" delay={150} aria-label="Social media" className="flex flex-wrap gap-2">
-            {socialLinks.map((social) => (
-              <li key={social.label}>
+            {socialLinks.map(({ label, href, Icon }) => (
+              <li key={label}>
                 <a
-                  href={social.href}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`${label} (opens in a new tab)`}
                   className={cn(
-                    "inline-flex min-h-11 items-center rounded-full border border-white/15 px-4 text-sm font-medium text-white/70 transition-colors hover:border-gold-400/60 hover:bg-white/5 hover:text-gold-300 md:min-h-9",
+                    // Phones: a round icon button. From sm: the name, as before.
+                    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/15 text-sm font-medium text-white/70 transition-colors hover:border-gold-400/60 hover:bg-white/5 hover:text-gold-300 sm:min-w-0 sm:px-4 md:min-h-9",
                     darkFocus
                   )}
                 >
-                  {social.label}
-                  <span className="sr-only"> (opens in a new tab)</span>
+                  <Icon size={18} className="sm:hidden" />
+                  <span className="hidden sm:inline">{label}</span>
                 </a>
               </li>
             ))}

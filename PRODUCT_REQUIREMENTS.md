@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Our Team naming (see section 12, Change log)
+Last updated: 2026-09-18, YouTube and social icons (see section 12, Change log)
 
 1. Executive summary
 
@@ -352,7 +352,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   14. Careers teaser (restored; only when there are open vacancies): white, "We're hiring: N open roles" with up to 3 role titles and **See open roles**.
   15. Final call to action: brand red panel over an installation photo, eyebrow "Ready when you are", a gold **Shop packages** button, **Call**, and **Chat on WhatsApp** when set, followed by the business phone numbers, email, address and opening hours (the home page has no separate contact band).
   - Section eyebrows are gold on dark and brand red on light.
-- Footer: dark (brand-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Our Team**, Careers, FAQ and Contact us.
+- Footer: dark (brand-950) on every storefront page, with white/70 text and gold hover links. Its Company column lists Services, Our work, **Our Team**, Careers, FAQ and Contact us. Social links (Facebook, Instagram, TikTok, X and YouTube, 2026-09-18) are round brand-icon buttons on phones and named pills from 640 px; each opens in a new tab with the network's name as its accessible name. The contact page lists the same networks.
 
 Motion and accessibility (storefront-wide, 2026-09-17)
 - Inner pages (2026-09-17): every storefront page opens with a compact dark page intro in the home hero style (installation photo with slow zoom, gold eyebrow, white heading rising in, breadcrumbs), and the header is transparent over it until you scroll. Cart and checkout use a shorter, faster intro.
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (youtube and social icons)
+- §6.10: added the YouTube channel (`https://www.youtube.com/@juwonelectric`) to the footer and contact page social links. In the footer the links show brand icons on phones and the network names from 640 px, so five networks fit on a narrow screen.
 
 2026-09-18 (Our Team naming)
 - §6.10 and §6.11: **Team** is called **Our Team** everywhere it is shown: the storefront header and phone menu, the footer link (was "Meet the team"), the page title and metadata at `/team`, and the admin sidebar item and page title. Routes, ids, the `teamMembers` collection and the API are unchanged. The admin sidebar group that holds Vacancies and Staff is still called Team, since it covers staff, not the public page.

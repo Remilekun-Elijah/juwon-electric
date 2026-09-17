@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (youtube and social icons)**
+- Customer: the footer now links to the YouTube channel as well, and on a phone the social links show their logos instead of their names so they all fit.
+
 **2026-09-18 (Our Team)**
 - Everywhere: the **Team** menu item, page title and admin page are now called **Our Team**. Nothing else changed; the web address `/team` is the same.
 
