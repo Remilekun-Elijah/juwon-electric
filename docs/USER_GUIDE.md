@@ -1,6 +1,6 @@
 # How to use the Juwon Electric platform
 
-Last updated: 2026-09-17 (Landing v1)
+Last updated: 2026-09-17 (Team page and home redesign)
 
 This guide explains, in plain steps, how to do everyday work on the Juwon Electric platform: the **admin console** (for staff) and the **public website** (for customers). Each chapter is written for one kind of user.
 
@@ -86,7 +86,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 | Overview | Dashboard, My jobs |
 | Sales | Orders, Installations, Carts |
 | Catalog | Products, Categories, Inventory, Packages, Services, Portfolio |
-| Website | FAQs, Reviews, Client logos |
+| Website | FAQs, Reviews, Client logos, Team |
 | Customers | Messages, Newsletter |
 | Team | Vacancies, Staff & roles |
 | System | Activity, Settings |
@@ -212,11 +212,11 @@ A package option's price is worked out like this:
 
 *As the owner, I want to be sure no sample content is on the live website so that customers only see true information.*
 
-The website was built with **sample content** (made-up FAQs, reviews, client logos, stats, financing terms and calculator settings) so that every section could be seen. None of it is real.
+The website was built with **sample content** (made-up FAQs, reviews, client logos, team members with drawn placeholder portraits, stats, financing terms and calculator settings) so that every section could be seen. None of it is real.
 
 1. Work through **story 10A.8, Replace sample content before launch**, or ask an admin to.
 2. Tick off every item on the **Before launch checklist** in `PRODUCT_REQUIREMENTS.md` (section 11).
-3. Check that no **Sample** badge or sample banner is left in the admin, and no "Sample" label is left on the website.
+3. Check that no **Sample** badge or sample banner is left in the admin, and no "Sample" label is left on the website. This includes **Website → Team** and the **Meet the team** page (`/team`): the 12 sample team members are made-up people and must be replaced with the real team (story 10A.9).
 4. Decide whether **Financing** and the **Calculator** should be on at launch (stories 10A.6 and 10A.7). If you're not sure, leave them off.
 
 **Tip:** website settings (stats, WhatsApp, business hours, financing, calculator) can only be changed by Super admin and Admin accounts.
@@ -665,17 +665,17 @@ The description editor's toolbar offers:
 
 ## 10A. Website content
 
-This chapter covers the content on the home page and the new website pages: FAQs, reviews, client logos, case studies, homepage stats, WhatsApp, business hours, financing and the calculator.
+This chapter covers the content on the home page and the new website pages: FAQs, reviews, client logos, the team page, case studies, homepage stats, WhatsApp, business hours, financing and the calculator.
 
 **Who can do what**
 
 | Task | Who |
 |---|---|
-| Add, edit, reorder and delete **FAQs**, **Reviews** and **Client logos**; add case-study details to **Portfolio** | Super admin, Admin, Sales |
-| View FAQs, Reviews and Client logos | Also Inventory and Support (view only) |
+| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Team** members; add case-study details to **Portfolio** | Super admin, Admin, Sales |
+| View FAQs, Reviews, Client logos and Team | Also Inventory and Support (view only) |
 | Change **Settings → Website**, **Financing** and **Calculator** | Super admin, Admin |
 
-FAQs, Reviews and Client logos are in the **Website** group of the menu.
+FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 **Two rules for everything in this chapter**
 
@@ -786,8 +786,8 @@ FAQs, Reviews and Client logos are in the **Website** group of the menu.
 
 **What you'll see on the website:**
 
-- The stats show as large figures near the top of the home page. No stats, no stats band.
-- With a WhatsApp number: a round **WhatsApp** button at the bottom right of every page, a WhatsApp link in the footer, and a WhatsApp button in the last section of the home page. It opens WhatsApp with the message "Hello Juwon Electric". Clear the number to remove all of these.
+- The stats show as large gold figures in the big photo area at the top of the home page (the hero), counting up from 0 when the page opens. No stats: the hero shows three short reassurances instead ("No payment to place an order", "We call to confirm", "Installation included").
+- With a WhatsApp number: a **Chat on WhatsApp** button at the bottom right of every page except the cart and checkout (round on phones), a **Chat on WhatsApp** button in the home page hero, a WhatsApp link in the footer, and a WhatsApp button in the last section of the home page. It opens WhatsApp with the message "Hello Juwon Electric". Clear the number to remove all of these (the hero button then says **Talk to an engineer** and calls the business phone).
 - Business hours show in the footer.
 
 **Tip:** test the WhatsApp button on your phone after saving, to be sure it opens the right chat.
@@ -842,7 +842,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
    - **Maintenance per month (₦)**: typical servicing cost.
 5. Select **Save calculator**.
 
-**What you'll see on the website:** a "Size your system" teaser on the home page and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
+**What you'll see on the website:** a "Size your system" teaser on the home page, a gold **Size your system** button at the bottom right of every page (except the calculator itself, the cart and checkout), and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
 
 **Tips**
 
@@ -856,27 +856,75 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 **How to spot sample content**
 
-- In the admin: a **Sample** badge on the item or settings section, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
-- On the website: a small "Sample" label on stats, reviews, client logos, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
+- In the admin: a **Sample** badge on the item or settings section, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
+- On the website: a small "Sample" label on stats, reviews, client logos, team member cards, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
 
 **What to do**
 
 1. **FAQs:** open each Sample FAQ. Rewrite it to match how we really work and save, or delete it.
 2. **Reviews:** delete every Sample review. Add only real ones (story 10A.2).
 3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
-4. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
-5. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save website**.
-6. **Settings → Financing:** enter real terms and select **Save financing**, or switch **Show financing on the website** off and save.
-7. **Settings → Calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
-8. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work** and the footer. No "Sample" label should be left.
+4. **Team:** delete every Sample team member and add the real team, or replace each one's details and photo and save (story 10A.9).
+5. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
+6. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save website**.
+7. **Settings → Financing:** enter real terms and select **Save financing**, or switch **Show financing on the website** off and save.
+8. **Settings → Calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save calculator**; or switch **Show the calculator on the website** off and save.
+9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work**, **Meet the team** and the footer. No "Sample" label should be left.
 
 **What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
 
 **Tips and common mistakes**
 
-- **Saving makes it real.** Saving a sample item or section removes the Sample mark **even if you didn't change anything**. Only save once the content is true.
+- **Changing and saving makes it real.** Saving a sample item or section with a change removes the Sample mark, so only save once the content is true. Saving without changing anything, moving an item with **Move up** / **Move down**, or switching **Show on the website** on or off keeps the Sample mark.
 - The full list of sample items is the **Before launch checklist** in `PRODUCT_REQUIREMENTS.md`, section 11.
 - Sample content is only ever loaded on developers' computers. If you see it on the live website, tell your developer and the owner.
+
+### Story 10A.9: Manage the team page
+
+*As an admin, I want the Meet the team page to show our real people, in sensible groups and order, so that customers know who will install and look after their system.*
+
+The public page is **Meet the team** at `/team`. It lists every team member whose **Show on the website** switch is on, grouped under headings such as "Leadership" or "Engineering & installations".
+
+**Add or edit a team member**
+
+1. Go to **Website** → **Team**.
+2. To add someone, select **Add team member**. To change someone, select **Edit** (the pencil) on their row.
+3. Fill in:
+   - **Name** (required, up to 100 characters): their full name.
+   - **Role** (required, up to 80 characters), for example "Lead installation engineer".
+   - **Group** (required, up to 60 characters): the heading they appear under. Pick an existing group from the suggestions or type a new one. Suggestions include "Leadership", "Engineering & installations", "Sales & customer care" and "Operations".
+   - **Bio** (optional, up to 300 characters): one or two sentences about their work. A counter shows how many characters you've used. Line breaks aren't kept.
+   - **Photo URL** (optional): an `https://` link or a path to a picture on our website, such as `/team/ada.jpg`. Square photos look best. A preview shows how the photo will look. If there's no photo, or the link doesn't work ("Can't show this image. Check the link."), the website shows their initials instead.
+   - **LinkedIn URL** (optional): their public LinkedIn profile, starting with `https://`.
+4. Leave **Show on the website** on, then select **Add team member** (or **Save changes**).
+
+**Change the order and the groups**
+
+- Use **Move up** and **Move down** (▲ ▼) on each row. Higher in the list shows first on the website.
+- Groups appear on the website in the order their first member appears in the list. To move a whole group up, move its first member above the other groups' members.
+- Use **Filter by group** at the top of the list to work on one group at a time. **All groups** shows everyone.
+
+**Hide or remove someone**
+
+- To hide someone for a while (for example while you get a new photo), edit them, switch **Show on the website** off and save. They stay in the list but aren't shown on the team page.
+- When someone leaves, select **Delete** (the bin) on their row and confirm.
+
+**Replace the sample team**
+
+The team page was built with **12 sample team members**: made-up names with drawn placeholder portraits (not real people). Each has a **Sample** badge, and the list shows the sample banner.
+
+1. Delete every sample member, then add the real team, or open each sample member and replace **Name**, **Role**, **Group**, **Bio** and **Photo URL** with a real person's details and save.
+2. Moving a sample member or switching them off doesn't remove the Sample badge. Only changing their details and saving does.
+3. Check `/team` on your phone: no card should show a "Sample" label, and no photo should be a drawing.
+
+**What you'll see on the website:** the **Meet the team** page with figures counting up (team members, teams, and engineers and installers), a section for each group with photo cards, and a "Want to join us?" band linking to open roles. On a computer, pointing at a card or tabbing to it zooms the photo and shows the bio and LinkedIn link over it; on a phone, the bio and link show under the role. **Team** is in the top menu, and **Meet the team** is in the footer.
+
+**Tips and common mistakes**
+
+- Type each group name the same way every time ("Operations", not "operations"), or you'll get two groups.
+- Only use a person's photo, bio and LinkedIn link with their agreement.
+- The "engineers and installers" figure counts members of groups whose name contains "Engineer" or "Install". Name your engineering group accordingly.
+- The team page tells search engines about real team members only. Sample members are never included.
 
 ---
 
@@ -884,9 +932,9 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 This chapter describes the public website for customers. Staff can use it to guide customers on the phone.
 
-**On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) and see the lowest package price under "Complete packages from".
+**On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-The top menu has **Packages**, **Products**, **Services**, **Our work**, **Careers** and **Contact**, plus the **cart** button with a count. The count includes both packages and products in your cart.
+On a computer, the top menu has **Packages**, **Products**, **Calculator**, **Services**, **Our work**, **Team** and **Contact**, plus **Get a quote** and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Team**). **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
@@ -965,7 +1013,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a job seeker, I want to see open roles and apply so that I can work with Juwon Electric.*
 
-1. Select **Careers**. Filter by department or employment type.
+1. Select **Careers** in the footer, or in the menu on a phone (you can also select **See open roles** on the home page or the team page). Filter by department or employment type.
 2. Open a vacancy to read the description, responsibilities and requirements.
 3. Select **Apply by email**. Your email app opens with the subject "Application: <job title>". Attach your CV and send.
 
@@ -1016,10 +1064,10 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 
 *As a customer, I want to chat with Juwon Electric on WhatsApp so that I get a quick reply on my phone.*
 
-1. Select the round **WhatsApp** button at the bottom right of any page (or the WhatsApp link in the footer or at the end of the home page).
+1. Select **Chat on WhatsApp** at the bottom right of the page (a round red button on phones; see story 11.13), or the **Chat on WhatsApp** button in the home page hero, the WhatsApp link in the footer, or the button at the end of the home page.
 2. WhatsApp opens with the message "Hello Juwon Electric" ready. Add your question and send.
 
-**Tip:** the button only shows when Juwon Electric has set a WhatsApp number.
+**Tip:** the buttons only show when Juwon Electric has set a WhatsApp number. The floating button doesn't show on the cart and checkout pages.
 
 ### Story 11.11: Browse case studies by category
 
@@ -1029,13 +1077,59 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 2. On **Our work**, use the **category filter** to show only that kind of customer.
 3. Each project card shows the summary, location and system when we've added them.
 
-**Also on the home page:** figures about our work, logos of clients we've powered, reviews from customers and, when offered, a **financing** section with payment-plan terms. You can't apply for financing on the website: contact us to ask about it.
+**Also on the home page:** logos of clients we've powered, shop by category, popular products, reviews from customers, a "We're hiring" strip when there are open roles and, when offered, a **financing** section with payment-plan terms. You can't apply for financing on the website: contact us to ask about it. The last section shows our phone numbers, email, address and opening hours.
+
+### Story 11.12: Get started from the home page
+
+*As a customer, I want the home page to show me quickly what Juwon Electric does and where to start so that I can shop or ask for a quote.*
+
+1. The top of the home page is a large photo area (the hero). The photos of our installations change every 7 seconds.
+   - The thin bars at the bottom centre show which photo is on screen; the gold fill shows how long until the next one. Select a bar to show that photo.
+   - Select the **pause** button next to the bars to stop the photos changing, and **play** to start again. The photos also pause while your mouse is over the top area or you are moving through it with the keyboard.
+2. Select **Shop packages** to see all packages, or **Chat on WhatsApp** (or **Talk to an engineer**, which calls us, when WhatsApp isn't set up).
+3. Below the buttons you'll see a few figures about our work (for example the number of installations). They count up from 0 when the page opens.
+4. On a large computer screen, a card at the bottom right shows the lowest package price ("Complete packages from ₦…"). Select its arrow to compare packages.
+5. For a price for your own needs, select **Get a quote** in the top menu. It opens the contact form with the topic already set to Quote. On a phone, **Get a quote** is at the bottom of the menu.
+6. Scroll down for the rest of the page. At the top of the page the menu sits over the photo; once you scroll it turns white.
+
+**Tips**
+
+- If your phone or computer is set to reduce motion, the photos don't change by themselves and nothing zooms or counts up. You can still select a bar to see each photo.
+- The pages work without animations: everything is readable straight away.
+
+### Story 11.13: Use the floating buttons
+
+*As a customer, I want quick buttons to size my system or chat with the team from any page so that I don't have to look for them.*
+
+At the bottom right of most pages you may see up to two buttons. On a phone they are round buttons with just an icon; on a larger screen they show a label.
+
+- **Size your system** (gold, "Load calculator"): opens the calculator (story 11.8). It shows only when the calculator is available, and not on the calculator page itself.
+- **Chat on WhatsApp** ("We reply during business hours"): opens WhatsApp with "Hello Juwon Electric" ready (story 11.10). It shows only when Juwon Electric has a WhatsApp number set.
+
+**Tips**
+
+- The buttons slide in a moment after the page opens.
+- They don't show on the **cart** and **checkout** pages, so they never cover your order buttons.
+- When you reach the footer, they fade so you can read the links underneath. Point at or tab to a button to bring it back.
+- There is no "online" light: WhatsApp replies come during business hours.
+
+### Story 11.14: Meet the team
+
+*As a customer, I want to see the people behind Juwon Electric so that I know who I'm dealing with.*
+
+1. Select **Team** in the top menu (or **Meet the team** in the footer).
+2. The **Meet the team** page shows how many team members, teams, and engineers and installers there are. The figures count up when the page opens.
+3. People are grouped under headings, for example "Leadership" or "Engineering & installations". Each card shows a photo (or initials), name and role.
+4. To read more about someone:
+   - On a computer, point at their card, or tab to it with the keyboard. The photo zooms a little and their bio and a **LinkedIn** link (when they have one) appear over it.
+   - On a phone or tablet, the bio and **LinkedIn** link show under their role.
+5. Interested in working with us? Select **See open roles** in the "Want to join us?" band at the bottom.
 
 ---
 
 ## 12. How updates reach the website
 
-When staff change something in the admin console (a price, a product, a package, a service, a vacancy, stock, business details, FAQs, reviews, client logos or website settings):
+When staff change something in the admin console (a price, a product, a package, a service, a vacancy, stock, business details, FAQs, reviews, client logos, team members or website settings):
 
 - **Next page view:** anyone who opens or reloads the page sees the change straight away.
 - **Pages already open:** refresh by themselves within **about a minute**, and when the customer returns to the tab.
@@ -1063,8 +1157,12 @@ When staff change something in the admin console (a price, a product, a package,
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
 | **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings** → Website, Financing and Calculator. |
 | **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings** → **Calculator** or **Financing**, switches on **Show the calculator on the website** or **Show financing on the website**, checks the values and saves (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
-| **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings** → **Website**, or the page hasn't refreshed yet. | Enter the number, save, and reload the website (story 10A.5). |
+| **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings** → **Website**, or the page hasn't refreshed yet. The floating buttons never show on the cart and checkout pages. | Enter the number, save, and reload the website (story 10A.5). On the cart or checkout, this is expected. |
 | **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Show on the website** is on, and reload the website. |
+| **Hero photos aren't changing** (home page) | The slideshow is paused: someone selected the pause button, or the mouse is resting over the photo area, or keyboard focus is inside it. Or the device is set to reduce motion, which turns off automatic changes. | Select the **play** button next to the bars, or move the mouse away. With reduce motion on, this is expected: select a bar to see each photo. |
+| **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're under the right heading. |
+| **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings** → **Website** (home stats) or the team list (team page figures are counted from it). |
+| **Team page shows drawings instead of photos** | These are the sample team members' placeholder portraits, or a member has no **Photo URL** (initials show instead). | Replace the sample team with real people (story 10A.9) and add each person's photo. |
 
 ---
 
@@ -1079,6 +1177,15 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (Team page and home redesign)**
+- Menu: **Team** added to the **Website** group (chapter 3).
+- New story 10A.9, manage the team page: add and edit team members (**Name**, **Role**, **Group**, **Bio**, **Photo URL**, **LinkedIn URL**, **Show on the website**), order with **Move up** / **Move down**, **Filter by group**, hide or delete, and replace the 12 sample members.
+- Owner: story 4.7 and story 10A.8 now include the sample team members. Corrected 10A.8: saving without changing anything, moving an item or switching it off keeps the Sample mark; only changing and saving removes it.
+- Website settings: homepage stats now show in the hero and count up; WhatsApp also drives the hero button and the floating **Chat on WhatsApp** button; the calculator adds a floating **Size your system** button (stories 10A.5, 10A.7).
+- Customer: new top menu (**Team** replaces **Careers** on computers; **Careers** stays in the phone menu and the footer) and **Get a quote**; new stories for the home page hero (photos, bars, pause button, stats, price card), the floating buttons (hidden on cart and checkout) and the **Meet the team** page (stories 11.12 to 11.14); stories 11.6 and 11.10 updated.
+- How updates reach the website: team member changes included (chapter 12).
+- Troubleshooting: hero photos aren't changing, team member not showing, numbers show 0 briefly, and team page shows drawings instead of photos; WhatsApp button missing now mentions the cart and checkout.
 
 **2026-09-17 (Landing v1)**
 - New chapter 10A, Website content: edit **FAQs** (order and categories), add **Reviews** (real and permitted only), add **Client logos** (with permission; link or site path), fill in portfolio case-study details, set homepage stats, WhatsApp number and business hours, set up **Financing** or leave it off, set up the **Calculator**, and replace sample content before launch (stories 10A.1 to 10A.8).
