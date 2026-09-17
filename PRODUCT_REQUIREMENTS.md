@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-17, Settings opens on a section page (see section 12, Change log)
+Last updated: 2026-09-17, Products on the website switch (see section 12, Change log)
 
 1. Executive summary
 
@@ -238,7 +238,7 @@ Persona: HR
     - Communication → **Notification emails** (`/admin/settings/notifications`): one card each for **New orders**, **Low stock** and **Vacancies**, up to 10 addresses per list; an empty list uses the server's default recipients.
     - Sales → **Payments** (`/admin/settings/payments`): **Online payments** (Accept online payments) and **Provider** (None, Paystack or Flutterwave).
     - Sales → **Inventory** (`/admin/settings/inventory`): **Reorder level** (Default reorder level) and **Low-stock alerts** (Send low-stock alerts).
-    - Website → **Homepage & contact** (`/admin/settings/website`): **Homepage stats** and **WhatsApp & business hours**.
+    - Website → **Homepage & contact** (`/admin/settings/website`): **Products on the website**, **Homepage stats** and **WhatsApp & business hours**.
     - Website → **Financing** (`/admin/settings/financing`): **Show on website**, **Terms** (Deposit, Monthly rate, Terms (months), Approval time) and **Note**.
     - Website → **Load calculator** (`/admin/settings/calculator`): **Show on website**, **Appliances**, **Sizing assumptions** and **Generator costs**.
   - Page layout: a header with the eyebrow "Settings", the section name, one sentence of description and, for Homepage & contact, Financing and Load calculator while sample, the **Sample** badge and the sample banner. From 1024 px a left rail beside the content lists the sections under the same four groups, with icons and the current page highlighted; on phones and tablets a scrolling row of pills does the same without making the page scroll sideways.
@@ -254,6 +254,7 @@ Persona: HR
 - Performance: SSG for public pages (packages, vacancies) using Next.js
 - Maintainability: modular backend models and clear API contracts
 - Accessibility: admin forms and public pages meet basic a11y standards
+- Admin console chrome (2026-09-17): the admin sidebar (desktop rail and mobile drawer) and the top bar are the storefront's deep brand red `brand-950` with a hairline `white/10` border. Sidebar menu links, group headings and **Sign out** are gold, the current page is white on a translucent pill with a gold edge marker, and count badges are gold with dark text. The top bar uses white text with glass (translucent white) refresh and menu buttons and a gold avatar; the account dropdown panel and all page content, cards and tables stay light. Text keeps at least 4.5:1 contrast and focus rings are gold on the dark chrome.
 - Admin sessions last at most 8 hours and end after 2 hours without activity.
 
 Image storage safeguards (developer-facing; Image uploads, 2026-09-17)
@@ -409,6 +410,7 @@ Portfolio case-study fields
 
 Settings sections (Super admin and Admin change them; other staff view)
 - Website:
+  - Products on the website (2026-09-17): a switch, on by default. Off hides the whole Products area from customers: the **Products** link in the header, the mobile menu and the footer, the "Shop by category" and "Popular products" home sections, the "Browse products" links on the cart, empty cart and packages pages, the Products suggestion on the 404 page, and every product, product category and products listing page (they show the storefront 404). Product pages and categories also leave the sitemap. Packages, their composed products, prices and specifications are untouched, and so is everything in the admin: products, categories, inventory and in-store sales of single products all keep working.
   - Stats: up to 4 rows (**Add stat**), each a Label (1–40 characters) and a Figure (the value, 1–20, for example "500+"). Saved with ~~**Save website**~~ **Save changes** on **Settings → Website → Homepage & contact** (Settings redesign, §6.7).
   - WhatsApp number: optional, same phone rule as the business phone.
   - Business hours: optional, up to 200 characters, several lines (for example "Mon–Fri 8am–6pm" on one line and "Sat 9am–3pm" on the next).
@@ -567,6 +569,7 @@ Sample content
 - Settings navigation (Settings redesign): at 1280 px each settings page shows the grouped rail with the current section highlighted (`aria-current="page"`); at 375 px and 768 px the rail is replaced by a scrolling row of pills with the current one highlighted, every pill is at least 44 px tall, and the page has no horizontal scroll. After moving to another section, focus is on its heading.
 - Save bar (Settings redesign): on **Settings → Sales → Inventory**, changing Default reorder level from 5 to 8 shows "Unsaved changes" with **Discard** and **Save changes**; **Discard** puts back 5 and hides the bar; **Save changes** sends only the inventory section, shows "Settings updated." and hides the bar. Entering -1 shows "Enter a whole number of 0 or more." and saves nothing. Saving **Homepage & contact** while it shows **Sample** removes the badge.
 - Unsaved-changes guard (Settings redesign): with an unsaved change on **Business profile**, selecting **Payments** in the rail or **Orders** in the sidebar asks "You have unsaved changes. Leave without saving?"; **Keep editing** stays with the change intact and **Leave without saving** opens the page without saving. Reloading the tab shows the browser's leave-page prompt. With no unsaved changes, links open straight away.
+- Products on the website (2026-09-17): with **Products on the website** off, the storefront header, mobile menu and footer show no Products link, the home page has no "Shop by category" or "Popular products" section, `/products`, `/products/<slug>` and `/products/category/<slug>` show the storefront 404, the sitemap lists no product or category URL, and the cart, empty cart, packages and 404 pages show no products link. Packages still list their products and specifications, and the admin still shows Products, Categories, Inventory and single-product in-store sales. Switching it back on restores all of it within a minute.
 - Settings view only (Settings redesign): a Sales account opens every settings page and sees the "View only" notice, disabled fields and no save bar. On a server without website settings, **Homepage & contact**, **Financing** and **Load calculator** show "Website, financing and calculator settings aren’t available yet".
 - Floating actions (2026-09-17): with the calculator on and a WhatsApp number set, every storefront page except the calculator page shows **Size your system** and **Chat on WhatsApp** at the bottom right (round buttons on phones, labelled pills from 640 px); the calculator page shows only WhatsApp; `/cart` and `/checkout` show neither. With the calculator off and no WhatsApp number, no floating buttons show. Neither button shows an "online" status or a badge.
 
@@ -687,6 +690,12 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-17 (products on the website switch)
+- §6.7 and §6.11: **Settings → Website → Homepage & contact** gains **Products on the website** (`website.productsEnabled`, public, default on). Off hides every Products link, section and page on the storefront and drops product URLs from the sitemap; packages and the whole admin are unaffected. The API keeps the same endpoints and payloads; the flag is a new key in the `website` settings section.
+
+2026-09-17 (brand red admin chrome)
+- §6.8: the admin sidebar and top bar now match the storefront: deep brand red `brand-950` with a white/10 hairline, gold menu links and headings, a white current page on a translucent pill with a gold marker, gold count badges, and white top-bar text with glass buttons and a gold avatar. Page content and the account dropdown stay light.
 
 2026-09-17 (settings opens on a section page)
 - §6.7: **Settings** now opens **Business profile** directly, with the section list beside it. The card overview at `/admin/settings` and the **Back to settings** link on each page are removed; navigation is the rail (desktop) and pills (phones and tablets).
