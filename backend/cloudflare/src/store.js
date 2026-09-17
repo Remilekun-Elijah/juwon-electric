@@ -18,10 +18,13 @@ const COLLECTIONS = [
   "orders",
   "admins",
   "passwordResets",
+  "vacancies",
 ];
 
-// Only catalog collections carry slugs.
+// Catalog collections (public catalog records with admin-controlled sortOrder).
 export const CATALOG_COLLECTIONS = ["packages", "services", "portfolio", "customerSegments"];
+// Collections whose records carry a unique slug (catalog plus vacancies, migrations/0008).
+const SLUGGED_COLLECTIONS = [...CATALOG_COLLECTIONS, "vacancies"];
 
 const NOT_FOUND_LABELS = {
   packages: "Package",
@@ -31,8 +34,9 @@ const NOT_FOUND_LABELS = {
   orders: "Order",
   contacts: "Contact",
   newsletters: "Subscriber",
-  admins: "Admin",
+  admins: "User",
   carts: "Cart",
+  vacancies: "Vacancy",
 };
 
 const CAS_ATTEMPTS = 5;
@@ -201,7 +205,7 @@ export const createCollectionItem = async (env, collection, payload, { slugFallb
     id: id || crypto.randomUUID(),
   };
   delete item.slug;
-  if (CATALOG_COLLECTIONS.includes(collection)) {
+  if (SLUGGED_COLLECTIONS.includes(collection)) {
     item.slug = await resolveSlug(env, collection, { input: input.slug, fallback: slugFallback });
   }
   if (item.sortOrder === undefined || item.sortOrder === null) item.sortOrder = await nextSortOrder(env, collection);

@@ -30,7 +30,8 @@ export const connectDatabase = async () => {
   } catch (error) {
     if (required) {
       throw new Error(
-        `MongoDB connection failed and MongoDB is required (NODE_ENV=production or MONGODB_REQUIRED=true). ${describe(error)}`
+        `MongoDB connection failed and MongoDB is required (NODE_ENV=production or MONGODB_REQUIRED=true). ${describe(error)}`,
+        { cause: error }
       );
     }
     console.warn(

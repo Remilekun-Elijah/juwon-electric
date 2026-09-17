@@ -94,7 +94,7 @@ export const listAuditLogs = async (env, params) => {
   ]);
 
   const items = (rows.results || []).map((row) => {
-    let changes = [];
+    let changes;
     try {
       changes = JSON.parse(row.changes || "[]");
     } catch {

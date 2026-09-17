@@ -1,23 +1,22 @@
-# Simple Dockerfile for backend
-# Build a lightweight image for running the backend in production
+# Express backend image (self-host runtime; the production API is the Cloudflare Worker).
+# Build from the repository root: docker build -f backend/Dockerfile -t juwon-backend .
+# Environment variables: docs/DEPLOYMENT.md.
 
-FROM node:18-alpine
+# Node 22 matches package.json engines and CI.
+FROM node:22-alpine
 
-# Create app directory
 WORKDIR /app
 
-# Install dependencies (use package-lock / npm ci for reproducible builds)
+# Reproducible, production-only install.
 COPY backend/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-# Copy application source
 COPY backend/ .
 
-# Build (if your backend has a build step)
-RUN if [ -f package.json ] && grep -q "build" package.json; then npm run build || true; fi
-
+ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-# Default start command - rely on package.json start script
-CMD ["npm", "start"]
+USER node
+
+CMD ["node", "app.js"]

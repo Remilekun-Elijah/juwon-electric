@@ -19,6 +19,7 @@ import {
   updateCollectionItemIf,
   updateRecords,
 } from "./store.js";
+import { adminSelf, normalizeRole } from "../shared/capabilities.js";
 import { passwordPolicyError } from "./validators.js";
 
 const MINUTE_MS = 1000 * 60;
@@ -393,7 +394,7 @@ export const seedSuperAdmin = async () => {
     name: process.env.SUPERADMIN_NAME || "Super Admin",
     email,
     passwordHash: await hashPassword(password),
-    role: "super_admin",
+    role: "superadmin",
     isActive: true,
     passwordChangedAt: new Date().toISOString(),
   });
@@ -423,7 +424,11 @@ export const completeAdminLogin = async ({ admin, needsRehash }, { password, ip,
     iat,
     exp: new Date(session.expiresAt).getTime(),
   });
-  await updateCollectionItem("admins", admin.id, { lastLoginAt: new Date().toISOString() });
+  // Legacy "super_admin" is rewritten on this write (contract §1.1).
+  await updateCollectionItem("admins", admin.id, {
+    lastLoginAt: new Date().toISOString(),
+    ...(admin.role !== normalizeRole(admin.role) ? { role: normalizeRole(admin.role) } : {}),
+  });
   if (needsRehash) {
     // Transparent upgrade; only if the stored hash did not change meanwhile.
     track(
@@ -442,12 +447,7 @@ export const completeAdminLogin = async ({ admin, needsRehash }, { password, ip,
 
   return {
     token,
-    admin: {
-      id: admin.id,
-      name: admin.name,
-      email: admin.email,
-      role: admin.role,
-    },
+    admin: adminSelf(admin),
   };
 };
 

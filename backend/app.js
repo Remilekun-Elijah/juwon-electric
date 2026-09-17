@@ -1,5 +1,7 @@
 import env from "dotenv";
 import express from "express";
+import { realpathSync } from "fs";
+import { pathToFileURL } from "url";
 import config from "./config.js";
 import { requireJsonBody } from "./middleware/contentType.js";
 import { warnIfStaticAdminToken } from "./middleware/adminAuth.js";
@@ -15,10 +17,8 @@ import { announceCounterStore, ensureCounterIndexes } from "./services/counterSt
 import { connectDatabase } from "./services/database.js";
 import { ApiError, SERVICE_UNAVAILABLE_MESSAGE } from "./services/errors.js";
 import { isMongoMode, waitForPending } from "./services/runtime.js";
-import { backupJsonStore, ensureSecurityIndexes } from "./services/store.js";
+import { backupJsonStore, ensureSecurityIndexes, ensureUniqueIndexes } from "./services/store.js";
 import mongoose from "mongoose";
-import userRouter from "./routes/user.js";
-import vacanciesRouter from "./routes/vacancies.js";
 
 const app = express();
 if (app.get("env") === "development") env.config();
@@ -79,13 +79,7 @@ app.use("/api", publicRouter);
 app.use("/admin", adminRouter);
 app.use("/api/admin", adminRouter);
 
-// Mount user routes (e.g. order, contact)
-app.use(userRouter);
-
-// Vacancies endpoints
-app.use('/vacancies', vacanciesRouter);
-
-app.get("/", (req, res, next) => {
+app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
     message: "Juwon Electric API",
@@ -97,6 +91,7 @@ app.get("/", (req, res, next) => {
       "contact",
       "cart",
       "orders",
+      "vacancies",
     ],
   });
 });
@@ -153,6 +148,15 @@ const start = async () => {
   } catch (error) {
     console.warn("Failed to create security indexes:", error.message);
   }
+  try {
+    await ensureUniqueIndexes();
+  } catch (error) {
+    // Admin email and vacancy slug uniqueness depend on these indexes in MongoDB.
+    // Production refuses to start without them; fix the listed duplicates and restart.
+    console.error(`MongoDB unique indexes are missing. ${error.message}`);
+    if (process.env.NODE_ENV === "production") throw error;
+    console.error("Continuing because NODE_ENV is not production: uniqueness is only pre-checked.");
+  }
   announceCounterStore();
   warnIfCorsOpen();
   warnIfTurnstileDisabled();
@@ -189,7 +193,15 @@ const start = async () => {
   process.once("SIGINT", () => shutdown("SIGINT"));
 };
 
-start().catch((error) => {
-  console.error("Failed to start application:", error.message);
-  process.exit(1);
-});
+export default app;
+
+// Only `node app.js` (or nodemon) starts the server; tests import `app`.
+const isEntryPoint =
+  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+
+if (isEntryPoint) {
+  start().catch((error) => {
+    console.error("Failed to start application:", error.message);
+    process.exit(1);
+  });
+}

@@ -15,8 +15,9 @@ const NOT_FOUND_LABELS = {
   orders: "Order",
   contacts: "Contact",
   newsletters: "Subscriber",
-  admins: "Admin",
+  admins: "User",
   carts: "Cart",
+  vacancies: "Vacancy",
 };
 
 export const notFound = (resource = "Resource") =>

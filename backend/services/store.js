@@ -70,7 +70,13 @@ const models = {
   passwordResets:
     mongoose.models.PasswordReset ||
     mongoose.model("PasswordReset", flexibleSchema, "passwordResets"),
+  vacancies: mongoose.models.Vacancy || mongoose.model("Vacancy", flexibleSchema, "vacancies"),
 };
+
+// Non-catalog collections whose writers keep slugs unique through `prepare`.
+const SLUGGED_COLLECTIONS = ["vacancies"];
+const slugItems = async (model) =>
+  (await model.find({}, { id: 1, slug: 1 }).lean()).map(normalizeMongoRecord);
 
 // Security records (admin sessions, audit log, processed webhook ids). They use
 // application-level string ids and ISO-8601 string timestamps in both the JSON
@@ -161,8 +167,8 @@ const definedOnly = (object = {}) =>
   Object.fromEntries(Object.entries(object).filter(([, value]) => value !== undefined));
 
 const withMeta = (item, index = 0, collection = "packages") => {
-  const data = definedOnly(item);
-  const id = data.id ? String(data.id) : randomUUID();
+  const { id: requestedId, ...data } = definedOnly(item);
+  const id = requestedId ? String(requestedId) : randomUUID();
   const timestamp = now();
 
   return {
@@ -177,7 +183,6 @@ const withMeta = (item, index = 0, collection = "packages") => {
     createdAt: timestamp,
     updatedAt: timestamp,
     ...data,
-    id,
   };
 };
 
@@ -204,7 +209,7 @@ const flattenPlans = (groups) =>
 // need stable ids (e.g. the Cloudflare seed export) override them.
 // With strict=true a missing/invalid plans.json throws instead of yielding [].
 export const buildDefaultCatalog = async ({ strict = false } = {}) => {
-  let packages = [];
+  let packages;
 
   try {
     const rawPlans = await readFile(plansPath, "utf8");
@@ -244,6 +249,7 @@ const defaultDb = async () => {
     orders: [],
     admins: [],
     passwordResets: [],
+    vacancies: [],
     sessions: [],
     auditLogs: [],
     webhookEvents: [],
@@ -406,7 +412,8 @@ export const createCollectionItem = async (collection, payload, { prepare } = {}
       if (needsSort) item.sortOrder = nextSortOrder(items);
       if (prepare) item = (await prepare(items, item)) || item;
     } else if (prepare) {
-      item = (await prepare([], item)) || item;
+      const items = SLUGGED_COLLECTIONS.includes(collection) ? await slugItems(model) : [];
+      item = (await prepare(items, item)) || item;
     }
     const doc = await model.create(item);
     return normalizeMongoRecord(doc.toObject({ transform: false, virtuals: false }));
@@ -443,7 +450,9 @@ export const updateCollectionItem = async (collection, id, payload, { prepare } 
         ? (await model.find({}, { id: 1, slug: 1, sortOrder: 1, legacyId: 1 }).lean()).map(
             normalizeMongoRecord
           )
-        : [];
+        : SLUGGED_COLLECTIONS.includes(collection)
+          ? await slugItems(model)
+          : [];
       patch = (await prepare(items, existing, patch)) || patch;
     }
     const item = await model
@@ -786,6 +795,49 @@ export const ensureSecurityIndexes = async () => {
       model.createIndexes()
     )
   );
+};
+
+// Unique indexes that the Mongo store relies on for correctness: without them,
+// uniqueness falls back to a non-atomic pre-check (review L5).
+const UNIQUE_INDEXES = [
+  { collection: "admins", field: "email", name: "admins_email_unique", label: "admin email" },
+  { collection: "vacancies", field: "slug", name: "vacancies_slug_unique", label: "vacancy slug" },
+];
+
+export class UniqueIndexError extends Error {}
+
+/**
+ * Creates the unique indexes. When one cannot be built (usually existing duplicates),
+ * throws a UniqueIndexError naming the duplicate values so they can be fixed by hand.
+ * app.js exits on it in production and logs it loudly elsewhere.
+ */
+export const ensureUniqueIndexes = async () => {
+  if (!isMongoMode() || mongoose.connection.readyState !== 1) return;
+  const failures = [];
+  for (const { collection, field, name, label } of UNIQUE_INDEXES) {
+    const target = models[collection].collection;
+    try {
+      await target.createIndex(
+        { [field]: 1 },
+        { unique: true, name, partialFilterExpression: { [field]: { $type: "string" } } }
+      );
+    } catch (error) {
+      const duplicates = await target
+        .aggregate([
+          { $match: { [field]: { $type: "string" } } },
+          { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+          { $match: { count: { $gt: 1 } } },
+          { $limit: 20 },
+        ])
+        .toArray()
+        .catch(() => []);
+      const values = duplicates.map((row) => `${row._id} (${row.count})`).join(", ");
+      failures.push(
+        `${label} unique index (${collection}.${name}) not created: ${values ? `duplicates: ${values}` : error.message}`
+      );
+    }
+  }
+  if (failures.length) throw new UniqueIndexError(failures.join("; "));
 };
 
 // ---------------------------------------------------------------------------
