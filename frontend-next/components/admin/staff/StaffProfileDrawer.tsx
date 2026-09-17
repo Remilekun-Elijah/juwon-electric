@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Alert, Avatar, Badge, Button, Drawer, ErrorState, Field, Input, Skeleton, Textarea } from "@/components/ui";
 import { normalizeRole, roleLabels } from "@/lib/admin/capabilities";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
@@ -168,7 +169,7 @@ function ProfileForm({
         areas: listError(areaList, "Areas covered", LIMITS.staffAreas, LIMITS.staffArea),
         certifications: listError(certificationList, "Certifications", LIMITS.staffCertifications, LIMITS.staffCertification),
         bio: bio.trim().length > LIMITS.staffBio ? `Bio must be ${LIMITS.staffBio} characters or fewer.` : "",
-        avatarUrl: validateImageUrl(avatarUrl, "Photo URL"),
+        avatarUrl: validateImageUrl(avatarUrl, "Photo"),
       }).filter(([, value]) => value)
     ) as Errors;
     setErrors(found);
@@ -222,9 +223,16 @@ function ProfileForm({
       <Field label="Bio" error={errors.bio} helper={`${bio.length}/${LIMITS.staffBio}`}>
         <Textarea value={bio} maxLength={LIMITS.staffBio} onChange={(event) => setBio(event.target.value)} />
       </Field>
-      <Field label="Photo URL" error={errors.avatarUrl} helper="An https:// link or a path starting with /.">
-        <Input type="url" value={avatarUrl} maxLength={LIMITS.url} onChange={(event) => setAvatarUrl(event.target.value)} />
-      </Field>
+      <ImageUpload
+        label="Photo"
+        value={avatarUrl}
+        onChange={setAvatarUrl}
+        purpose="staff"
+        preview="round"
+        error={errors.avatarUrl}
+        helper="Optional. Square photos look best. Without one, their initials show."
+        previewAlt={member.name ? `Photo of ${member.name}` : "Photo preview"}
+      />
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button variant="outline" onClick={onCancel} disabled={saving}>
           Cancel

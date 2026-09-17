@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, ExternalLink, MapPin, Phone, Play, Plus, Trash2, Users } from "lucide-react";
 import { useAdmin } from "@/components/admin/AdminContext";
 import { toast } from "sonner";
 import { Button, Field, Input, Textarea, buttonClasses } from "@/components/ui";
+import { ImageDropZone, ImagePreview, LinkToggle, UploadProgress, useUploadTask } from "@/components/admin/ImageUpload";
 import { JobStatusBadge } from "@/components/admin/orders/orderStatus";
 import { formatDateTime } from "@/lib/admin/format";
 import { formatDuration } from "@/lib/admin/lagosTime";
@@ -12,7 +13,12 @@ import { ENGINEER_JOB_TRANSITIONS } from "@/lib/admin/transitions";
 import { setMyJobStatus, updateMyJob } from "@/lib/api/admin";
 import { cn } from "@/lib/cn";
 import type { InstallationJob } from "@/lib/api/types";
-import { validateImageUrl } from "@/lib/admin/imageUpload";
+import {
+  isUploadUnavailable,
+  uploadErrorMessage,
+  useUploadConfig,
+  validateImageUrl,
+} from "@/lib/admin/imageUpload";
 import { LIMITS } from "@/lib/validation";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { crewmatesText, errorMessage, jobAddress, mapsUrl, relativeSchedule, telHref } from "./jobUtils";
@@ -27,6 +33,14 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [photosBusy, setPhotosBusy] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadTurn, setUploadTurn] = useState<{ index: number; total: number } | null>(null);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const linkId = useId();
+  const uploadConfig = useUploadConfig();
+  const uploadTask = useUploadTask();
+  /** Last saved photo list, read between uploads that run one after another. */
+  const photosRef = useRef(initialJob.photos);
   const [notes, setNotes] = useState(initialJob.completionNotes ?? "");
   const [notesBusy, setNotesBusy] = useState(false);
 
@@ -39,6 +53,7 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
   const crewmates = crewmatesText(job, useAdmin().admin.id);
 
   const publish = (updated: InstallationJob) => {
+    photosRef.current = updated.photos;
     setJob(updated);
     onChanged(updated);
   };
@@ -84,11 +99,12 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
     }
   };
 
+  /** Saves the whole photo list (the existing payload). `success` "" skips the toast. */
   const savePhotos = async (photos: string[], success: string) => {
     setPhotosBusy(true);
     try {
       publish(await updateMyJob(job.id, { photos }));
-      toast.success(success);
+      if (success) toast.success(success);
       return true;
     } catch (error) {
       toast.error(errorMessage(error));
@@ -102,12 +118,48 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
     event.preventDefault();
     const url = photoUrl.trim();
     const problem =
-      validateImageUrl(url, "Photo URL", { required: true }) ||
+      validateImageUrl(url, "Photo link", { required: true }) ||
       (job.photos.includes(url) ? "This photo is already added." : "") ||
       (job.photos.length >= LIMITS.jobPhotos ? `You can add up to ${LIMITS.jobPhotos} photos.` : "");
     setPhotoError(problem);
     if (problem) return;
     if (await savePhotos([...job.photos, url], "Photo added.")) setPhotoUrl("");
+  };
+
+  /** Uploads the chosen or taken photos one at a time and saves each to the job as soon as it's uploaded. */
+  const uploadPhotos = async (files: File[]) => {
+    if (uploadConfig.status !== "ready") return;
+    setUploadError("");
+    const room = LIMITS.jobPhotos - photosRef.current.length;
+    if (room <= 0) {
+      setUploadError(`You can add up to ${LIMITS.jobPhotos} photos.`);
+      return;
+    }
+    const accepted = files.slice(0, room);
+    if (files.length > accepted.length) {
+      setUploadError(`You can add up to ${LIMITS.jobPhotos} photos, so only the first ${accepted.length} will be added.`);
+    }
+    let added = 0;
+    try {
+      for (const [index, file] of accepted.entries()) {
+        setUploadTurn({ index: index + 1, total: accepted.length });
+        let url: string | null;
+        try {
+          url = await uploadTask.run(file, { purpose: "jobs", kind: "photo", config: uploadConfig.config });
+        } catch (caught) {
+          const message = uploadErrorMessage(caught);
+          setUploadError(accepted.length > 1 ? `${file.name}: ${message}` : message);
+          if (isUploadUnavailable(caught)) setLinkOpen(true);
+          break;
+        }
+        if (!url) break; // Cancelled.
+        if (!(await savePhotos([...photosRef.current, url], ""))) break;
+        added += 1;
+      }
+    } finally {
+      setUploadTurn(null);
+    }
+    if (added) toast.success(added === 1 ? "Photo added." : `${added} photos added.`);
   };
 
   const saveNotes = async (event: FormEvent<HTMLFormElement>) => {
@@ -262,8 +314,9 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
                   rel="noopener noreferrer"
                   className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-brand-700 hover:underline"
                 >
+                  <ImagePreview src={photo} alt={`Photo ${index + 1}`} className="my-1 size-12" />
+                  <span className="min-w-0 flex-1 truncate">{photo}</span>
                   <ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{photo}</span>
                 </a>
                 {editable && (
                   <Button
@@ -283,35 +336,71 @@ export function MyJobDetail({ initialJob, onChanged }: MyJobDetailProps) {
           <p className="text-sm text-slate-500">No photos yet.</p>
         )}
         {editable && (
-          <form onSubmit={addPhoto} noValidate className="space-y-2">
-            <Field
-              label="Photo URL"
-              error={photoError}
-              helper={`Paste a link to the photo (https://…). Up to ${LIMITS.jobPhotos} photos.`}
-            >
-              <Input
-                type="url"
-                inputMode="url"
-                size="lg"
-                className="text-base"
-                value={photoUrl}
-                maxLength={LIMITS.url}
-                placeholder="https://"
-                onChange={(event) => setPhotoUrl(event.target.value)}
-              />
-            </Field>
-            <Button
-              type="submit"
-              variant="outline"
-              size="lg"
-              className="min-h-11 w-full text-base"
-              icon={<Plus aria-hidden="true" />}
-              loading={photosBusy}
-              disabled={job.photos.length >= LIMITS.jobPhotos}
-            >
-              Add photo
-            </Button>
-          </form>
+          <div className="space-y-2">
+            {uploadConfig.status !== "unavailable" &&
+              (uploadTurn ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <UploadProgress
+                    stage={uploadTask.stage ?? "uploading"}
+                    progress={uploadTask.stage ? uploadTask.progress : 1}
+                    label={uploadTurn.total > 1 ? `Photo ${uploadTurn.index} of ${uploadTurn.total}` : undefined}
+                    onCancel={uploadTask.stage ? uploadTask.cancel : undefined}
+                  />
+                </div>
+              ) : (
+                <ImageDropZone
+                  multiple
+                  disabled={uploadConfig.status !== "ready" || photosBusy || job.photos.length >= LIMITS.jobPhotos}
+                  prompt="Take a photo or choose photos. On a computer, you can also drag them here."
+                  buttonLabel="Add photos"
+                  hint={`Up to ${LIMITS.jobPhotos} photos. Large photos are resized before upload.`}
+                  onFiles={(files) => void uploadPhotos(files)}
+                />
+              ))}
+            {uploadError && (
+              <p role="alert" className="text-sm text-red-600">
+                {uploadError}
+              </p>
+            )}
+            {uploadConfig.status !== "unavailable" && (
+              <LinkToggle open={linkOpen} controls={linkId} onToggle={() => setLinkOpen(!linkOpen)}>
+                Use a photo link instead
+              </LinkToggle>
+            )}
+            <div id={linkId} hidden={uploadConfig.status !== "unavailable" && !linkOpen}>
+              {(uploadConfig.status === "unavailable" || linkOpen) && (
+                <form onSubmit={addPhoto} noValidate className="space-y-2">
+                  <Field
+                    label="Photo link"
+                    error={photoError}
+                    helper={`Paste a link to the photo (https://…). Up to ${LIMITS.jobPhotos} photos.`}
+                  >
+                    <Input
+                      type="url"
+                      inputMode="url"
+                      size="lg"
+                      className="text-base"
+                      value={photoUrl}
+                      maxLength={LIMITS.url}
+                      placeholder="https://"
+                      onChange={(event) => setPhotoUrl(event.target.value)}
+                    />
+                  </Field>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="lg"
+                    className="min-h-11 w-full text-base"
+                    icon={<Plus aria-hidden="true" />}
+                    loading={photosBusy && !uploadTurn}
+                    disabled={job.photos.length >= LIMITS.jobPhotos || Boolean(uploadTurn)}
+                  >
+                    Add photo link
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
         )}
       </section>
 
