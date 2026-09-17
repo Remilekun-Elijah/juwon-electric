@@ -347,6 +347,7 @@ export const SAMPLE_SETTINGS = {
     ],
     whatsappNumber: "+2348000000000",
     businessHours: "Mon–Sat 8am–6pm",
+    productsEnabled: true,
     sample: true,
   },
   financing: {

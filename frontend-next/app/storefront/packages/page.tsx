@@ -10,7 +10,7 @@ import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { getStorePackages } from "@/lib/storefront/data";
+import { getStoreChromeSettings, getStorePackages } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { enterDelay, storeContainer } from "@/lib/storefront/styles";
 
@@ -31,7 +31,9 @@ export const metadata: Metadata = {
  * are left out (Commerce v2 §4).
  */
 export default async function PackagesPage() {
-  const packages = availablePackages(await getStorePackages());
+  const [allPackages, settings] = await Promise.all([getStorePackages(), getStoreChromeSettings()]);
+  const packages = availablePackages(allPackages);
+  const productsEnabled = settings.website.productsEnabled;
 
   return (
     <>
@@ -61,7 +63,7 @@ export default async function PackagesPage() {
         )}
 
         <Reveal className="mt-12 sm:mt-16">
-          <CatalogHelpBand secondary={{ label: "Browse products", href: storeRoutes.products }} />
+          <CatalogHelpBand secondary={productsEnabled ? { label: "Browse products", href: storeRoutes.products } : undefined} />
         </Reveal>
       </div>
     </>

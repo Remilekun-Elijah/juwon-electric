@@ -284,6 +284,8 @@ export type StoreSettings = {
     stats: WebsiteStat[];
     whatsappNumber: string | null;
     businessHours: string | null;
+    /** False hides every Products link, section and page on the storefront (packages are unaffected). */
+    productsEnabled: boolean;
     sample: boolean;
   };
   /** Terms when financing is enabled and has at least one term, otherwise null (the section hides). */
@@ -341,6 +343,8 @@ const withContactFallback = (settings: PublicSettings | null): StoreSettings => 
     stats: (settings?.website?.stats ?? []).filter((stat) => text(stat.label) && text(stat.value)).slice(0, 4),
     whatsappNumber: text(settings?.website?.whatsappNumber),
     businessHours: text(settings?.website?.businessHours),
+    // Older servers don't send it; products show unless it is explicitly false.
+    productsEnabled: settings?.website?.productsEnabled !== false,
     sample: settings?.website?.sample === true,
   },
   financing: toStoreFinancing(settings?.financing),
@@ -352,6 +356,9 @@ export const getStoreSettings = cache(
   async (): Promise<StoreSettings> =>
     withContactFallback(await storeRead("GET /settings/public", (init) => getPublicSettings(init), { tags: ["settings"] }))
 );
+
+/** True while the Products area of the storefront is switched on in Settings (never throws; defaults to on). */
+export const storeProductsEnabled = async (): Promise<boolean> => (await getStoreChromeSettings()).website.productsEnabled;
 
 /**
  * Settings for the layout chrome (header phone, footer details) only. Never throws: an error in a layout can't reach

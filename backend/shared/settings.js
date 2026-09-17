@@ -19,7 +19,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   inventory: { defaultReorderLevel: 0, lowStockAlertsEnabled: true },
   uploads: { provider: "url" },
   // LANDING_V1 §3. `sample` marks seeded sample content; saving a section clears it.
-  website: { stats: [], whatsappNumber: null, businessHours: null, sample: false },
+  // `productsEnabled` false hides the Products area of the public site (packages are unaffected).
+  website: { stats: [], whatsappNumber: null, businessHours: null, productsEnabled: true, sample: false },
   financing: {
     enabled: false,
     depositPercent: null,
@@ -167,6 +168,7 @@ const SECTION_FIELDS = {
       source.whatsappNumber === null ? null : phone(source, "whatsappNumber", { label: "WhatsApp number" }) || null,
     businessHours: (source) =>
       text(source, "businessHours", { label: "Business hours", max: SETTINGS_LIMITS.businessHours, multiline: true }) || null,
+    productsEnabled: (source) => requiredBoolean(source, "productsEnabled", "Products on the website"),
   },
   financing: {
     enabled: (source) => requiredBoolean(source, "enabled", "Financing enabled"),

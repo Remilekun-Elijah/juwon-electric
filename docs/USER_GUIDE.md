@@ -830,6 +830,18 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 **Tip:** leave Summary empty for a project you don't want shown as a case study. It still shows in the normal portfolio.
 
+### Story 10A.4b: Show or hide products on the website
+
+*As the owner, I want to sell packages only for a while, so that customers don't browse single products.*
+
+1. Go to **Settings → Website → Homepage & contact**.
+2. Under **Products on the website**, turn **Show products on the website** off.
+3. Select **Save changes**.
+
+What customers see within about a minute: no **Products** item in the menu or the footer, no product sections on the home page, and any old product link shows the "We can't find that page" page. Packages still show the products and specifications they include, so customers can still see what is in a package.
+
+What stays the same: **Products**, **Categories**, **Inventory** and in-store sales of single products all work as before in the admin, and package prices are unchanged. Turn the switch back on to bring the product pages back.
+
 ### Story 10A.5: Set homepage stats, WhatsApp number and business hours
 
 *As the owner, I want the home page and footer to show our real figures, WhatsApp and opening hours so that customers know how to reach us.*
@@ -1241,6 +1253,12 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (products on the website switch)**
+- Owner: **Settings → Website → Homepage & contact** has a new switch, **Show products on the website**. Turn it off to sell packages only: customers stop seeing the Products menu item, the product sections on the home page and every product page. Packages keep their products, and nothing changes in the admin.
+
+**2026-09-17 (brand red admin chrome)**
+- Admin: the menu down the left and the bar across the top are now the deep Juwon red, with gold menu wording and the page you are on highlighted in white. Nothing moved and nothing works differently.
 
 **2026-09-17 (settings opens on a section page)**
 - Admin: **Settings** now opens **Business profile** straight away, with the list of settings pages beside it. The page of cards and the **Back to settings** link are gone.

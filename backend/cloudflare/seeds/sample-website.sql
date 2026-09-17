@@ -238,7 +238,7 @@ UPDATE records SET data = json_set(data,
 INSERT INTO records (id, collection, slug, data, is_active, sort_order, created_at, updated_at)
   VALUES ('global', 'settings', NULL, '{"id":"global","updatedAt":"2026-09-17T08:00:00.000Z","updatedBy":null}', 1, 0, '2026-09-17T08:00:00.000Z', '2026-09-17T08:00:00.000Z')
   ON CONFLICT (id) DO NOTHING;
-UPDATE records SET data = json_set(data, '$.website', json('{"stats":[{"label":"Installations","value":"500+"},{"label":"Years in business","value":"10+"},{"label":"Engineers","value":"25"},{"label":"Average install time","value":"1 day"}],"whatsappNumber":"+2348000000000","businessHours":"Mon–Sat 8am–6pm","sample":true}'))
+UPDATE records SET data = json_set(data, '$.website', json('{"stats":[{"label":"Installations","value":"500+"},{"label":"Years in business","value":"10+"},{"label":"Engineers","value":"25"},{"label":"Average install time","value":"1 day"}],"whatsappNumber":"+2348000000000","businessHours":"Mon–Sat 8am–6pm","productsEnabled":true,"sample":true}'))
   WHERE collection = 'settings' AND id = 'global' AND (
     json_type(data, '$.website') IS NOT 'object'
     OR json_extract(data, '$.website.sample') = 1

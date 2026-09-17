@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Package, Phone, PlugZap, Search } from "lucide-react";
 import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import { cn } from "@/lib/cn";
+import { storeProductsEnabled } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
 import {
   enterDelay,
@@ -32,7 +33,10 @@ const suggestions = [
  * Dark intro like every other page (so the header stays transparent over it), then an unplugged illustration that
  * floats in and keeps drifting gently, and the suggestions rising in a stagger (TEAM_AND_MOTION_V1 §8.2).
  */
-export default function StorefrontNotFound() {
+export default async function StorefrontNotFound() {
+  const productsEnabled = await storeProductsEnabled();
+  const shown = suggestions.filter((item) => productsEnabled || item.href !== storeRoutes.products);
+
   return (
     <>
       <PageIntro
@@ -61,7 +65,7 @@ export default function StorefrontNotFound() {
         </div>
 
         <ul className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
-          {suggestions.map(({ icon: Icon, title, body, href }, index) => (
+          {shown.map(({ icon: Icon, title, body, href }, index) => (
             <li key={href} style={staggerDelay(index, 80, 450)} className="je-in">
               <div className={cn(storeCard, storeHoverLift, "group h-full p-5")}>
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700">

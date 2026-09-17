@@ -22,7 +22,7 @@ import ProductCartLines from "./ProductCartLines";
  * the order summary. The cart is empty on the server and during hydration, so a skeleton shows until the stored cart is
  * read. The empty state only shows when both kinds of line are empty.
  */
-export default function CartView() {
+export default function CartView({ productsEnabled = true }: { productsEnabled?: boolean }) {
   const hydrated = useHydrated();
   const cart = useCart();
   const products = useProductCart();
@@ -31,7 +31,7 @@ export default function CartView() {
   const count = cartLineCount(cart.length, products.length);
 
   if (!hydrated) return <CartSkeleton />;
-  if (!count) return <CartEmpty />;
+  if (!count) return <CartEmpty productsEnabled={productsEnabled} />;
 
   const blockedReason =
     quote.status === "loading"
@@ -68,9 +68,11 @@ export default function CartView() {
               <Link href={storeRoutes.packages} className={cn(storeLink, "inline-flex min-h-11 items-center text-sm")}>
                 Add a package
               </Link>
-              <Link href={storeRoutes.products} className={cn(storeLink, "inline-flex min-h-11 items-center text-sm")}>
-                Browse products
-              </Link>
+              {productsEnabled && (
+                <Link href={storeRoutes.products} className={cn(storeLink, "inline-flex min-h-11 items-center text-sm")}>
+                  Browse products
+                </Link>
+              )}
             </div>
           </div>
           {/* Both lists stay mounted (they render nothing when empty), so removing the last line of one kind still folds away. */}

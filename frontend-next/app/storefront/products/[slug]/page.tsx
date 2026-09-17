@@ -22,7 +22,7 @@ import { cn } from "@/lib/cn";
 import { richTextToPlain, sanitizeRichText } from "@/lib/sanitize";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { canBuyOnline, toCartProduct } from "@/lib/storefront/cartProduct";
-import { getStoreCategories, getStorePackages, getStoreProduct, getStoreProducts } from "@/lib/storefront/data";
+import { getStoreCategories, getStorePackages, getStoreProduct, getStoreProducts, storeProductsEnabled } from "@/lib/storefront/data";
 import { contactTopicPath, storeRoutes } from "@/lib/storefront/routes";
 import { enterDelay, storeArrowNudge, storeCard, storeCardPadding, storeContainer, storeH3, storeLink, storeOnDarkFocus } from "@/lib/storefront/styles";
 
@@ -89,6 +89,7 @@ const packagesIncluding = (packages: Package[], product: PublicProduct) =>
   packages.filter((pkg) => packageIncludesProduct(pkg, product.id));
 
 export default async function ProductPage({ params }: PageProps<"/storefront/products/[slug]">) {
+  if (!(await storeProductsEnabled())) notFound();
   const { slug } = await params;
   const product = await getStoreProduct(slug);
   if (!product) notFound();

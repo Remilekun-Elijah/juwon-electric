@@ -86,6 +86,8 @@ export default async function HomePage() {
 
   const topCategories = buildCategoryTree(categories);
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
+  // Settings → Website: with products off, the shop-by-category and popular-products sections stay off the home page.
+  const productsEnabled = settings.website.productsEnabled;
   const segments = services.customerSegments;
   const studies = caseStudies(featuredFirst(portfolio)).slice(0, HOME_CASE_STUDIES);
 
@@ -148,7 +150,7 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {topCategories.length > 0 && (
+      {productsEnabled && topCategories.length > 0 && (
         <Section
           eyebrow="Products"
           title="Shop by category"
@@ -159,7 +161,7 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {popularProducts.length > 0 && (
+      {productsEnabled && popularProducts.length > 0 && (
         <Section tone="white" eyebrow="In stock" title="Popular products" actions={seeAll(storeRoutes.products, "Browse all products")}>
           <Reveal as="ul" stagger className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-5">
             {popularProducts.map((product) => (

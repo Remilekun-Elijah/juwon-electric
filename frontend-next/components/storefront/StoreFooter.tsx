@@ -39,6 +39,10 @@ const socialLinks = [
   { label: "X", href: socials.x },
 ];
 
+/** Hides links to areas switched off in Settings (Load calculator, Products). */
+const shown = (href: string, settings: StoreSettings) =>
+  (settings.calculator || href !== storeRoutes.calculator) && (settings.website.productsEnabled || href !== storeRoutes.products);
+
 /** Focus ring for the dark footer. */
 const darkFocus = cn(storeFocus, "focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950");
 const footerLink = cn("inline-flex min-h-11 items-center rounded-sm text-sm md:min-h-0 text-white/70 transition-colors hover:text-gold-300", darkFocus);
@@ -83,7 +87,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
               <nav key={column.title} aria-label={column.title}>
                 <h2 className={columnTitle}>{column.title}</h2>
                 <ul className="mt-3 space-y-0 md:mt-4 md:space-y-3">
-                  {column.links.filter((link) => settings.calculator || link.href !== storeRoutes.calculator).map((link) => (
+                  {column.links.filter((link) => shown(link.href, settings)).map((link) => (
                     <li key={link.href}>
                       <Link href={link.href} className={footerLink}>
                         {link.label}

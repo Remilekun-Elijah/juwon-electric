@@ -11,9 +11,14 @@ import { contactTopicPath, isActivePath, primaryPhone, storeDrawerNav, storeNav,
 import { storeFocus, storePress } from "@/lib/storefront/styles";
 import CartButton from "./cart/CartButton";
 
-/** Hides the Calculator link while the calculator is switched off in Settings. */
-const withCalculator = <T extends { href: string }>(items: T[], calculatorEnabled: boolean) =>
-  calculatorEnabled ? items : items.filter((item) => item.href !== storeRoutes.calculator);
+/** Hides the Calculator and Products links while those areas are switched off in Settings. */
+const visibleNav = <T extends { href: string }>(items: T[], { calculatorEnabled, productsEnabled }: NavToggles) =>
+  items.filter(
+    (item) =>
+      (calculatorEnabled || item.href !== storeRoutes.calculator) && (productsEnabled || item.href !== storeRoutes.products)
+  );
+
+type NavToggles = { calculatorEnabled: boolean; productsEnabled: boolean };
 
 /** Scroll distance after which the home header turns solid (TEAM_AND_MOTION_V1 §7.2). */
 const SOLID_AFTER_PX = 24;
@@ -32,6 +37,8 @@ export type StoreHeaderProps = {
   phone: string;
   /** `settings.calculator` is enabled; when it's off the Calculator link is hidden. */
   calculatorEnabled: boolean;
+  /** `settings.website.productsEnabled`; when it's off the Products link is hidden. */
+  productsEnabled: boolean;
 };
 
 /** Elements that take no space or aren't shown, so a hero after them still starts the page. */
@@ -117,9 +124,10 @@ function useScrolledPast(enabled: boolean, threshold: number) {
  * on the active item, the logo without a chip, a white phone link, a glass cart and menu button and a gold quote pill.
  * The lift uses transform only and the bar height never changes, so nothing shifts. Reduced motion skips the movement.
  */
-export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderProps) {
-  const navItems = withCalculator(storeNav, calculatorEnabled);
-  const drawerLinks = [{ label: "Home", href: storeRoutes.home }, ...withCalculator(storeDrawerNav, calculatorEnabled), { label: "Cart", href: storeRoutes.cart }];
+export default function StoreHeader({ phone, calculatorEnabled, productsEnabled }: StoreHeaderProps) {
+  const toggles = { calculatorEnabled, productsEnabled };
+  const navItems = visibleNav(storeNav, toggles);
+  const drawerLinks = [{ label: "Home", href: storeRoutes.home }, ...visibleNav(storeDrawerNav, toggles), { label: "Cart", href: storeRoutes.cart }];
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);

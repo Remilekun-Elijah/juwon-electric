@@ -21,7 +21,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/store
       >
         Skip to content
       </a>
-      <StoreHeader phone={settings.business.phone} calculatorEnabled={Boolean(settings.calculator)} />
+      <StoreHeader phone={settings.business.phone} calculatorEnabled={Boolean(settings.calculator)} productsEnabled={settings.website.productsEnabled} />
       <main id="store-main" tabIndex={-1} className="flex-1 focus:outline-hidden">
         {children}
       </main>
