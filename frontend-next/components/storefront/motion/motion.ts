@@ -11,3 +11,23 @@ export const isBelowFold = (element: Element) => element.getBoundingClientRect()
 
 /** Reveal once the top of an element is inside the lower 15% of the viewport, whatever the element's height. */
 export const REVEAL_ROOT_MARGIN = "0px 0px -15% 0px";
+
+/**
+ * Shakes an element sideways once (a form field with an error, TEAM_AND_MOTION_V1 §8.2 Contact): 4px, 300ms, with the
+ * Web Animations API so no class or reflow is needed. Does nothing under reduced motion.
+ */
+export function shake(element: Element | null | undefined) {
+  if (!element || typeof element.animate !== "function") return;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  element.animate(
+    [
+      { transform: "translateX(0)" },
+      { transform: "translateX(-4px)" },
+      { transform: "translateX(4px)" },
+      { transform: "translateX(-3px)" },
+      { transform: "translateX(2px)" },
+      { transform: "translateX(0)" },
+    ],
+    { duration: 300, easing: "ease-in-out" }
+  );
+}

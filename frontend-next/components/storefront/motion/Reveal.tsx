@@ -20,6 +20,11 @@ export type RevealProps = Omit<HTMLAttributes<HTMLElement>, "children"> & {
   stagger?: boolean;
   /** Delay between staggered items in ms (default 60). Longer steps suit short sequences such as How it works. */
   staggerStep?: number;
+  /**
+   * Where hidden items wait before they appear (TEAM_AND_MOTION_V1 §8): `below` rises 16px (default), `left` and
+   * `right` slide 24px in from that side, `fade` doesn't move and `zoom` grows from 97%. Reduced motion never moves.
+   */
+  from?: "below" | "left" | "right" | "fade" | "zoom";
   children?: ReactNode;
 };
 
@@ -32,7 +37,15 @@ export type RevealProps = Omit<HTMLAttributes<HTMLElement>, "children"> & {
  * - One IntersectionObserver per instance, disconnected once everything has appeared. No scroll listeners.
  * - Reduced motion: nothing is hidden or animated.
  */
-export default function Reveal({ as: Component = "div", delay = 0, stagger = false, staggerStep = STAGGER_STEP_MS, children, ...rest }: RevealProps) {
+export default function Reveal({
+  as: Component = "div",
+  delay = 0,
+  stagger = false,
+  staggerStep = STAGGER_STEP_MS,
+  from = "below",
+  children,
+  ...rest
+}: RevealProps) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -45,7 +58,10 @@ export default function Reveal({ as: Component = "div", delay = 0, stagger = fal
     if (!targets.length) return;
 
     const waiting = new Set(targets);
-    for (const element of targets) element.dataset.reveal = "hidden";
+    for (const element of targets) {
+      if (from !== "below") element.dataset.revealFrom = from;
+      element.dataset.reveal = "hidden";
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -72,7 +88,7 @@ export default function Reveal({ as: Component = "div", delay = 0, stagger = fal
       // Anything still hidden (unmount or re-run) becomes visible immediately rather than staying invisible.
       for (const element of waiting) delete element.dataset.reveal;
     };
-  }, [delay, stagger, staggerStep]);
+  }, [delay, stagger, staggerStep, from]);
 
   return (
     <Component ref={ref} {...rest}>

@@ -533,6 +533,196 @@
   opacity: 1;
 }
 
+/*
+ * ---------- Inner pages (docs/agents/TEAM_AND_MOTION_V1.md §8) ----------
+ * `je-in` is a page-load or mount entrance with `backwards` fill: it only styles the element while it waits and runs,
+ * then hands back to the normal styles, so a scroll Reveal can still hide the same element later. Pure CSS, so it
+ * also runs without JavaScript. Direction, distance, scale and length come from the modifier classes below.
+ */
+@keyframes je-in {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--in-x, 0px), var(--in-y, 16px), 0) scale(var(--in-scale, 1));
+  }
+}
+.je-in {
+  animation: je-in var(--in-duration, 500ms) cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+.je-in-left {
+  --in-x: -24px;
+  --in-y: 0px;
+}
+.je-in-right {
+  --in-x: 24px;
+  --in-y: 0px;
+}
+.je-in-fade {
+  --in-y: 0px;
+}
+.je-in-zoom {
+  --in-y: 0px;
+  --in-scale: 0.97;
+}
+.je-in-pop {
+  --in-y: 0px;
+  --in-scale: 0.92;
+}
+/* Cart and checkout: 200ms and a shorter rise, so with its delay no entrance there passes 300ms. */
+.je-in-fast {
+  --in-duration: 200ms;
+  --in-y: 8px;
+}
+.je-in-fast.je-in-right {
+  --in-x: 16px;
+  --in-y: 0px;
+}
+
+/* Scroll reveal directions (Reveal `from`): the element waits offset to one side, or without moving. */
+[data-reveal="hidden"][data-reveal-from="left"] {
+  transform: translateX(-24px);
+}
+[data-reveal="hidden"][data-reveal-from="right"] {
+  transform: translateX(24px);
+}
+[data-reveal="hidden"][data-reveal-from="fade"] {
+  transform: none;
+}
+[data-reveal="hidden"][data-reveal-from="zoom"] {
+  transform: scale(0.97);
+}
+
+/* A line that draws downwards on mount (order success steps). */
+@keyframes je-draw-down {
+  from {
+    transform: scaleY(0);
+  }
+}
+.je-draw-down {
+  transform-origin: top center;
+  animation: je-draw-down 600ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* Check mark that draws itself (lucide circle-check: a circle and a short path, both shorter than 64 units). */
+@keyframes je-check-draw {
+  from {
+    stroke-dashoffset: 64;
+  }
+}
+.je-check-draw :is(circle, path) {
+  stroke-dasharray: 64;
+  stroke-dashoffset: 0;
+  animation: je-check-draw 700ms cubic-bezier(0.65, 0, 0.35, 1) backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+.je-check-draw path {
+  animation-delay: calc(var(--enter-delay, 0ms) + 350ms);
+}
+
+/* Gentle idle float for empty-state and 404 illustrations (4s a cycle). */
+@keyframes je-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.je-float {
+  animation: je-float 4s ease-in-out infinite;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* One soft attention ring after the entrance (vacancy Apply button). Needs `position: relative` on the element. */
+@keyframes je-attention {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15, 1.45);
+  }
+}
+.je-attention::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--color-gold-400);
+  opacity: 0;
+  pointer-events: none;
+  animation: je-attention 900ms ease-out 1;
+  animation-delay: var(--attention-delay, 1100ms);
+}
+
+/* Loading shimmer across a busy button (Place order). Needs `position: relative; overflow: hidden`. */
+@keyframes je-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.je-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
+  pointer-events: none;
+  animation: je-shimmer 1.2s ease-in-out infinite;
+}
+
+/* "Added" ring on Add to cart: grows and fades once. */
+@keyframes je-added {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.08, 1.35);
+  }
+}
+.je-added {
+  animation: je-added 600ms ease-out forwards;
+}
+
+/* Quantity digits roll up when they change: the new number rises into its clipped cell. */
+@keyframes je-roll {
+  from {
+    opacity: 0;
+    transform: translateY(60%);
+  }
+}
+.je-roll {
+  animation: je-roll 180ms ease-out backwards;
+}
+
+/* Cart line removal: the leaving copy folds its height away and fades (the one layout animation, §8.3). */
+@keyframes je-collapse {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    padding-block: 0;
+  }
+}
+.je-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: je-collapse 250ms ease-in forwards;
+}
+
+/* Contact fields: the focus ring grows in instead of snapping. */
+.je-fields :is(input, textarea, select) {
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
 /* CountUp (components/storefront/motion/CountUp.tsx): hold back the digits until the count starts; show them anyway after 3s. */
 @keyframes je-count-fallback {
   to {
@@ -586,6 +776,23 @@
     opacity: 1;
   }
   .je-details::details-content {
+    transition: none;
+  }
+  .je-in,
+  .je-draw-down,
+  .je-float,
+  .je-roll,
+  .je-added,
+  .je-collapse,
+  .je-check-draw :is(circle, path),
+  .je-attention::after,
+  .je-shimmer::after {
+    animation: none;
+  }
+  [data-reveal="hidden"][data-reveal-from] {
+    transform: none;
+  }
+  .je-fields :is(input, textarea, select) {
     transition: none;
   }
 }

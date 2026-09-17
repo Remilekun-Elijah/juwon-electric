@@ -47,3 +47,27 @@ export const storeArrowNudge = "transition-transform duration-200 ease-out motio
  * JavaScript; reduced motion turns it off.
  */
 export const enterDelay = (ms: number) => ({ "--enter-delay": `${ms}ms` }) as Record<string, string>;
+
+/* ---------- Dark page intros (docs/agents/TEAM_AND_MOTION_V1.md §8.1) ---------- */
+
+/** Keyboard focus ring for controls on slate-950. */
+export const storeOnDarkFocus =
+  "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
+
+const darkButtonBase =
+  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-semibold transition-[background-color,translate] duration-200 ease-out motion-safe:hover:-translate-y-0.5 [&_svg]:size-4 [&_svg]:shrink-0";
+
+/** Gold primary button on a dark surface (text is slate-950). */
+export const storeGoldButton = `${darkButtonBase} bg-gold-400 text-slate-950 hover:bg-gold-300 ${storeOnDarkFocus} ${storePress}`;
+
+/** Glass secondary button on a dark surface. */
+export const storeGlassButton = `${darkButtonBase} border border-white/25 bg-white/10 text-white backdrop-blur-md hover:bg-white/15 ${storeOnDarkFocus} ${storePress}`;
+
+/** Filter chip on a dark surface: glass, or gold while selected. Add `min-h-*`, padding and gap yourself if needed. */
+export const storeDarkChip = (active: boolean) =>
+  `inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors md:min-h-10 ${storeOnDarkFocus} ${storePress} ${
+    active ? "border-gold-400 bg-gold-400 text-slate-950" : "border-white/20 bg-white/10 text-white hover:bg-white/15"
+  }`;
+
+/** Delay for the nth item of a mounting list: `step` ms apart, capped so long lists never wait (8 steps by default). */
+export const staggerDelay = (index: number, step = 60, base = 0, cap = 8) => enterDelay(base + Math.min(index, cap - 1) * step);
