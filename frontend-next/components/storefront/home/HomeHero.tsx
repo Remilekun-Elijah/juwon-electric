@@ -41,7 +41,8 @@ export type HomeHeroProps = {
 /**
  * Full-bleed home hero (TEAM_AND_MOTION_V1 §7.3) under the transparent header: a photo slideshow with dark gradients,
  * a glass status pill, a three-line headline with the last word in gold, the lead, a gold "Shop packages" and a glass
- * WhatsApp or call button, the website stats with gold count-up numbers, a glass price card (xl) and a scroll cue.
+ * WhatsApp or call button, the website stats with gold count-up numbers, a glass price card and a scroll cue. The price
+ * card shows from xl, above the floating actions: at lg it would cover the stats row.
  *
  * Entrance is CSS only, so the content is in the HTML and runs before hydration: the pill, headline lines (rising out of
  * a clipped mask), lead, buttons, stats and price card follow each other in about 100 ms steps. Reduced motion turns
@@ -155,7 +156,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
       </div>
 
       {typeof fromPrice === "number" && fromPrice > 0 && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-24 hidden xl:block">
+        <div className="pointer-events-none absolute inset-x-0 bottom-44 hidden xl:block">
           <div className={cn(storeContainer, "flex justify-end")}>
             <div
               style={enterDelay(950)}

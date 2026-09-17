@@ -39,7 +39,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
       <Reveal className={storeContainer}>
         <BrandPanel ring="bottom-left" className="px-5 py-12 text-center shadow-elev-4 sm:px-10 sm:py-16 lg:px-14">
           <Image src="/panel-6.webp" alt="" fill sizes="(min-width: 1280px) 1216px, 100vw" className="-z-20 object-cover" />
-          <div aria-hidden="true" className="absolute inset-0 -z-20 bg-gradient-to-br from-brand-900/95 via-brand-800/90 to-brand-700/80" />
+          <div aria-hidden="true" className="absolute inset-0 -z-20 bg-gradient-to-br from-brand-900/95 via-brand-800/85 to-brand-700/65" />
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold-400">Ready when you are</p>
           <h2 id={headingId} className="mx-auto mt-2 max-w-2xl text-2xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-4xl">
             Keep your lights on through every outage

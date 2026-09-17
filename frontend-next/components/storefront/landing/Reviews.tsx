@@ -55,13 +55,12 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
           const rating = typeof review.rating === "number" ? Math.min(5, Math.max(1, Math.round(review.rating))) : null;
           return (
             <li key={review.id} className="relative w-[85%] max-w-sm shrink-0 snap-start sm:w-auto sm:max-w-none">
-              <figure className={cn(storeCard, "relative flex h-full flex-col overflow-hidden border-brand-100 p-5 shadow-elev-2 sm:p-6")}>
-                <Quote aria-hidden="true" className="pointer-events-none absolute -right-2 -top-2 h-20 w-20 rotate-180 text-brand-50" />
-                <div className="relative flex items-center justify-between gap-3">
+              <figure className={cn(storeCard, "flex h-full flex-col border-brand-100 p-5 shadow-elev-2 sm:p-6")}>
+                <div className="flex items-center justify-between gap-3">
                   {rating ? <Rating rating={rating} /> : <Quote aria-hidden="true" className="h-5 w-5 text-brand-300" />}
                   <SampleBadge show={review.sample} />
                 </div>
-                <blockquote className="relative mt-4 flex-1 text-sm leading-relaxed text-slate-700 sm:text-base">
+                <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-slate-700 sm:text-base">
                   <p className="whitespace-pre-line">{review.quote}</p>
                 </blockquote>
                 <figcaption className="mt-5 flex flex-wrap items-end justify-between gap-2 border-t border-slate-100 pt-4">
