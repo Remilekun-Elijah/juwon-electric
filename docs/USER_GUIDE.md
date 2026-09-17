@@ -1,6 +1,6 @@
 # How to use the Juwon Electric platform
 
-Last updated: 2026-09-17 (Commerce v3)
+Last updated: 2026-09-17 (Landing v1)
 
 This guide explains, in plain steps, how to do everyday work on the Juwon Electric platform: the **admin console** (for staff) and the **public website** (for customers). Each chapter is written for one kind of user.
 
@@ -16,6 +16,7 @@ This guide explains, in plain steps, how to do everyday work on the Juwon Electr
 8. [Engineer](#8-engineer)
 9. [HR](#9-hr)
 10. [Support](#10-support)
+    - [10A. Website content](#10a-website-content)
 11. [Customer (public website)](#11-customer-public-website)
 12. [How updates reach the website](#12-how-updates-reach-the-website)
 13. [Troubleshooting](#13-troubleshooting)
@@ -85,6 +86,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 | Overview | Dashboard, My jobs |
 | Sales | Orders, Installations, Carts |
 | Catalog | Products, Categories, Inventory, Packages, Services, Portfolio |
+| Website | FAQs, Reviews, Client logos |
 | Customers | Messages, Newsletter |
 | Team | Vacancies, Staff & roles |
 | System | Activity, Settings |
@@ -206,6 +208,19 @@ A package option's price is worked out like this:
 
 **Tip:** if a cancelled order couldn't put stock back because a product was deleted, the summary says "stock not restored for deleted product <SKU>". Fix the stock by hand in **Inventory** if needed.
 
+### Story 4.7: Sign off website content before launch
+
+*As the owner, I want to be sure no sample content is on the live website so that customers only see true information.*
+
+The website was built with **sample content** (made-up FAQs, reviews, client logos, stats, financing terms and calculator settings) so that every section could be seen. None of it is real.
+
+1. Work through **story 10A.8, Replace sample content before launch**, or ask an admin to.
+2. Tick off every item on the **Before launch checklist** in `PRODUCT_REQUIREMENTS.md` (section 11).
+3. Check that no **Sample** badge or sample banner is left in the admin, and no "Sample" label is left on the website.
+4. Decide whether **Financing** and the **Calculator** should be on at launch (stories 10A.6 and 10A.7). If you're not sure, leave them off.
+
+**Tip:** website settings (stats, WhatsApp, business hours, financing, calculator) can only be changed by Super admin and Admin accounts.
+
 ---
 
 ## 5. Admin
@@ -231,6 +246,8 @@ Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super ad
 1. Go to **Portfolio** and add a project.
 2. Enter **Name**, **Image path** and optionally an **External link** (for example the Instagram post).
 3. Choose where it shows: **Featured on the home page**, **Show on mobile**, **Show on the Portfolio page**. Save.
+
+**Tip:** to show a project as a case study on the home page, also fill in **Category**, **Summary**, **Location** and **System** (chapter 10A, story 10A.4).
 
 ### Story 5.3: Handle a website order from start to finish
 
@@ -646,6 +663,224 @@ The description editor's toolbar offers:
 
 ---
 
+## 10A. Website content
+
+This chapter covers the content on the home page and the new website pages: FAQs, reviews, client logos, case studies, homepage stats, WhatsApp, business hours, financing and the calculator.
+
+**Who can do what**
+
+| Task | Who |
+|---|---|
+| Add, edit, reorder and delete **FAQs**, **Reviews** and **Client logos**; add case-study details to **Portfolio** | Super admin, Admin, Sales |
+| View FAQs, Reviews and Client logos | Also Inventory and Support (view only) |
+| Change **Settings → Website**, **Financing** and **Calculator** | Super admin, Admin |
+
+FAQs, Reviews and Client logos are in the **Website** group of the menu.
+
+**Two rules for everything in this chapter**
+
+- **Use only our own, true content.** Don't copy text, pictures, logos, numbers or reviews from other companies' websites.
+- **Every home page section hides itself when it's empty.** If you delete all reviews, the reviews section simply disappears. Nothing looks broken.
+
+**Sample content:** until launch, many items are marked **Sample**. See story 10A.8.
+
+### Story 10A.1: Edit FAQs
+
+*As an admin or marketing staff member, I want to keep the frequently asked questions accurate and in a sensible order so that customers find answers without calling.*
+
+1. Go to **Website** → **FAQs**.
+2. To add one, select the add button. To change one, open it from the list.
+3. Fill in:
+   - **Question** (5 to 200 characters), for example "Do I pay to place an order?"
+   - **Answer** (up to 2,000 characters). Plain text only; press Enter to start a new line.
+   - **Category** (optional, up to 60 characters), for example "Ordering", "Installation" or "Products".
+4. Leave **Active** on to show it on the website. Save.
+5. To change the order, use the **▲** and **▼** buttons on each row. Higher in the list shows first.
+6. To see only one group, use the **category filter** at the top of the list.
+
+**What you'll see on the website:** the first 6 FAQs appear at the bottom of the home page with a "See all questions" link. The **FAQ** page (`/faq`) shows every active FAQ, grouped under its category.
+
+**Tips and common mistakes**
+
+- Type the category the same way every time ("Installation", not "installation" or "Installations"), or you'll get two groups.
+- Put the most common questions at the top: only the first 6 show on the home page.
+- Make sure each answer matches how we really work. For example: customers don't pay to place an order; we call to confirm first.
+- To hide an FAQ for a while, switch **Active** off instead of deleting it.
+
+### Story 10A.2: Add and edit reviews
+
+*As the owner, I want to show real reviews from happy customers so that new customers trust us.*
+
+> **Only real reviews, with permission.** Add a review only if a real customer said it and agreed that we can show it on the website. Don't make up reviews, and don't change what the customer meant. Fixing a spelling mistake is fine.
+
+1. Go to **Website** → **Reviews** and add a review.
+2. Fill in:
+   - **Name** (required). Use the name the customer agreed to, for example first name and initial: "Adaeze O."
+   - **Context** (optional, up to 150 characters): what we installed and where, for example "5kVA lithium system, Lekki".
+   - **Quote** (required, 10 to 1,000 characters): the customer's words.
+   - **Rating** (optional): 1 to 5 stars.
+   - **Source** (optional): Website, WhatsApp, Google, Facebook or In person.
+   - **Image** (optional): a link to the customer's photo, or a path to a picture on our website (starting with `/`). Only use a photo the customer agreed to.
+3. Leave **Active** on and save. Use **▲▼** or the sort order to decide which show first.
+
+**What you'll see on the website:** a reviews section on the home page with stars, name, context and a small source badge. Customers move through the reviews themselves; they never change on their own.
+
+**Tips**
+
+- If a customer asks us to remove their review, delete it straight away.
+- If there are no active reviews, the reviews section doesn't show.
+
+### Story 10A.3: Add client logos
+
+*As an admin, I want to show logos of businesses we've powered so that other businesses trust us.*
+
+> **Only with permission.** Add a client's logo only if the client agreed in writing (an email or WhatsApp message is fine) that we can show it.
+
+1. Go to **Website** → **Client logos** and add a client.
+2. Fill in:
+   - **Name** (required). It's also read out by screen readers in place of the logo.
+   - **Logo** (required): either a full link starting with `https://`, or a path to a file on our website starting with `/`, for example `/logos/acme.svg`. Ask your developer to add the logo file to the website if you don't have a link.
+   - **Website** (optional): the client's website.
+3. Leave **Active** on and save. Check the logo preview in the grid.
+
+**What you'll see on the website:** a row of logos on the home page (up to 6 per row), shown in grey until the visitor points at them.
+
+**Tips and common mistakes**
+
+- A logo must be a link or a path starting with `/`. Anything else is refused.
+- A logo on a clear or white background with the name readable looks best.
+
+### Story 10A.4: Fill in portfolio case-study details
+
+*As an admin, I want to describe completed projects properly so that customers can see installations like the one they need.*
+
+1. Go to **Portfolio** and open a project (or add one, story 5.2).
+2. Fill in the case-study details:
+   - **Category**: pick the kind of customer (the customer segments, for example homes or businesses).
+   - **Summary** (up to 500 characters): the customer's problem and what we did, in plain words.
+   - **Location** (up to 100 characters), for example "Lekki, Lagos". Don't give a full street address.
+   - **System** (up to 200 characters): what we installed, for example "10kVA inverter, 8 × 200Ah lithium, 12 × 550W panels".
+3. Save.
+
+**What you'll see on the website:**
+
+- A project with a **Summary** counts as a case study. Up to 3 case studies show on the home page with photo, category, location, system and summary.
+- On the **Our work** page, customers can filter projects by category, and cards show the summary, location and system.
+- The "Who we power" cards on the home page link to the matching category.
+
+**Tip:** leave Summary empty for a project you don't want shown as a case study. It still shows in the normal portfolio.
+
+### Story 10A.5: Set homepage stats, WhatsApp number and business hours
+
+*As the owner, I want the home page and footer to show our real figures, WhatsApp and opening hours so that customers know how to reach us.*
+
+1. Go to **Settings** → **Website**.
+2. **Stats:** add up to **4** rows. Each row has a **Label** (up to 40 characters, for example "Installations") and a **Value** (up to 20 characters, for example "500+"). Only use figures you can prove.
+3. **WhatsApp number:** the business WhatsApp number, for example `+2348012345678`.
+4. **Business hours:** one line per day range, for example:
+   ```
+   Mon–Fri 8am–6pm
+   Sat 9am–3pm
+   ```
+5. Save.
+
+**What you'll see on the website:**
+
+- The stats show as large figures near the top of the home page. No stats, no stats band.
+- With a WhatsApp number: a round **WhatsApp** button at the bottom right of every page, a WhatsApp link in the footer, and a WhatsApp button in the last section of the home page. It opens WhatsApp with the message "Hello Juwon Electric". Clear the number to remove all of these.
+- Business hours show in the footer.
+
+**Tip:** test the WhatsApp button on your phone after saving, to be sure it opens the right chat.
+
+### Story 10A.6: Set up financing, or leave it off
+
+*As the owner, I want to show payment-plan terms only when we really offer them so that customers aren't misled.*
+
+> **Financing is off unless you switch it on.** Anything shown on the website can be read as an offer. Only switch it on when the terms are agreed and approved (including with any finance partner).
+
+To leave financing off: go to **Settings** → **Financing**, make sure **Enabled** is off, and save. The financing section doesn't show on the website.
+
+To switch it on:
+
+1. Go to **Settings** → **Financing** and switch **Enabled** on.
+2. Fill in:
+   - **Deposit %**: a whole number from 0 to 100, for example 40.
+   - **Terms**: the number of months customers can spread payments over, added as chips (up to 6, each 1 to 60, for example 3, 6 and 12).
+   - **Monthly rate %**: 0 to 20, for example 3.5.
+   - **Approval time**: for example "24–48 hours".
+   - **Note** (up to 300 characters): conditions in plain words, for example "Subject to approval. Terms may change."
+3. Save.
+
+**What you'll see on the website:** a financing section near the end of the home page with a table of the terms, a worked example on a package price, your note and buttons to contact us. Customers can't apply online; they call, message or visit.
+
+### Story 10A.7: Set up the calculator
+
+*As the owner, I want the solar calculator to use sensible appliance figures and today's costs so that customers get a useful first estimate.*
+
+The calculator is at `/calculator`. It's **off unless you switch it on**.
+
+1. Go to **Settings** → **Calculator** and switch **Enabled** on.
+2. **Appliances** (up to 40): the list customers start from. For each row:
+   - **Key**: a short code in lower case with dashes, for example `ceiling-fan`. Each key must be different.
+   - **Label**: the name customers see, for example "Ceiling fan".
+   - **Watts**: the appliance's power, a whole number, for example 75.
+   - **Default hours**: hours a day it's usually on (0 to 24, half hours allowed).
+   - **Default quantity**: how many a typical home has (0 to 20).
+   - Use add, remove and the order buttons to arrange the list.
+3. **Parameters** (leave the defaults unless an engineer says otherwise):
+
+| Field | Default | What it means |
+|---|---|---|
+| **Inverter headroom %** | 25 | Extra room added to the load when sizing the inverter |
+| **Battery depth of discharge %** | 80 | How much of the battery is safely used |
+| **Battery voltage** | 48 | 12, 24 or 48 volts, used to show battery size in Ah |
+| **Panel watts** | 550 | The panel size we usually install |
+| **Peak sun hours** | 4.5 | Average useful sun hours a day |
+
+4. **Generator costs** (for the "compared with a generator" figures):
+   - **Fuel price per litre** (₦): today's petrol or diesel price.
+   - **Litres per kVA-hour**: how much fuel a generator uses, for example 0.25.
+   - **Maintenance per month** (₦): typical servicing cost.
+5. Save.
+
+**What you'll see on the website:** a "Size your system" teaser on the home page and the **Calculator** page, with results, matching packages and a generator comparison. The page always says "Estimates only — an engineer confirms your size before installation."
+
+**Tips**
+
+- Update the fuel price when it changes a lot, or the generator comparison will be out of date.
+- If the calculator seems to recommend sizes that are too big or small, ask an engineer to check the appliance watts and the parameters.
+- Nothing customers type into the calculator is saved.
+
+### Story 10A.8: Replace sample content before launch
+
+*As an admin, I want to replace every piece of sample content so that nothing made-up goes live.*
+
+**How to spot sample content**
+
+- In the admin: a **Sample** badge on the item or settings section, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews** or **Client logos** while they still have sample items.
+- On the website: a small "Sample" label on stats, reviews, client logos, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
+
+**What to do**
+
+1. **FAQs:** open each Sample FAQ. Rewrite it to match how we really work and save, or delete it.
+2. **Reviews:** delete every Sample review. Add only real ones (story 10A.2).
+3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
+4. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
+5. **Settings → Website:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Save.
+6. **Settings → Financing:** enter real terms and save, or switch **Enabled** off and save.
+7. **Settings → Calculator:** check every appliance, the parameters and the generator costs, then save; or switch **Enabled** off and save.
+8. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work** and the footer. No "Sample" label should be left.
+
+**What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
+
+**Tips and common mistakes**
+
+- **Saving makes it real.** Saving a sample item or section removes the Sample mark **even if you didn't change anything**. Only save once the content is true.
+- The full list of sample items is the **Before launch checklist** in `PRODUCT_REQUIREMENTS.md`, section 11.
+- Sample content is only ever loaded on developers' computers. If you see it on the live website, tell your developer and the owner.
+
+---
+
 ## 11. Customer (public website)
 
 This chapter describes the public website for customers. Staff can use it to guide customers on the phone.
@@ -743,12 +978,65 @@ The **Order received** page shows your order summary and these steps:
 2. Enter your name, phone, email and message, complete the security check and send.
 3. The page also shows the business phone, email and address.
 4. To get updates, subscribe with your email in the website footer.
+5. The footer also shows our **business hours** and a **WhatsApp** link when they are set.
+
+### Story 11.8: Size a system with the calculator
+
+*As a customer, I want to work out what size of system I need so that I can pick the right package and see what I'd save on a generator.*
+
+The **Calculator** page is only available when Juwon Electric has switched it on. Find it from the "Size your system" section on the home page or the link in the footer (and the top menu, if shown).
+
+1. Open the **Calculator**. A list of common appliances is already filled in with typical amounts.
+2. For each appliance, set **how many** you have and **how many hours a day** you use it, with the steppers. Set the number to 0 for anything you don't have.
+3. Missing something? Select **Add appliance**, type its name and its watts (printed on its label or in its manual).
+4. Read the results. They update as you change the numbers:
+   - **Total load (W):** the power if everything is on at once.
+   - **Recommended inverter (kVA):** the inverter size, with some spare room added.
+   - **Daily energy (kWh):** how much electricity you use in a day.
+   - **Battery capacity:** in kWh and in Ah.
+   - **Solar panels:** how many panels you'd need to recharge in a normal day.
+5. Look at **Matching packages**: up to 3 packages big enough for you, cheapest first. Open one to see what's included.
+6. Look at the **generator comparison**: roughly what a generator of the same size costs you a month in fuel and servicing, and how many months a matching package would take to pay for itself.
+7. Select **Talk to an engineer** to have an engineer check your answer.
+
+**Tips**
+
+- These are **estimates only**. An engineer confirms your size before installation.
+- Nothing you enter is saved or sent to us. If you want advice, contact us and tell us your list.
+- Appliances with motors (air conditioners, pumping machines, freezers) need extra power when they start. Mention them when you talk to us.
+
+### Story 11.9: Find answers on the FAQ page
+
+*As a customer, I want quick answers to common questions so that I don't have to call.*
+
+1. Scroll to the questions near the bottom of the home page and select a question to open its answer. Select it again to close it.
+2. For more, select **See all questions** (or **FAQ** in the footer). The FAQ page shows every question, grouped by topic, for example "Ordering" or "Installation".
+3. Can't find your answer? Use **Contact** or WhatsApp.
+
+### Story 11.10: Message us on WhatsApp
+
+*As a customer, I want to chat with Juwon Electric on WhatsApp so that I get a quick reply on my phone.*
+
+1. Select the round **WhatsApp** button at the bottom right of any page (or the WhatsApp link in the footer or at the end of the home page).
+2. WhatsApp opens with the message "Hello Juwon Electric" ready. Add your question and send.
+
+**Tip:** the button only shows when Juwon Electric has set a WhatsApp number.
+
+### Story 11.11: Browse case studies by category
+
+*As a customer, I want to see installations for customers like me so that I know Juwon Electric has done similar work.*
+
+1. On the home page, look at the case studies (photo, type of customer, location, system and a short summary), or select a card under "Who we power", for example homes or businesses.
+2. On **Our work**, use the **category filter** to show only that kind of customer.
+3. Each project card shows the summary, location and system when we've added them.
+
+**Also on the home page:** figures about our work, logos of clients we've powered, reviews from customers and, when offered, a **financing** section with payment-plan terms. You can't apply for financing on the website: contact us to ask about it.
 
 ---
 
 ## 12. How updates reach the website
 
-When staff change something in the admin console (a price, a product, a package, a service, a vacancy, stock or business details):
+When staff change something in the admin console (a price, a product, a package, a service, a vacancy, stock, business details, FAQs, reviews, client logos or website settings):
 
 - **Next page view:** anyone who opens or reloads the page sees the change straight away.
 - **Pages already open:** refresh by themselves within **about a minute**, and when the customer returns to the tab.
@@ -774,6 +1062,10 @@ When staff change something in the admin console (a price, a product, a package,
 | **Can't delete a category** | Packages, products or subcategories still use it ("Category has subcategories, products or packages."). | Move its products and subcategories to another category, and change the **Category** on its packages (story 7.5), then delete. |
 | **An engineer can't see a job** | They aren't on the job's crew, or the job was cancelled. | Open the job in **Installations** and add them under **Engineers**. |
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
+| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings** → Website, Financing and Calculator. |
+| **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings** → **Calculator** or **Financing**, switches **Enabled** on, checks the values and saves (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
+| **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings** → **Website**, or the page hasn't refreshed yet. | Enter the number, save, and reload the website (story 10A.5). |
+| **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Active** is on, and reload the website. |
 
 ---
 
@@ -788,6 +1080,14 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-17 (Landing v1)**
+- New chapter 10A, Website content: edit **FAQs** (order and categories), add **Reviews** (real and permitted only), add **Client logos** (with permission; link or site path), fill in portfolio case-study details, set homepage stats, WhatsApp number and business hours, set up **Financing** or leave it off, set up the **Calculator**, and replace sample content before launch (stories 10A.1 to 10A.8).
+- Menu: new **Website** group with FAQs, Reviews and Client logos (chapter 3).
+- Owner: story 4.7, sign off website content using the Before launch checklist.
+- Admin: story 5.2 points to the case-study details.
+- Customer: contact page footer details, and new stories for the calculator, the FAQ page, the WhatsApp button and browsing case studies by category (stories 11.7 to 11.11).
+- Troubleshooting: sample label showing on the website, calculator/financing not showing, WhatsApp button missing, and a home page section missing.
 
 **2026-09-17 (home hero)**
 - Customer: home page shortcuts by battery type and the starting package price (chapter 11).
