@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Menu, Phone } from "lucide-react";
+import { ArrowRight, Calculator, Menu, Phone } from "lucide-react";
 import { Drawer, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { contactTopicPath, isActivePath, primaryPhone, storeDrawerNav, storeNav, storeRoutes, telHref } from "@/lib/storefront/routes";
@@ -115,7 +115,8 @@ function useScrolledPast(enabled: boolean, threshold: number) {
 }
 
 /**
- * Sticky header: logo, main navigation, phone (xl), "Get a quote", cart with live count, and a mobile navigation drawer.
+ * Sticky header: logo, main navigation, phone (xl), the gold **Load calculator** button ("Get a quote" while the
+ * calculator is switched off), cart with live count, and a mobile navigation drawer.
  *
  * At the top of any page that starts with a `[data-store-hero]` band (the home hero and every PageIntro) it is
  * transparent over it. After scrolling 24px, and on a page without a hero, the bar lifts: it drops a few pixels from the
@@ -223,8 +224,9 @@ export default function StoreHeader({ phone, calculatorEnabled, productsEnabled 
               <span className="tabular-nums">{mainPhone}</span>
             </a>
           )}
+          {/* The load calculator replaced "Get a quote" here (2026-09-17) and the floating button it used to have. */}
           <Link
-            href={quoteHref}
+            href={calculatorEnabled ? storeRoutes.calculator : quoteHref}
             className={cn(
               "hidden h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-[background-color,color,translate] duration-200 lg:inline-flex",
               "motion-safe:hover:-translate-y-0.5",
@@ -234,7 +236,14 @@ export default function StoreHeader({ phone, calculatorEnabled, productsEnabled 
               storePress
             )}
           >
-            Get a quote
+            {calculatorEnabled ? (
+              <>
+                <Calculator aria-hidden="true" className="h-4 w-4" />
+                Load calculator
+              </>
+            ) : (
+              "Get a quote"
+            )}
           </Link>
           <CartButton className={cn("border-white/20 bg-white/10 text-white shadow-none backdrop-blur hover:bg-white/20 hover:text-white", glassFocus)} />
           <button
@@ -266,6 +275,12 @@ export default function StoreHeader({ phone, calculatorEnabled, productsEnabled 
               Shop packages
               <ArrowRight aria-hidden="true" />
             </Link>
+            {calculatorEnabled && (
+              <Link href={storeRoutes.calculator} onClick={closeMenu} className={buttonClasses({ variant: "outline", size: "lg", className: "w-full sm:w-full" })}>
+                <Calculator aria-hidden="true" />
+                Load calculator
+              </Link>
+            )}
             <Link href={quoteHref} onClick={closeMenu} className={buttonClasses({ variant: "outline", size: "lg", className: "w-full sm:w-full" })}>
               Get a quote
             </Link>
