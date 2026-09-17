@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/AdminPage";
@@ -8,8 +8,6 @@ import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import {
   Alert,
   Button,
-  Card,
-  CardContent,
   ErrorState,
   Field,
   Input,
@@ -20,10 +18,10 @@ import {
 } from "@/components/ui";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
 import { ApiError, getSettings, saveSettings } from "@/lib/api/admin";
-import type { Settings, SettingsInput } from "@/lib/api/types";
+import type { Settings } from "@/lib/api/types";
+import { SectionCard, saveButton, useSection, type SaveSection, type SectionProps } from "./settingsLayout";
+import { CalculatorSection, FinancingSection, WebsiteSection } from "./WebsiteSettings";
 import { LIMITS, PHONE_MESSAGE, isValidEmail, isValidPhone, validateUrlField } from "@/lib/validation";
-
-type SaveSection = (input: SettingsInput) => Promise<boolean | string>;
 
 /** Settings document (contract §8.1): one card and one save per section. */
 export function SettingsForm() {
@@ -80,6 +78,27 @@ export function SettingsForm() {
             </Alert>
           )}
           <BusinessSection key={JSON.stringify(data.business)} value={data.business} canWrite={canWrite} save={save} />
+          {data.website && data.financing && data.calculator ? (
+            <>
+              <WebsiteSection key={JSON.stringify(data.website)} value={data.website} canWrite={canWrite} save={save} />
+              <FinancingSection
+                key={JSON.stringify(data.financing)}
+                value={data.financing}
+                canWrite={canWrite}
+                save={save}
+              />
+              <CalculatorSection
+                key={JSON.stringify(data.calculator)}
+                value={data.calculator}
+                canWrite={canWrite}
+                save={save}
+              />
+            </>
+          ) : (
+            <Alert tone="info" title="Website, financing and calculator settings aren’t available yet">
+              <p>The server doesn’t return these settings yet. They’ll show here once it’s updated.</p>
+            </Alert>
+          )}
           <NotificationsSection
             key={JSON.stringify(data.notifications)}
             value={data.notifications}
@@ -100,80 +119,7 @@ export function SettingsForm() {
   );
 }
 
-/* ---------- Layout ---------- */
-
-function SectionCard({
-  title,
-  description,
-  children,
-  onSubmit,
-  footer,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
-  footer?: ReactNode;
-}) {
-  const headingId = `settings-${title.toLowerCase().replace(/\W+/g, "-")}`;
-  const body = (
-    <>
-      <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
-        <h2 id={headingId} className="text-base font-semibold text-slate-900">
-          {title}
-        </h2>
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
-      </div>
-      <CardContent className="space-y-4 px-5 pt-5 sm:px-6">{children}</CardContent>
-      {footer && (
-        <div className="flex justify-end border-t border-slate-100 px-5 py-3 sm:px-6">{footer}</div>
-      )}
-    </>
-  );
-
-  return onSubmit ? (
-    <form aria-labelledby={headingId} onSubmit={onSubmit} noValidate>
-      <Card>{body}</Card>
-    </form>
-  ) : (
-    <Card as="section" aria-labelledby={headingId}>
-      {body}
-    </Card>
-  );
-}
-
-/** Save button plus section-level submit handling (validation → save → Alert on server 400). */
-function useSection(save: SaveSection) {
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState("");
-
-  const submit = async (input: SettingsInput) => {
-    setFormError("");
-    setSaving(true);
-    const result = await save(input);
-    setSaving(false);
-    if (typeof result === "string") setFormError(result);
-  };
-
-  const alert = formError ? (
-    <Alert tone="danger" onDismiss={() => setFormError("")}>
-      {formError}
-    </Alert>
-  ) : null;
-
-  return { saving, submit, alert };
-}
-
-const saveButton = (canWrite: boolean, saving: boolean, label: string) =>
-  canWrite ? (
-    <Button type="submit" loading={saving} loadingText="Saving…">
-      {label}
-    </Button>
-  ) : undefined;
-
 /* ---------- Business ---------- */
-
-type SectionProps<K extends keyof SettingsInput> = { value: Settings[K]; canWrite: boolean; save: SaveSection };
 
 type BusinessErrors = Partial<Record<"name" | "email" | "phone" | "address" | "website", string>>;
 
