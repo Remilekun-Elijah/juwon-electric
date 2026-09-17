@@ -8,7 +8,7 @@ import { ArrowRight, Menu, Phone } from "lucide-react";
 import { Drawer, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { contactTopicPath, isActivePath, primaryPhone, storeDrawerNav, storeNav, storeRoutes, telHref } from "@/lib/storefront/routes";
-import { storeContainer, storeFocus, storePress } from "@/lib/storefront/styles";
+import { storeFocus, storePress } from "@/lib/storefront/styles";
 import CartButton from "./cart/CartButton";
 
 /** Hides the Calculator link while the calculator is switched off in Settings. */
@@ -111,11 +111,11 @@ function useScrolledPast(enabled: boolean, threshold: number) {
  * Sticky header: logo, main navigation, phone (xl), "Get a quote", cart with live count, and a mobile navigation drawer.
  *
  * At the top of any page that starts with a `[data-store-hero]` band (the home hero and every PageIntro) it is
- * transparent over it. After scrolling 24px, and on a page without a hero, it is a dark glass bar (translucent slate-950
- * with a blur) so the gold logo and white nav stay legible over light and dark content alike. Both states use white nav
- * with a gold underline on the active item, the logo without a chip, a white phone link, a glass cart and menu button
- * and a gold quote pill. Background, border and shadow transition over 250ms; the bar height never changes, so nothing
- * shifts.
+ * transparent over it. After scrolling 24px, and on a page without a hero, the bar lifts: it drops a few pixels from the
+ * top edge into a rounded dark glass bar (translucent slate-950, blur, hairline border, deep shadow), inset from the page
+ * edges, so the gold logo and white nav stay legible over light content. Both states use white nav with a gold underline
+ * on the active item, the logo without a chip, a white phone link, a glass cart and menu button and a gold quote pill.
+ * The lift uses transform only and the bar height never changes, so nothing shifts. Reduced motion skips the movement.
  */
 export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderProps) {
   const navItems = withCalculator(storeNav, calculatorEnabled);
@@ -134,12 +134,10 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
     <header
       data-overlay={overlay ? "true" : undefined}
       className={cn(
-        "sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow,color] duration-[250ms] ease-out",
-        overlay
-          ? // Without JavaScript the header can't turn solid, so it scrolls away with the dark hero instead of floating
-            // transparent over light content.
-            "border-transparent bg-transparent text-white [@media(scripting:none)]:relative"
-          : "border-white/10 bg-slate-950/90 text-white shadow-elev-2 backdrop-blur-md supports-[backdrop-filter]:bg-slate-950/70"
+        "sticky top-0 z-40 text-white",
+        // Without JavaScript the header can't lift, so it scrolls away with the dark hero instead of floating
+        // transparent over light content.
+        overlay && "[@media(scripting:none)]:relative"
       )}
     >
       {/* Soft top shade so white nav text stays legible over bright photos. */}
@@ -150,7 +148,22 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
           overlay ? "opacity-100" : "opacity-0"
         )}
       />
-      <div className={cn(storeContainer, HEADER_HEIGHT, "flex items-center gap-3 lg:gap-4")}>
+      {/* Outer padding + bar padding add up to storeContainer's gutters, so the content lines up in both states. */}
+      <div
+        className={cn(
+          "mx-auto w-full max-w-7xl px-2 transition-transform duration-300 ease-out motion-reduce:transition-none sm:px-4 lg:px-6",
+          !overlay && "translate-y-2 md:translate-y-3"
+        )}
+      >
+        <div
+          className={cn(
+            HEADER_HEIGHT,
+            "flex items-center gap-3 rounded-2xl border px-2 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out lg:gap-4",
+            overlay
+              ? "border-transparent bg-transparent"
+              : "border-white/10 bg-slate-950/90 shadow-elev-4 backdrop-blur-md supports-[backdrop-filter]:bg-slate-950/70"
+          )}
+        >
         <Link
           href={storeRoutes.home}
           className={cn(
@@ -230,6 +243,7 @@ export default function StoreHeader({ phone, calculatorEnabled }: StoreHeaderPro
           >
             <Menu aria-hidden="true" className="h-5 w-5" />
           </button>
+        </div>
         </div>
       </div>
 
