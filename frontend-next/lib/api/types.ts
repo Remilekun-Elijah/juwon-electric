@@ -46,6 +46,9 @@ export type PackageItem = {
   sku: string;
 };
 
+/** Commerce v3 §4: the category a package references. */
+export type PackageCategoryRef = { id: string; slug: string; name: string };
+
 /**
  * `GET /packages` row. `id` is the legacy numeric id for seeded packages (a string for new ones);
  * `slug` is not unique across packages, so routes use `id`.
@@ -61,6 +64,9 @@ export type Package = {
   kva: number | string;
   volt: number | string | null;
   options: PackageOption[];
+  /** Commerce v3 §4: catalogue category reference. `categoryRef` is null when unset or (publicly) inactive. */
+  categoryId?: string | null;
+  categoryRef?: PackageCategoryRef | null;
   /** Deprecated (Commerce v2 §1.1): no longer returned publicly; items live on each option. */
   items?: PackageItem[];
 };
@@ -162,6 +168,12 @@ export type OrderItem = {
   quantity: number;
 };
 
+/** Commerce v3 §3.1: a catalogue product line sent to `POST /cart/quote`, `POST /cart` and `POST /order`. */
+export type ProductOrderItem = { type: "product"; productId: string; quantity: number };
+
+/** Any item accepted by the cart, quote and order endpoints. */
+export type CartRequestItem = OrderItem | ProductOrderItem;
+
 /** `POST /cart/quote` data. Prices may be numbers or "₦1,000" strings. */
 export type CartQuoteLine = {
   price?: number | string;
@@ -186,7 +198,7 @@ export type OrderPayload = TurnstileFields & {
   phoneNumber: string;
   emailAddress: string;
   deliveryAddress: string;
-  order: OrderItem[];
+  order: (OrderItem | ProductOrderItem)[];
   total: string;
 };
 
@@ -204,7 +216,7 @@ export type SubscribePayload = TurnstileFields & { emailAddress: string };
 
 export type SaveCartPayload = TurnstileFields & {
   sessionId: string;
-  items: OrderItem[];
+  items: (OrderItem | ProductOrderItem)[];
   name?: string;
   phoneNumber?: string;
   emailAddress?: string;
@@ -250,6 +262,12 @@ export type AdminPackageOption = Omit<ComposedOption, "items"> & {
 
 /** `GET /admin/packages*` row. */
 export type AdminPackage = Omit<Package, "options" | "items"> & { options: AdminPackageOption[] };
+
+/**
+ * Commerce v3 §4: package write fields added this round. `PackageInput` lives in `lib/api/admin.ts`;
+ * intersect it with this type (`PackageInput & PackageCategoryInput`). Unknown ids give 400 "Category not found.".
+ */
+export type PackageCategoryInput = { categoryId?: string | null };
 
 /** `POST/PUT /admin/packages` option. `price`/`kits` are only used when `items` is empty (legacy). */
 export type PackageOptionInput = {
@@ -302,7 +320,8 @@ export type OrderDiscount = { amount: number; reason: string };
 
 /** `POST /admin/orders` (Commerce v2 §2.2). */
 export type InStoreOrderInput = {
-  customer: { name: string; phoneNumber: string; emailAddress?: string | null; deliveryAddress?: string | null };
+  /** Commerce v3 §2: optional; a blank name is stored as "Walk-in customer" and a blank phone as null. */
+  customer?: { name?: string | null; phoneNumber?: string | null; emailAddress?: string | null; deliveryAddress?: string | null };
   lines: { productId: string; quantity: number }[];
   discount?: OrderDiscount | null;
   fulfilment: "collected" | "later";
@@ -311,7 +330,14 @@ export type InStoreOrderInput = {
   note?: string | null;
 };
 
-export type InstallationJobSummary = { id: string; status: JobStatus; engineerId: string | null; scheduledAt: string | null };
+export type InstallationJobSummary = {
+  id: string;
+  status: JobStatus;
+  engineerId: string | null;
+  /** Commerce v3 §1: crew ids, lead first. Always sent by v3 backends; optional so older fixtures compile. */
+  engineerIds?: string[];
+  scheduledAt: string | null;
+};
 
 export type Order = {
   id: string;
@@ -596,12 +622,19 @@ export type JobStatus = "unassigned" | "assigned" | "in_progress" | "completed" 
 
 export type ChecklistItem = { id: string; label: string; done: boolean; doneAt: string | null; doneBy: string | null };
 
+export type JobEngineer = { id: string; name: string; email: string; phone: string | null };
+
 export type InstallationJob = {
   id: string;
   orderId: string;
   order: { id: string; name: string; phoneNumber: string; deliveryAddress: string };
+  /** Lead engineer (`engineerIds[0]`), kept for compatibility. */
   engineerId: string | null;
-  engineer: { id: string; name: string; email: string; phone: string | null } | null;
+  /** Commerce v3 §1: crew ids (max 10), lead first. Always sent by v3 backends; optional so older fixtures compile. */
+  engineerIds?: string[];
+  engineer: JobEngineer | null;
+  /** Crew in `engineerIds` order; unknown or deleted admins are skipped. Always sent by v3 backends. */
+  engineers?: JobEngineer[];
   scheduledAt: string | null;
   durationEstimateMinutes: number | null;
   address: string | null;
@@ -619,6 +652,8 @@ export type InstallationJob = {
 
 export type JobCreateInput = {
   orderId: string;
+  /** Commerce v3 §1: preferred; `engineerId` is used only when this is absent. */
+  engineerIds?: string[];
   engineerId?: string | null;
   scheduledAt?: string | null;
   durationEstimateMinutes?: number | null;
@@ -628,6 +663,9 @@ export type JobCreateInput = {
 };
 
 export type JobUpdateInput = {
+  /** Commerce v3 §1: replaces the crew (open, not-started jobs only). */
+  engineerIds?: string[];
+  engineerId?: string | null;
   scheduledAt?: string | null;
   durationEstimateMinutes?: number | null;
   address?: string | null;
