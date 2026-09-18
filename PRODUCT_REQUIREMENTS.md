@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Hero copy (see section 12, Change log)
+Last updated: 2026-09-18, Why Customers Choose Us and Meet the Team copy (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,12 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (why choose us and team copy)
+- §6.10: owner copy for the **Why Customers Choose Us** band (new section description and the four built-in cards: Professionally Installed & Commissioned, Quality Equipment. Clear Specifications., Flexible & Secure Order Process, Transparent Pricing & Availability) and for the team page (**Meet the Team**, "The professionals behind Juwon Electric…"). The cards remain editable in the admin under Website → Why choose us; the same copy is the seeded sample.
+
+2026-09-18 (smaller deployments)
+- Hosting: `frontend-next/public` went from 37 MB to 4.9 MB, so every Vercel deployment stores that much less (deployment storage is charged across all retained builds). The 22 seeded photos that shipped as base64 inside `.svg` files (21.5 MB) are now plain `.jpg`/`.png` (2.3 MB), and `next.config.ts` rewrites the old `/<name>.svg` paths to them so saved records and links keep working. The two background videos (13 MB) were dropped; the classic site's inner-page hero uses a still photo instead. No storefront page changed.
 
 2026-09-18 (hero copy)
 - §6.10: owner copy for the home hero: pill "Solar & energy solutions across Nigeria", headline "Reliable Energy Solutions for **Homes & Businesses**" and the lead "Complete solar, inverter and battery solutions professionally designed, supplied and installed…". The page title and the rest of the hero are unchanged.

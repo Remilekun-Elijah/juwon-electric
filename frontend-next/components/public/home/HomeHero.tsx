@@ -43,7 +43,7 @@ export default function HomeHero() {
 
         <div className="flex w-full items-start justify-center gap-0 md:order-1">
           <Image
-            src="/header.svg"
+            src="/header.jpg"
             alt="Juwon Electric technician installing solar panels"
             width={609}
             height={589}

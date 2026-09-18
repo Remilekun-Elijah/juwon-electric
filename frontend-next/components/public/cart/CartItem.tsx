@@ -32,7 +32,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
   return (
     <li className="mt-5 flex flex-col items-center justify-between gap-4 rounded-lg px-4 py-3 shadow-sm md:flex-row">
       <Image
-        src="/cartImage.svg"
+        src="/cartImage.png"
         width={74}
         height={74}
         className="w-[50%] rounded-md p-1 md:w-fit md:shrink-0 md:shadow-sm"

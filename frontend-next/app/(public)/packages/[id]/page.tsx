@@ -55,7 +55,7 @@ export default async function PackageDetailPage({ params }: PageProps<"/packages
   if (!item) notFound();
 
   return (
-    <div className="bg-cover bg-center pb-20 pt-32" style={{ backgroundImage: "url('/contactBackground.svg')" }}>
+    <div className="bg-cover bg-center pb-20 pt-32" style={{ backgroundImage: "url('/contactBackground.jpg')" }}>
       <div className={cn(siteContainer, "max-w-3xl")}>
         <nav aria-label="Breadcrumb" className="mb-6">
           <Link

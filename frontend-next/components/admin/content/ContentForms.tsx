@@ -180,7 +180,7 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
         onChange={(image) => setModel({ ...model, image })}
         purpose="portfolio"
         error={errors.image}
-        linkHelper="A photo in the site’s public folder, e.g. /image-1.svg, or a full https:// URL."
+        linkHelper="A photo in the site’s public folder, e.g. /image-1.jpg, or a full https:// URL."
         previewAlt={model.name ? `Image for ${model.name}` : "Portfolio image"}
       />
       <fieldset className="space-y-4 rounded-lg border border-slate-200 p-4">

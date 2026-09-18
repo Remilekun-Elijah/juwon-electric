@@ -24,7 +24,7 @@ export default function CartView() {
   const total = getCartTotal(cart);
 
   return (
-    <div className="bg-cover bg-center py-20" style={{ backgroundImage: "url('/contactBackground.svg')" }}>
+    <div className="bg-cover bg-center py-20" style={{ backgroundImage: "url('/contactBackground.jpg')" }}>
       <div className={siteContainer}>
         <div className="mt-12 rounded-lg bg-white p-5 shadow-lg md:p-10">
           <div className="mb-5 flex items-center justify-between border-b-2 border-deep_red pb-3">

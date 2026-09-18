@@ -32,7 +32,7 @@ export default async function PackagesPage() {
     <>
       <Header text="PACKAGES" />
 
-      <div className="bg-cover bg-center pb-20 pt-10" style={{ backgroundImage: "url('/contactBackground.svg')" }}>
+      <div className="bg-cover bg-center pb-20 pt-10" style={{ backgroundImage: "url('/contactBackground.jpg')" }}>
         <div className={siteContainer}>
           <CustomChip text="Our Packages" className="my-10 flex justify-center" />
           <h2 className={cn("mb-6 mt-8 text-center text-deep_red lg:mt-10", sectionTitle)}>
