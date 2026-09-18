@@ -340,7 +340,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   2. Client logos: white; a slow marquee when there are more logos than fit.
   3. Why choose us: dark (brand-950), gold icon circles.
   4. Solutions ("Who we power"): light grey, image-led cards with the title on the photo.
-  5. Find your package: white, with the "Shop by category" chips in the section header.
+  5. Find your package: white, with the category tabs in the finder itself (the duplicate chips in the section header were removed on 2026-09-18; the header keeps "All packages").
   6. Shop by category (restored): light grey.
   7. Popular products (restored; in-stock products with Add to cart): white.
   8. Size your system teaser: brand panel (brand-900) with a gold accent and a preview of calculator figures.
@@ -433,7 +433,7 @@ Every section hides itself when it has no data, so an empty collection or unset 
 2. Client logos.
 3. Why choose us: cards managed in the admin (**Website → Why choose us**, 2026-09-18; ~~4 fixed cards~~). Each has an icon from a fixed set, a title (3–80 characters) and a sentence (10–300), shown in the saved order; hidden ones are left out. With none saved the four built-in cards show instead: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
 4. Solutions ("Who we power"): the customer segments as cards linking to `/portfolio?category=<segment>`.
-5. Packages ("Find your package"): the existing package finder, with "Shop by category" chips in the header; package cards show up to 3 included products and "What it powers".
+5. Packages ("Find your package"): the existing package finder, with a tab per category in the finder; package cards show up to 3 included products and "What it powers".
 6. Shop by category (restored 2026-09-17): top-level catalogue categories.
 7. Popular products (restored 2026-09-17): up to 8 in-stock products with Add to cart.
 8. Size your system: a teaser linking to `/calculator` (only when the calculator is enabled).

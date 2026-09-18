@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
-import { availablePackages, categorisedPackages, lowestPrice, packageCategoryOptions } from "@/components/storefront/catalog/packageMeta";
+import { availablePackages, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
 import CareersTeaser from "@/components/storefront/home/CareersTeaser";
@@ -37,7 +37,7 @@ import {
   getStoreVacancies,
 } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeArrowNudge, storeFocus, storeLink, storePress } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeLink } from "@/lib/storefront/styles";
 
 export const revalidate = 60;
 
@@ -83,7 +83,6 @@ export default async function HomePage() {
   const prices = packages.map(lowestPrice).filter((price) => price > 0);
   const heroFromPrice = prices.length ? Math.min(...prices) : null;
   // Commerce v3 §4: one chip per catalogue category on the page, with the uncategorised packages under "Other".
-  const packageCategories = packageCategoryOptions(categorisedPackages(packages));
 
   const topCategories = buildCategoryTree(categories);
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
@@ -120,32 +119,7 @@ export default async function HomePage() {
           eyebrow="Packages"
           title="Find your package"
           description="Complete systems with the inverter, batteries and installation included. Choose a category to see options from entry level to premium."
-          actions={
-            <>
-              {packageCategories.length > 0 && (
-                <nav aria-label="Shop packages by category">
-                  <ul className="flex flex-wrap gap-2">
-                    {packageCategories.map((category) => (
-                      <li key={category.value}>
-                        <Link
-                          href={`${storeRoutes.packages}?category=${encodeURIComponent(category.value)}`}
-                          className={cn(
-                            "inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 md:min-h-10",
-                            storeFocus,
-                            storePress
-                          )}
-                        >
-                          {category.label}
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs tabular-nums text-slate-600">{category.count}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              )}
-              {seeAll(storeRoutes.packages, "All packages")}
-            </>
-          }
+          actions={seeAll(storeRoutes.packages, "All packages")}
         >
           <PackageFinder packages={packages} />
         </Section>
