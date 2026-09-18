@@ -561,12 +561,6 @@ export const updateCollectionItemIf = async (collection, query, patch) => {
   });
 };
 
-export const updateCollectionItemByQuery = async (collection, query, payload) => {
-  const item = await updateCollectionItemIf(collection, query, payload);
-  if (!item) throw notFound(collection);
-  return item;
-};
-
 /** Appends `entry` to the array `field` (atomically) and sets `patch` fields. */
 export const appendToCollectionArray = async (collection, id, field, entry, patch = {}) => {
   const changes = definedOnly(patch);

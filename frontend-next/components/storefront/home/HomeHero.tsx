@@ -20,7 +20,7 @@ const HERO_SLIDES: HeroSlide[] = [
 const reassurances = ["No payment to place an order", "We call to confirm", "Installation included"];
 
 /** Headline lines; the last word gets the gold gradient. */
-const HEADLINE = ["Reliable Energy Solutions", "for"];
+const HEADLINE = ["Reliable Energy", "Solutions for"];
 const HEADLINE_ACCENT = "Homes & Businesses";
 
 const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
@@ -74,7 +74,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
             Solar &amp; energy solutions across Nigeria
           </p>
 
-          <h1 id="home-hero-heading" className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 id="home-hero-heading" className="mt-6 max-w-[22ch] text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-6xl xl:text-7xl">
             {HEADLINE.map((line, index) => (
               <span key={line} className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
                 <span style={enterDelay(120 + index * 100)} className="je-line block">

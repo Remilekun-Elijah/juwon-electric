@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { ApiError, badRequest } from "./errors.js";
+import { badRequest } from "./errors.js";
 import { isImageUrl } from "../shared/fields.js";
 
 // Shared email rule (same regex in the Worker and the frontend), plus: total
@@ -216,9 +216,6 @@ const checkUrl = (value, label) => {
   return value;
 };
 
-export const requiredUrl = (body, field, label) =>
-  checkUrl(requiredString(body, field, label, { max: LIMITS.url }), label);
-
 /** Image fields: also http:// on localhost / 127.0.0.1 (shared/fields.js isImageUrl). */
 export const requiredImageUrl = (body, field, label) => {
   const value = requiredString(body, field, label, { max: LIMITS.url });
@@ -361,5 +358,3 @@ export const validatePricingItems = (items, kind = "order") => {
     return { item, quantity: quantityField(item) };
   });
 };
-
-export const conflict = (message) => new ApiError(409, message);

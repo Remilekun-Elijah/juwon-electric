@@ -10,13 +10,6 @@ import { packagesNeedProducts, withComposedOptions } from "../shared/packagePric
 export const UNAVAILABLE_ITEMS_MESSAGE =
   "Some items in your cart are no longer available. Please refresh your cart.";
 
-// Same parsing the admin dashboard uses for stored money values.
-export const parseMoney = (value) => {
-  if (typeof value === "number") return value;
-  if (!value) return 0;
-  return Number(String(value).replace(/[^\d.-]/g, "")) || 0;
-};
-
 // Matches the checkout form: "₦" + Intl.NumberFormat().format(amount).
 export const formatMoney = (amount) =>
   `₦${new Intl.NumberFormat("en-US").format(amount)}`;

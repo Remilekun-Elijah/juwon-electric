@@ -259,8 +259,6 @@ export const sweepCandidates = (uploads, texts, nowMs = Date.now()) =>
     .sort((a, b) => timeOf(a.createdAt) - timeOf(b.createdAt))
     .slice(0, SWEEP_MAX_PER_RUN);
 
-export const totalUploadBytes = (uploads) => uploads.reduce((sum, upload) => sum + (Number(upload.size) || 0), 0);
-
 // ---- private developer alert (§4) ----------------------------------------------------------
 
 /** True when an alert may be sent now (none sent in the last 7 days). */
