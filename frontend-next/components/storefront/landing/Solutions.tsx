@@ -71,7 +71,7 @@ export function SolutionCards({ segments, headingAs: Heading = "h3" }: { segment
 }
 
 /**
- * "Solutions": the customer segments ("Who we power") as image-led cards that open the portfolio filtered to that
+ * "Solutions": the customer segments ("Industries We Power") as image-led cards that open the portfolio filtered to that
  * segment (LANDING_V1 §7.5, TEAM_AND_MOTION_V1 §7.5). The title sits on the photo over a dark gradient; on devices that
  * can hover, the summary and "See our work" slide up on hover or focus while the photo zooms. Touch screens show them
  * all the time. Returns nothing without segments. Server component.
@@ -82,8 +82,8 @@ export default function Solutions({ segments }: { segments: PublicCustomerSegmen
   return (
     <Section
       eyebrow="Solutions"
-      title="Who we power"
-      description="Backup power and solar systems sized for the way you use electricity. See the work we have done for customers like you."
+      title="Industries We Power"
+      description="Tailored solar and energy solutions for homes, businesses and institutions, engineered around each client’s energy requirements and operational needs."
     >
       <SolutionCards segments={segments} />
     </Section>

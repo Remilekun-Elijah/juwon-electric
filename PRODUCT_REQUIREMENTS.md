@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Selected Projects case studies (see section 12, Change log)
+Last updated: 2026-09-18, Industries We Power (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (industries we power)
+- §6.10: the customer segments section is **Industries We Power** on the home page and the services page, with the owner's description. The segment names and descriptions themselves are content, updated live: Banking & Financial Institutions, Healthcare Facilities, Communities & Infrastructure, Agriculture & Farms, Government & Public Institutions and Educational Institutions. Slugs and URLs are unchanged, and the same names label the case studies.
 
 2026-09-18 (selected projects)
 - §6.10: the home case-study section is **Selected Projects** ("Explore some of our completed solar and energy projects…") with **View All Projects**, and a case study with its own link shows a **View Project** action on the card. Owner-supplied copy.

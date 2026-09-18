@@ -75,8 +75,8 @@ export default async function ServicesPage() {
         <Section
           tone="white"
           eyebrow="Customers"
-          title="Who we power"
-          description="Homes, businesses and institutions that need power they can rely on."
+          title="Industries We Power"
+          description="Tailored solar and energy solutions for homes, businesses and institutions, engineered around each client’s energy requirements and operational needs."
         >
           <SolutionCards segments={customerSegments} />
         </Section>
