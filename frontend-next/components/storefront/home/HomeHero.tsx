@@ -20,8 +20,8 @@ const HERO_SLIDES: HeroSlide[] = [
 const reassurances = ["No payment to place an order", "We call to confirm", "Installation included"];
 
 /** Headline lines; the last word gets the gold gradient. */
-const HEADLINE = ["Reliable power for", "Nigerian homes and"];
-const HEADLINE_ACCENT = "businesses";
+const HEADLINE = ["Reliable Energy Solutions", "for"];
+const HEADLINE_ACCENT = "Homes & Businesses";
 
 const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
 const pill = "inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold transition-[background-color,translate,box-shadow] duration-200 ease-out motion-safe:hover:-translate-y-0.5";
@@ -71,7 +71,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
               <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
               <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            Inverter, battery &amp; solar systems across Nigeria
+            Solar &amp; energy solutions across Nigeria
           </p>
 
           <h1 id="home-hero-heading" className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
@@ -93,8 +93,8 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
           </h1>
 
           <p style={enterDelay(520)} className="je-enter mt-6 max-w-2xl text-lg leading-relaxed text-white/80 sm:text-xl">
-            Complete inverter, battery and solar packages, delivered and installed by our engineers, so NEPA outages don’t
-            stop your day.
+            Complete solar, inverter and battery solutions professionally designed, supplied and installed to deliver
+            dependable power for your home or business.
           </p>
 
           <div style={enterDelay(620)} className="je-enter mt-8 flex flex-col gap-3 sm:flex-row">
