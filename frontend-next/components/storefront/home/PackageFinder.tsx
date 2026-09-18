@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Package as PackageIcon, Sun, Zap } from "lucide-react";
 import {
+  OTHER_CATEGORY,
   availablePackages,
   hasSolarOption,
   includedProducts,
@@ -139,7 +140,7 @@ export default function PackageFinder({ packages: allPackages }: { packages: Pac
             >
               {/* Category names are free text from the admin ("Inverters"), so they read as "… packages in <name>". */}
               {group.packages.length === 1 ? "See all 1 package" : `See all ${group.packages.length} packages`}
-              {` in ${group.label}`}
+              {group.value === OTHER_CATEGORY ? "" : ` in ${group.label}`}
               <ArrowRight aria-hidden="true" />
             </Link>
           </div>

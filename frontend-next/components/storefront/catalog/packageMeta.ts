@@ -2,16 +2,18 @@
 import type { ComposedItem, Package, PackageOption } from "@/lib/api/types";
 
 /**
- * Commerce v3 §4: packages are grouped by their catalogue category. The filter value is a category slug, or "all".
- * A package with no category is only ever in "all": there is no invented group for it (2026-09-18), because every
- * chip must be a real category from the admin.
+ * Commerce v3 §4: packages are grouped by their catalogue category. The filter value is the category slug, "all" for
+ * every package, or "other" for the packages with no category (the admin may leave one unset).
  */
 export type PackageCategoryFilter = string;
 export type KvaFilter = "all" | "up-to-2" | "2-5" | "5-10" | "10-plus";
 export type PackageSort = "recommended" | "price-asc" | "price-desc";
 
-/** Filter value for a package with no catalogue category: it belongs to no chip, only to "all". */
-export const NO_CATEGORY = "";
+/** Filter value for the packages with no catalogue category (a category slugged "other" would share the group). */
+export const OTHER_CATEGORY = "other";
+
+/** Label for the "no category" group, used wherever a package has no `categoryRef`. */
+export const OTHER_CATEGORY_LABEL = "Other";
 
 export const KVA_FILTERS: { value: KvaFilter; label: string; min: number; max: number }[] = [
   { value: "all", label: "Any size", min: 0, max: Infinity },
@@ -38,8 +40,8 @@ const storedTypeLabel = (type: Package["type"] | null | undefined) => {
   return text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
 };
 
-/** URL-friendly key for a package's catalogue category: its slug, or "" when it has none. */
-export const packageCategoryKey = (pkg: Pick<Package, "categoryRef">): PackageCategoryFilter => pkg.categoryRef?.slug || NO_CATEGORY;
+/** URL-friendly key for a package's catalogue category: its slug, or "other" when it has none. */
+export const packageCategoryKey = (pkg: Pick<Package, "categoryRef">): PackageCategoryFilter => pkg.categoryRef?.slug || OTHER_CATEGORY;
 
 /** The category name, falling back to the stored battery type ("Lithium") and then "Package". */
 export const packageCategoryLabel = (pkg: PackageCategoryFields) =>
@@ -49,20 +51,20 @@ export type PackageCategoryOption = { value: PackageCategoryFilter; label: strin
 
 /**
  * Filter options for the packages on a page, built from the categories those packages actually carry (categories are
- * managed in the admin, so there is no fixed list): each category once, by name. Packages with no category are left
- * out of the options and show under "all". Counts are the packages in each option. No "all" option — callers that
- * need one prepend it.
+ * managed in the admin, so there is no fixed list): each category once, by name, with "Other" last when some package
+ * has no category. Counts are the packages in each option. No "all" option — callers that need one prepend it.
  */
 export const packageCategoryOptions = (packages: PackageCategoryFields[]): PackageCategoryOption[] => {
   const options = new Map<string, PackageCategoryOption>();
   for (const pkg of packages) {
     const value = packageCategoryKey(pkg);
-    if (value === NO_CATEGORY) continue;
     const option = options.get(value);
     if (option) option.count += 1;
-    else options.set(value, { value, label: packageCategoryLabel(pkg), count: 1 });
+    else options.set(value, { value, label: value === OTHER_CATEGORY ? OTHER_CATEGORY_LABEL : packageCategoryLabel(pkg), count: 1 });
   }
-  return [...options.values()].sort((a, b) => a.label.localeCompare(b.label));
+  const other = options.get(OTHER_CATEGORY);
+  const named = [...options.values()].filter((option) => option.value !== OTHER_CATEGORY).sort((a, b) => a.label.localeCompare(b.label));
+  return other ? [...named, other] : named;
 };
 
 /**

@@ -1276,7 +1276,7 @@ This guide is a living document. **Update it in the same change as every feature
 
 **2026-09-18 (packages use the category)**
 - Admin: a package no longer has a **Battery type**. Pick a **Category** instead (it is now required), and create the categories you need under **Categories**. The packages list filters by category.
-- Customer: the website groups and filters packages by category instead of battery type. Only real categories show as filters.
+- Customer: the website groups and filters packages by category instead of battery type.
 
 **2026-09-18 (staff photos show everywhere)**
 - Admin: a staff photo now shows everywhere that person appears, including installation jobs, the engineer picker, an order's installation section and your own account button at the top right. Change the photo and it updates everywhere.
