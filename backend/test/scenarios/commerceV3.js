@@ -247,7 +247,7 @@ export const runCommerceV3Scenario = async (client) => {
   const job1 = (await createJob("create with a crew", { orderId: order1.id, engineerIds: [ada.id, bayo.id], engineerId: chidi.id }, 201, "Job created.")).body.data;
   assert.deepEqual(
     { status: job1.status, engineerIds: job1.engineerIds, engineerId: job1.engineerId, lead: job1.engineer?.name, crew: job1.engineers.map((engineer) => Object.keys(engineer).sort().join()) },
-    { status: "assigned", engineerIds: [ada.id, bayo.id], engineerId: ada.id, lead: "Ada Crew", crew: ["email,id,name,phone", "email,id,name,phone"] }
+    { status: "assigned", engineerIds: [ada.id, bayo.id], engineerId: ada.id, lead: "Ada Crew", crew: ["avatarUrl,email,id,name,phone", "avatarUrl,email,id,name,phone"] }
   );
   assert.deepEqual(job1.engineers.map((engineer) => engineer.name), ["Ada Crew", "Bayo Crew"]);
   await createJob("one job per order", { orderId: order1.id }, 409, ORDER_HAS_JOB);

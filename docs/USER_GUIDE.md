@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (staff photos show everywhere)**
+- Admin: a staff photo now shows everywhere that person appears, including installation jobs, the engineer picker, an order's installation section and your own account button at the top right. Change the photo and it updates everywhere.
+
 **2026-09-18 (carts page removed; save waits for uploads)**
 - Admin: the **Carts** page is gone. Customer carts live in the customer's own browser, so there was never anything to see there.
 - Admin: while a photo is uploading, **Save** shows "Uploading…" and waits for it, so you no longer have to change another field to make the save take.

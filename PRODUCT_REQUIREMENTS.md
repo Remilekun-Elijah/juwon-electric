@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Carts page removed; Save waits for uploads (see section 12, Change log)
+Last updated: 2026-09-18, Staff photos show everywhere (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (staff photos show everywhere)
+- §6.7: a staff photo now shows wherever that person appears in the admin, not only on **Staff & roles**: the crew on the installation jobs list, a job's drawer and edit dialog, the engineer picker, the installation panel on an order, and the account button in the header for the signed-in admin. `GET /admin/auth/me` gains `avatarUrl` and job responses gain `engineers[].avatarUrl`; both are `null` without a photo. Uploading a new photo replaces it everywhere the next time each screen loads.
 
 2026-09-18 (carts page removed; save waits for uploads)
 - §6.7: the admin **Carts** page is removed for every role. The storefront keeps carts in the customer's browser only and never sends them to the server, so the page was always empty. `GET /admin/carts` and the `carts` collection are untouched.

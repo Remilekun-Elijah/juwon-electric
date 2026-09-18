@@ -151,7 +151,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
   return (
     <Menu>
       <MenuButton className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950 data-[open]:bg-white/10">
-        <Avatar name={name} size="sm" decorative className="bg-gold-400 text-slate-950" />
+        <Avatar name={name} src={admin.avatarUrl ?? undefined} size="sm" decorative className="bg-gold-400 text-slate-950" />
         <span className="hidden max-w-[160px] truncate text-sm font-medium text-white md:block">{name}</span>
         <ChevronDown aria-hidden="true" className="h-4 w-4 text-white/70" />
         <span className="sr-only">Open account menu</span>

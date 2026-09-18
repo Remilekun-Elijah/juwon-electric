@@ -72,7 +72,7 @@ export const runJobsScenario = async (client) => {
   ).body.data;
   assert.equal(install.status, "assigned");
   assert.equal(install.scheduledAt, "2026-10-01T09:00:00.000Z");
-  assert.deepEqual(install.engineer, { id: engineerA.id, name: "Ada Engineer", email: engineerA.email, phone: null });
+  assert.deepEqual(install.engineer, { id: engineerA.id, name: "Ada Engineer", email: engineerA.email, phone: null, avatarUrl: null });
   const withEngineer = (await expect("order gets the engineer", "GET", `/admin/orders/${order.id}`, { project: (body) => ({ jobs: body.data.jobs.length }) }, 200)).body.data;
   assert.equal(withEngineer.assignedEngineerId, engineerA.id);
   assert.equal(withEngineer.jobs.length, 2);

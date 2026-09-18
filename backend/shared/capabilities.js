@@ -97,6 +97,8 @@ export const adminSelf = (admin, { isStatic = false } = {}) => ({
   name: admin.name ?? "",
   email: admin.email ?? "",
   role: normalizeRole(admin.role) ?? null,
+  // Their own photo, so the admin header shows it (2026-09-18).
+  avatarUrl: staffProfile(admin.profile).avatarUrl,
   capabilities: capabilitiesFor(admin),
   ...(isStatic ? { isStatic: true } : {}),
 });

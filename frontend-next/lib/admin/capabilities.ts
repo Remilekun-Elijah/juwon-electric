@@ -62,6 +62,8 @@ export type AdminSelf = {
   name: string;
   email: string;
   role: Role | string;
+  /** Their staff photo, shown in the admin header (2026-09-18). Older servers don't send it. */
+  avatarUrl?: string | null;
   capabilities?: string[];
   isStatic?: true;
 };

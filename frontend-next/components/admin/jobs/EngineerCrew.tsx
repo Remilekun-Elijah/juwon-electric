@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 /** Commerce v3 §1.1. */
 export const MAX_CREW = 10;
 
-type Person = { id: string; name: string; email?: string };
+type Person = { id: string; name: string; email?: string; avatarUrl?: string | null };
 
 const displayName = (person: Person) => person.name || person.email || "Engineer";
 
@@ -39,7 +39,7 @@ export function CrewStack({
     <span className={cn("inline-flex min-w-0 items-center gap-2", className)} title={all}>
       <span aria-hidden="true" className="flex shrink-0 -space-x-2">
         {shown.map((person) => (
-          <Avatar key={person.id} name={displayName(person)} size="sm" decorative className="ring-2 ring-white" />
+          <Avatar key={person.id} name={displayName(person)} src={person.avatarUrl ?? undefined} size="sm" decorative className="ring-2 ring-white" />
         ))}
       </span>
       {showAll ? (
@@ -64,7 +64,7 @@ export function CrewList({ crew, emptyLabel = "Unassigned" }: { crew: readonly P
     <ul className="space-y-1.5">
       {crew.map((person, index) => (
         <li key={person.id} className="flex min-w-0 items-center gap-2">
-          <Avatar name={displayName(person)} size="sm" decorative />
+          <Avatar name={displayName(person)} src={person.avatarUrl ?? undefined} size="sm" decorative />
           <span className="min-w-0">
             <span className="flex flex-wrap items-center gap-x-2">
               <span className="truncate font-medium text-slate-900">{displayName(person)}</span>
@@ -235,7 +235,7 @@ export function EngineerCrewPicker(props: EngineerCrewPickerProps) {
                     index === 0 ? "border-brand-200 bg-brand-50" : "border-slate-200 bg-white"
                   )}
                 >
-                  <Avatar name={name} size="sm" decorative className="h-7 w-7" />
+                  <Avatar name={name} src={person.avatarUrl ?? undefined} size="sm" decorative className="h-7 w-7" />
                   <span className="min-w-0 truncate text-sm font-medium text-slate-900">{name}</span>
                   {index === 0 ? (
                     <Badge tone="brand" className="shrink-0">
@@ -326,7 +326,7 @@ export function EngineerCrewPicker(props: EngineerCrewPickerProps) {
                   index === activeIndex && "bg-brand-50"
                 )}
               >
-                <Avatar name={person.name || person.email} size="sm" decorative />
+                <Avatar name={person.name || person.email} src={person.profile?.avatarUrl ?? undefined} size="sm" decorative />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium text-slate-900">{person.name || person.email}</span>
                   <span className="block truncate text-xs text-slate-500">{person.email}</span>
