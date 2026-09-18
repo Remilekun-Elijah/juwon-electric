@@ -24,9 +24,9 @@ export default function CalculatorTeaser({ calculator }: CalculatorTeaserProps) 
   const headingId = useId();
   const example = sizeSystem(defaultRows(calculator), calculator);
   const outputs = [
-    { icon: Zap, label: "Inverter size", value: `${formatNumber(example.inverterKva, 1)}kVA` },
-    { icon: BatteryCharging, label: "Battery capacity", value: `${formatNumber(example.batteryKwh, 1)}kWh` },
-    { icon: Sun, label: "Solar panels", value: formatNumber(example.panels, 0) },
+    { icon: Zap, label: "Inverter Capacity", value: `${formatNumber(example.inverterKva, 1)}kVA` },
+    { icon: BatteryCharging, label: "Battery Capacity", value: `${formatNumber(example.batteryKwh, 1)}kWh` },
+    { icon: Sun, label: "Solar Panels", value: `${formatNumber(example.panels, 0)} ${example.panels === 1 ? "Panel" : "Panels"}` },
   ];
   const hasExample = example.loadWatts > 0;
 
@@ -39,11 +39,11 @@ export default function CalculatorTeaser({ calculator }: CalculatorTeaserProps) 
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold-400">Size your system</p>
               <h2 id={headingId} className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl lg:text-4xl">
-                Not sure what size you need?
+                Find the Right System for Your Energy Needs
               </h2>
               <p className="mt-3 max-w-xl text-base leading-relaxed text-brand-50/85">
-                Tick the appliances you want to keep running during outages and see a suggested inverter, battery and panel
-                size in a minute, with packages that fit.
+                Select the appliances you want to power and our load calculator will estimate the inverter capacity,
+                battery storage and solar panel requirements suitable for your needs.
               </p>
               <Link
                 href={storeRoutes.calculator}
@@ -54,14 +54,14 @@ export default function CalculatorTeaser({ calculator }: CalculatorTeaserProps) 
                 )}
               >
                 <Calculator aria-hidden="true" className="h-5 w-5" />
-                Open the load calculator
+                Calculate My Solar System
                 <ArrowRight aria-hidden="true" className={cn("h-5 w-5", storeArrowNudge)} />
               </Link>
             </div>
 
             <div className="min-w-0 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm sm:p-6">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-white">{hasExample ? "Example: our standard appliance list" : "What you’ll get"}</p>
+                <p className="text-sm font-medium text-white">{hasExample ? "Example System Recommendation" : "What you’ll get"}</p>
                 <SampleBadge show={hasExample && calculator.sample} tone="brand" />
               </div>
               <Reveal as="ul" stagger delay={150} className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
@@ -81,7 +81,10 @@ export default function CalculatorTeaser({ calculator }: CalculatorTeaserProps) 
                   </li>
                 ))}
               </Reveal>
-              {hasExample && <p className="mt-3 text-xs leading-relaxed text-brand-50/70">Estimates only: an engineer confirms your size before installation.</p>}
+              {hasExample && <p className="mt-3 text-xs leading-relaxed text-brand-50/70">
+                  This calculator provides an initial estimate only. Final system sizing and specifications will be
+                  confirmed by our engineering team based on your actual energy requirements and site conditions.
+                </p>}
             </div>
           </div>
         </BrandPanel>
