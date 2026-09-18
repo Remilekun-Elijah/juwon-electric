@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (hero copy)**
+- Customer: new wording at the top of the home page.
+
 **2026-09-18 (industries we power)**
 - Customer: the "Who we power" section is now **Industries We Power**, and each industry has a new name and description.
 

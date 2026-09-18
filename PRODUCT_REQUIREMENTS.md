@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Industries We Power (see section 12, Change log)
+Last updated: 2026-09-18, Hero copy (see section 12, Change log)
 
 1. Executive summary
 
@@ -326,7 +326,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   - Edge to edge, about one screen tall (at least 640 px, at most 920 px), under the transparent header.
   - Background slideshow of 4 of our own installation photos. The first loads straight away; the others load later. Photos crossfade every 7 seconds, and the photo on screen zooms in slowly. Dark gradients keep the text readable on every photo.
   - Photo dots: up to 4 round dots at the bottom centre. The current dot is gold and grows over 7 seconds. Selecting a dot shows that photo. A visible pause/play button sits next to the bars ("Pause the photo slideshow" / "Play the photo slideshow"). The slideshow also pauses while the mouse is over the hero or keyboard focus is inside it.
-  - Content: a glass pill "Inverter, battery & solar systems across Nigeria" with a softly pulsing green dot; the headline "Reliable power for Nigerian homes and **businesses**" with the last word in a gold gradient, each line rising into view; the lead paragraph; a gold **Shop packages** button and a glass **Chat on WhatsApp** button (when a WhatsApp number is set; otherwise **Talk to an engineer**, which calls).
+  - Content: a glass pill "Inverter, battery & solar systems across Nigeria" with a softly pulsing green dot; the headline "Reliable Energy Solutions for **Homes & Businesses**" with the last line in a gold gradient (owner copy, 2026-09-18), each line rising into view; the lead paragraph; a gold **Shop packages** button and a glass **Chat on WhatsApp** button (when a WhatsApp number is set; otherwise **Talk to an engineer**, which calls).
   - Stats: up to 4 figures from Settings → Website stats, in large gold numbers that count up, with uppercase labels. A Sample label shows while the stats are sample. With no stats, the three reassurance ticks show instead (no payment to place an order, we call to confirm, installation included). The separate stats band below the hero is removed.
   - Glass price card: "Complete packages from ₦…" in gold with an arrow link to the packages, bottom right of the hero. It shows only on wide screens (1280 px and up, so it doesn't cover the stats or the floating buttons) and only when there is a priced package.
   - On load the pill, headline lines, lead, buttons, stats and price card appear one after another (about 100 ms apart). All of it is in the page HTML.
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (hero copy)
+- §6.10: owner copy for the home hero: pill "Solar & energy solutions across Nigeria", headline "Reliable Energy Solutions for **Homes & Businesses**" and the lead "Complete solar, inverter and battery solutions professionally designed, supplied and installed…". The page title and the rest of the hero are unchanged.
 
 2026-09-18 (industries we power)
 - §6.10: the customer segments section is **Industries We Power** on the home page and the services page, with the owner's description. The segment names and descriptions themselves are content, updated live: Banking & Financial Institutions, Healthcare Facilities, Communities & Infrastructure, Agriculture & Farms, Government & Public Institutions and Educational Institutions. Slugs and URLs are unchanged, and the same names label the case studies.
