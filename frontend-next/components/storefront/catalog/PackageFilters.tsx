@@ -14,6 +14,7 @@ import {
   KVA_FILTERS,
   PACKAGE_SORTS,
   filterPackages,
+  categorisedPackages,
   packageCategoryOptions,
   parseCategoryFilter,
   parseKvaFilter,
@@ -37,7 +38,8 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
   const [pending, startTransition] = useTransition();
 
   // Commerce v3 §4: the options are the categories these packages carry, so a category added in the admin shows up here.
-  const options = packageCategoryOptions(packages);
+  const listed = categorisedPackages(packages);
+  const options = packageCategoryOptions(listed);
   const state: PackageFilterState = {
     category: parseCategoryFilter(searchParams.get("category") ?? searchParams.get("type"), options),
     kva: parseKvaFilter(searchParams.get("kva")),
@@ -45,7 +47,7 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
   };
   const { category, kva, sort } = state;
 
-  const visible = filterPackages(packages, state);
+  const visible = filterPackages(listed, state);
 
   const update = (next: Partial<PackageFilterState>) => {
     const merged = { ...state, ...next };
@@ -76,7 +78,7 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
           <fieldset>
             <legend className="text-sm font-medium text-slate-700">Category</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {[{ value: "all", label: "All", count: packages.length }, ...options].map((item) => {
+              {[{ value: "all", label: "All", count: listed.length }, ...options].map((item) => {
                 const selected = item.value === category;
                 return (
                   <button
@@ -140,9 +142,9 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500" aria-live="polite">
-          {visible.length === packages.length
-            ? `Showing all ${packages.length} ${packages.length === 1 ? "package" : "packages"}`
-            : `Showing ${visible.length} of ${packages.length} packages`}
+          {visible.length === listed.length
+            ? `Showing all ${listed.length} ${listed.length === 1 ? "package" : "packages"}`
+            : `Showing ${visible.length} of ${listed.length} packages`}
         </p>
         {filtered && (
           <button

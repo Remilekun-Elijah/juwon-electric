@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { enterDelay, storeCard } from "@/lib/storefront/styles";
 import PackageGrid from "./PackageGrid";
-import { packageCategoryOptions } from "./packageMeta";
+import { categorisedPackages, packageCategoryOptions } from "./packageMeta";
 
 /**
  * Server-rendered stand-in for PackageFilters while it hydrates (and for visitors without JavaScript): a filter bar
@@ -12,7 +12,7 @@ import { packageCategoryOptions } from "./packageMeta";
  * PackageFilters will render ("All" plus one per category on the page), so the bar doesn't resize on hydration.
  */
 export default function PackageFiltersFallback({ packages }: { packages: Package[] }) {
-  const chips = packageCategoryOptions(packages).length + 1;
+  const chips = packageCategoryOptions(categorisedPackages(packages)).length + 1;
   return (
     <div>
       <div style={enterDelay(300)} className={cn(storeCard, "je-in je-in-fade p-4 sm:p-5")}>

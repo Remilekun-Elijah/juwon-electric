@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
-import { availablePackages, lowestPrice, packageCategoryOptions } from "@/components/storefront/catalog/packageMeta";
+import { availablePackages, categorisedPackages, lowestPrice, packageCategoryOptions } from "@/components/storefront/catalog/packageMeta";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
 import CareersTeaser from "@/components/storefront/home/CareersTeaser";
@@ -83,7 +83,7 @@ export default async function HomePage() {
   const prices = packages.map(lowestPrice).filter((price) => price > 0);
   const heroFromPrice = prices.length ? Math.min(...prices) : null;
   // Commerce v3 §4: one chip per catalogue category on the page, with the uncategorised packages under "Other".
-  const packageCategories = packageCategoryOptions(packages);
+  const packageCategories = packageCategoryOptions(categorisedPackages(packages));
 
   const topCategories = buildCategoryTree(categories);
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);

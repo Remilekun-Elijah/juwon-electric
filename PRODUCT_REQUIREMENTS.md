@@ -692,7 +692,7 @@ Open items for owner review
 12. Change log
 
 2026-09-18 (packages use the category, not a battery type)
-- §6.7 and §6.10: the package form's **Battery type** field is gone and **Category** is now required. The admin packages list filters and lists by category, and the storefront filters, chips, badges and "more like this" use the category too (`/packages?category=<slug>`, with old `?type=` links still working). Packages with no category appear under **Other**.
+- §6.7 and §6.10: the package form's **Battery type** field is gone and **Category** is now required. The admin packages list filters and lists by category, and the storefront filters, chips, badges and "more like this" use the category too (`/packages?category=<slug>`, with old `?type=` links still working). Packages with no category, or whose category is hidden, are left out of the chips **and** of **All**, so the counts add up; they still appear on the home page and by direct link. While no package has an active category at all, every package is listed (the catalogue is never empty).
 - The API keeps `type` on packages for the classic site and works it out from the category name when a request doesn't send one; `categoryId` stays optional in the API so existing packages and seeds keep working.
 
 2026-09-18 (staff photos show everywhere)

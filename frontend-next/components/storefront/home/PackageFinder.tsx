@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Package as PackageIcon, Sun, Zap } from "lucide-react";
 import {
-  OTHER_CATEGORY,
   availablePackages,
   hasSolarOption,
   includedProducts,
   lowestPrice,
   packageCategoryKey,
+  categorisedPackages,
   packageCategoryOptions,
 } from "@/components/storefront/catalog/packageMeta";
 import PriceTag from "@/components/storefront/PriceTag";
@@ -98,7 +98,7 @@ function FinderCard({ pkg }: { pkg: Package }) {
  * Packages with no available option are left out (Commerce v2 §4).
  */
 export default function PackageFinder({ packages: allPackages }: { packages: Package[] }) {
-  const packages = availablePackages(allPackages);
+  const packages = categorisedPackages(availablePackages(allPackages));
   const groups = packageCategoryOptions(packages).map((option) => ({
     value: option.value,
     label: option.label,
@@ -140,7 +140,7 @@ export default function PackageFinder({ packages: allPackages }: { packages: Pac
             >
               {/* Category names are free text from the admin ("Inverters"), so they read as "… packages in <name>". */}
               {group.packages.length === 1 ? "See all 1 package" : `See all ${group.packages.length} packages`}
-              {group.value === OTHER_CATEGORY ? "" : ` in ${group.label}`}
+              {` in ${group.label}`}
               <ArrowRight aria-hidden="true" />
             </Link>
           </div>
