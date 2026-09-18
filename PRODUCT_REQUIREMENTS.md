@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Packages use the category, not a battery type (see section 12, Change log)
+Last updated: 2026-09-18, Selected Projects case studies (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (selected projects)
+- §6.10: the home case-study section is **Selected Projects** ("Explore some of our completed solar and energy projects…") with **View All Projects**, and a case study with its own link shows a **View Project** action on the card. Owner-supplied copy.
+- Content (live): the three case studies were retitled with their system lines and descriptions, and the customer segments were renamed Educational Institutions, Healthcare and Community / Estate (slugs and URLs unchanged).
 
 2026-09-18 (packages use the category, not a battery type)
 - §6.7 and §6.10: the package form's **Battery type** field is gone and **Category** is now required. The admin packages list filters and lists by category, and the storefront filters, chips, badges and "more like this" use the category too (`/packages?category=<slug>`, with old `?type=` links still working). Packages with no category, or whose category is hidden, are left out of the chips **and** of **All**, so the counts add up; they still appear on the home page and by direct link. While no package has an active category at all, every package is listed (the catalogue is never empty).

@@ -144,6 +144,20 @@ export default function PortfolioGrid({
 
                 {summary && <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-slate-600">{summary}</p>}
 
+                {href && (
+                  <div className="mt-auto pt-4">
+                    <a
+                      href={href}
+                      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                      className={cn(storeLink, "group/view relative z-10 inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}
+                    >
+                      View Project
+                      <span className="sr-only">: {item.name}</span>
+                      <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/view:translate-x-0.5" />
+                    </a>
+                  </div>
+                )}
+
                 {similar && (
                   <div className="mt-auto pt-4">
                     <Link href={portfolioCategoryPath(category)} className={cn(storeLink, "group/similar relative z-10 inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>

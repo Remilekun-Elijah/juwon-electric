@@ -154,9 +154,9 @@ export default async function HomePage() {
         <Section
           tone="white"
           eyebrow="Case studies"
-          title="Systems we have installed"
-          description="Real installations: where they are, what we fitted and what they now keep running."
-          actions={seeAll(storeRoutes.portfolio, "See all our work")}
+          title="Selected Projects"
+          description="Explore some of our completed solar and energy projects across residential, commercial and institutional applications."
+          actions={seeAll(storeRoutes.portfolio, "View All Projects")}
         >
           <PortfolioGrid items={studies} categoryTitles={segmentTitles(segments)} linkToCategory />
         </Section>

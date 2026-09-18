@@ -1274,6 +1274,10 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (selected projects)**
+- Customer: the home page case studies are now **Selected Projects**, each card showing the system fitted and a **View Project** link when the project has one.
+- Admin: three customer segments were renamed (Academic Institutions → **Educational Institutions**, Hospitals → **Healthcare**, Community → **Community / Estate**). The names show on the website; their web addresses are unchanged.
+
 **2026-09-18 (packages use the category)**
 - Admin: a package no longer has a **Battery type**. Pick a **Category** instead (it is now required), and create the categories you need under **Categories**. The packages list filters by category.
 - Customer: the website groups and filters packages by category instead of battery type. Only real, visible categories appear as filters, and hiding a category takes its packages off the packages page.
