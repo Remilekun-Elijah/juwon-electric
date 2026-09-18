@@ -22,8 +22,19 @@ function QuantityChip({ quantity }: { quantity: number }) {
   );
 }
 
-function ProductName({ name, slug, productId }: { name: string; slug: string | null | undefined; productId: string }) {
-  const href = slug || productId ? productPath({ slug: slug ?? "", id: productId }) : null;
+function ProductName({
+  name,
+  slug,
+  productId,
+  linkProducts,
+}: {
+  name: string;
+  slug: string | null | undefined;
+  productId: string;
+  /** False while products are hidden from the website: the name is plain text, with no link to a missing page. */
+  linkProducts: boolean;
+}) {
+  const href = linkProducts && (slug || productId) ? productPath({ slug: slug ?? "", id: productId }) : null;
   return href ? (
     <Link href={href} className={cn(storeLink, "break-words")}>
       {name}
@@ -33,14 +44,24 @@ function ProductName({ name, slug, productId }: { name: string; slug: string | n
   );
 }
 
-function ComposedLine({ line, categories, index }: { line: ComposedItem; categories: Map<string, Category>; index: number }) {
+function ComposedLine({
+  line,
+  categories,
+  index,
+  linkProducts,
+}: {
+  line: ComposedItem;
+  categories: Map<string, Category>;
+  index: number;
+  linkProducts: boolean;
+}) {
   const schema = line.categoryId ? categories.get(line.categoryId)?.attributes : undefined;
   const specs = attributeRows(line.attributes ?? {}, schema).slice(0, MAX_SPECS);
   return (
     <li style={staggerDelay(index, 50)} className="je-in flex gap-3 py-4 sm:gap-4">
       <QuantityChip quantity={line.quantity} />
       <div className="min-w-0 flex-1">
-        <ProductName name={line.name} slug={line.slug} productId={line.productId} />
+        <ProductName name={line.name} slug={line.slug} productId={line.productId} linkProducts={linkProducts} />
         {(line.brand || line.note) && (
           <p className="mt-0.5 text-sm text-slate-500">
             {line.brand}
@@ -64,12 +85,12 @@ function ComposedLine({ line, categories, index }: { line: ComposedItem; categor
 }
 
 /** Deprecated package-level items (contract §4.3), shown only for a legacy option when an older API still sends them. */
-function LegacyLine({ line, index }: { line: PackageItem; index: number }) {
+function LegacyLine({ line, index, linkProducts }: { line: PackageItem; index: number; linkProducts: boolean }) {
   return (
     <li style={staggerDelay(index, 50)} className="je-in flex gap-3 py-3 sm:gap-4">
       <QuantityChip quantity={line.quantity} />
       <div className="min-w-0 flex-1">
-        <ProductName name={line.name} slug={line.slug} productId={line.productId} />
+        <ProductName name={line.name} slug={line.slug} productId={line.productId} linkProducts={linkProducts} />
         {(line.sku || line.note) && (
           <p className="mt-0.5 text-sm text-slate-500">
             {line.sku && <span className="tabular-nums">SKU {line.sku}</span>}
@@ -82,7 +103,17 @@ function LegacyLine({ line, index }: { line: PackageItem; index: number }) {
   );
 }
 
-function OptionContents({ pkg, option, categories }: { pkg: Package; option: PricedOption; categories: Map<string, Category> }) {
+function OptionContents({
+  pkg,
+  option,
+  categories,
+  linkProducts,
+}: {
+  pkg: Package;
+  option: PricedOption;
+  categories: Map<string, Category>;
+  linkProducts: boolean;
+}) {
   const items = optionItems(option);
   const legacyItems = pkg.items ?? [];
   return (
@@ -94,13 +125,13 @@ function OptionContents({ pkg, option, categories }: { pkg: Package; option: Pri
       {items.length > 0 ? (
         <Reveal as="ul" stagger className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
           {items.map((line, index) => (
-            <ComposedLine key={line.productId} line={line} categories={categories} index={index} />
+            <ComposedLine key={line.productId} line={line} categories={categories} index={index} linkProducts={linkProducts} />
           ))}
         </Reveal>
       ) : legacyItems.length > 0 ? (
         <Reveal as="ul" stagger className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
           {legacyItems.map((line, index) => (
-            <LegacyLine key={`${line.productId}-${line.note ?? ""}`} line={line} index={index} />
+            <LegacyLine key={`${line.productId}-${line.note ?? ""}`} line={line} index={index} linkProducts={linkProducts} />
           ))}
         </Reveal>
       ) : (
@@ -125,6 +156,8 @@ export type PackageIncludedProps = {
   pkg: Package;
   /** Active categories (`getStoreCategories`) for spec labels and units. */
   categories: Category[];
+  /** `settings.website.productsEnabled`: with products hidden, product names are plain text, not links (2026-09-18). */
+  linkProducts?: boolean;
 };
 
 /**
@@ -133,7 +166,7 @@ export type PackageIncludedProps = {
  * opens, as they scroll into view, and again when another option is picked (a CSS animation restarts when its panel
  * stops being hidden). Server component.
  */
-export default function PackageIncluded({ pkg, categories }: PackageIncludedProps) {
+export default function PackageIncluded({ pkg, categories, linkProducts = true }: PackageIncludedProps) {
   const options = cartOptions(pkg);
   const defaultIndex = defaultCartOptionIndex(pkg);
   const byId = new Map(categories.map((category) => [category.id, category]));
@@ -151,7 +184,7 @@ export default function PackageIncluded({ pkg, categories }: PackageIncludedProp
     <div>
       {options.map((option) => (
         <PackageOptionPanel key={option.index} index={option.index} defaultIndex={defaultIndex}>
-          <OptionContents pkg={pkg} option={option} categories={byId} />
+          <OptionContents pkg={pkg} option={option} categories={byId} linkProducts={linkProducts} />
         </PackageOptionPanel>
       ))}
     </div>

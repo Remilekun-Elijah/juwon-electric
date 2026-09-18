@@ -80,6 +80,7 @@ export default function CartView({ productsEnabled = true }: { productsEnabled?:
           <ProductCartLines
             products={products}
             quote={quote}
+            linkProducts={productsEnabled}
             focusAfterRemoveRef={headingRef}
             className={cn(cart.length > 0 && "mt-5 border-t border-slate-100 pt-5")}
           />

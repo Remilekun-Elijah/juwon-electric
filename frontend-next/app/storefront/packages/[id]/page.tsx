@@ -32,7 +32,7 @@ import { categoryPath, formatPrice } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { packagePath, packageTitle } from "@/lib/packages";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { getStoreCategories, getStorePackage, getStorePackages } from "@/lib/storefront/data";
+import { getStoreCategories, getStorePackage, getStorePackages, storeProductsEnabled } from "@/lib/storefront/data";
 import { contactTopicPath, storeRoutes } from "@/lib/storefront/routes";
 import { enterDelay, storeCard, storeCardPadding, storeContainer, storeDarkBadge, storeH3, storeLink } from "@/lib/storefront/styles";
 
@@ -123,7 +123,12 @@ const relatedPackages = (all: Package[], pkg: Package) =>
 
 export default async function PackageDetailPage({ params }: PageProps<"/storefront/packages/[id]">) {
   const { id } = await params;
-  const [pkg, all, categories] = await Promise.all([getStorePackage(id), getStorePackages(), getStoreCategories()]);
+  const [pkg, all, categories, productsEnabled] = await Promise.all([
+    getStorePackage(id),
+    getStorePackages(),
+    getStoreCategories(),
+    storeProductsEnabled(),
+  ]);
   if (!pkg) notFound();
 
   const available = isPackageAvailable(pkg);
@@ -140,7 +145,7 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
         title={packageTitle(pkg)}
         breadcrumbs={[
           { label: "Packages", href: storeRoutes.packages },
-          ...(categoryRef ? [{ label: categoryRef.name, href: categoryPath(categoryRef) }] : []),
+          ...(categoryRef ? [{ label: categoryRef.name, href: productsEnabled ? categoryPath(categoryRef) : undefined }] : []),
           { label: `${pkg.name} ${pkg.kva}kVA`, href: packagePath(pkg) },
         ]}
         image={hasSolarOption(pkg) ? INTRO_IMAGES.home : INTRO_IMAGES.commercial}
@@ -212,7 +217,7 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
                 <h2 id="package-included" className={storeH3}>
                   What’s included
                 </h2>
-                <PackageIncluded pkg={pkg} categories={categories} />
+                <PackageIncluded pkg={pkg} categories={categories} linkProducts={productsEnabled} />
               </Reveal>
 
               <Reveal as="section" aria-labelledby="package-install" style={enterDelay(480)} className={cn(storeCard, storeCardPadding, "je-in")}>

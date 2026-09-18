@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Contact us in the menu (see section 12, Change log)
+Last updated: 2026-09-18, No product links when products are hidden (see section 12, Change log)
 
 1. Executive summary
 
@@ -409,7 +409,7 @@ Portfolio case-study fields
 
 Settings sections (Super admin and Admin change them; other staff view)
 - Website:
-  - Products on the website (2026-09-17): a switch, on by default. Off hides the whole Products area from customers: the **Products** link in the header, the mobile menu and the footer, the "Shop by category" and "Popular products" home sections, the "Browse products" links on the cart, empty cart and packages pages, the Products suggestion on the 404 page, and every product, product category and products listing page (they show the storefront 404). Product pages and categories also leave the sitemap. Packages, their composed products, prices and specifications are untouched, and so is everything in the admin: products, categories, inventory and in-store sales of single products all keep working.
+  - Products on the website (2026-09-17): a switch, on by default. Off also stops anything linking into that area: the products listed in a package's "What's included" and the product lines in the cart show as plain text, and the package page's category breadcrumb loses its link (2026-09-18). Off hides the whole Products area from customers: the **Products** link in the header, the mobile menu and the footer, the "Shop by category" and "Popular products" home sections, the "Browse products" links on the cart, empty cart and packages pages, the Products suggestion on the 404 page, and every product, product category and products listing page (they show the storefront 404). Product pages and categories also leave the sitemap. Packages, their composed products, prices and specifications are untouched, and so is everything in the admin: products, categories, inventory and in-store sales of single products all keep working.
   - Stats: up to 4 rows (**Add stat**), each a Label (1–40 characters) and a Figure (the value, 1–20, for example "500+"). Saved with ~~**Save website**~~ **Save changes** on **Settings → Website → Homepage & contact** (Settings redesign, §6.7).
   - WhatsApp number: optional, same phone rule as the business phone.
   - Business hours: optional, up to 200 characters, several lines (for example "Mon–Fri 8am–6pm" on one line and "Sat 9am–3pm" on the next).
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (no product links when products are hidden)
+- §6.11: with **Products on the website** off, product names in a package's "What's included", the product lines and images in the cart, and the category breadcrumb on a package page are no longer links, so nothing leads to a hidden page. They still show the same text.
 
 2026-09-18 (contact us in the menu)
 - §6.10: the storefront menu item **Contact** now reads **Contact us**, in the header and the phone menu. The page and its address are unchanged.
