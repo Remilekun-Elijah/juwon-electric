@@ -14,8 +14,6 @@ const environment = {};
 environment.development = {
   port: process.env.PORT || 9000,
   application_name: "Juwon Electric",
-  env: process.env.NODE_ENV,
-  smtp_host: "",
   smtp_secret: process.env.SMTP_SECRET,
   smtp_user: process.env.SMTP_USER,
   smtp_from: process.env.SMTP_FROM,
@@ -26,8 +24,6 @@ environment.development = {
 
 environment.production = {
   port: process.env.PORT || 9000,
-  env: process.env.NODE_ENV,
-  smtp_host: "",
   application_name: "Juwon Electric",
   smtp_secret: process.env.SMTP_SECRET,
   smtp_user: process.env.SMTP_USER,
