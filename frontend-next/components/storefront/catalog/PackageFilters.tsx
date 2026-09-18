@@ -73,7 +73,7 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
     <div>
       <div className={cn(storeCard, "p-4 sm:p-5")}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <fieldset>
+          <fieldset className={cn(options.length === 0 && "hidden")}>
             <legend className="text-sm font-medium text-slate-700">Category</legend>
             <div className="mt-2 flex flex-wrap gap-2">
               {[{ value: "all", label: "All", count: packages.length }, ...options].map((item) => {
