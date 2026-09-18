@@ -72,7 +72,7 @@ export function SettingsPills({ active }: { active: SettingsSectionId }) {
     <nav aria-label="Settings sections" className="min-w-0 lg:hidden">
       <ul
         ref={listRef}
-        className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin]"
+        className="flex gap-2 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1 [scrollbar-width:thin]"
       >
         {settingsSections.map((section) => {
           const current = section.id === active;
