@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (why choose us and team copy)**
+- Customer: new wording in the "Why Customers Choose Us" band and at the top of the team page.
+
 **2026-09-18 (smaller deployments)**
 - Nothing changes on screen. The website's built-in photos are stored more efficiently, which keeps hosting costs down. Photos you upload are unaffected.
 

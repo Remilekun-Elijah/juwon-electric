@@ -391,23 +391,23 @@ export const SAMPLE_SETTINGS = {
 export const SAMPLE_REASONS = records("reason", [
   {
     icon: "wrench",
-    title: "Installed and tested by our engineers",
-    text: "Our own team fits your system, tests it on site and shows you how to use it.",
+    title: "Professionally Installed & Commissioned",
+    text: "Every system is installed, tested and commissioned by our trained engineering team to ensure safety, performance and reliability.",
   },
   {
     icon: "clipboard",
-    title: "Quality equipment, specs shown",
-    text: "Inverters, batteries and panels with the specifications listed on every product page.",
+    title: "Quality Equipment. Clear Specifications.",
+    text: "We use carefully selected inverters, batteries and solar panels from trusted manufacturers, with system specifications clearly stated.",
   },
   {
     icon: "phone",
-    title: "No payment to place an order",
-    text: "Place your order online and we call you to confirm the details before anything is paid.",
+    title: "Flexible & Secure Order Process",
+    text: "Place your order or request a consultation without immediate payment. Our team will confirm your requirements and installation details before payment is required.",
   },
   {
     icon: "badge",
-    title: "Live stock and prices",
-    text: "What you see on the website is what we have and what it costs today.",
+    title: "Transparent Pricing & Availability",
+    text: "Our prices and product availability are regularly updated, giving you clear and accurate information when making your decision.",
   },
 ]);
 

@@ -22,7 +22,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Our Team",
-  description: "The engineers, installers and customer care staff behind every Juwon Electric system.",
+  description: "The professionals behind Juwon Electric, delivering excellence across engineering, project execution, operations and customer experience.",
   alternates: { canonical: "/team" },
 };
 
@@ -60,8 +60,8 @@ export default async function TeamPage() {
 
       <PageIntro
         eyebrow="Our people"
-        title="Our Team"
-        description="The engineers, installers and customer care staff behind every Juwon Electric system."
+        title="Meet the Team"
+        description="The professionals behind Juwon Electric, delivering excellence across engineering, project execution, operations and customer experience."
         image={INTRO_IMAGES.commercial}
       >
         {members.length > 0 && (
