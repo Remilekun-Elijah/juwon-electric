@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (smaller deployments)**
+- Nothing changes on screen. The website's built-in photos are stored more efficiently, which keeps hosting costs down. Photos you upload are unaffected.
+
 **2026-09-18 (hero copy)**
 - Customer: new wording at the top of the home page.
 

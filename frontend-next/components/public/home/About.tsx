@@ -23,7 +23,7 @@ export default function About() {
       <div className="relative mx-auto w-full max-w-[1200px] px-4 sm:px-6">
         <div className="flex flex-col flex-wrap items-center justify-center lg:flex-row lg:flex-nowrap">
           <Image
-            src="/engineer.svg"
+            src="/engineer.jpg"
             alt="Juwon Electric engineer"
             width={597}
             height={577}

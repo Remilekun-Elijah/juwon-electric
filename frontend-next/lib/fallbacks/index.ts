@@ -12,30 +12,30 @@ const instagram = "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2
 
 /** Home "Our latest projects" (frontend/src/pages/Home/Portfolio.jsx). */
 export const fallbackRecentWork: PortfolioTile[] = [
-  { name: "2.1kwp Canadian Solar", image: "/image-1.svg", link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ==", mobile: true },
-  { name: "7.5Kva Lithium Battery", image: "/image-2.svg", link: instagram, mobile: true },
-  { name: "5Kva Tubular Battery", image: "/image-3.svg", link: instagram, mobile: true },
-  { name: "1.2kwp Canadian Solar", image: "/image-4.svg", link: instagram, mobile: true },
-  { name: "3.2Kva Tubular Battery", image: "/image-5.svg", link: instagram, mobile: false },
-  { name: "8.8kwp Canadian Solar", image: "/image-6.svg", link: instagram, mobile: false },
-  { name: "2.1kwp Trina Solar", image: "/image-7.svg", link: instagram, mobile: false },
-  { name: "10Kva Lithium Battery", image: "/image-8.svg", link: instagram, mobile: false },
+  { name: "2.1kwp Canadian Solar", image: "/image-1.jpg", link: "https://www.instagram.com/juwon__electric?igsh=MWdkc3VrYjQ2b2lydQ==", mobile: true },
+  { name: "7.5Kva Lithium Battery", image: "/image-2.jpg", link: instagram, mobile: true },
+  { name: "5Kva Tubular Battery", image: "/image-3.jpg", link: instagram, mobile: true },
+  { name: "1.2kwp Canadian Solar", image: "/image-4.jpg", link: instagram, mobile: true },
+  { name: "3.2Kva Tubular Battery", image: "/image-5.jpg", link: instagram, mobile: false },
+  { name: "8.8kwp Canadian Solar", image: "/image-6.jpg", link: instagram, mobile: false },
+  { name: "2.1kwp Trina Solar", image: "/image-7.jpg", link: instagram, mobile: false },
+  { name: "10Kva Lithium Battery", image: "/image-8.jpg", link: instagram, mobile: false },
 ];
 
 /** Portfolio page (frontend/src/pages/Portfolio.jsx). */
 export const fallbackPortfolio: PortfolioTile[] = [
-  { name: "2.1Kwp Trina Solar Panel", image: "/image-1.svg", mobile: true },
-  { name: "5Kva Tubular Battery Energy", image: "/image-3.svg", mobile: true },
-  { name: "8.8Kwp Canadian Solar Panel", image: "/image-6.svg", mobile: true },
-  { name: "7.5Kva Lithium Battery", image: "/image-2.svg", mobile: true },
-  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-5.svg", mobile: true },
-  { name: "2.5Kva Tubular Battery Energy", image: "/portfolio-6.svg", mobile: true },
-  { name: "10Kva Lithium Battery Energy", image: "/portfolio-7.svg", mobile: false },
-  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-8.svg", mobile: false },
-  { name: "10Kva Lithium Battery Energy", image: "/portfolio-9.svg", mobile: false },
-  { name: "1.2Kwp Canadian Solar Panel", image: "/image-4.svg", mobile: false },
-  { name: "7.5Kva Tubular Battery Energy", image: "/portfolio-11.svg", mobile: false },
-  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-12.svg", mobile: false },
+  { name: "2.1Kwp Trina Solar Panel", image: "/image-1.jpg", mobile: true },
+  { name: "5Kva Tubular Battery Energy", image: "/image-3.jpg", mobile: true },
+  { name: "8.8Kwp Canadian Solar Panel", image: "/image-6.jpg", mobile: true },
+  { name: "7.5Kva Lithium Battery", image: "/image-2.jpg", mobile: true },
+  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-5.jpg", mobile: true },
+  { name: "2.5Kva Tubular Battery Energy", image: "/portfolio-6.jpg", mobile: true },
+  { name: "10Kva Lithium Battery Energy", image: "/portfolio-7.jpg", mobile: false },
+  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-8.jpg", mobile: false },
+  { name: "10Kva Lithium Battery Energy", image: "/portfolio-9.jpg", mobile: false },
+  { name: "1.2Kwp Canadian Solar Panel", image: "/image-4.jpg", mobile: false },
+  { name: "7.5Kva Tubular Battery Energy", image: "/portfolio-11.jpg", mobile: false },
+  { name: "550W Mono-Crystalline Solar Panel", image: "/portfolio-12.jpg", mobile: false },
 ];
 
 /** Services "What we offer" (frontend/src/pages/Services/Services.jsx). */
@@ -53,7 +53,7 @@ We are here for you!
       `,
   },
   {
-    image: "/offer-2.svg",
+    image: "/offer-2.png",
     title: "Energy Audit",
     subtitle: `Our team provides expert assessments of your energy usage and solar potential, tailoring recommendations to best fit your unique residential and commercial properties.
 `,
@@ -139,7 +139,7 @@ export const reviews: Review[][] = [
     },
     {
       name: "Juliet Anthony",
-      img: "/person-2.svg",
+      img: "/person-2.jpg",
       message:
         "Working well, except that more power is more consumption and more consumption is more expenditure 😄😄😄 \nNice job. My happiness\n level has increased.",
       rating: 4.5,
@@ -155,7 +155,7 @@ export const reviews: Review[][] = [
     },
     {
       name: "Victor Okonkwo",
-      img: "/person-4.svg",
+      img: "/person-4.jpg",
       message: `
         Thanks for the good job juwon electric. I have never regret your services since am on the grid of 2.5kva inverter it Amazing, it has reduced the cost fuelling Gen and environmental population reduced totally.
         Thanks alot.`,

@@ -43,7 +43,7 @@ export default async function ContactPage() {
     <>
       <Header text="CONTACT US" />
 
-      <div className="bg-cover bg-center" style={{ backgroundImage: "url('/contactBackground.svg')" }}>
+      <div className="bg-cover bg-center" style={{ backgroundImage: "url('/contactBackground.jpg')" }}>
         <div className={cn(siteContainer, "py-24")}>
           <CustomChip text="Contact Us" className="hidden justify-center py-10 md:flex" />
           <p className="inter-medium text-center text-base leading-relaxed text-faint">

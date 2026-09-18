@@ -1,20 +1,17 @@
+import Image from "next/image";
 import Link from "next/link";
 import { routes } from "@/lib/site";
 
 /**
- * Video hero used by the inner public pages. Port of frontend/src/components/Header.jsx.
- * The background video is decorative motion with no controls, so it is not shown when the visitor prefers reduced
- * motion (the dark overlay keeps the heading readable on its own).
+ * Photo hero used by the inner public pages. Port of frontend/src/components/Header.jsx, with the two background
+ * videos replaced by a still (2026-09-18): they cost 13 MB in every deployment and the dark overlay carries the
+ * heading either way.
  */
 export default function Header({ text }: { text: string }) {
   return (
     <div className="header-nav relative mt-0 h-[400px] max-h-[900px] w-full overflow-hidden bg-slate-900 lg:h-screen">
-      <video autoPlay loop muted playsInline aria-hidden="true" className="header-video hidden h-full w-full object-cover motion-reduce:hidden! md:block">
-        <source src="/background_video_desktop.mp4" type="video/mp4" />
-      </video>
-      <video autoPlay loop muted playsInline aria-hidden="true" className="header-video block h-screen w-screen object-cover motion-reduce:hidden! md:hidden">
-        <source src="/background_video.mp4" type="video/mp4" />
-      </video>
+      {/* 2026-09-18: the two background videos (13 MB in every deployment) were replaced by a still photo. */}
+      <Image src="/header.jpg" alt="" aria-hidden="true" fill priority sizes="100vw" className="header-video object-cover" />
       <div className="header-content flex h-full w-full flex-col items-center justify-center px-5 lg:h-screen">
         <h1 className="inter-bold text-center text-3xl leading-tight text-offWhite md:text-4xl lg:text-5xl xl:text-6xl">
           {text}
