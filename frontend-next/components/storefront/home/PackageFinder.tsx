@@ -3,19 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BatteryCharging, Package as PackageIcon, Sun, Zap } from "lucide-react";
-import { availablePackages, hasSolarOption, includedProducts, lowestPrice } from "@/components/storefront/catalog/packageMeta";
+import {
+  OTHER_CATEGORY,
+  availablePackages,
+  hasSolarOption,
+  includedProducts,
+  lowestPrice,
+  packageCategoryKey,
+  packageCategoryOptions,
+} from "@/components/storefront/catalog/packageMeta";
 import PriceTag from "@/components/storefront/PriceTag";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { Badge, TabPanel, Tabs, buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import { PACKAGE_TABS, packagePath, packageTabIndex } from "@/lib/packages";
+import { packagePath } from "@/lib/packages";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeArrowNudge, storeCard, storeFocus, storeHoverLift, storePress } from "@/lib/storefront/styles";
 
 /**
- * Up to three packages for a type, spread from the cheapest to the most premium: all of them when there are three or
- * fewer, otherwise the cheapest, the middle and the most expensive.
+ * Up to three packages for a category, spread from the cheapest to the most premium: all of them when there are three
+ * or fewer, otherwise the cheapest, the middle and the most expensive.
  */
 export function pickRange(packages: Package[]): Package[] {
   const sorted = [...packages].sort((a, b) => (lowestPrice(a) || Infinity) - (lowestPrice(b) || Infinity));
@@ -23,10 +31,8 @@ export function pickRange(packages: Package[]): Package[] {
   return [sorted[0], sorted[Math.floor((sorted.length - 1) / 2)], sorted[sorted.length - 1]];
 }
 
+/** Tab icons, reused in order: there are as many tabs as the packages have catalogue categories. */
 const tabIcons = [BatteryCharging, Zap, Sun];
-
-/** `/packages?type=` values for each tab (the S1 packages page filter). */
-const typeQuery = ["tubular", "lithium", "hybrid-lithium"];
 
 function FinderCard({ pkg }: { pkg: Package }) {
   const price = lowestPrice(pkg);
@@ -87,18 +93,19 @@ function FinderCard({ pkg }: { pkg: Package }) {
 }
 
 /**
- * "Find your package": tabs by battery type, each showing up to three packages from cheapest to premium. Packages with
- * no available option are left out (Commerce v2 §4).
+ * "Find your package": tabs by catalogue category (Commerce v3 §4), each showing up to three packages from cheapest to
+ * premium. The tabs are the categories these packages carry, with the ones that have no category under "Other".
+ * Packages with no available option are left out (Commerce v2 §4).
  */
 export default function PackageFinder({ packages: allPackages }: { packages: Package[] }) {
   const packages = availablePackages(allPackages);
-  const groups = PACKAGE_TABS.map((label, index) => ({
-    value: String(index),
-    label,
-    packages: packages.filter((pkg) => packageTabIndex(pkg) === index),
-  })).filter((group) => group.packages.length > 0);
+  const groups = packageCategoryOptions(packages).map((option) => ({
+    value: option.value,
+    label: option.label,
+    packages: packages.filter((pkg) => packageCategoryKey(pkg) === option.value),
+  }));
 
-  const [active, setActive] = useState(groups[0]?.value ?? "0");
+  const [active, setActive] = useState(groups[0]?.value ?? "");
   const current = groups.find((group) => group.value === active) ?? groups[0];
   if (!current) return null;
 
@@ -106,14 +113,14 @@ export default function PackageFinder({ packages: allPackages }: { packages: Pac
     <div>
       <Tabs
         id="package-finder"
-        aria-label="Package type"
+        aria-label="Package category"
         value={current.value}
         onChange={setActive}
         withPanels
-        items={groups.map((group) => ({
+        items={groups.map((group, index) => ({
           value: group.value,
           label: group.label,
-          icon: tabIcons[Number(group.value)],
+          icon: tabIcons[index % tabIcons.length],
           count: group.packages.length,
         }))}
       />
@@ -127,8 +134,13 @@ export default function PackageFinder({ packages: allPackages }: { packages: Pac
             ))}
           </Reveal>
           <div className="mt-6">
-            <Link href={`${storeRoutes.packages}?type=${typeQuery[Number(group.value)]}`} className={buttonClasses({ variant: "outline", size: "lg", className: cn("w-full sm:w-auto", storePress) })}>
-              See all {group.packages.length} {group.label.toLowerCase()} packages
+            <Link
+              href={`${storeRoutes.packages}?category=${encodeURIComponent(group.value)}`}
+              className={buttonClasses({ variant: "outline", size: "lg", className: cn("w-full sm:w-auto", storePress) })}
+            >
+              {/* Category names are free text from the admin ("Inverters"), so they read as "… packages in <name>". */}
+              {group.packages.length === 1 ? "See all 1 package" : `See all ${group.packages.length} packages`}
+              {group.value === OTHER_CATEGORY ? "" : ` in ${group.label}`}
               <ArrowRight aria-hidden="true" />
             </Link>
           </div>

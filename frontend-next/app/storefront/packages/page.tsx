@@ -17,7 +17,7 @@ import { enterDelay, storeContainer } from "@/lib/storefront/styles";
 export const revalidate = 60;
 
 const description =
-  "Complete tubular, lithium and hybrid lithium systems from 1kVA, with or without solar panels, delivered and installed by our team.";
+  "Complete inverter and battery systems from 1kVA, with or without solar panels, delivered and installed by our team.";
 
 export const metadata: Metadata = {
   title: "Inverter and solar packages",

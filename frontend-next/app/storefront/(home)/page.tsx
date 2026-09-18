@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Section from "@/components/storefront/Section";
-import { PACKAGE_TYPE_FILTERS, availablePackages, lowestPrice, packageTypeKey } from "@/components/storefront/catalog/packageMeta";
+import { availablePackages, lowestPrice, packageCategoryOptions } from "@/components/storefront/catalog/packageMeta";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
 import CareersTeaser from "@/components/storefront/home/CareersTeaser";
@@ -82,9 +82,8 @@ export default async function HomePage() {
   const packages = availablePackages(allPackages);
   const prices = packages.map(lowestPrice).filter((price) => price > 0);
   const heroFromPrice = prices.length ? Math.min(...prices) : null;
-  const heroPackageTypes = PACKAGE_TYPE_FILTERS.filter((type) => type.value !== "all")
-    .map((type) => ({ ...type, count: packages.filter((pkg) => packageTypeKey(pkg) === type.value).length }))
-    .filter((type) => type.count > 0);
+  // Commerce v3 §4: one chip per catalogue category on the page, with the uncategorised packages under "Other".
+  const packageCategories = packageCategoryOptions(packages);
 
   const topCategories = buildCategoryTree(categories);
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
@@ -120,24 +119,24 @@ export default async function HomePage() {
           tone="white"
           eyebrow="Packages"
           title="Find your package"
-          description="Complete systems with the inverter, batteries and installation included. Choose a battery type to see options from entry level to premium."
+          description="Complete systems with the inverter, batteries and installation included. Choose a category to see options from entry level to premium."
           actions={
             <>
-              {heroPackageTypes.length > 0 && (
-                <nav aria-label="Shop packages by battery type">
+              {packageCategories.length > 0 && (
+                <nav aria-label="Shop packages by category">
                   <ul className="flex flex-wrap gap-2">
-                    {heroPackageTypes.map((type) => (
-                      <li key={type.value}>
+                    {packageCategories.map((category) => (
+                      <li key={category.value}>
                         <Link
-                          href={`${storeRoutes.packages}?type=${type.value}`}
+                          href={`${storeRoutes.packages}?category=${encodeURIComponent(category.value)}`}
                           className={cn(
                             "inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 md:min-h-10",
                             storeFocus,
                             storePress
                           )}
                         >
-                          {type.label}
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs tabular-nums text-slate-600">{type.count}</span>
+                          {category.label}
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs tabular-nums text-slate-600">{category.count}</span>
                         </Link>
                       </li>
                     ))}

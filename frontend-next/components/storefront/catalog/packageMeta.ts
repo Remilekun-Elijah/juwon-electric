@@ -1,17 +1,19 @@
 // Pure package helpers for the storefront catalogue (server and client safe).
 import type { ComposedItem, Package, PackageOption } from "@/lib/api/types";
-import { packageTabIndex } from "@/lib/packages";
 
-export type PackageTypeFilter = "all" | "tubular" | "lithium" | "hybrid-lithium";
+/**
+ * Commerce v3 §4: packages are grouped by their catalogue category. The filter value is the category slug, "all" for
+ * every package, or "other" for the packages with no category (the admin may leave one unset).
+ */
+export type PackageCategoryFilter = string;
 export type KvaFilter = "all" | "up-to-2" | "2-5" | "5-10" | "10-plus";
 export type PackageSort = "recommended" | "price-asc" | "price-desc";
 
-export const PACKAGE_TYPE_FILTERS: { value: PackageTypeFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "tubular", label: "Tubular" },
-  { value: "lithium", label: "Lithium" },
-  { value: "hybrid-lithium", label: "Hybrid lithium" },
-];
+/** Filter value for the packages with no catalogue category (a category slugged "other" would share the group). */
+export const OTHER_CATEGORY = "other";
+
+/** Label for the "no category" group, used wherever a package has no `categoryRef`. */
+export const OTHER_CATEGORY_LABEL = "Other";
 
 export const KVA_FILTERS: { value: KvaFilter; label: string; min: number; max: number }[] = [
   { value: "all", label: "Any size", min: 0, max: Infinity },
@@ -27,18 +29,50 @@ export const PACKAGE_SORTS: { value: PackageSort; label: string }[] = [
   { value: "price-desc", label: "Price: high to low" },
 ];
 
-const TYPE_BY_TAB: PackageTypeFilter[] = ["tubular", "lithium", "hybrid-lithium"];
+/** Fields every category helper reads: the catalogue category, with the stored battery type as the label fallback. */
+type PackageCategoryFields = Pick<Package, "type"> & Partial<Pick<Package, "categoryRef">>;
 
-/** URL-friendly type key for a package (unknown types group with hybrid, as lib/packages does). */
-export const packageTypeKey = (pkg: Pick<Package, "type">): Exclude<PackageTypeFilter, "all"> =>
-  TYPE_BY_TAB[packageTabIndex(pkg)] as Exclude<PackageTypeFilter, "all">;
+/** "hybrid lithium" → "Hybrid lithium", so older packages with no category still read well. "" when unset. */
+const storedTypeLabel = (type: Package["type"] | null | undefined) => {
+  const text = String(type ?? "")
+    .trim()
+    .replace(/[-_]+/g, " ");
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
+};
 
-/** "Tubular", "Lithium" or "Hybrid lithium". */
-export const packageTypeLabel = (pkg: Pick<Package, "type">) =>
-  PACKAGE_TYPE_FILTERS.find((item) => item.value === packageTypeKey(pkg))?.label ?? "Package";
+/** URL-friendly key for a package's catalogue category: its slug, or "other" when it has none. */
+export const packageCategoryKey = (pkg: Pick<Package, "categoryRef">): PackageCategoryFilter => pkg.categoryRef?.slug || OTHER_CATEGORY;
 
-export const parseTypeFilter = (value: string | null | undefined): PackageTypeFilter =>
-  PACKAGE_TYPE_FILTERS.some((item) => item.value === value) ? (value as PackageTypeFilter) : "all";
+/** The category name, falling back to the stored battery type ("Lithium") and then "Package". */
+export const packageCategoryLabel = (pkg: PackageCategoryFields) =>
+  pkg.categoryRef?.name?.trim() || storedTypeLabel(pkg.type) || "Package";
+
+export type PackageCategoryOption = { value: PackageCategoryFilter; label: string; count: number };
+
+/**
+ * Filter options for the packages on a page, built from the categories those packages actually carry (categories are
+ * managed in the admin, so there is no fixed list): each category once, by name, with "Other" last when some package
+ * has no category. Counts are the packages in each option. No "all" option — callers that need one prepend it.
+ */
+export const packageCategoryOptions = (packages: PackageCategoryFields[]): PackageCategoryOption[] => {
+  const options = new Map<string, PackageCategoryOption>();
+  for (const pkg of packages) {
+    const value = packageCategoryKey(pkg);
+    const option = options.get(value);
+    if (option) option.count += 1;
+    else options.set(value, { value, label: value === OTHER_CATEGORY ? OTHER_CATEGORY_LABEL : packageCategoryLabel(pkg), count: 1 });
+  }
+  const other = options.get(OTHER_CATEGORY);
+  const named = [...options.values()].filter((option) => option.value !== OTHER_CATEGORY).sort((a, b) => a.label.localeCompare(b.label));
+  return other ? [...named, other] : named;
+};
+
+/**
+ * The selected category from the query string: `?category=<slug>`, or the legacy `?type=` value so older links still
+ * work. Anything that is not an option on this page (a removed or renamed category, an old battery type) reads "all".
+ */
+export const parseCategoryFilter = (value: string | null | undefined, options: PackageCategoryOption[]): PackageCategoryFilter =>
+  options.some((option) => option.value === value) ? (value as PackageCategoryFilter) : "all";
 
 export const parseKvaFilter = (value: string | null | undefined): KvaFilter =>
   KVA_FILTERS.some((item) => item.value === value) ? (value as KvaFilter) : "all";
@@ -142,12 +176,12 @@ export const packageIncludesProduct = (pkg: Pick<Package, "options" | "items">, 
 export const packageRating = (pkg: Pick<Package, "kva" | "volt">) =>
   [`${pkg.kva}kVA`, pkg.volt ? `${pkg.volt}V` : ""].filter(Boolean).join(" · ");
 
-export type PackageFilterState = { type: PackageTypeFilter; kva: KvaFilter; sort: PackageSort };
+export type PackageFilterState = { category: PackageCategoryFilter; kva: KvaFilter; sort: PackageSort };
 
-export function filterPackages(packages: Package[], { type, kva, sort }: PackageFilterState): Package[] {
+export function filterPackages(packages: Package[], { category, kva, sort }: PackageFilterState): Package[] {
   const range = KVA_FILTERS.find((item) => item.value === kva) ?? KVA_FILTERS[0];
   const filtered = packages.filter((pkg) => {
-    if (type !== "all" && packageTypeKey(pkg) !== type) return false;
+    if (category !== "all" && packageCategoryKey(pkg) !== category) return false;
     if (kva === "all") return true;
     const size = kvaValue(pkg);
     return size > range.min && size <= range.max;

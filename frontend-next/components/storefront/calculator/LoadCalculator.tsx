@@ -23,7 +23,8 @@ import { contactTopicPath, telHref } from "@/lib/storefront/routes";
 import { storeCard, storeFocus, storePress } from "@/lib/storefront/styles";
 
 /** A package the calculator can suggest: only what the island needs. */
-export type CalculatorPackage = { id: string; name: string; kva: number; price: number; href: string; typeLabel: string };
+/** `categoryLabel` is the package's catalogue category (Commerce v3 §4), falling back to its stored battery type. */
+export type CalculatorPackage = { id: string; name: string; kva: number; price: number; href: string; categoryLabel: string };
 
 export type LoadCalculatorProps = {
   settings: StoreCalculator;
@@ -292,7 +293,7 @@ export default function LoadCalculator({ settings, packages, phone }: LoadCalcul
                           {pkg.name} {formatNumber(pkg.kva, 1)}kVA
                         </span>
                         <span className="block text-sm text-slate-500">
-                          {pkg.typeLabel} · from <span className="font-medium tabular-nums text-slate-700">{formatPrice(pkg.price)}</span>
+                          {pkg.categoryLabel} · from <span className="font-medium tabular-nums text-slate-700">{formatPrice(pkg.price)}</span>
                         </span>
                       </span>
                       <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-brand-700" />

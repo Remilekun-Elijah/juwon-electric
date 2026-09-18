@@ -4,7 +4,7 @@ import { ArrowRight, MessageSquare, Phone } from "lucide-react";
 import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import LoadCalculator, { type CalculatorPackage } from "@/components/storefront/calculator/LoadCalculator";
-import { availablePackages, kvaValue, lowestPrice, packageTypeLabel } from "@/components/storefront/catalog/packageMeta";
+import { availablePackages, kvaValue, lowestPrice, packageCategoryLabel } from "@/components/storefront/catalog/packageMeta";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -76,7 +76,7 @@ export default async function CalculatorPage() {
       kva: kvaValue(pkg),
       price: lowestPrice(pkg),
       href: packagePath(pkg),
-      typeLabel: packageTypeLabel(pkg),
+      categoryLabel: packageCategoryLabel(pkg),
     }))
     .filter((pkg) => pkg.kva > 0 && pkg.price > 0);
 

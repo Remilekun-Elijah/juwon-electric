@@ -13,43 +13,45 @@ import PackageGrid from "./PackageGrid";
 import {
   KVA_FILTERS,
   PACKAGE_SORTS,
-  PACKAGE_TYPE_FILTERS,
   filterPackages,
-  packageTypeKey,
+  packageCategoryOptions,
+  parseCategoryFilter,
   parseKvaFilter,
   parseSort,
-  parseTypeFilter,
   type PackageFilterState,
 } from "./packageMeta";
 
-const DEFAULTS: PackageFilterState = { type: "all", kva: "all", sort: "recommended" };
+const DEFAULTS: PackageFilterState = { category: "all", kva: "all", sort: "recommended" };
 
 /** Filter change: the new cards fade in with an 8px rise over 300ms. */
 const CROSS_FADE = { "--in-duration": "300ms", "--in-y": "8px" } as CSSProperties;
 
 /**
- * Package filters (type, kVA range, price sort) over the server-fetched packages. The state lives in the URL query
- * (`?type=lithium&kva=2-5&sort=price-asc`) so a filtered view can be shared. Wrap in <Suspense> (useSearchParams).
+ * Package filters (catalogue category, kVA range, price sort) over the server-fetched packages. The state lives in the
+ * URL query (`?category=lithium-packages&kva=2-5&sort=price-asc`) so a filtered view can be shared; a legacy `?type=`
+ * value is read when there is no `?category=`. Wrap in <Suspense> (useSearchParams).
  */
 export default function PackageFilters({ packages }: { packages: Package[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
+  // Commerce v3 §4: the options are the categories these packages carry, so a category added in the admin shows up here.
+  const options = packageCategoryOptions(packages);
   const state: PackageFilterState = {
-    type: parseTypeFilter(searchParams.get("type")),
+    category: parseCategoryFilter(searchParams.get("category") ?? searchParams.get("type"), options),
     kva: parseKvaFilter(searchParams.get("kva")),
     sort: parseSort(searchParams.get("sort")),
   };
-  const { type, kva, sort } = state;
+  const { category, kva, sort } = state;
 
   const visible = filterPackages(packages, state);
-  const counts = new Map<string, number>();
-  for (const pkg of packages) counts.set(packageTypeKey(pkg), (counts.get(packageTypeKey(pkg)) ?? 0) + 1);
 
   const update = (next: Partial<PackageFilterState>) => {
     const merged = { ...state, ...next };
     const params = new URLSearchParams(searchParams.toString());
+    // A legacy `?type=` has been read into `category` by now; drop it so the two can't disagree.
+    params.delete("type");
     for (const key of Object.keys(DEFAULTS) as (keyof PackageFilterState)[]) {
       if (merged[key] === DEFAULTS[key]) params.delete(key);
       else params.set(key, merged[key]);
@@ -60,10 +62,10 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
     });
   };
 
-  const filtered = type !== "all" || kva !== "all";
+  const filtered = category !== "all" || kva !== "all";
   // The grid cross-fades when the filters change, but not when this island replaces the server fallback on load (the
   // fallback already played the entrance).
-  const filterKey = `${type}|${kva}|${sort}`;
+  const filterKey = `${category}|${kva}|${sort}`;
   const [initialKey] = useState(filterKey);
   const changed = filterKey !== initialKey;
 
@@ -72,17 +74,16 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
       <div className={cn(storeCard, "p-4 sm:p-5")}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <fieldset>
-            <legend className="text-sm font-medium text-slate-700">Battery type</legend>
+            <legend className="text-sm font-medium text-slate-700">Category</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {PACKAGE_TYPE_FILTERS.map((item) => {
-                const selected = item.value === type;
-                const count = item.value === "all" ? packages.length : (counts.get(item.value) ?? 0);
+              {[{ value: "all", label: "All", count: packages.length }, ...options].map((item) => {
+                const selected = item.value === category;
                 return (
                   <button
                     key={item.value}
                     type="button"
                     aria-pressed={selected}
-                    onClick={() => update({ type: item.value })}
+                    onClick={() => update({ category: item.value })}
                     className={cn(
                       "inline-flex min-h-11 items-center gap-2 rounded-lg border px-3.5 text-sm font-medium transition-colors md:min-h-10",
                       storeFocus,
@@ -98,7 +99,7 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
                         selected ? "bg-white text-brand-700" : "bg-slate-100 text-slate-500"
                       )}
                     >
-                      {count}
+                      {item.count}
                     </span>
                   </button>
                 );
@@ -146,7 +147,7 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
         {filtered && (
           <button
             type="button"
-            onClick={() => update({ type: "all", kva: "all" })}
+            onClick={() => update({ category: "all", kva: "all" })}
             className={cn("min-h-11 rounded-sm text-sm font-medium text-brand-700 hover:text-brand-800 md:min-h-0", storeFocus)}
           >
             Clear filters
@@ -163,10 +164,10 @@ export default function PackageFilters({ packages }: { packages: Package[] }) {
               standalone
               icon={Filter}
               title="No packages match these filters"
-              description="Try another size or battery type, or tell us what you need to power and we’ll size a system for you."
+              description="Try another size or category, or tell us what you need to power and we’ll size a system for you."
               action={
                 <>
-                  <button type="button" onClick={() => update({ type: "all", kva: "all" })} className={buttonClasses({ variant: "outline", size: "lg" })}>
+                  <button type="button" onClick={() => update({ category: "all", kva: "all" })} className={buttonClasses({ variant: "outline", size: "lg" })}>
                     Clear filters
                   </button>
                   <Link href={storeRoutes.contact} className={buttonClasses({ size: "lg" })}>

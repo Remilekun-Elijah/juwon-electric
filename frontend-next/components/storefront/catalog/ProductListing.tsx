@@ -133,7 +133,7 @@ export default function ProductListing({ categories, category, result, q, page, 
             icon={SearchX}
             className="je-in mt-4"
             title={`No ${scopeLabel} match “${q}”`}
-            description="Check the spelling or try a shorter term such as a brand, kVA rating or battery type."
+            description="Check the spelling or try a shorter term such as a brand, kVA rating or category."
             action={
               <Link href={listingHref(basePath, keep)} className={buttonClasses({ variant: "outline", size: "lg" })}>
                 Clear search

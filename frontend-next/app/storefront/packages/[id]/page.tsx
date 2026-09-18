@@ -16,9 +16,9 @@ import {
   isPackageAvailable,
   kvaValue,
   lowestPrice,
+  packageCategoryKey,
+  packageCategoryLabel,
   packageRating,
-  packageTypeKey,
-  packageTypeLabel,
   pricedOptions,
 } from "@/components/storefront/catalog/packageMeta";
 import JsonLd from "@/components/storefront/JsonLd";
@@ -75,7 +75,7 @@ function packageJsonLd(pkg: Package) {
     "@type": "Product",
     name: packageTitle(pkg),
     description: metaDescription(pkg),
-    category: `${packageTypeLabel(pkg)} inverter package`,
+    category: `${packageCategoryLabel(pkg)} inverter package`,
     brand: { "@type": "Brand", name: SITE_NAME },
     url: `${SITE_URL}${packagePath(pkg)}`,
     offers: low
@@ -114,12 +114,22 @@ const reassurance = [
   },
 ];
 
-/** Available same-type packages, closest in size first. */
-const relatedPackages = (all: Package[], pkg: Package) =>
-  availablePackages(all)
-    .filter((other) => String(other.id) !== String(pkg.id) && packageTypeKey(other) === packageTypeKey(pkg))
+const sameStoredType = (a: Package, b: Package) =>
+  String(a.type ?? "").trim().toLowerCase() === String(b.type ?? "").trim().toLowerCase();
+
+/**
+ * Available related packages, closest in size first: the ones in the same catalogue category (Commerce v3 §4), or —
+ * for a package with no category — the ones with the same stored battery type, as before.
+ */
+const relatedPackages = (all: Package[], pkg: Package) => {
+  const related = pkg.categoryRef
+    ? (other: Package) => packageCategoryKey(other) === packageCategoryKey(pkg)
+    : (other: Package) => sameStoredType(other, pkg);
+  return availablePackages(all)
+    .filter((other) => String(other.id) !== String(pkg.id) && related(other))
     .sort((a, b) => Math.abs(kvaValue(a) - kvaValue(pkg)) - Math.abs(kvaValue(b) - kvaValue(pkg)))
     .slice(0, 3);
+};
 
 export default async function PackageDetailPage({ params }: PageProps<"/storefront/packages/[id]">) {
   const { id } = await params;
@@ -141,7 +151,7 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
     <>
       <JsonLd data={packageJsonLd(pkg)} />
       <PageIntro
-        eyebrow={categoryRef ? `${categoryRef.name} · ${packageTypeLabel(pkg)} package` : `${packageTypeLabel(pkg)} package`}
+        eyebrow={`${packageCategoryLabel(pkg)} package`}
         title={packageTitle(pkg)}
         breadcrumbs={[
           { label: "Packages", href: storeRoutes.packages },
@@ -246,12 +256,12 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
       {related.length > 0 && (
         <Section
           tone="white"
-          eyebrow={`More ${packageTypeLabel(pkg).toLowerCase()} packages`}
+          eyebrow={`More in ${packageCategoryLabel(pkg)}`}
           title="Compare similar packages"
           actions={
-            <Link href={`${storeRoutes.packages}?type=${packageTypeKey(pkg)}`} className={cn(storeLink, "inline-flex min-h-11 items-center gap-1.5")}>
+            <Link href={`${storeRoutes.packages}?category=${encodeURIComponent(packageCategoryKey(pkg))}`} className={cn(storeLink, "inline-flex min-h-11 items-center gap-1.5")}>
               <PackageIcon aria-hidden="true" className="h-4 w-4" />
-              See all {packageTypeLabel(pkg).toLowerCase()} packages
+              See all packages in {packageCategoryLabel(pkg)}
             </Link>
           }
         >
