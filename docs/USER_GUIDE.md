@@ -1274,6 +1274,10 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (carts page removed; save waits for uploads)**
+- Admin: the **Carts** page is gone. Customer carts live in the customer's own browser, so there was never anything to see there.
+- Admin: while a photo is uploading, **Save** shows "Uploading…" and waits for it, so you no longer have to change another field to make the save take.
+
 **2026-09-18 (no product links when products are hidden)**
 - Customer: with products hidden, the items listed inside a package are shown as plain text instead of links, so nothing leads to a missing page.
 

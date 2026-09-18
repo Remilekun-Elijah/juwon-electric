@@ -20,7 +20,6 @@ import {
   PackageSearch,
   ReceiptText,
   Settings,
-  ShoppingCart,
   Sparkles,
   Store,
   UserCog,
@@ -36,7 +35,6 @@ export type ModuleId =
   | "orders"
   | "new-sale"
   | "installations"
-  | "carts"
   | "products"
   | "categories"
   | "inventory"
@@ -127,17 +125,6 @@ export const modules: AdminModule[] = [
     eyebrow: "Sales",
     title: "Installation jobs",
     description: "Schedule installations, assign engineers and follow progress.",
-  },
-  {
-    id: "carts",
-    href: "/admin/carts",
-    capability: "orders:read",
-    label: "Carts",
-    icon: ShoppingCart,
-    group: "sales",
-    eyebrow: "Sales",
-    title: "Carts",
-    description: "Carts customers saved but haven’t ordered yet.",
   },
   {
     id: "products",

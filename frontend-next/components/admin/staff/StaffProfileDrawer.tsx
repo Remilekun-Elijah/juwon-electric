@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
 import { DetailList } from "@/components/admin/DetailList";
-import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ImageUpload, UploadBusyScope } from "@/components/admin/ImageUpload";
 import { Alert, Avatar, Badge, Button, Drawer, ErrorState, Field, Input, Skeleton, Textarea } from "@/components/ui";
 import { normalizeRole, roleLabels } from "@/lib/admin/capabilities";
 import { errorMessage, formatDateTime } from "@/lib/admin/format";
@@ -156,6 +156,8 @@ function ProfileForm({
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  // An image still uploading: Save waits for it, or the previous photo would be saved.
+  const [uploading, setUploading] = useState(false);
 
   const areaList = linesOf(areas);
   const certificationList = linesOf(certifications);
@@ -197,7 +199,8 @@ function ProfileForm({
   };
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4">
+    <UploadBusyScope onChange={setUploading}>
+      <form onSubmit={submit} noValidate className="space-y-4">
       {formError && (
         <Alert tone="danger" onDismiss={() => setFormError("")}>
           {formError}
@@ -237,10 +240,11 @@ function ProfileForm({
         <Button variant="outline" onClick={onCancel} disabled={saving}>
           Cancel
         </Button>
-        <Button type="submit" loading={saving} loadingText="Saving…">
+        <Button type="submit" loading={saving || uploading} loadingText={uploading ? "Uploading…" : "Saving…"}>
           Save profile
         </Button>
       </div>
-    </form>
+      </form>
+    </UploadBusyScope>
   );
 }

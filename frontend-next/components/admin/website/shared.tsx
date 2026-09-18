@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, Badge, Button, ConfirmDialog, Drawer } from "@/components/ui";
 import { useAdmin, useAdminQuery } from "@/components/admin/AdminContext";
+import { UploadBusyScope } from "@/components/admin/ImageUpload";
 import { errorMessage } from "@/lib/admin/format";
 import { SAMPLE_BANNER, bySortOrder } from "@/lib/admin/website";
 import { ApiError } from "@/lib/api/admin";
@@ -191,6 +192,8 @@ export function EditorDrawer({
   sample,
   children,
 }: EditorDrawerProps) {
+  // An image still uploading: Save waits for it, or the previous image would be saved.
+  const [uploading, setUploading] = useState(false);
   const close = () => {
     if (!saving) onClose();
   };
@@ -207,25 +210,27 @@ export function EditorDrawer({
           <Button variant="outline" onClick={close} disabled={saving}>
             Cancel
           </Button>
-          <Button type="submit" form={formId} loading={saving} loadingText="Saving…">
+          <Button type="submit" form={formId} loading={saving || uploading} loadingText={uploading ? "Uploading…" : "Saving…"}>
             {submitLabel}
           </Button>
         </>
       }
     >
-      <div className="space-y-5">
-        {sample && (
-          <Alert tone="info" title="Sample content">
-            <p>Saving your changes turns this into real content and removes the Sample badge.</p>
-          </Alert>
-        )}
-        {formError && (
-          <Alert tone="danger" title={`Couldn’t save the ${noun}`}>
-            {formError}
-          </Alert>
-        )}
-        {children}
-      </div>
+      <UploadBusyScope onChange={setUploading}>
+        <div className="space-y-5">
+          {sample && (
+            <Alert tone="info" title="Sample content">
+              <p>Saving your changes turns this into real content and removes the Sample badge.</p>
+            </Alert>
+          )}
+          {formError && (
+            <Alert tone="danger" title={`Couldn’t save the ${noun}`}>
+              {formError}
+            </Alert>
+          )}
+          {children}
+        </div>
+      </UploadBusyScope>
     </Drawer>
   );
 }

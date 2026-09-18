@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type DragEvent, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { ChevronDown, ImageOff, ImageUp, Link2, RefreshCw, Trash2, Upload as UploadIcon, X } from "lucide-react";
 import { Button, Field, Input } from "@/components/ui";
 import type { AdminUploadPurpose } from "@/lib/api/admin";
@@ -292,6 +292,27 @@ export type ImageUploadProps = {
   className?: string;
 };
 
+/** Reports which image fields are uploading, so the form around them can hold its Save button. */
+const UploadBusyContext = createContext<((id: string, busy: boolean) => void) | null>(null);
+
+/**
+ * Wraps a form that holds `ImageUpload` fields: `onChange(true)` while any of them is uploading, so the form can make
+ * Save wait. Saving mid-upload would store the previous image (2026-09-18).
+ */
+export function UploadBusyScope({ onChange, children }: { onChange: (uploading: boolean) => void; children: ReactNode }) {
+  const busyIds = useRef(new Set<string>());
+  const report = useCallback(
+    (id: string, busy: boolean) => {
+      if (busy) busyIds.current.add(id);
+      else busyIds.current.delete(id);
+      onChange(busyIds.current.size > 0);
+    },
+    [onChange]
+  );
+  useEffect(() => () => onChange(false), [onChange]);
+  return <UploadBusyContext.Provider value={report}>{children}</UploadBusyContext.Provider>;
+}
+
 /**
  * One image field: choose or drop a file (resized in the browser, then uploaded), with preview, Replace and Remove.
  * "Use an image link instead" keeps the plain URL input; it is the only control when uploads are unavailable.
@@ -325,6 +346,14 @@ export function ImageUpload({
   const location = value.trim();
   const busy = task.stage !== null;
   const uploadsReady = configState.status === "ready";
+  const reportBusy = useContext(UploadBusyContext);
+
+  // Tell the surrounding form (UploadBusyScope) while this field is uploading.
+  useEffect(() => {
+    if (!reportBusy) return undefined;
+    reportBusy(labelId, busy);
+    return () => reportBusy(labelId, false);
+  }, [reportBusy, labelId, busy]);
 
   const upload = async (file: File) => {
     if (configState.status !== "ready") return;

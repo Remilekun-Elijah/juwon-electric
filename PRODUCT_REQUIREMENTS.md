@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, No product links when products are hidden (see section 12, Change log)
+Last updated: 2026-09-18, Carts page removed; Save waits for uploads (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (carts page removed; save waits for uploads)
+- §6.7: the admin **Carts** page is removed for every role. The storefront keeps carts in the customer's browser only and never sends them to the server, so the page was always empty. `GET /admin/carts` and the `carts` collection are untouched.
+- §6.7: while an image is uploading, the **Save** button in an admin editor and on a staff profile shows "Uploading…" and waits, instead of letting a save go through with the previous image.
 
 2026-09-18 (no product links when products are hidden)
 - §6.11: with **Products on the website** off, product names in a package's "What's included", the product lines and images in the cart, and the category breadcrumb on a package page are no longer links, so nothing leads to a hidden page. They still show the same text.
