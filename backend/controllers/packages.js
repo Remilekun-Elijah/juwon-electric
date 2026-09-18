@@ -2,7 +2,7 @@ import { catalogHandlers } from "./_catalog.js";
 import { badRequest, notFound } from "../services/errors.js";
 import { ok } from "../services/http.js";
 import { getCollectionItem, listCollection } from "../services/store.js";
-import { assertCategoryExists, packagesInCategory } from "../shared/catalog.js";
+import { assertCategoryExists, packageTypeFor, packagesInCategory } from "../shared/catalog.js";
 import { idRef } from "../shared/fields.js";
 import {
   assertOptionProducts,
@@ -32,8 +32,10 @@ const positive = (value, label) => {
 };
 
 // Update: optional fields that are absent (or blank text) are not written.
-const packagePayload = (body, { isUpdate }) => {
-  const type = requiredString(body, "type", "Type", { max: LIMITS.packageType }).toLowerCase();
+const packagePayload = async (body, { isUpdate, existing = null }) => {
+  // 2026-09-18: the catalogue category replaced the battery type in the admin. `type` is still stored (and sent to
+  // the classic site), derived from the category when a client doesn't send it.
+  const sentType = optionalString(body, "type", { label: "Type", max: LIMITS.packageType });
   const name = requiredString(body, "name", "Name", { max: LIMITS.packageName });
   const kva = positive(
     numberField(body, "kva", "kVA", { required: true, maxLength: LIMITS.packageKva }),
@@ -48,8 +50,15 @@ const packagePayload = (body, { isUpdate }) => {
     max: LIMITS.packageType,
   });
   const legacyId = legacyIdField(body);
-  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update.
+  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update. The admin form requires one.
   const categoryId = idRef(body, "categoryId", { label: "Category" });
+  const chosenCategoryId = categoryId ?? existing?.categoryId ?? null;
+  const categories = await allCategories();
+  const type = packageTypeFor({
+    sent: sentType,
+    categoryName: categories.find((item) => item.id === chosenCategoryId)?.name,
+    existing: existing?.type,
+  });
   const slug = optionalSlug(body);
   const load = requiredString(body, "load", "Load", { max: LIMITS.packageLoad, multiline: true });
   // Options carry their own products (COMMERCE_V2 §1.1); top-level items are deprecated.

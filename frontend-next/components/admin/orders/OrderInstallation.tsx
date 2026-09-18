@@ -46,7 +46,11 @@ export function OrderInstallation({ order, canUpdate, canAssignJobs, onChange, o
 
   /** The job's crew, lead first, named from the engineers list. */
   const crewFor = (job: InstallationJobSummary) =>
-    jobEngineerIds(job).map((engineerId) => ({ id: engineerId, name: engineerName(engineerId) }));
+    jobEngineerIds(job).map((engineerId) => ({
+      id: engineerId,
+      name: engineerName(engineerId),
+      avatarUrl: engineers.find((item) => item.id === engineerId)?.profile?.avatarUrl ?? null,
+    }));
 
   const engineerOptions = [
     { value: "", label: "Not assigned" },

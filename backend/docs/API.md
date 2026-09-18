@@ -25,7 +25,7 @@ Auth endpoints:
 - `POST /admin/auth/login` (body `{ "username", "password" }`): `200` `"Login successful."` with `data: { token, admin: AdminSelf }`.
 - `GET /admin/auth/me` (auth required, no capability): `200` `"Session retrieved."` with `data: { admin: AdminSelf }`. The frontend calls it on load and after any `403`.
 
-`AdminSelf` is `{ id, name, email, role, capabilities, isStatic? }`. `role` is normalised (never `super_admin`), `capabilities` is sorted (every capability for `superadmin`), and `isStatic: true` appears only for the static `ADMIN_TOKEN`. Hide navigation by `capabilities`, never by `role`; the server enforces access either way.
+`AdminSelf` is `{ id, name, email, role, avatarUrl, capabilities, isStatic? }`. `avatarUrl` (2026-09-18) is the signed-in admin's own `profile.avatarUrl`, so the console can show their photo; it is `null` when they have none. `role` is normalised (never `super_admin`), `capabilities` is sorted (every capability for `superadmin`), and `isStatic: true` appears only for the static `ADMIN_TOKEN`. Hide navigation by `capabilities`, never by `role`; the server enforces access either way.
 - `POST /admin/auth/logout` (auth required) revokes the current session and returns `200 { "success": true, "message": "Signed out." }`. With the static `ADMIN_TOKEN` it returns `200` `"Static admin tokens cannot be signed out; remove ADMIN_TOKEN to revoke access."`.
 - `POST /admin/auth/request-password-reset` (body `{ "username" }`)
 - `POST /admin/auth/reset-password` (body `{ "username", "token", "password" }`)
@@ -568,6 +568,8 @@ Packages:
 - `PUT /admin/packages/:id`
 - `DELETE /admin/packages/:id`
 
+`type` (the battery type) is optional since 2026-09-18: when a request doesn't send it, the API works it out from the package's category name ("… Hybrid …" → `hybrid lithium`, "… Lithium" → `lithium`, "… Tubular" → `tubular`), falling back to the package's stored value and then `hybrid lithium`. It is still stored and returned, because the classic Vite site groups packages by it. `categoryId` stays optional in the API (existing packages and seeds have none); the admin console requires one when a package is added or edited.
+
 Admin package responses (list, create, update, delete) are the stored record with computed `options` (the public option fields plus `productsTotal`, `priceAdjustment`, and per item `unitPrice` and `lineTotal`), without the deprecated top-level `items`, plus `categoryId` and `categoryRef` (`{ id, slug, name }` also for inactive categories, `null` when none). Package writes are described under "Package options" in the Commerce section.
 
 Services:
@@ -760,7 +762,7 @@ Job shape and transitions: contract §7.1, with crews (COMMERCE_V3 §1):
 
 - **Crew:** a job stores `engineerIds: string[]` (at most 10 unique ids, in order). The first id is the **lead**. `engineerId` is also stored and returned as the lead (`engineerIds[0]`, or `null`).
 - **Read-time migration:** a job stored without `engineerIds` reads as `[engineerId]` (or `[]`), and its next write stores `engineerIds`.
-- **Responses:** `order`, `engineer` (the lead, including `engineer.phone`, or `null`) and `engineers: [{ id, name, email, phone }]` (in `engineerIds` order; unknown or deleted admins are skipped) are joined at read time. `address` defaults to the order's `deliveryAddress`.
+- **Responses:** `order`, `engineer` (the lead, including `engineer.phone`, or `null`) and `engineers: [{ id, name, email, phone, avatarUrl }]` (in `engineerIds` order; unknown or deleted admins are skipped; `avatarUrl` is their staff photo, added 2026-09-18) are joined at read time. `address` defaults to the order's `deliveryAddress`.
 - **Status:** `assigned` when the crew is not empty and the job hasn't started, `unassigned` when it is empty. Only `unassigned` or `assigned` jobs can change their crew.
 
 Crew input (create, update, assign): `engineerIds: string[]`, or the legacy `engineerId: string | null`, which is only read when `engineerIds` is absent. Errors: `400` `"Engineers must be a list."`, `"A job can have at most 10 engineers."`, `"Each engineer can be added once."`, and `"Assignee must be an active engineer."` (a blank id, or an id that is not an active admin with role `engineer`).

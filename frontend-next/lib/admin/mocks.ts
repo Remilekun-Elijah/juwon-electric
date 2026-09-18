@@ -437,7 +437,7 @@ const checklist = (labels: string[], doneCount = 0) =>
 
 const engineerRef = (id: string | null) => {
   const user = users.find((item) => item.id === id);
-  return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone } : null;
+  return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone, avatarUrl: user.profile?.avatarUrl ?? null } : null;
 };
 
 /** Commerce v3 §1: crew fields derived from `engineerIds` (lead first). */

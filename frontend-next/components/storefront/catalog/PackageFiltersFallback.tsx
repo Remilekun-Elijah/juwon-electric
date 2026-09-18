@@ -3,13 +3,16 @@ import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { enterDelay, storeCard } from "@/lib/storefront/styles";
 import PackageGrid from "./PackageGrid";
+import { categorisedPackages, packageCategoryOptions } from "./packageMeta";
 
 /**
  * Server-rendered stand-in for PackageFilters while it hydrates (and for visitors without JavaScript): a filter bar
  * placeholder and every package, unfiltered. It is what the page first paints, so it carries the page-load entrance:
- * the filter bar fades in and the cards rise in a stagger.
+ * the filter bar fades in and the cards rise in a stagger. The category chips are placeholders for the same options
+ * PackageFilters will render ("All" plus one per category on the page), so the bar doesn't resize on hydration.
  */
 export default function PackageFiltersFallback({ packages }: { packages: Package[] }) {
+  const chips = packageCategoryOptions(categorisedPackages(packages)).length + 1;
   return (
     <div>
       <div style={enterDelay(300)} className={cn(storeCard, "je-in je-in-fade p-4 sm:p-5")}>
@@ -17,7 +20,7 @@ export default function PackageFiltersFallback({ packages }: { packages: Package
           <div>
             <Skeleton className="h-4 w-24" />
             <div className="mt-2 flex flex-wrap gap-2">
-              {[0, 1, 2, 3].map((index) => (
+              {Array.from({ length: chips }, (_, index) => index).map((index) => (
                 <Skeleton key={index} className="h-11 w-24 rounded-lg md:h-10" />
               ))}
             </div>

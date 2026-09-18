@@ -18,7 +18,6 @@ import type {
   AdminPackage,
   AdminUser,
   AuditLogEntry,
-  Cart,
   Category,
   CategoryInput,
   Client,
@@ -373,7 +372,6 @@ export const getDashboard = (params: { from?: string; to?: string } = {}) =>
 export const getAuditLogs = (params: QueryParams) =>
   adminFetch<Paged<AuditLogEntry>>(`/audit-logs${toQuery(params)}`);
 
-export const getCarts = () => adminFetch<Cart[]>("/carts");
 
 export const getServicesAdmin = () =>
   adminFetch<{ offerings: unknown[]; customerSegments: CustomerSegment[] }>("/services");

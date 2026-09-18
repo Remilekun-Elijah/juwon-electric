@@ -95,7 +95,7 @@ import { notify } from "./notifications.js";
 import { newOrderNotification } from "../../shared/notifications.js";
 import { SETTINGS_ID, mergeSettings, recipientsOr } from "../../shared/settings.js";
 import { dashboardKpis, dashboardPeriod } from "../../shared/dashboard.js";
-import { assertCategoryExists, packagesInCategory } from "../../shared/catalog.js";
+import { assertCategoryExists, packageTypeFor, packagesInCategory } from "../../shared/catalog.js";
 import { idRef } from "../../shared/fields.js";
 import { filterPortfolio, keepSampleUnlessEdited, portfolioCaseStudyPayload, serializePortfolio } from "../../shared/content.js";
 import {
@@ -190,13 +190,15 @@ const slugPatch = async (env, collection, body, existing, fallback) => {
 };
 
 const packagePayload = async (env, body, existing = null) => {
-  const type = stringField(body, "type", { label: "Type", required: true, max: LIMITS.packageType }).toLowerCase();
+  // 2026-09-18: the catalogue category replaced the battery type in the admin. `type` is still stored (and sent to
+  // the classic site), derived from the category when a client doesn't send it.
+  const sentType = stringField(body, "type", { label: "Type", max: LIMITS.packageType });
   const name = stringField(body, "name", { label: "Name", required: true, max: LIMITS.packageName });
   const kva = numericField(body, "kva", { label: "kVA", required: true, maxLength: LIMITS.packageKva });
   if (!(kva > 0)) badRequest("kVA must be greater than 0.");
   const category = stringField(body, "category", { label: "Category", max: LIMITS.packageType });
   const legacyId = legacyIdField(body);
-  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update.
+  // Catalogue category (COMMERCE_V3 §4): null clears it; absent keeps it on update. The admin form requires one.
   const categoryId = idRef(body, "categoryId", { label: "Category" });
   const load = stringField(body, "load", { label: "Load", required: true, max: LIMITS.packageLoad, multiline: true });
   const volt = numericField(body, "volt", { label: "Volt", maxLength: LIMITS.packageVolt });
@@ -206,7 +208,14 @@ const packagePayload = async (env, body, existing = null) => {
   const isActive = isActiveField(body, existing);
   const sortOrder = sortOrderField(body);
   slugField(body);
-  if (categoryId) assertCategoryExists(await listCollection(env, "categories", { includeInactive: true }), categoryId);
+  const categories = await listCollection(env, "categories", { includeInactive: true });
+  if (categoryId) assertCategoryExists(categories, categoryId);
+  const chosenCategoryId = categoryId ?? existing?.categoryId ?? null;
+  const type = packageTypeFor({
+    sent: sentType,
+    categoryName: categories.find((item) => item.id === chosenCategoryId)?.name,
+    existing: existing?.type,
+  });
   if (packagesNeedProducts([{ options }])) assertOptionProducts(options, await allProductsById(env));
 
   await assertLegacyIdUnique(env, legacyId, existing?.id);

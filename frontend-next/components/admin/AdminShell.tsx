@@ -151,7 +151,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
   return (
     <Menu>
       <MenuButton className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950 data-[open]:bg-white/10">
-        <Avatar name={name} size="sm" decorative className="bg-gold-400 text-slate-950" />
+        <Avatar name={name} src={admin.avatarUrl ?? undefined} size="sm" decorative className="bg-gold-400 text-slate-950" />
         <span className="hidden max-w-[160px] truncate text-sm font-medium text-white md:block">{name}</span>
         <ChevronDown aria-hidden="true" className="h-4 w-4 text-white/70" />
         <span className="sr-only">Open account menu</span>
@@ -278,7 +278,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
         </Dialog>
       </Transition>
 
-      <div className="flex min-h-screen min-w-0 flex-col md:pl-64">
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip md:pl-64">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-brand-950/90 px-4 text-white backdrop-blur supports-[backdrop-filter]:bg-brand-950/80 md:px-6 lg:px-8">
           <Button
             variant="outline"
@@ -306,7 +306,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
           </div>
         </header>
 
-        <main id="admin-main" className="flex-1 p-4 md:p-6 lg:p-8">
+        <main id="admin-main" className="min-w-0 flex-1 p-4 md:p-6 lg:p-8">
           <div key={activeId ?? "none"} className="mx-auto w-full max-w-[1320px] motion-safe:animate-fade-up">
             {banner}
             {children}

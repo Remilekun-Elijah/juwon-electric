@@ -100,6 +100,6 @@ test("admin shapes never expose secrets and fill defaults", () => {
   assert.equal(user.phone, null);
 
   const self = adminSelf(record);
-  assert.deepEqual(Object.keys(self).sort(), ["capabilities", "email", "id", "name", "role"]);
+  assert.deepEqual(Object.keys(self).sort(), ["avatarUrl", "capabilities", "email", "id", "name", "role"]);
   assert.equal(adminSelf(record, { isStatic: true }).isStatic, true);
 });

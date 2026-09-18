@@ -266,6 +266,8 @@ const engineerRef = (engineer) => ({
   name: engineer.name ?? "",
   email: engineer.email ?? "",
   phone: typeof engineer.phone === "string" && engineer.phone ? engineer.phone : null,
+  // Their staff photo, so every crew list shows it (2026-09-18). Null when they haven't uploaded one.
+  avatarUrl: adminUser(engineer).profile.avatarUrl,
 });
 
 export const serializeJob = (job, ordersById = new Map(), adminsById = new Map()) => {

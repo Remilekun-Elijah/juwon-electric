@@ -42,7 +42,7 @@ export function Tabs({ value, onChange, items = [], id, withPanels = false, full
       role="tablist"
       aria-orientation="horizontal"
       className={cn(
-        "inline-flex h-10 max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-1 text-slate-500",
+        "inline-flex h-10 max-w-full items-center gap-1 overflow-x-auto overflow-y-hidden rounded-lg border border-slate-200 bg-slate-50 p-1 text-slate-500",
         fullWidth && "flex w-full",
         className
       )}

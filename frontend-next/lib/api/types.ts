@@ -864,7 +864,8 @@ export type JobStatus = "unassigned" | "assigned" | "in_progress" | "completed" 
 
 export type ChecklistItem = { id: string; label: string; done: boolean; doneAt: string | null; doneBy: string | null };
 
-export type JobEngineer = { id: string; name: string; email: string; phone: string | null };
+/** `avatarUrl` is their staff photo (2026-09-18), so every crew list shows the same picture. */
+export type JobEngineer = { id: string; name: string; email: string; phone: string | null; avatarUrl: string | null };
 
 export type InstallationJob = {
   id: string;

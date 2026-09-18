@@ -50,7 +50,6 @@ import {
   emptyService,
   getTitle,
   packageCategoryName,
-  packageTypeOptions,
   toPackagePayload,
   toPortfolioPayload,
   validateModel,
@@ -111,7 +110,16 @@ const statusFilterOptions = [
   { value: "hidden", label: "Hidden" },
 ];
 
-const typeFilterOptions = [{ value: "all", label: "All battery types" }, ...packageTypeOptions];
+/** Category filter options for the packages list, built from the categories the packages actually use. */
+const packageCategoryFilterOptions = (items: ContentItem[]) => {
+  const names = [...new Set(items.map(packageCategoryName).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const withoutCategory = items.some((item) => !packageCategoryName(item));
+  return [
+    { value: "all", label: "All categories" },
+    ...names.map((name) => ({ value: name, label: name })),
+    ...(withoutCategory ? [{ value: "__none", label: "No category" }] : []),
+  ];
+};
 
 const getPriceRange = (options: ContentItem["options"]) => {
   const prices = (Array.isArray(options) ? options : []).map((option) => parseMoney(option?.price)).filter(Boolean);
@@ -165,7 +173,6 @@ function PackageCells({ item }: CellsProps) {
           <span className="text-slate-400">No category</span>
         )}
       </TD>
-      <TD className="hidden whitespace-nowrap md:table-cell">{capitalize(item.type)}</TD>
       <TD className="hidden whitespace-nowrap tabular-nums sm:table-cell">
         {item.kva ? `${item.kva} kVA` : "—"}
         {item.volt ? <span className="text-slate-400"> · {item.volt} V</span> : null}
@@ -234,7 +241,6 @@ const columns: Record<ContentType, { Cells: (props: CellsProps) => ReactNode; he
     headers: [
       { label: "Package" },
       { label: "Category", className: "hidden md:table-cell" },
-      { label: "Battery type", className: "hidden md:table-cell" },
       { label: "Size", className: "hidden sm:table-cell" },
       { label: "Options and prices", className: "hidden lg:table-cell" },
     ],
@@ -290,7 +296,7 @@ export function ContentManager({ type, children }: ContentManagerProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [query, setQuery] = useState("");
-  const [packageTypeFilter, setPackageTypeFilter] = useState("all");
+  const [packageCategoryFilter, setPackageCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
 
@@ -299,23 +305,20 @@ export function ContentManager({ type, children }: ContentManagerProps) {
   const visibleItems = useMemo(
     () =>
       items.filter((item) => {
-        if (
-          type === "packages" &&
-          packageTypeFilter !== "all" &&
-          item.type?.toLowerCase() !== packageTypeFilter.toLowerCase()
-        ) {
-          return false;
+        if (type === "packages" && packageCategoryFilter !== "all") {
+          const name = packageCategoryName(item);
+          if (packageCategoryFilter === "__none" ? Boolean(name) : name !== packageCategoryFilter) return false;
         }
         if (statusFilter === "active" && item.isActive === false) return false;
         if (statusFilter === "hidden" && item.isActive !== false) return false;
         return matchesQuery(query, item.name, item.title, item.subtitle, item.load, item.type, item.image, item.kva, item.categoryRef?.name, item.location, item.system);
       }),
-    [items, packageTypeFilter, statusFilter, query, type]
+    [items, packageCategoryFilter, statusFilter, query, type]
   );
 
   const pageData = paginate(visibleItems, page, PAGE_SIZE);
   const firstLoad = list.data === undefined;
-  const filtersActive = Boolean(query.trim()) || packageTypeFilter !== "all" || statusFilter !== "all";
+  const filtersActive = Boolean(query.trim()) || packageCategoryFilter !== "all" || statusFilter !== "all";
   const colSpan = headers.length + 2;
 
   const resetOptions = (drafts: OptionDraft[]) => {
@@ -443,7 +446,7 @@ export function ContentManager({ type, children }: ContentManagerProps) {
 
   const clearFilters = () => {
     setQuery("");
-    setPackageTypeFilter("all");
+    setPackageCategoryFilter("all");
     setStatusFilter("all");
     setPage(1);
   };
@@ -579,12 +582,12 @@ export function ContentManager({ type, children }: ContentManagerProps) {
               />
               {type === "packages" && (
                 <Select
-                  aria-label="Filter by battery type"
+                  aria-label="Filter by category"
                   className="sm:w-[180px]"
-                  value={packageTypeFilter}
-                  options={typeFilterOptions}
+                  value={packageCategoryFilter}
+                  options={packageCategoryFilterOptions(items)}
                   onChange={(event) => {
-                    setPackageTypeFilter(event.target.value);
+                    setPackageCategoryFilter(event.target.value);
                     setPage(1);
                   }}
                 />

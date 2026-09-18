@@ -232,6 +232,22 @@ export const productPayload = (body, { existing = null, defaultReorderLevel = 0 
   return payload;
 };
 
+/**
+ * Battery type for a package (2026-09-18: the admin sets a catalogue category instead). It is still stored and
+ * returned for the classic Vite site, which groups packages by it: the sent value wins, then the category name
+ * ("Hybrid …" → "hybrid lithium", "…lithium" → "lithium", "…tubular" → "tubular"), then what the package already had.
+ */
+export const packageTypeFor = ({ sent, categoryName, existing } = {}) => {
+  const clean = typeof sent === "string" ? sent.trim().toLowerCase() : "";
+  if (clean) return clean;
+  const name = String(categoryName || "").toLowerCase();
+  if (name.includes("hybrid")) return "hybrid lithium";
+  if (name.includes("lithium")) return "lithium";
+  if (name.includes("tubular")) return "tubular";
+  const stored = typeof existing === "string" ? existing.trim().toLowerCase() : "";
+  return stored || "hybrid lithium";
+};
+
 export const assertCategoryExists = (categories, categoryId) => {
   if (categoryId && !categories.some((category) => category.id === categoryId)) {
     throw badRequest("Category not found.");
