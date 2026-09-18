@@ -39,13 +39,13 @@ const assertLegacyIdFree = (items, legacyId, selfId) => {
 const definedKeys = (payload) => Object.keys(payload).filter((key) => payload[key] !== undefined);
 
 /**
- * Express handlers for one catalog collection. `buildPayload(body, { isUpdate })`;
+ * Express handlers for one catalog collection. `buildPayload(body, { isUpdate, existing })` (may be async);
  * optional async `validate(payload)` runs before any write (e.g. reference checks);
  * optional async `serialize(item)` shapes the response record.
  */
 export const catalogHandlers = ({ collection, entity, buildPayload, messages, slugSource, validate, serialize = (item) => item }) => ({
   create: async (req, res) => {
-    const payload = buildPayload(req.body || {}, { isUpdate: false });
+    const payload = await buildPayload(req.body || {}, { isUpdate: false, existing: null });
     if (validate) await validate(payload);
     const item = await createCollectionItem(collection, payload, {
       prepare: (items, draft) => {
@@ -60,7 +60,7 @@ export const catalogHandlers = ({ collection, entity, buildPayload, messages, sl
   update: async (req, res) => {
     const existing = await getCollectionItem(collection, req.params.id);
     // Portfolio sample records stay samples unless a content field changed (LANDING_V1 §0).
-    const built = buildPayload(req.body || {}, { isUpdate: true });
+    const built = await buildPayload(req.body || {}, { isUpdate: true, existing });
     const payload = collection === "portfolio" ? keepSampleUnlessEdited(existing, built) : built;
     if (validate) await validate(payload);
     // Written strictly by the resolved id, with only the sent fields, against

@@ -195,6 +195,44 @@ export const runCommerceV3Scenario = async (client) => {
   await expect("restore the child category", "PUT", "/admin/packages/9311", { body: kit(9311, "V3 Child Kit", { categoryId: inverters.id }), project: packageParts }, 200);
   await expect("package in an inactive category", "POST", "/admin/packages", { body: kit(9313, "V3 Dormant Kit", { categoryId: dormant.id }), project: packageParts }, 201);
 
+  // The battery `type` is derived from the category when a client doesn't send one (2026-09-18: the admin sends the
+  // category instead). The classic site still reads `type`.
+  const lithium = await category("lithium category", { name: "V3 Lithium", slug: "v3-lithium" });
+  const tubular = await category("tubular category", { name: "V3 Tubular", slug: "v3-tubular" });
+  const hybrid = await category("hybrid category", { name: "V3 Hybrid", slug: "v3-hybrid" });
+  const typeless = (legacyId, name, extra = {}) => {
+    const { type: _batteryType, ...rest } = kit(legacyId, name, extra);
+    return rest;
+  };
+  const derived = (
+    await expect("type derived from the category", "POST", "/admin/packages", {
+      body: typeless(9314, "V3 Derived Kit", { categoryId: lithium.id }),
+      project: (body) => ({ type: body?.data?.type, categoryId: body?.data?.categoryId }),
+    }, 201)
+  ).body.data;
+  assert.deepEqual({ type: derived.type, categoryId: derived.categoryId }, { type: "lithium", categoryId: lithium.id });
+  const moved = (
+    await expect("type follows a new category", "PUT", "/admin/packages/9314", {
+      body: typeless(9314, "V3 Derived Kit", { categoryId: tubular.id }),
+      project: (body) => ({ type: body?.data?.type }),
+    }, 200)
+  ).body.data;
+  assert.equal(moved.type, "tubular");
+  const hybridKit = (
+    await expect("hybrid category gives hybrid lithium", "PUT", "/admin/packages/9314", {
+      body: typeless(9314, "V3 Derived Kit", { categoryId: hybrid.id }),
+      project: (body) => ({ type: body?.data?.type }),
+    }, 200)
+  ).body.data;
+  assert.equal(hybridKit.type, "hybrid lithium");
+  const sentType = (
+    await expect("a sent type still wins", "PUT", "/admin/packages/9314", {
+      body: kit(9314, "V3 Derived Kit", { categoryId: hybrid.id }),
+      project: (body) => ({ type: body?.data?.type }),
+    }, 200)
+  ).body.data;
+  assert.equal(sentType.type, "lithium");
+
   const publicChild = (await expect("public package categoryRef", "GET", "/packages/9311", { token: null, project: packageParts }, 200)).body.data;
   assert.deepEqual(publicChild.categoryRef, { id: inverters.id, slug: "v3-inverters", name: "V3 Inverters" });
   const publicDormant = (await expect("inactive category hidden publicly", "GET", "/packages/9313", { token: null, project: packageParts }, 200)).body.data;
@@ -216,7 +254,7 @@ export const runCommerceV3Scenario = async (client) => {
     token: null,
     project: (body) => ({ names: body.data.map((pack) => pack.name).filter((name) => name.startsWith("V3 ")).sort() }),
   });
-  assert.deepEqual(transcript.at(-1).body.names, ["V3 Child Kit", "V3 Dormant Kit", "V3 Kit", "V3 Root Kit"]);
+  assert.deepEqual(transcript.at(-1).body.names, ["V3 Child Kit", "V3 Derived Kit", "V3 Dormant Kit", "V3 Kit", "V3 Root Kit"]);
 
   await expect("category used by a package", "DELETE", `/admin/categories/${dormant.id}`, {}, 409, "Category has subcategories, products or packages.");
   await expect("delete the package", "DELETE", "/admin/packages/9313", { project: message }, 200);

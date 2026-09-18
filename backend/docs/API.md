@@ -568,6 +568,8 @@ Packages:
 - `PUT /admin/packages/:id`
 - `DELETE /admin/packages/:id`
 
+`type` (the battery type) is optional since 2026-09-18: when a request doesn't send it, the API works it out from the package's category name ("… Hybrid …" → `hybrid lithium`, "… Lithium" → `lithium`, "… Tubular" → `tubular`), falling back to the package's stored value and then `hybrid lithium`. It is still stored and returned, because the classic Vite site groups packages by it. `categoryId` stays optional in the API (existing packages and seeds have none); the admin console requires one when a package is added or edited.
+
 Admin package responses (list, create, update, delete) are the stored record with computed `options` (the public option fields plus `productsTotal`, `priceAdjustment`, and per item `unitPrice` and `lineTotal`), without the deprecated top-level `items`, plus `categoryId` and `categoryRef` (`{ id, slug, name }` also for inactive categories, `null` when none). Package writes are described under "Package options" in the Commerce section.
 
 Services:

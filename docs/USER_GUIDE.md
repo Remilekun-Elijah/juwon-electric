@@ -539,7 +539,7 @@ In-store sales are for **products** (for example an inverter or batteries), not 
 > **Who does this:** packages are edited by **Super admin**, **Admin** and **Sales** accounts. Inventory managers don't edit packages. Your part is keeping products, prices and stock correct, because package prices update from them automatically. The steps below are for the staff who edit packages.
 
 1. Go to **Packages** and open the package (or add one).
-2. Optionally choose a **Category** from the catalogue (for example "Inverters"). Subcategories are indented under their parent. Choose **No category** if none fits. The package list shows the category name.
+2. Choose a **Category** from the catalogue, for example "Lithium" or "Inverters" (required since 2026-09-18; it replaced the old **Battery type** field). Subcategories are indented under their parent. Create missing ones under **Categories** first. The website groups and filters packages by this category.
 3. For each option (for example "Without solar" and "With solar"):
    1. Click or tap the product search: the first 20 products (A to Z) appear straight away. Pick one, or type a name, SKU or brand to narrow the list. You'll see name, SKU, price, stock and status. Archived products are shown but can't be added.
    2. Set the **quantity** for each (and a short note if useful). Remove any wrong row.
@@ -1024,7 +1024,7 @@ The team page was built with **12 sample team members**: made-up names with draw
 
 This chapter describes the public website for customers. Staff can use it to guide customers on the phone.
 
-**On the home page** you can jump straight to packages by battery type (**Tubular**, **Lithium**, **Hybrid lithium**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
+**On the home page** you can jump straight to packages by category (**Tubular**, **Lithium**, **Hybrid**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
 On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Our Team** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Our Team**). **Careers** is in the footer too.
 
@@ -1033,7 +1033,7 @@ On a computer, the top menu has **Packages**, **Products**, **Services**, **Our 
 *As a customer, I want to find a package that suits my home or business so that I get reliable power.*
 
 1. Select **Packages** (or **Shop packages** on the home page).
-2. Filter by battery type (tubular, lithium, hybrid lithium) and inverter size (kVA), or sort by price.
+2. Filter by category (the categories your packages use) and inverter size (kVA), or sort by price.
 3. Each card shows the name, kVA, voltage, what it can power, the starting price ("from ₦…"), whether a solar option exists, and how many items are included.
 
 ### Story 11.2: Compare options and see what's included
@@ -1273,6 +1273,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-18 (packages use the category)**
+- Admin: a package no longer has a **Battery type**. Pick a **Category** instead (it is now required), and create the categories you need under **Categories**. The packages list filters by category.
+- Customer: the website groups and filters packages by category instead of battery type.
 
 **2026-09-18 (staff photos show everywhere)**
 - Admin: a staff photo now shows everywhere that person appears, including installation jobs, the engineer picker, an order's installation section and your own account button at the top right. Change the photo and it updates everywhere.

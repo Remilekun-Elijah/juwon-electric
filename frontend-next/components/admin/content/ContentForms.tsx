@@ -8,7 +8,7 @@ import { Alert, Field, Input, Select, Switch, Textarea } from "@/components/ui";
 import { getCategories, getServicesAdmin } from "@/lib/api/admin";
 import { WEBSITE_LIMITS } from "@/lib/admin/website";
 import { LIMITS } from "@/lib/validation";
-import { packageTypeOptions, type ContentItem, type FieldErrors } from "./contentConstants";
+import type { ContentItem, FieldErrors } from "./contentConstants";
 import { PackageOptionsEditor, type PackageOptionsState } from "./PackageOptionsEditor";
 
 const grid = "grid gap-4 sm:grid-cols-2";
@@ -29,7 +29,7 @@ export function PackageForm({ model, setModel, packageOptions, errors = {} }: Co
   const set = (key: keyof ContentItem) => (event: ControlEvent) => setModel({ ...model, [key]: event.target.value });
   const categories = useAdminQuery("package-form:categories", getCategories);
   const categoryId = model.categoryId || "";
-  const categorySelectOptions = [{ value: "", label: "No category" }, ...categoryOptions(categories.data ?? [])];
+  const categorySelectOptions = [{ value: "", label: "Choose a category" }, ...categoryOptions(categories.data ?? [])];
   if (categoryId && categories.data && !categories.data.some((item) => item.id === categoryId)) {
     categorySelectOptions.push({ value: categoryId, label: model.categoryRef?.name || "Current category (not found)" });
   }
@@ -41,12 +41,13 @@ export function PackageForm({ model, setModel, packageOptions, errors = {} }: Co
         </Field>
         <Field
           label="Category"
+          required
           className="sm:col-span-2"
           error={errors.categoryId}
           helper={
             categories.error && !categories.data
               ? `Couldn’t load categories. ${categories.error}`
-              : "From the product catalogue. Customers can browse packages by category."
+              : "From the product catalogue, e.g. Lithium or Tubular. Customers browse packages by category."
           }
         >
           <Select
@@ -59,9 +60,6 @@ export function PackageForm({ model, setModel, packageOptions, errors = {} }: Co
             }
             onChange={(event) => setModel({ ...model, categoryId: event.target.value || null })}
           />
-        </Field>
-        <Field label="Battery type" required error={errors.type}>
-          <Select value={text(model.type)} onChange={set("type")} options={packageTypeOptions} />
         </Field>
         <Field label="Inverter size (kVA)" required error={errors.kva}>
           <Input type="number" inputMode="decimal" step="any" min="0" value={text(model.kva)} onChange={set("kva")} />

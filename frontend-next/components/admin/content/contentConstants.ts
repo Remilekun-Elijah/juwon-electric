@@ -58,14 +58,7 @@ export type FieldErrors = Partial<Record<keyof ContentItem, string>>;
 /** The package's category name for lists: the reference from the response, if any. */
 export const packageCategoryName = (item: ContentItem) => item.categoryRef?.name || "";
 
-export const packageTypeOptions = [
-  { value: "tubular", label: "Tubular" },
-  { value: "lithium", label: "Lithium" },
-  { value: "hybrid lithium", label: "Hybrid lithium" },
-];
-
 export const emptyPackage: ContentItem = {
-  type: "tubular",
   name: "",
   load: "",
   kva: "",
@@ -157,7 +150,8 @@ export const validateModel = (type: ContentType, model: ContentItem): FieldError
     type === "packages"
       ? {
           name: textError(model.name, LIMITS.packageName, "Name", { required: true }),
-          type: textError(model.type, LIMITS.packageType, "Battery type", { required: true }),
+          // 2026-09-18: the category replaced the battery type; the server works the type out from it.
+          categoryId: model.categoryId ? "" : "Choose a category.",
           kva: positiveNumberError(model.kva, "Inverter size", LIMITS.packageKva, { required: true }),
           volt: positiveNumberError(model.volt, "Voltage", LIMITS.packageVolt),
           legacyId: legacyIdError(model.legacyId),

@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Staff photos show everywhere (see section 12, Change log)
+Last updated: 2026-09-18, Packages use the category, not a battery type (see section 12, Change log)
 
 1. Executive summary
 
@@ -289,7 +289,7 @@ This subsection is for developers and whoever runs the hosting. None of it is sh
 
 6.10 Public storefront (added 2026-09-17)
 - ~~Home hero (2026-09-17): headline, "Shop packages" and "Talk to an engineer" calls to action, reassurance points (no payment to place an order, confirmation call, installation included), "Shop by battery type" shortcuts with live package counts, an installation photo with the live starting package price ("Complete packages from ₦…"), and a strip of three trust points.~~ Replaced by the home page redesign below (2026-09-17). The "Shop by battery type" shortcuts moved to the "Find your package" section header.
-- Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with type and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product", and since Commerce v3 "Add to cart"), buy (one cart for packages and products, and checkout with the payment note), trust (services, customer segments, portfolio, and since 2026-09-17 the team page), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
+- Organisation: the storefront is built around the customer journeys in §5: discover packages (home, package finder, packages list with category and kVA filters and price sort), compare and understand options (package detail with option picker and "What's included" per option: quantity, product name, brand and key specs), browse products and specs (category navigation, search, specs table, "Included in these packages", "Ask about this product", and since Commerce v3 "Add to cart"), buy (one cart for packages and products, and checkout with the payment note), trust (services, customer segments, portfolio, and since 2026-09-17 the team page), careers (vacancies with filters and apply by email) and contact (form prefilled from a topic, business details from Settings, newsletter sign-up).
 - Design: matches the admin console (same font, colours, cards, badges and components); plain everyday icons only; mobile-first and checked at phone, tablet and desktop widths.
 - Default and switch: the new storefront is the default public site. Setting the environment variable `NEXT_PUBLIC_PUBLIC_UI=classic` serves the classic public UI instead. Both share the same public URLs, cart storage and order payloads, so a cart started in one works in the other.
 - ~~Only packages are purchasable online~~ (replaced in Commerce v3). Products show price and stock status ("In stock" / "Out of stock"; low stock is never shown publicly), an enquiry link and the packages that include them, and can be bought online:
@@ -340,7 +340,7 @@ Contract: docs/agents/TEAM_AND_MOTION_V1.md §5 and §7. The owner asked for a l
   2. Client logos: white; a slow marquee when there are more logos than fit.
   3. Why choose us: dark (brand-950), gold icon circles.
   4. Solutions ("Who we power"): light grey, image-led cards with the title on the photo.
-  5. Find your package: white, with the "Shop by battery type" chips in the section header.
+  5. Find your package: white, with the "Shop by category" chips in the section header.
   6. Shop by category (restored): light grey.
   7. Popular products (restored; in-stock products with Add to cart): white.
   8. Size your system teaser: brand panel (brand-900) with a gold accent and a preview of calculator figures.
@@ -433,7 +433,7 @@ Every section hides itself when it has no data, so an empty collection or unset 
 2. Client logos.
 3. Why choose us: cards managed in the admin (**Website → Why choose us**, 2026-09-18; ~~4 fixed cards~~). Each has an icon from a fixed set, a title (3–80 characters) and a sentence (10–300), shown in the saved order; hidden ones are left out. With none saved the four built-in cards show instead: installed and tested by our own engineers; quality inverters, batteries and panels with specs shown for every product; no payment to place an order, and we call to confirm; live stock and prices on the website.
 4. Solutions ("Who we power"): the customer segments as cards linking to `/portfolio?category=<segment>`.
-5. Packages ("Find your package"): the existing package finder, with "Shop by battery type" chips in the header; package cards show up to 3 included products and "What it powers".
+5. Packages ("Find your package"): the existing package finder, with "Shop by category" chips in the header; package cards show up to 3 included products and "What it powers".
 6. Shop by category (restored 2026-09-17): top-level catalogue categories.
 7. Popular products (restored 2026-09-17): up to 8 in-stock products with Add to cart.
 8. Size your system: a teaser linking to `/calculator` (only when the calculator is enabled).
@@ -690,6 +690,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (packages use the category, not a battery type)
+- §6.7 and §6.10: the package form's **Battery type** field is gone and **Category** is now required. The admin packages list filters and lists by category, and the storefront filters, chips, badges and "more like this" use the category too (`/packages?category=<slug>`, with old `?type=` links still working). Packages with no category appear under **Other**.
+- The API keeps `type` on packages for the classic site and works it out from the category name when a request doesn't send one; `categoryId` stays optional in the API so existing packages and seeds keep working.
 
 2026-09-18 (staff photos show everywhere)
 - §6.7: a staff photo now shows wherever that person appears in the admin, not only on **Staff & roles**: the crew on the installation jobs list, a job's drawer and edit dialog, the engineer picker, the installation panel on an order, and the account button in the header for the signed-in admin. `GET /admin/auth/me` gains `avatarUrl` and job responses gain `engineers[].avatarUrl`; both are `null` without a photo. Uploading a new photo replaces it everywhere the next time each screen loads.
