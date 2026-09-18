@@ -278,7 +278,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
         </Dialog>
       </Transition>
 
-      <div className="flex min-h-screen min-w-0 flex-col md:pl-64">
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip md:pl-64">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-brand-950/90 px-4 text-white backdrop-blur supports-[backdrop-filter]:bg-brand-950/80 md:px-6 lg:px-8">
           <Button
             variant="outline"
@@ -306,7 +306,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
           </div>
         </header>
 
-        <main id="admin-main" className="flex-1 p-4 md:p-6 lg:p-8">
+        <main id="admin-main" className="min-w-0 flex-1 p-4 md:p-6 lg:p-8">
           <div key={activeId ?? "none"} className="mx-auto w-full max-w-[1320px] motion-safe:animate-fade-up">
             {banner}
             {children}
