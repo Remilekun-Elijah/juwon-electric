@@ -614,34 +614,6 @@ export type Order = {
 
 export type InsufficientStockDetail = { productId: string; sku: string; required: number; available: number };
 
-export type CartLine = {
-  packageId: string;
-  name: string;
-  type?: string;
-  kva?: number | string | null;
-  volt?: number | string | null;
-  optionName: string;
-  kits?: string;
-  unitPrice: number;
-  quantity: number;
-  lineTotal: number;
-};
-
-export type Cart = {
-  id: string;
-  sessionId: string;
-  name?: string;
-  phoneNumber?: string;
-  emailAddress?: string;
-  items: CartLine[];
-  total: number;
-  status?: string;
-  isActive?: boolean;
-  receivedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
 export type CustomerSegment = {
   id: string;
   slug?: string;

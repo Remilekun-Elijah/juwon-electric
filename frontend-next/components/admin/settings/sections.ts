@@ -1,5 +1,4 @@
 import { Boxes, Building2, Calculator, CreditCard, House, Mail, Wallet, type LucideIcon } from "lucide-react";
-import type { Settings } from "@/lib/api/types";
 import { LIMITS } from "@/lib/validation";
 
 export type SettingsSectionId =
@@ -100,56 +99,3 @@ export const settingsSections: SettingsSectionMeta[] = [
 export const getSettingsSection = (id: SettingsSectionId) =>
   settingsSections.find((section) => section.id === id) ?? settingsSections[0];
 
-const plural = (count: number, one: string, many = `${one}s`) => `${count} ${count === 1 ? one : many}`;
-
-const listText = (items: string[]) =>
-  items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-
-const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-
-/** Whether the connected server returns this section (website, financing and calculator are newer). */
-export const hasSection = (data: Settings, id: SettingsSectionId) => Boolean(data[id]);
-
-/** Short live summary for the overview card. Never mentions uploads or storage. */
-export function sectionSummary(data: Settings, id: SettingsSectionId): string {
-  switch (id) {
-    case "business": {
-      const { name, email, phone, address, website } = data.business;
-      const set = [email && "email", phone && "phone", address && "address", website && "website"].filter(
-        (item): item is string => Boolean(item)
-      );
-      return `${name || "No business name"} · ${set.length ? `${capitalise(listText(set))} set` : "No contact details"}`;
-    }
-    case "notifications": {
-      const { orderEmails, lowStockEmails, vacancyEmails } = data.notifications;
-      const count = (list: string[]) => (list.length ? plural(list.length, "email") : "default");
-      const lowStock = data.inventory.lowStockAlertsEnabled ? count(lowStockEmails) : "off";
-      return `New orders: ${count(orderEmails)} · Low stock: ${lowStock} · Vacancies: ${count(vacancyEmails)}`;
-    }
-    case "payments": {
-      const { gatewayEnabled, provider } = data.payments;
-      if (!gatewayEnabled) return "Online payments off";
-      return `Online payments on · ${provider ? capitalise(provider) : "No provider chosen"}`;
-    }
-    case "inventory": {
-      const { defaultReorderLevel, lowStockAlertsEnabled } = data.inventory;
-      return `Default reorder level ${defaultReorderLevel ?? 0} · Alerts ${lowStockAlertsEnabled ? "on" : "off"}`;
-    }
-    case "website": {
-      const stats = data.website.stats ?? [];
-      return [
-        stats.length ? plural(stats.length, "stat") : "No stats",
-        data.website.whatsappNumber ? "WhatsApp set" : "No WhatsApp",
-        data.website.businessHours ? "Hours set" : "No hours",
-      ].join(" · ");
-    }
-    case "financing": {
-      const terms = data.financing.termsMonths ?? [];
-      return data.financing.enabled
-        ? `Financing on · ${terms.length ? plural(terms.length, "term") : "No terms"}`
-        : "Financing off";
-    }
-    case "calculator":
-      return `Calculator ${data.calculator.enabled ? "on" : "off"} · ${plural(data.calculator.appliances?.length ?? 0, "appliance")}`;
-  }
-}
