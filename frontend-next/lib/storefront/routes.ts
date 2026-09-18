@@ -14,9 +14,9 @@ export const storeRoutes = {
 export type StoreNavItem = { label: string; href: string };
 
 /**
- * Header navigation, in order. Careers moved to the mobile drawer and the footer when Team was added
- * (TEAM_AND_MOTION_V1 §4); Calculator left the list on 2026-09-17, when the gold header button became **Load
- * calculator** (the drawer keeps its own button).
+ * Header navigation, in order. Calculator left the list on 2026-09-17, when the gold header button became **Load
+ * calculator** (the drawer keeps its own button); Careers joined it on 2026-09-18, after Our Team, so open roles are
+ * one click from every page. With products switched off the list is six items.
  */
 export const storeNav: StoreNavItem[] = [
   { label: "Packages", href: storeRoutes.packages },
@@ -24,13 +24,12 @@ export const storeNav: StoreNavItem[] = [
   { label: "Services", href: storeRoutes.services },
   { label: "Our work", href: storeRoutes.portfolio },
   { label: "Our Team", href: storeRoutes.team },
+  { label: "Careers", href: storeRoutes.vacancies },
   { label: "Contact us", href: storeRoutes.contact },
 ];
 
-/** Mobile drawer navigation: the header items plus Careers, placed after Team. */
-export const storeDrawerNav: StoreNavItem[] = storeNav.flatMap((item) =>
-  item.href === storeRoutes.team ? [item, { label: "Careers", href: storeRoutes.vacancies }] : [item]
-);
+/** Mobile drawer navigation: the same items (Careers is in the header list since 2026-09-18). */
+export const storeDrawerNav: StoreNavItem[] = storeNav;
 
 /** sessionStorage key for the last placed order summary (written by checkout, read by /checkout/success). */
 export const LAST_ORDER_KEY = "je/last-order";

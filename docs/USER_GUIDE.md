@@ -1274,6 +1274,10 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (careers in the top menu)**
+- Customer: **Careers** is now in the top menu, so open roles are one click away from any page.
+- Owner: four sample vacancies are on the site for review (three open, one draft). Replace or delete them under **Careers** in the admin before launch.
+
 **2026-09-18 (why choose us and team copy)**
 - Customer: new wording in the "Why Customers Choose Us" band and at the top of the team page.
 

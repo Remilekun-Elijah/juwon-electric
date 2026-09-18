@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Dead-code audit (see section 12, Change log)
+Last updated: 2026-09-18, Careers in the top menu (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-18 (careers in the top menu)
+- §6.10: **Careers** is a top-menu item again, after **Our Team**, on computers and in the phone menu (it was footer- and drawer-only). The menu is seven items, or six while products are switched off.
+- Content (live): four sample vacancies were published for review — Solar Installation Engineer, Technical Sales Representative and Inventory Officer as open roles, and Customer Support Officer as a draft. Each carries a hidden `sample` marker so they are easy to find and replace.
 
 2026-09-18 (dead-code audit)
 - Housekeeping, no behaviour change: removed code nothing referenced in either runtime — the Worker's duplicate order/payment status lists, unused helpers in `services/audit.js`, `services/store.js`, `services/validators.js`, `shared/errors.js`, `shared/fields.js`, `shared/packagePricing.js`, `shared/uploads.js` and `controllers/_pricing.js`, the retired `sanitizeHtml` alias, two unused keys in `backend/config.js`, and the unused `cors` and `mjml` dependencies. In the admin console: the settings-overview summary helpers, the cart admin types, an unused API barrel file and an unused colour token. Backend tests stay at 90/90; the frontend type check and lint stay clean.
