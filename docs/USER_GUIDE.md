@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (no product links when products are hidden)**
+- Customer: with products hidden, the items listed inside a package are shown as plain text instead of links, so nothing leads to a missing page.
+
 **2026-09-18 (contact us in the menu)**
 - Customer: the top menu item **Contact** now reads **Contact us**.
 

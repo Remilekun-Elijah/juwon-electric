@@ -30,14 +30,17 @@ export type ProductCartLinesProps = {
   /** Receives focus after a line is removed. */
   focusAfterRemoveRef?: RefObject<HTMLElement | null>;
   className?: string;
+  /** `settings.website.productsEnabled`: with products hidden, the name and image don't link anywhere (2026-09-18). */
+  linkProducts?: boolean;
 };
 
 /**
- * Catalogue product lines on the cart page: image, name (links to the product), brand and SKU, quantity stepper,
+ * Catalogue product lines on the cart page: image, name (links to the product while products are shown on the website),
+ * brand and SKU, quantity stepper,
  * remove with an undo toast, and the line total from the server quote. Lines the quote can't price are flagged. Lines
  * stagger in, fold away when removed and slide back on undo (useLineMotion, presentation only).
  */
-export default function ProductCartLines({ products, quote, focusAfterRemoveRef, className }: ProductCartLinesProps) {
+export default function ProductCartLines({ products, quote, focusAfterRemoveRef, className, linkProducts = true }: ProductCartLinesProps) {
   const latest = useRef(products);
   const motion = useLineMotion(products, productLineKey);
   useEffect(() => {
@@ -75,7 +78,7 @@ export default function ProductCartLines({ products, quote, focusAfterRemoveRef,
         const unavailable = line?.available === false;
         const unitPrice = line?.available ? line.price : Number(item.price);
         const lineTotal = line?.available ? line.lineTotal : Number(item.price) * Number(item.quantity);
-        const href = productPath({ slug: item.slug, id: item.productId });
+        const href = linkProducts ? productPath({ slug: item.slug, id: item.productId }) : null;
 
         return (
           <li
@@ -86,22 +89,32 @@ export default function ProductCartLines({ products, quote, focusAfterRemoveRef,
             className={cn("py-5 first:pt-0 last:pb-0", ghost ? "je-collapse" : entrance?.className)}
           >
             <div className={cn("flex items-start gap-3 sm:gap-4", ghost && "min-h-0 overflow-hidden")}>
-              <Link
-                href={href}
-                tabIndex={-1}
-                aria-hidden="true"
-                className="block w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 sm:w-20"
-              >
-                <ProductImage src={item.image} alt="" sizes="80px" imageClassName="p-1.5" />
-              </Link>
+              {href ? (
+                <Link
+                  href={href}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className="block w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 sm:w-20"
+                >
+                  <ProductImage src={item.image} alt="" sizes="80px" imageClassName="p-1.5" />
+                </Link>
+              ) : (
+                <div aria-hidden="true" className="block w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 sm:w-20">
+                  <ProductImage src={item.image} alt="" sizes="80px" imageClassName="p-1.5" />
+                </div>
+              )}
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="min-w-0">
                     <h3 id={`${domId}-title`} className="break-words text-base font-semibold text-slate-900">
-                      <Link href={href} className={cn("rounded-sm transition-colors hover:text-brand-700", storeFocus)}>
-                        {item.name}
-                      </Link>
+                      {href ? (
+                        <Link href={href} className={cn("rounded-sm transition-colors hover:text-brand-700", storeFocus)}>
+                          {item.name}
+                        </Link>
+                      ) : (
+                        item.name
+                      )}
                     </h3>
                     <p className="text-sm text-slate-600">
                       {item.brand ? `${item.brand} · ` : ""}Product
