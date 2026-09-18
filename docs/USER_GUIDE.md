@@ -1274,6 +1274,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-18 (industries we power)**
+- Customer: the "Who we power" section is now **Industries We Power**, and each industry has a new name and description.
+
 **2026-09-18 (selected projects)**
 - Customer: the home page case studies are now **Selected Projects**, each card showing the system fitted and a **View Project** link when the project has one.
 - Admin: three customer segments were renamed (Academic Institutions → **Educational Institutions**, Hospitals → **Healthcare**, Community → **Community / Estate**). The names show on the website; their web addresses are unchanged.
