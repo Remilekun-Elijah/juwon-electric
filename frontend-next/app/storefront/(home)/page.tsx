@@ -167,8 +167,8 @@ export default async function HomePage() {
       <Section
         tone="dark"
         eyebrow="How it works"
-        title="From your first call to after-sales support"
-        description="Every order is confirmed by phone before anything is delivered, and our own engineers do the installation."
+        title="From Enquiry to After-Sales Support"
+        description="Every order is confirmed with you before anything is delivered, and our own engineers carry out the installation."
       >
         <HowItWorks />
       </Section>

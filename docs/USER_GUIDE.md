@@ -1274,6 +1274,10 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-19 (owner copy pass)**
+- Customer: new wording across the home page, cart and services pages, and the footer.
+- Owner: the services, the first three reviews, the phone numbers, office address and opening hours were updated for you; the rest are editable as usual under Website and Settings.
+
 **2026-09-18 (careers in the top menu)**
 - Customer: **Careers** is now in the top menu, so open roles are one click away from any page.
 - Owner: four sample vacancies are on the site for review (three open, one draft). Replace or delete them under **Careers** in the admin before launch.

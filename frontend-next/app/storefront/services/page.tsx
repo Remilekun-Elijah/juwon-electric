@@ -29,8 +29,8 @@ export default async function ServicesPage() {
   return (
     <>
       <PageIntro
-        eyebrow="What we do"
-        title="Services"
+        eyebrow="Our services"
+        title="Our Services"
         description="System design, energy audits, installation, maintenance and after-sales support for homes, businesses and institutions."
         actions={
           <>
@@ -48,7 +48,7 @@ export default async function ServicesPage() {
         image={INTRO_IMAGES.commercial}
       />
 
-      <Section eyebrow="Offerings" title="How we can help">
+      <Section eyebrow="Our services" title="How We Can Help">
         {offerings.length > 0 ? (
           <Reveal as="ul" stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {offerings.map((offering, index) => (
@@ -82,7 +82,11 @@ export default async function ServicesPage() {
         </Section>
       )}
 
-      <ContactBand business={settings.business} />
+      <ContactBand
+        business={settings.business}
+        title="Not Sure Which Solar System Is Right for You?"
+        description="Tell us what you want to power and your expected usage. Our team will recommend a suitable inverter, battery and solar configuration based on your energy requirements and budget."
+      />
     </>
   );
 }

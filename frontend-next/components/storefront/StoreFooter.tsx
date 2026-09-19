@@ -53,7 +53,7 @@ const contactIcon = "h-4 w-4 shrink-0 text-gold-400";
 
 /**
  * Dark brand-950 footer (TEAM_AND_MOTION_V1 §7.5): Shop / Company / Contact columns, newsletter, socials and ©, with
- * white/70 text and gold hover links. The logo sits on a white chip so its colours stay legible. Server component.
+ * white/70 text and gold hover links. Server component.
  *
  * Motion: the brand column slides in from the left, the link and contact columns follow one after another (sliding in
  * alternately from each side on phones), and the bottom bar fades in with the social pills popping in one by one.
@@ -69,15 +69,19 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
       <div className={cn(storeContainer, "py-12 sm:py-16", (whatsapp || settings.calculator) && "pb-40 sm:pb-20")}>
         <div className="grid gap-10 lg:grid-cols-12">
           <Reveal from="left" className="lg:col-span-4">
-            <Link href={storeRoutes.home} className={cn("inline-block rounded-xl bg-white px-3 py-2", darkFocus)}>
+            {/* 2026-09-19: no white chip behind the logo; the gold mark reads on the brand-950 footer. */}
+            <Link href={storeRoutes.home} className={cn("-ml-1 inline-block rounded-xl px-1 py-1", darkFocus)}>
               <Image src="/logo.svg" alt={`${SITE_NAME} home`} width={88} height={62} className="h-10 w-auto" />
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
-              Inverters, lithium and tubular batteries and solar panels, designed and installed by our engineers across Nigeria,
-              so NEPA outages don’t stop your home or business.
+              Reliable solar solutions including inverters, lithium batteries, solar panels and complete energy systems —
+              professionally designed and installed by our engineering team.
             </p>
             <div className="mt-6 max-w-md">
-              <h2 className="text-sm font-semibold text-white">Get offers and maintenance tips</h2>
+              <h2 className="text-sm font-semibold text-white">Stay Updated</h2>
+              <p className="mt-1 text-sm leading-relaxed text-white/70">
+                Get exclusive offers, solar tips and important updates from Juwon Electric.
+              </p>
               <div className="mt-3">
                 <StoreNewsletter tone="dark" />
               </div>

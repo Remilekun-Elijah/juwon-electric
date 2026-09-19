@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-18, Careers in the top menu (see section 12, Change log)
+Last updated: 2026-09-19, Owner copy pass (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-19 (owner copy pass)
+- §6.10: owner copy across the storefront — the hero pill in capitals; Reviews retitled "Trusted by homes and businesses across Nigeria" with a description; How it works retitled "From Enquiry to After-Sales Support" with six renamed steps (Order, System Confirmation, Processing & Scheduling, Delivery, Installation & Handover, After-Sales Support); the closing band retitled "Power Your Home or Business with Confidence" with **View Packages** and **Call Us**; the footer's brand paragraph and a "Stay Updated" newsletter heading with its own line, and no white chip behind the footer logo; the cart page and empty-cart wording; and the services page as **Our Services / How We Can Help** with its own "Not Sure Which Solar System Is Right for You?" band.
+- Content (live and local): the five services renamed and rewritten; the first three reviews replaced with the owner's wording; business phone numbers, the office address (1 King Ahmed Close, Ikosi Ketu, Lagos) and opening hours (Mon–Fri 9AM–6PM | Sat 9AM–2PM) updated in Settings.
 
 2026-09-18 (careers in the top menu)
 - §6.10: **Careers** is a top-menu item again, after **Our Team**, on computers and in the phone menu (it was footer- and drawer-only). The menu is seven items, or six while products are switched off.

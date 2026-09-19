@@ -39,7 +39,12 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
   if (!reviews.length) return null;
 
   return (
-    <Section tone="tint" eyebrow="Reviews" title="What our customers say">
+    <Section
+      tone="tint"
+      eyebrow="Reviews"
+      title="Trusted by homes and businesses across Nigeria"
+      description="Real experiences from customers who chose Juwon Electric for reliable solar solutions."
+    >
       {/*
         Phones: a swipe row that bleeds to the screen edge. `relative` makes the row the containing block of the
         absolutely positioned `sr-only` text inside the cards; without it that text escapes the scroll clip and widens

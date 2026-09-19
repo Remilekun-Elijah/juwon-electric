@@ -71,7 +71,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
               <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
               <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            Solar &amp; energy solutions across Nigeria
+            SOLAR &amp; ENERGY SOLUTIONS ACROSS NIGERIA
           </p>
 
           <h1 id="home-hero-heading" className="mt-6 max-w-[22ch] text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-6xl xl:text-7xl">
