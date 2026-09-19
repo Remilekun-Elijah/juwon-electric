@@ -72,7 +72,7 @@ export default function Financing({ financing, examplePackage, examplePrice }: F
               Ask about financing
             </Link>
             <Link href={storeRoutes.packages} className={buttonClasses({ variant: "outline", size: "lg", className: cn("group w-full sm:w-auto", storePress) })}>
-              Shop packages
+              View Packages
               <ArrowRight aria-hidden="true" className={storeArrowNudge} />
             </Link>
           </div>

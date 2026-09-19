@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-19, Owner copy pass (see section 12, Change log)
+Last updated: 2026-09-19, International phone numbers (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-19 (international phone numbers)
+- §6.10: every phone number the storefront shows is rendered in international form ("08144571553" → "+2348144571553"), including the header, the call buttons, the footer list and the contact page. Numbers are still typed in Settings in whatever form suits; the conversion happens on display and leaves numbers that already carry a country code alone. The remaining **Shop packages** buttons now read **View Packages**.
 
 2026-09-19 (owner copy pass)
 - §6.10: owner copy across the storefront — the hero pill in capitals; Reviews retitled "Trusted by homes and businesses across Nigeria" with a description; How it works retitled "From Enquiry to After-Sales Support" with six renamed steps (Order, System Confirmation, Processing & Scheduling, Delivery, Installation & Handover, After-Sales Support); the closing band retitled "Power Your Home or Business with Confidence" with **View Packages** and **Call Us**; the footer's brand paragraph and a "Stay Updated" newsletter heading with its own line, and no white chip behind the footer logo; the cart page and empty-cart wording; and the services page as **Our Services / How We Can Help** with its own "Not Sure Which Solar System Is Right for You?" band.

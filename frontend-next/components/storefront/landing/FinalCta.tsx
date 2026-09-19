@@ -23,7 +23,7 @@ const detailLink = cn("inline-flex min-h-11 items-center gap-2 rounded-sm text-b
 
 /**
  * Closing call to action on the brand panel (LANDING_V1 §7.13) over one of our installation photos, with a gold primary
- * button (TEAM_AND_MOTION_V1 §7.5): Shop packages, Call, and WhatsApp when set, then the business phone numbers, email,
+ * button (TEAM_AND_MOTION_V1 §7.5): View Packages, Call Us, and WhatsApp when set, then the business phone numbers, email,
  * address and opening hours (the home page has no separate contact band). Server component.
  */
 export default function FinalCta({ phone, email, address, whatsappNumber, businessHours }: FinalCtaProps) {

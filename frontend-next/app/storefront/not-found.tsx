@@ -50,7 +50,7 @@ export default async function StorefrontNotFound() {
               Go to the home page
             </Link>
             <Link href={storeRoutes.packages} className={storeGlassButton}>
-              Shop packages
+              View Packages
             </Link>
           </>
         }

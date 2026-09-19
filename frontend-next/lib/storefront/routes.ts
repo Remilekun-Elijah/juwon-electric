@@ -51,15 +51,30 @@ export const isActivePath = (pathname: string | null | undefined, href: string) 
   return path === href || path.startsWith(`${href}/`);
 };
 
+/**
+ * A Nigerian number in international form for display (2026-09-19): "08144571553" becomes "+2348144571553", and a
+ * number that already carries a country code, or any other format, is left as it is.
+ */
+export const internationalPhone = (phone: string | null | undefined) => {
+  const value = (phone || "").trim();
+  if (!value || value.startsWith("+")) return value;
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("0")) return `+234${digits.slice(1)}`;
+  if (digits.length === 13 && digits.startsWith("234")) return `+${digits}`;
+  return value;
+};
+
 /** First number of a settings phone field that may hold several ("+234…, +234…"). */
-export const primaryPhone = (phone: string | null | undefined) => (phone || "").split(/[,;/]/)[0]?.trim() || "";
+export const primaryPhone = (phone: string | null | undefined) =>
+  internationalPhone((phone || "").split(/[,;/]/)[0]?.trim() || "");
 
 /** All numbers of a settings phone field. */
 export const phoneNumbers = (phone: string | null | undefined) =>
   (phone || "")
     .split(/[,;/]/)
-    .map((value) => value.trim())
+    .map((value) => internationalPhone(value.trim()))
     .filter(Boolean);
+
 
 /** `tel:` href for a display phone number. */
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;

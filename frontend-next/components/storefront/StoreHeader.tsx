@@ -272,7 +272,7 @@ export default function StoreHeader({ phone, calculatorEnabled, productsEnabled 
         footer={
           <div className="flex w-full flex-col gap-2">
             <Link href={storeRoutes.packages} onClick={closeMenu} className={buttonClasses({ size: "lg", className: "w-full sm:w-full" })}>
-              Shop packages
+              View Packages
               <ArrowRight aria-hidden="true" />
             </Link>
             {calculatorEnabled && (

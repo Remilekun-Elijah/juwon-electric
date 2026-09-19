@@ -39,7 +39,7 @@ export type HomeHeroProps = {
 
 /**
  * Full-bleed home hero (TEAM_AND_MOTION_V1 §7.3) under the transparent header: a photo slideshow with dark gradients,
- * a glass status pill, a three-line headline with the last word in gold, the lead, a gold "Shop packages" and a glass
+ * a glass status pill, a three-line headline with the last word in gold, the lead, a gold "View Packages" and a glass
  * WhatsApp or call button, the website stats with gold count-up numbers, a glass price card and a scroll cue. The price
  * card shows from xl, above the floating actions: at lg it would cover the stats row.
  *
@@ -99,7 +99,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
 
           <div style={enterDelay(620)} className="je-enter mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={storeRoutes.packages} className={cn(pill, "group bg-gold-400 text-slate-950 shadow-elev-4 hover:bg-gold-300", onDarkFocus, storePress)}>
-              Shop packages
+              View Packages
               <ArrowRight aria-hidden="true" className="h-5 w-5 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5" />
             </Link>
             {whatsapp ? (
