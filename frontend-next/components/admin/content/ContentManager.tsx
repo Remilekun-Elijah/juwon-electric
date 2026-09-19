@@ -699,5 +699,3 @@ export function ContentManager({ type, children }: ContentManagerProps) {
     </AdminPage>
   );
 }
-
-export default ContentManager;

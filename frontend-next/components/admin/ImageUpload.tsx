@@ -505,5 +505,3 @@ export function ImageUpload({
     </div>
   );
 }
-
-export default ImageUpload;

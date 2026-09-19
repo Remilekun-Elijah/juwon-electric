@@ -408,5 +408,3 @@ export function CustomerSegments() {
     </section>
   );
 }
-
-export default CustomerSegments;

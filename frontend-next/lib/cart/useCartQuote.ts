@@ -199,5 +199,3 @@ export function useCartQuote({
 }
 
 export type CartQuoteState = ReturnType<typeof useCartQuote>;
-
-export default useCartQuote;

@@ -152,5 +152,3 @@ export function useTurnstile({ action }: { action?: "contact" | "order" | "subsc
     withToken,
   };
 }
-
-export default useTurnstile;
