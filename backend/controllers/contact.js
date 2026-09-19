@@ -5,7 +5,6 @@ import { LIMITS as RATE_LIMITS, enforceLimit } from "../middleware/rateLimit.js"
 import { takeTurnstileToken, verifyTurnstile } from "../middleware/turnstile.js";
 import { forgetRecordReads } from "./adminReads.js";
 import { asyncHandler } from "../services/asyncHandler.js";
-import { safeEqual } from "../services/adminAuthService.js";
 import { audit, auditDelete, auditUpdate } from "../services/audit.js";
 import { ApiError, badRequest } from "../services/errors.js";
 import { created, ok } from "../services/http.js";
@@ -398,10 +397,9 @@ const finishWebhookEvent = (svixId) =>
 
 export const inboundContactReply = asyncHandler(async (req, res) => {
   const signingSecret = String(process.env.INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET || "").trim();
-  const legacySecret = process.env.INBOUND_EMAIL_WEBHOOK_SECRET;
   const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
 
-  let svixId = null;
+  let svixId;
   if (signingSecret) {
     if (!isValidSigningSecret(signingSecret)) {
       console.error(
@@ -419,7 +417,7 @@ export const inboundContactReply = asyncHandler(async (req, res) => {
       rawBody,
     });
     if (!verified) throw webhookError();
-  } else if (!legacySecret || !safeEqual(req.get("x-webhook-secret") || "", legacySecret)) {
+  } else {
     throw new ApiError(401, "Invalid webhook secret.");
   }
 

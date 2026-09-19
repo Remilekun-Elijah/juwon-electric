@@ -59,7 +59,7 @@ import {
   validateItems,
   validateNewPassword,
 } from "./validation.js";
-import { randomHex, timingSafeEqualStrings, verifySvixSignature, verifyTurnstile } from "./security.js";
+import { randomHex, verifySvixSignature, verifyTurnstile } from "./security.js";
 import {
   EMAIL_ATTEMPT_LIMIT,
   PAIR_ATTEMPT_LIMIT,
@@ -797,14 +797,11 @@ const processInboundReply = async (env, body) => {
 };
 
 const handleInboundWebhook = async (request, env, ctx, rawBytes) => {
-  let svixId = null;
+  let svixId;
   if (env.INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET) {
     // Verify the raw bytes before parsing anything.
     svixId = await verifySvixSignature(request, env.INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET, rawBytes);
-  } else if (
-    !env.INBOUND_EMAIL_WEBHOOK_SECRET ||
-    !(await timingSafeEqualStrings(request.headers.get("x-webhook-secret") || "", env.INBOUND_EMAIL_WEBHOOK_SECRET))
-  ) {
+  } else {
     throw new ApiError(401, "Invalid webhook secret.");
   }
 
@@ -1066,9 +1063,9 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     const prefix = getClientIpPrefix(request);
 
     // Every counter moves atomically before any password hashing.
-    await enforceRateLimit(env, ctx, "loginIp", prefix);
-    await countLoginAttempt(env, ctx, pairKey(email, prefix), PAIR_ATTEMPT_LIMIT);
-    await countLoginAttempt(env, ctx, emailKey(email), EMAIL_ATTEMPT_LIMIT);
+    await enforceRateLimit(env, ctx, "loginIp", prefix, { failClosed: true });
+    await countLoginAttempt(env, ctx, pairKey(email, prefix), PAIR_ATTEMPT_LIMIT, { failClosed: true });
+    await countLoginAttempt(env, ctx, emailKey(email), EMAIL_ATTEMPT_LIMIT, { failClosed: true });
 
     await seedSuperAdmin(env);
     const admin = await findByField(env, "admins", "email", email);
@@ -1114,8 +1111,8 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
   if (request.method === "POST" && path === "/admin/auth/request-password-reset") {
     const email = usernameField(body);
     const prefix = getClientIpPrefix(request);
-    await enforceRateLimit(env, ctx, "resetRequestIp", prefix);
-    await enforceRateLimit(env, ctx, "resetRequestEmail", email);
+    await enforceRateLimit(env, ctx, "resetRequestIp", prefix, { failClosed: true });
+    await enforceRateLimit(env, ctx, "resetRequestEmail", email, { failClosed: true });
 
     // Lookup, insert, audit and email happen after the response, so timing is the same
     // for existing and unknown accounts.
@@ -1149,7 +1146,7 @@ const handleAdminAuth = async (request, env, ctx, path, body) => {
     const email = usernameField(body);
     const password = validateNewPassword(passwordField(body, "password", "New password"), email);
     const token = stringField(body, "token", { label: "Reset token", required: true, max: LIMITS.resetToken });
-    await enforceRateLimit(env, ctx, "resetConfirmIp", getClientIpPrefix(request));
+    await enforceRateLimit(env, ctx, "resetConfirmIp", getClientIpPrefix(request), { failClosed: true });
 
     const admin = await consumeResetToken(env, email, token, password);
     if (!admin) throw new ApiError(400, "Invalid or expired reset token.");

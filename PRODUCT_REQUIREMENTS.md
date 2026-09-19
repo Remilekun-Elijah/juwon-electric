@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-19, International phone numbers (see section 12, Change log)
+Last updated: 2026-09-19, Security hardening (see section 12, Change log)
 
 1. Executive summary
 
@@ -690,6 +690,9 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-19 (security hardening, from an authorised pre-handover audit)
+- No exploitable vulnerability was found (no injection, auth bypass, IDOR, stored XSS or SSRF). Three defence-in-depth fixes were applied. Login and password-reset rate limits now fail **closed** (return 503) if the database errors mid-check, instead of silently allowing the request; the storefront's public-form and upload limiters stay fail-open on purpose. A permissive Content-Security-Policy was added to the frontend (blocks plugins and framing, scopes scripts/styles/images; the backend API and Turnstile origins are allowed; a strict nonce-based policy is a separate task). The unused static-secret inbound-webhook path was removed from both backends, leaving only the signed, replay-guarded Svix path. Backend tests remain 90/90.
 
 2026-09-19 (international phone numbers)
 - §6.10: every phone number the storefront shows is rendered in international form ("08144571553" → "+2348144571553"), including the header, the call buttons, the footer list and the contact page. Numbers are still typed in Settings in whatever form suits; the conversion happens on display and leaves numbers that already carry a country code alone. The remaining **Shop packages** buttons now read **View Packages**.
