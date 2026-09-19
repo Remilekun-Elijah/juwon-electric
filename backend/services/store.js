@@ -14,7 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const dbPath = process.env.JSON_STORE_PATH
   ? resolve(process.env.JSON_STORE_PATH)
   : resolve(__dirname, "../data/db.json");
-const plansPath = resolve(__dirname, "../../frontend/src/utils/plans.json");
+const plansPath = resolve(__dirname, "../data/plans.json");
 
 // Only the public catalog collections have slugs (and admin-controlled sortOrder).
 export const CATALOG_COLLECTIONS = [
@@ -240,7 +240,7 @@ const flattenPlans = (groups) =>
     .flatMap((group) => group.plan || [])
     .map((item, index) => normalizePackage(item, index));
 
-// Default public catalog (packages from frontend plans.json, the rest from
+// Default public catalog (packages from data/plans.json, the rest from
 // data/seed.js). Record ids and timestamps are freshly generated; callers that
 // need stable ids (e.g. the Cloudflare seed export) override them.
 // With strict=true a missing/invalid plans.json throws instead of yielding [].
