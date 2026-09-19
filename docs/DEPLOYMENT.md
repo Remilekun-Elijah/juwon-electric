@@ -69,7 +69,6 @@ Legend:
 | `ADMIN_NOTIFY_EMAIL` | n/a | Opt | Var | Recipient of new order, contact and subscriber notifications. |
 | `STORAGE_ALERT_EMAIL` | Opt | Opt | Var | Comma-separated developer mailbox(es) for the private image storage alert (§1.7). Unset: no alert is sent. Addresses that belong to the business admins (`ADMIN_NOTIFY_EMAIL`, `SMTP_FROM`, admin accounts, the Settings notification lists) are dropped, and `MAIL_BCC` is never added. |
 | `INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET` | Opt | Opt | Secret | Svix/Resend `whsec_…` secret for `POST /webhooks/contact-reply` (preferred). |
-| `INBOUND_EMAIL_WEBHOOK_SECRET` | Opt | Opt | Secret | Legacy shared secret (`x-webhook-secret`), used only when the signing secret is empty. With neither set, the webhook returns 401. |
 
 ### 1.5 Frontend (Vercel, `frontend-next`)
 
