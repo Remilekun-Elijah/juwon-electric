@@ -139,9 +139,9 @@ Changing `IMAGES_PUBLIC_BASE_URL` later does not break stored images: records ke
 
 | Job | Trigger | What it does |
 | --- | --- | --- |
-| `backend` | every push and PR | Node 22: `npm ci`, `npm run lint` (ESLint plus the control/format character check), `npm test` (Express, Worker on a `node:sqlite` D1 stand-in, and Express↔Worker parity) |
-| `worker` | every push and PR | `wrangler deploy --dry-run` bundles the Worker, including `backend/shared` |
-| `frontend` | every push and PR | `frontend-next`: `npm ci`, `npm run lint`, `npm run build` |
+| `backend` | every push and PR | Node 22: `npm ci`, `npm audit` (high/critical gate), `npm run lint` (ESLint plus the control/format character check), `npm test` (Express, Worker on a `node:sqlite` D1 stand-in, and Express↔Worker parity) |
+| `worker` | every push and PR | `npm audit` (high/critical gate), then `wrangler deploy --dry-run` bundles the Worker, including `backend/shared` |
+| `frontend` | every push and PR | `frontend-next`: `npm ci`, `npm audit` (high/critical gate), `npm run lint`, `npm run build` |
 | `deploy-worker` | **push to `v3` or `main` only**, after `backend` and `worker` pass | `wrangler d1 migrations apply juwon-electric --remote`, **then** `wrangler deploy`. There is no deploy from other branches or pull requests, and deploys never run in parallel. |
 
 Migrations run before the deploy. Every migration is idempotent and additive (indexes, guarded `UPDATE`s), so the previous Worker version keeps working against the migrated database while the new one rolls out.
@@ -170,6 +170,16 @@ npx wrangler d1 execute juwon-electric --remote --command \
 npx wrangler d1 execute juwon-electric --remote --command \
   "SELECT slug, COUNT(*) FROM records WHERE collection='vacancies' GROUP BY 1 HAVING COUNT(*) > 1"
 ```
+
+### Dependency audits
+
+Each of the three code jobs runs `npm audit --audit-level=high --omit=dev` after install. The build fails only on a **high or critical** advisory in a production dependency, so a new serious CVE stops a release while known low/moderate and dev-only advisories do not block day-to-day work. Run the same command locally before a release.
+
+Standing exceptions (checked 2026-09-19, all low/moderate, none reachable in production — do not `npm audit fix --force` these):
+
+- **`frontend-next` → `quill` 2.0.3** (low, GHSA-v3m3-f69x-jf25, XSS via HTML export): no patched `quill` exists yet, and the npm-suggested downgrade to `react-quill-new@3.7.0` still pulls the same `quill`. Admin-only editor, output run through `backend/shared/richText.js` on write and render, and behind the CSP in `frontend-next/next.config.ts`. Re-check when `quill` publishes a fix.
+
+The legacy Vite site (`frontend/`) is not in CI. Its advisories (`vite`/`esbuild` dev-server-only, `react-router` open-redirect/SSR) are not reachable in the static production build and are a reason it is being retired in favour of `frontend-next`.
 
 ### Express (self-host)
 
