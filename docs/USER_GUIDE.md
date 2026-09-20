@@ -1274,6 +1274,10 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-20 (real installation photos)**
+- Customer: the home page, page banners, "who we serve" cards and the work gallery now show our own inverter and battery installation photos instead of the stock pictures. The gallery images fill their cards fully.
+- Owner: you supplied 25 photos; they were tidied up for the web (turned upright, resized and compressed) and put in place for you. On the live site, the work-gallery pictures need a one-time update at the next deploy to fill their cards — this is noted for the developer.
+
 **2026-09-20 (friendlier "page not found")**
 - Customer: the "page not found" (404) page now points to four helpful places — Packages, Products, Our services and Contact us — instead of three, so a wrong or old link is easier to recover from.
 
