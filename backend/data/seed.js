@@ -51,57 +51,6 @@ export const serviceOfferings = [
   },
 ];
 
-export const customerSegments = [
-  {
-    title: "Banking Sectors",
-    subtitle:
-      "Reliable solar and backup systems for IT infrastructure, ATMs, telecoms, and branch operations.",
-    image: "/panel-1.webp",
-    isActive: true,
-    sortOrder: 1,
-  },
-  {
-    title: "Hospitals",
-    subtitle:
-      "Reliable, cost-effective electricity for medical and health care applications.",
-    image: "/panel-2.webp",
-    isActive: true,
-    sortOrder: 2,
-  },
-  {
-    title: "Community",
-    subtitle:
-      "Mini grids, solar powered boreholes, street lights, and community power systems.",
-    image: "/panel-3.webp",
-    isActive: true,
-    sortOrder: 3,
-  },
-  {
-    title: "Farms",
-    subtitle:
-      "Solar power and water solutions for farms with limited access to grid electricity.",
-    image: "/panel-4.webp",
-    isActive: true,
-    sortOrder: 4,
-  },
-  {
-    title: "Government Institutions",
-    subtitle:
-      "Renewable power systems for reliable institutional operations.",
-    image: "/panel-5.webp",
-    isActive: true,
-    sortOrder: 5,
-  },
-  {
-    title: "Academic Institutions",
-    subtitle:
-      "Solar and backup systems for schools in urban and rural areas.",
-    image: "/panel-6.webp",
-    isActive: true,
-    sortOrder: 6,
-  },
-];
-
 export const portfolioItems = [
   { name: "2.1Kwp Trina Solar Panel", image: "/image-1.jpg", featured: true, mobile: true, sortOrder: 1 },
   { name: "7.5Kva Lithium Battery", image: "/image-2.jpg", featured: true, mobile: true, sortOrder: 2 },
