@@ -5,7 +5,7 @@ import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import Section from "@/components/storefront/Section";
 import ContactBand from "@/components/storefront/content/ContactBand";
 import { OfferingCard, contentKey } from "@/components/storefront/content/ServiceCards";
-import { SolutionCards } from "@/components/storefront/landing/Solutions";
+import Industries from "@/components/storefront/landing/Industries";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { staggerDelay, storeGlassButton, storeGoldButton } from "@/lib/storefront/styles";
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 /** Services (docs/agents/fe-storefront.md §4 `/services`): offerings, customer segments and a contact CTA. */
 export default async function ServicesPage() {
   const [services, settings] = await Promise.all([getStoreServices(), getStoreSettings()]);
-  const { offerings, customerSegments } = services;
+  const { offerings } = services;
   const phone = primaryPhone(settings.business.phone);
 
   return (
@@ -71,16 +71,7 @@ export default async function ServicesPage() {
         )}
       </Section>
 
-      {customerSegments.length > 0 && (
-        <Section
-          tone="white"
-          eyebrow="Customers"
-          title="Industries We Power"
-          description="Tailored solar and energy solutions for homes, businesses and institutions, engineered around each client’s energy requirements and operational needs."
-        >
-          <SolutionCards segments={customerSegments} />
-        </Section>
-      )}
+      <Industries />
 
       <ContactBand
         business={settings.business}

@@ -1,12 +1,9 @@
-import Link from "next/link";
 import { ArrowRight, ExternalLink, MapPin, Zap } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Reveal from "@/components/storefront/motion/Reveal";
-import { Badge } from "@/components/ui";
 import type { PortfolioItem } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import { categoryLabel, hasCaseStudyDetails } from "@/lib/storefront/content";
-import { portfolioCategoryPath } from "@/lib/storefront/routes";
+import { hasCaseStudyDetails } from "@/lib/storefront/content";
 import { storeCard, storeFocus, storeHoverLift, storeImageZoom, storeLink } from "@/lib/storefront/styles";
 import { isAllowedUrl } from "@/lib/validation";
 import ContentImage from "./ContentImage";
@@ -26,41 +23,26 @@ export type PortfolioGridProps = {
   headingAs?: "h2" | "h3";
   /** Load the first images eagerly (top of the page). */
   priorityCount?: number;
-  /** Segment titles by slug for the category badge (Landing v1 §2). Without it the slug is shown in sentence case. */
-  categoryTitles?: Map<string, string>;
-  /** Show the category badge (off when the page is already filtered to one category). */
-  showCategory?: boolean;
-  /** Add "See similar projects" (the category filter) to case studies without their own link (home page). */
-  linkToCategory?: boolean;
 };
 
 /**
  * Responsive installation grid: 1 column at 375 px, 2 from `sm`, 3 from `lg`. Each tile is a full-width block with an
- * aspect-ratio image frame, so tiles always have real width and height (FP-01). Case-study fields (category, location,
- * system, summary) show when present, with a Sample label on seeded details. The category and Sample badges sit on the
- * photo, which zooms on hover while the system line slides up over it (TEAM_AND_MOTION_V1 §7.5, §7.6). Tiles reveal in a
- * stagger. Server component.
+ * aspect-ratio image frame, so tiles always have real width and height (FP-01). Case-study fields (location, system,
+ * summary) show when present, with a Sample label on seeded details. The Sample badge sits on the photo, which zooms on
+ * hover while the system line slides up over it (TEAM_AND_MOTION_V1 §7.5, §7.6). Tiles reveal in a stagger. Server
+ * component.
  */
-export default function PortfolioGrid({
-  items,
-  headingAs: Heading = "h3",
-  priorityCount = 0,
-  categoryTitles = new Map(),
-  showCategory = true,
-  linkToCategory = false,
-}: PortfolioGridProps) {
+export default function PortfolioGrid({ items, headingAs: Heading = "h3", priorityCount = 0 }: PortfolioGridProps) {
   return (
     <Reveal as="ul" stagger className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
       {items.map((item, index) => {
         const link = (item.link || "").trim();
         const href = link && isAllowedUrl(link) ? link : "";
         const external = /^https:\/\//i.test(href);
-        const category = item.category?.trim() || "";
         const location = item.location?.trim() || "";
         const system = item.system?.trim() || "";
         const summary = item.summary?.trim() || "";
         const details = hasCaseStudyDetails(item);
-        const similar = linkToCategory && !href && category;
 
         return (
           <li key={portfolioKey(item, index)} className="min-w-0">
@@ -74,14 +56,9 @@ export default function PortfolioGrid({
                   imageClassName={storeImageZoom}
                   priority={index < priorityCount}
                 />
-                {((showCategory && category) || (details && item.sample)) && (
+                {details && item.sample === true && (
                   <div className="absolute inset-x-3 top-3 flex flex-wrap items-center gap-2">
-                    {showCategory && category && (
-                      <Badge tone="brand" className="bg-white/95 shadow-elev-2 backdrop-blur-sm">
-                        {categoryLabel(category, categoryTitles)}
-                      </Badge>
-                    )}
-                    {details && <SampleBadge show={item.sample === true} className="bg-white/90 backdrop-blur-sm" />}
+                    <SampleBadge show className="bg-white/90 backdrop-blur-sm" />
                   </div>
                 )}
                 {system && (
@@ -158,15 +135,6 @@ export default function PortfolioGrid({
                   </div>
                 )}
 
-                {similar && (
-                  <div className="mt-auto pt-4">
-                    <Link href={portfolioCategoryPath(category)} className={cn(storeLink, "group/similar relative z-10 inline-flex min-h-11 items-center gap-1.5 text-sm md:min-h-0")}>
-                      See similar projects
-                      <span className="sr-only">: {categoryLabel(category, categoryTitles)}</span>
-                      <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/similar:translate-x-0.5" />
-                    </Link>
-                  </div>
-                )}
               </div>
             </article>
           </li>

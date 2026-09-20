@@ -5,7 +5,7 @@ import { useAdminQuery } from "@/components/admin/AdminContext";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { categoryOptions } from "@/components/admin/catalog/categoryTree";
 import { Alert, Field, Input, Select, Switch, Textarea } from "@/components/ui";
-import { getCategories, getServicesAdmin } from "@/lib/api/admin";
+import { getCategories } from "@/lib/api/admin";
 import { WEBSITE_LIMITS } from "@/lib/admin/website";
 import { LIMITS } from "@/lib/validation";
 import type { ContentItem, FieldErrors } from "./contentConstants";
@@ -146,17 +146,6 @@ export function ServiceForm({ model, setModel, errors = {} }: ContentFormProps) 
 
 export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps) {
   const set = (key: keyof ContentItem) => (event: ControlEvent) => setModel({ ...model, [key]: event.target.value });
-  const segments = useAdminQuery("portfolio-form:segments", async () => (await getServicesAdmin()).data?.customerSegments || []);
-  const category = model.category || "";
-  const segmentOptions = [
-    { value: "", label: "No category" },
-    ...(segments.data ?? [])
-      .filter((segment) => segment.slug)
-      .map((segment) => ({ value: segment.slug as string, label: segment.isActive ? segment.title : `${segment.title} (hidden)` })),
-  ];
-  if (category && segments.data && !segmentOptions.some((option) => option.value === category)) {
-    segmentOptions.push({ value: category, label: `${category} (not found)` });
-  }
   const summaryLength = text(model.summary).trim().length;
   return (
     <div className="space-y-5">
@@ -188,22 +177,6 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
         <p className="text-sm text-slate-500">
           Optional. Items with a summary can appear as case studies on the home page.
         </p>
-        <Field
-          label="Category"
-          error={errors.category}
-          helper={
-            segments.error && !segments.data
-              ? `Couldn’t load customer segments. ${segments.error}`
-              : "Who this installation was for. Customers can filter the portfolio by it."
-          }
-        >
-          <Select
-            value={category}
-            disabled={segments.initialLoading && Boolean(category)}
-            options={segments.initialLoading && category ? [{ value: category, label: "Loading segments…" }] : segmentOptions}
-            onChange={(event) => setModel({ ...model, category: event.target.value || null })}
-          />
-        </Field>
         <Field
           label="Summary"
           error={errors.summary}

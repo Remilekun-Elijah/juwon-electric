@@ -87,7 +87,3 @@ export const whatsappHref = (phone: string | null | undefined, text = "Hello Juw
   const digits = whatsappDigits(phone);
   return digits ? `https://wa.me/${digits}?text=${encodeURIComponent(text)}` : "";
 };
-
-/** `/portfolio?category=<slug>`, or `/portfolio` without a slug. */
-export const portfolioCategoryPath = (category: string | null | undefined) =>
-  category ? `${storeRoutes.portfolio}?category=${encodeURIComponent(category)}` : storeRoutes.portfolio;

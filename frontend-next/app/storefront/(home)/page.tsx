@@ -16,13 +16,13 @@ import ClientLogos from "@/components/storefront/landing/ClientLogos";
 import FaqPreview from "@/components/storefront/landing/FaqPreview";
 import Financing from "@/components/storefront/landing/Financing";
 import FinalCta from "@/components/storefront/landing/FinalCta";
+import Industries from "@/components/storefront/landing/Industries";
 import Reviews from "@/components/storefront/landing/Reviews";
-import Solutions from "@/components/storefront/landing/Solutions";
 import WhyChooseUs from "@/components/storefront/landing/WhyChooseUs";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { buildCategoryTree } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
-import { caseStudies, segmentTitles } from "@/lib/storefront/content";
+import { caseStudies } from "@/lib/storefront/content";
 import {
   getStoreCategories,
   getStoreClients,
@@ -31,7 +31,6 @@ import {
   getStorePortfolio,
   getStoreProducts,
   getStoreReasons,
-  getStoreServices,
   getStoreSettings,
   getStoreTestimonials,
   getStoreVacancies,
@@ -64,11 +63,10 @@ const seeAll = (href: string, label: string) => (
  * the hero hides itself when it has no data (the static "Why choose us" and "How it works" always show).
  */
 export default async function HomePage() {
-  const [allPackages, categories, products, services, portfolio, settings, testimonials, clients, faqs, vacancies, reasons] = await Promise.all([
+  const [allPackages, categories, products, portfolio, settings, testimonials, clients, faqs, vacancies, reasons] = await Promise.all([
     getStorePackages(),
     getStoreCategories(),
     getStoreProducts({ page: 1 }),
-    getStoreServices(),
     getStorePortfolio(),
     getStoreSettings(),
     getStoreTestimonials(),
@@ -88,7 +86,6 @@ export default async function HomePage() {
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
   // Settings → Website: with products off, the shop-by-category and popular-products sections stay off the home page.
   const productsEnabled = settings.website.productsEnabled;
-  const segments = services.customerSegments;
   const studies = caseStudies(featuredFirst(portfolio)).slice(0, HOME_CASE_STUDIES);
 
   // Financing worked example: the cheapest available package.
@@ -110,7 +107,7 @@ export default async function HomePage() {
 
       <WhyChooseUs reasons={reasons} />
 
-      <Solutions segments={segments} />
+      <Industries />
 
       {packages.length > 0 && (
         <Section
@@ -158,7 +155,7 @@ export default async function HomePage() {
           description="Explore some of our completed solar and energy projects across residential, commercial and institutional applications."
           actions={seeAll(storeRoutes.portfolio, "View All Projects")}
         >
-          <PortfolioGrid items={studies} categoryTitles={segmentTitles(segments)} linkToCategory />
+          <PortfolioGrid items={studies} />
         </Section>
       )}
 
