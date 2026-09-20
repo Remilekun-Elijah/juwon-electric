@@ -274,17 +274,18 @@ The website was built with **sample content** (made-up FAQs, reviews, client log
 
 Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super admin and Admin accounts. This chapter covers website content and handling an order from start to finish.
 
-### Story 5.1: Update services and customer segments
+### Story 5.1: Update services
 
-*As an admin, I want to keep the Services page accurate so that customers know what we offer and who we serve.*
+*As an admin, I want to keep the Services page accurate so that customers know what we offer.*
 
 1. Go to **Services**.
 2. To add a service, select **Add service**. To change one, select **Edit** on its row.
 3. Fill in **Title** and **Description**. For **Image**, select **Choose image** or drag a photo onto the box (see [Adding images](#adding-images)); or select **Use an image link instead** and type a path such as `/panel-4.webp` or a full `https://` link. Optionally fill in **Button label** and **Button link**.
 4. Tick **Show on the Services page** to make it public. Save.
-5. For **Customer segments** (the kinds of customers listed under "Who we serve", for example homes or businesses), open the customer segments section on the Services page. Fill in **Title** and **Subtitle**, upload the **Image** with **Choose image** (or use an image link), tick **Show on the Services page**, and save.
 
 **Tip:** untick "Show on…" to hide an item without deleting it.
+
+The **Industries We Serve** and **Solutions by Scale** sections on the home and Services pages are a fixed list built into the site, so there is nothing to manage for them here.
 
 ### Story 5.2: Add work to the portfolio
 
@@ -816,7 +817,6 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 1. Go to **Portfolio** and open a project (or add one, story 5.2).
 2. Fill in the case-study details:
-   - **Category**: pick the kind of customer (the customer segments, for example homes or businesses).
    - **Summary** (up to 500 characters): the customer's problem and what we did, in plain words.
    - **Location** (up to 100 characters), for example "Lekki, Lagos". Don't give a full street address.
    - **System** (up to 200 characters): what we installed, for example "10kVA inverter, 8 × 200Ah lithium, 12 × 550W panels".
@@ -1273,6 +1273,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-20 (Industries We Serve, no work-by-industry)**
+- Customer: the "Industries We Power" section is now **Industries We Serve** — a clean set of eight industries shown as icon cards, with no photos. A new **Solutions by Scale** band below it lists Residential, Commercial and Industrial & Utility-Scale. The **Our work** page now shows all projects in one gallery, no longer split by industry.
+- Owner: you no longer manage "customer segments," and the portfolio form no longer has a **Category** (industry) field — the industries list is fixed in the site. Nothing you already entered is lost; those fields are just no longer shown.
 
 **2026-09-20 (real installation photos)**
 - Customer: the home page, page banners, "who we serve" cards and the work gallery now show our own inverter and battery installation photos instead of the stock pictures. The gallery images fill their cards fully.

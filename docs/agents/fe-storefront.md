@@ -49,7 +49,7 @@ App: `frontend-next/` (Next.js 16.3.5 App Router, React 19, Tailwind v4). **Read
 - **Client notifier** `lib/storefront/notify.ts`:
   - `tagsForAdminWrite(method, path): string[]`. Rules, by path prefix after the query string is stripped:
     - `/admin/packages`: `packages`, `products`
-    - `/admin/services` (including `/customer-segments`): `services`
+    - `/admin/services`: `services`
     - `/admin/portfolio`: `portfolio`
     - `/admin/products`: `products`, `packages`, `categories`
     - `/admin/categories`: `categories`, `products`
@@ -105,13 +105,13 @@ Reference screenshots: `/Users/user/Documents/github/juwon-electric/docs/reviews
 
 | URL | PRD purpose | Content |
 |---|---|---|
-| `/` | §5 customer: discover and buy | Brand hero ("Reliable power for homes and businesses", CTAs "View Packages" and "Chat on WhatsApp" (or "Talk to an engineer" when WhatsApp is unset), trust points), "Find your package" (tabs by category with the 3 cheapest-to-premium cards), shop by category (top-level categories with counts), featured products (first 8 in stock), how it works (Choose → Order → We install, with fulfilment steps), services and customer segments, recent installations (portfolio), careers teaser (open roles count, if any), contact band with settings phone, email and address |
+| `/` | §5 customer: discover and buy | Brand hero ("Reliable power for homes and businesses", CTAs "View Packages" and "Chat on WhatsApp" (or "Talk to an engineer" when WhatsApp is unset), trust points), "Find your package" (tabs by category with the 3 cheapest-to-premium cards), shop by category (top-level categories with counts), featured products (first 8 in stock), how it works (Choose → Order → We install, with fulfilment steps), services, the static Industries We Serve and Solutions by Scale, recent installations (portfolio, shown as one gallery), careers teaser (open roles count, if any), contact band with settings phone, email and address |
 | `/packages` | §6.1 packages | Filter by category (the categories the packages use) and kVA range (?category=<slug>, legacy ?type= still honoured), sort by price. Cards show name, kVA, volt, load description, "from ₦" price, solar option available, and "What's included" count (items). Client-side filtering of server data |
 | `/packages/[id]` | §5 view details, compare | Title, load and "what it powers", option selector (without and with solar, price per option), add to cart, **what's included**: `items` with quantity, product name linking to `/products/[slug]` and SKU, plus the kits text. Installation note, related packages (same type) |
 | `/products` | §6.1 products | Category sidebar (tree, collapsible on mobile), search `q`, pagination (24 per page) via `searchParams`. Card: image, brand, name, key attributes (first 2 from the category schema), price, in-stock badge |
 | `/products/category/[slug]` | categories | Same listing scoped to the category (including descendants), with breadcrumb and description |
 | `/products/[slug]` | §5 product specs | Gallery, brand and SKU, price, stock badge, a specs table (`attributeRows` with the category schema), sanitised description (`lib/sanitize.ts` via `components/public/RichText.tsx`, or a storefront equivalent that uses the same sanitiser), "Included in these packages" (packages whose `items` include this product id) and "Ask about this product" (link to `/contact?topic=<name>`). JSON-LD `Product` |
-| `/services` | services | Offerings (title, subtitle, image, CTA) and customer segments ("Who we power") |
+| `/services` | services | Offerings (title, subtitle, image, CTA) and the static Industries We Serve / Solutions by Scale (no admin records) |
 | `/portfolio` | social proof | Grid of installations, with a featured item first |
 | `/vacancies` | §6.5 public listing | Filters for department and employment type. Cards: title, department, location, type, salary range, posted date |
 | `/vacancies/[slug]` | §6.5 detail | Sanitised description, responsibilities, requirements, meta sidebar, "Apply" (mailto the settings business email with the subject "Application: <title>", or fallback email). JSON-LD `JobPosting` (omit if the location is missing, and note the gap) |
