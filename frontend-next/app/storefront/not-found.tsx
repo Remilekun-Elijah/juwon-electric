@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Package, Phone, PlugZap, Search } from "lucide-react";
+import { ArrowRight, Package, Phone, PlugZap, Search, Wrench } from "lucide-react";
 import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import { cn } from "@/lib/cn";
 import { storeProductsEnabled } from "@/lib/storefront/data";
@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 const suggestions = [
   { icon: Package, title: "Inverter and solar packages", body: "Complete systems for homes and businesses, installed.", href: storeRoutes.packages },
   { icon: Search, title: "Products", body: "Inverters, batteries, panels and accessories.", href: storeRoutes.products },
+  { icon: Wrench, title: "Our services", body: "Design, installation, maintenance and support.", href: storeRoutes.services },
   { icon: Phone, title: "Contact us", body: "Tell us what you need to power and we’ll advise.", href: storeRoutes.contact },
 ];
 
@@ -64,7 +65,7 @@ export default async function StorefrontNotFound() {
           </div>
         </div>
 
-        <ul className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
+        <ul className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {shown.map(({ icon: Icon, title, body, href }, index) => (
             <li key={href} style={staggerDelay(index, 80, 450)} className="je-in">
               <div className={cn(storeCard, storeHoverLift, "group h-full p-5")}>

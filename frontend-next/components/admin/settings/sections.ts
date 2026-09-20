@@ -19,7 +19,7 @@ export type SettingsSectionMeta = {
   /** Navigation label and page title. */
   label: string;
   icon: LucideIcon;
-  /** One sentence under the page title and on the overview card. */
+  /** One sentence shown under the page title. */
   description: string;
   /** Website, financing and calculator: missing on older servers and seeded as sample content. */
   landing?: boolean;
