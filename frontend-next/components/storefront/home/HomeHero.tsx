@@ -11,10 +11,10 @@ import HeroSlideshow, { type HeroSlide } from "./HeroSlideshow";
 
 /** Our own installation photos (public/panel-*.webp). The first is the eagerly loaded, server-rendered background. */
 const HERO_SLIDES: HeroSlide[] = [
-  { src: "/panel-3.webp", alt: "Solar panels installed by Juwon Electric on a flat commercial rooftop" },
-  { src: "/panel-1.webp", alt: "Rows of solar panels on a rooftop at sunset" },
-  { src: "/panel-5.webp", alt: "Solar panels fitted along the roof of a family home" },
-  { src: "/panel-2.webp", alt: "Solar panels installed on the roof of a commercial building" },
+  { src: "/panel-3.webp", alt: "Wall-mounted inverters and lithium batteries installed by Juwon Electric" },
+  { src: "/panel-1.webp", alt: "A bank of inverters and batteries in a completed commercial installation" },
+  { src: "/panel-5.webp", alt: "An inverter and battery backup system fitted in a family home" },
+  { src: "/panel-2.webp", alt: "A large power installation with several inverters and batteries" },
 ];
 
 const reassurances = ["No payment to place an order", "We call to confirm", "Installation included"];
