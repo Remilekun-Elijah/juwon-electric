@@ -108,7 +108,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 
 In this guide, a path such as **Settings → Website → Homepage & contact** means: open **Settings**, then **Homepage & contact** under **Website** in that list.
 
-- **Moving between settings pages:** on a computer, the list on the left of each settings page jumps straight to another page. On a phone or tablet, use the row of buttons above the page (swipe it sideways to see them all). **Back to settings** returns to the overview.
+- **Moving between settings pages:** on a computer, the list on the left of each settings page jumps straight to another page. On a phone or tablet, use the row of buttons above the page (swipe it sideways to see them all). There is no separate overview page — the list is always beside the page you are on.
 - **Saving:** each page saves on its own. As soon as you change something, a bar appears at the bottom with "Unsaved changes". Select **Save changes** to save, or **Discard** to put back what was saved.
 - **Leaving with unsaved changes:** if you open another page before saving, the console asks "You have unsaved changes. Leave without saving?" Select **Keep editing** to go back and save, or **Leave without saving** to drop the changes. Closing or reloading the browser tab asks the same through the browser.
 - **View only:** staff who can view but not change Settings see the same pages with greyed-out fields and no save bar.
@@ -1026,13 +1026,13 @@ This chapter describes the public website for customers. Staff can use it to gui
 
 **On the home page** you can jump straight to packages by category (**Tubular**, **Lithium**, **Hybrid**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Our Team** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Our Team**). **Careers** is in the footer too.
+On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Our Team**, **Careers** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: it lists the same items. **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
 *As a customer, I want to find a package that suits my home or business so that I get reliable power.*
 
-1. Select **Packages** (or **Shop packages** on the home page).
+1. Select **Packages** (or **View Packages** on the home page).
 2. Filter by category (the categories your packages use) and inverter size (kVA), or sort by price.
 3. Each card shows the name, kVA, voltage, what it can power, the starting price ("from ₦…"), whether a solar option exists, and how many items are included.
 
@@ -1177,7 +1177,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 1. The top of the home page is a large photo area (the hero). The photos of our installations change every 7 seconds.
    - The thin bars at the bottom centre show which photo is on screen; the gold fill shows how long until the next one. Select a bar to show that photo.
    - Select the **pause** button next to the bars to stop the photos changing, and **play** to start again. The photos also pause while your mouse is over the top area or you are moving through it with the keyboard.
-2. Select **Shop packages** to see all packages, or **Chat on WhatsApp** (or **Talk to an engineer**, which calls us, when WhatsApp isn't set up).
+2. Select **View Packages** to see all packages, or **Chat on WhatsApp** (or **Talk to an engineer**, which calls us, when WhatsApp isn't set up).
 3. Below the buttons you'll see a few figures about our work (for example the number of installations). They count up from 0 when the page opens.
 4. On a large computer screen, a card at the bottom right shows the lowest package price ("Complete packages from ₦…"). Select its arrow to compare packages.
 5. To work out what size system you need, select **Load calculator** in the top menu. For a price for your own needs, open the menu and select **Get a quote**, which opens the contact form with the topic already set to Quote. On a phone both are at the bottom of the menu.
@@ -1273,6 +1273,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-20 (friendlier "page not found")**
+- Customer: the "page not found" (404) page now points to four helpful places — Packages, Products, Our services and Contact us — instead of three, so a wrong or old link is easier to recover from.
 
 **2026-09-19 (owner copy pass)**
 - Customer: new wording across the home page, cart and services pages, and the footer.
