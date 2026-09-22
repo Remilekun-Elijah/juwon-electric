@@ -30,7 +30,7 @@ export default async function ServicesPage() {
     <>
       <PageIntro
         eyebrow="Our services"
-        title="Our Services"
+        title="Services"
         description="System design, energy audits, installation, maintenance and after-sales support for homes, businesses and institutions."
         actions={
           <>

@@ -692,6 +692,12 @@ Open items for owner review
 
 12. Change log
 
+2026-09-22 (the portfolio `mobile` flag reaches the storefront)
+- §6.10: `PortfolioGrid` honours the per-project `mobile` flag below `sm` (640 px), the storefront's single-column layout. Projects with `mobile === false` are collapsed and revealed by a phone-only **Show N more projects** button; from `sm` up every project renders and no button is emitted. Until now `mobile` was written by the admin and stored by the API but read only by the classic site's `PortfolioTiles`, so it did nothing while `NEXT_PUBLIC_PUBLIC_UI` is unset.
+- The collapse is CSS (`max-sm:group-data-[expanded=false]/projects:hidden`), so `PortfolioGrid` stays a server component and the server HTML is already correct before hydration; only the button needs JavaScript. Held-back tiles are `display: none`, so they leave the tab order, and their zero rect makes `Reveal`'s `isBelowFold` skip them — they are never marked `data-reveal="hidden"` and so appear immediately on expand rather than staying invisible.
+- Guard: nothing collapses unless at least one project has the flag set, so a list with the switch off everywhere renders in full instead of an empty grid behind a button. The button is a reversible toggle ("Show fewer projects") that stays mounted, so keyboard focus is not dropped on a removed element.
+- §6.10: the `/services` `PageIntro` heading is **Services**, not "Our Services"; the eyebrow above it still reads "Our services".
+
 2026-09-22 (admin: Portfolio renamed Projects)
 - §6.7: the `portfolio` admin module is labelled **Projects** (nav label and page title; the `catalog` group, `Images` icon, `content:read` capability and `/admin/portfolio` route are unchanged). The content manager's copy tokens follow: singular "project", plural "projects", list title "All projects", so the Add button, search box, empty states, drawer title and delete dialog all read "project(s)". The form switch "Show on the Portfolio page" is "Show on the Projects page" and the image preview alt is "Project image". Internal ids (`type: "portfolio"`, the `/portfolio` API path) are unchanged.
 - §6.7: the **Low-stock alerts** card on Settings → Inventory drops the group step from its cross-reference: "Recipients are set in Settings → Notification emails → Low stock". The **Communication** settings group itself stays as it is.

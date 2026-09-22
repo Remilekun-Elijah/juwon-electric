@@ -1288,6 +1288,10 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-22 ("Show on mobile" now does something)**
+- Owner: the **Show on mobile** switch on a project used to have no effect on the website. It now works: on a phone, projects with the switch off are held back behind a **Show N more projects** button at the bottom of the grid, and tapping it reveals them. On a tablet or computer every project shows and there is no button. The switch is on by default, so a project you have not touched keeps showing as before.
+- Customer: the heading on the services page reads **Services** (the small line above it still reads "Our services").
+
 **2026-09-22 (admin: Portfolio is now Projects)**
 - Owner: in the admin menu under Catalog, **Portfolio** now reads **Projects**, and so do the page heading, the buttons ("Add project"), the search box and the confirmation messages. The switch on the form that read "Show on the Portfolio page" now reads "Show on the Projects page". Nothing you have entered changes, and the page is in the same place in the menu.
 - Owner: on **Settings → Inventory**, the note under **Low-stock alerts** now reads "Recipients are set in Settings → Notification emails → Low stock", without the extra step.
