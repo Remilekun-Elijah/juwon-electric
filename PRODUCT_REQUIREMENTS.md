@@ -692,6 +692,10 @@ Open items for owner review
 
 12. Change log
 
+2026-09-22 (admin: Portfolio renamed Projects)
+- §6.7: the `portfolio` admin module is labelled **Projects** (nav label and page title; the `catalog` group, `Images` icon, `content:read` capability and `/admin/portfolio` route are unchanged). The content manager's copy tokens follow: singular "project", plural "projects", list title "All projects", so the Add button, search box, empty states, drawer title and delete dialog all read "project(s)". The form switch "Show on the Portfolio page" is "Show on the Projects page" and the image preview alt is "Project image". Internal ids (`type: "portfolio"`, the `/portfolio` API path) are unchanged.
+- §6.7: the **Low-stock alerts** card on Settings → Inventory drops the group step from its cross-reference: "Recipients are set in Settings → Notification emails → Low stock". The **Communication** settings group itself stays as it is.
+
 2026-09-22 ("Our work" renamed "Projects")
 - §6.10: the portfolio nav label is **Projects** in the header (`storeNav`), the phone drawer and the footer Company column, and the page's `<h1>` and `<title>` are **Projects** (the `PageIntro` eyebrow stays "Portfolio"). The loading skeleton reads "Loading projects".
 - The route is unchanged: `/portfolio` still serves the page and stays the canonical URL, so shared links, the sitemap entry and the classic site's own **Portfolio** nav item are untouched. Renaming the path to `/projects` would need a permanent redirect and is not part of this change.

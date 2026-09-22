@@ -185,11 +185,11 @@ export const modules: AdminModule[] = [
     id: "portfolio",
     href: "/admin/portfolio",
     capability: "content:read",
-    label: "Portfolio",
+    label: "Projects",
     icon: Images,
     group: "catalog",
     eyebrow: "Catalog",
-    title: "Portfolio",
+    title: "Projects",
     description: "Photos of completed installations and the case-study details shown on the home page.",
   },
   {

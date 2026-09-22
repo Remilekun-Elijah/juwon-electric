@@ -306,7 +306,7 @@ The **Industries We Serve** and **Solutions by Scale** sections on the home and 
 
 *As an admin, I want to show completed installations so that customers trust our work.*
 
-1. Go to **Portfolio** and add a project.
+1. Go to **Projects** and add a project.
 2. Enter **Name**, upload the project photo under **Image** with **Choose image** or drag and drop (or select **Use an image link instead**), and optionally add an **External link** (for example the Instagram post).
 3. Choose where it shows: **Featured on the home page**, **Show on mobile**, **Show on the Portfolio page**. Save.
 
@@ -747,7 +747,7 @@ This chapter covers the content on the home page and the new website pages: FAQs
 
 | Task | Who |
 |---|---|
-| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Our Team** members; add case-study details to **Portfolio** | Super admin, Admin, Sales |
+| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Our Team** members; add case-study details to **Projects** | Super admin, Admin, Sales |
 | View FAQs, Reviews, Client logos and Team | Also Inventory and Support (view only) |
 | Change **Settings → Website → Homepage & contact**, **Financing** and **Load calculator** | Super admin, Admin |
 
@@ -830,7 +830,7 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 *As an admin, I want to describe completed projects properly so that customers can see installations like the one they need.*
 
-1. Go to **Portfolio** and open a project (or add one, story 5.2).
+1. Go to **Projects** and open a project (or add one, story 5.2).
 2. Fill in the case-study details:
    - **Summary** (up to 500 characters): the customer's problem and what we did, in plain words.
    - **Location** (up to 100 characters), for example "Lekki, Lagos". Don't give a full street address.
@@ -962,7 +962,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 **How to spot sample content**
 
-- In the admin: a **Sample** badge on the item or on a settings page, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
+- In the admin: a **Sample** badge on the item or on a settings page, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Projects** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
 - On the website: a small "Sample" label on stats, reviews, client logos, team member cards, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
 
 **What to do**
@@ -1260,7 +1260,7 @@ When staff change something in the admin console (a price, a product, a package,
 | **Can't delete a category** | Packages, products or subcategories still use it ("Category has subcategories, products or packages."). | Move its products and subcategories to another category, and change the **Category** on its packages (story 7.5), then delete. |
 | **An engineer can't see a job** | They aren't on the job's crew, or the job was cancelled. | Open the job in **Installations** and add them under **Engineers**. |
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
-| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings → Website** → Homepage & contact, Financing and Load calculator. |
+| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Projects**, and in **Settings → Website** → Homepage & contact, Financing and Load calculator. |
 | **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings → Website → Load calculator** or **Financing**, switches on **Show the calculator on the website** or **Show financing on the website**, checks the values and selects **Save changes** (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
 | **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings → Website → Homepage & contact**, or the page hasn't refreshed yet. The floating buttons never show on the cart and checkout pages. | Enter the number, save, and reload the website (story 10A.5). On the cart or checkout, this is expected. |
 | **Can't leave a settings page** ("You have unsaved changes. Leave without saving?") | You changed something on that page and haven't saved it. | Select **Keep editing**, then **Save changes** (or **Discard**). Or select **Leave without saving** if you don't want the change. |
@@ -1287,6 +1287,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-22 (admin: Portfolio is now Projects)**
+- Owner: in the admin menu under Catalog, **Portfolio** now reads **Projects**, and so do the page heading, the buttons ("Add project"), the search box and the confirmation messages. The switch on the form that read "Show on the Portfolio page" now reads "Show on the Projects page". Nothing you have entered changes, and the page is in the same place in the menu.
+- Owner: on **Settings → Inventory**, the note under **Low-stock alerts** now reads "Recipients are set in Settings → Notification emails → Low stock", without the extra step.
 
 **2026-09-22 ("Our work" is now "Projects")**
 - Customer: the menu item and page heading that read **Our work** now read **Projects**, in the top menu, the phone menu and the footer. The page itself is unchanged, and its web address (`/portfolio`) still works, so any link you have already shared keeps working.

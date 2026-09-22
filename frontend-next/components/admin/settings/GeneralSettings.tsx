@@ -365,7 +365,7 @@ export function InventorySection({ value, canWrite, save }: SectionProps<"invent
           />
         </Field>
       </SettingsCard>
-      <SettingsCard title="Low-stock alerts" description="Recipients are set in Settings → Communication → Notification emails → Low stock.">
+      <SettingsCard title="Low-stock alerts" description="Recipients are set in Settings → Notification emails → Low stock.">
         <Switch
           checked={alertsEnabled}
           onChange={setAlertsEnabled}

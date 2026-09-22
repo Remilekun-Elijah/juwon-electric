@@ -170,7 +170,7 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
         purpose="portfolio"
         error={errors.image}
         linkHelper="A photo in the site’s public folder, e.g. /image-1.jpg, or a full https:// URL."
-        previewAlt={model.name ? `Image for ${model.name}` : "Portfolio image"}
+        previewAlt={model.name ? `Image for ${model.name}` : "Project image"}
       />
       <fieldset className="space-y-4 rounded-lg border border-slate-200 p-4">
         <legend className="px-1 text-sm font-medium text-slate-700">Case study</legend>
@@ -231,7 +231,7 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
           onChange={(value) => setModel({ ...model, mobile: value })}
         />
         <Switch
-          label="Show on the Portfolio page"
+          label="Show on the Projects page"
           checked={Boolean(model.isActive)}
           onChange={(value) => setModel({ ...model, isActive: value })}
         />
