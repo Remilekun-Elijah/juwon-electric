@@ -35,7 +35,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Company",
     links: [
       { label: "Services", href: storeRoutes.services },
-      { label: "Our work", href: storeRoutes.portfolio },
+      { label: "Projects", href: storeRoutes.portfolio },
       { label: "Our Team", href: storeRoutes.team },
       { label: "Careers", href: storeRoutes.vacancies },
       { label: "FAQ", href: storeRoutes.faq },

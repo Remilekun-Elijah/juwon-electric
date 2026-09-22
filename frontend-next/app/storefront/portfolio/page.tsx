@@ -11,7 +11,7 @@ import { storeRoutes } from "@/lib/storefront/routes";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Our work",
+  title: "Projects",
   description: "Inverter, battery and solar installations we have completed for homes and businesses.",
   alternates: { canonical: "/portfolio" },
 };
@@ -28,7 +28,7 @@ export default async function PortfolioPage() {
     <>
       <PageIntro
         eyebrow="Portfolio"
-        title="Our work"
+        title="Projects"
         description="Inverter, battery and solar installations we have completed for homes and businesses."
         image={INTRO_IMAGES.sunset}
       />

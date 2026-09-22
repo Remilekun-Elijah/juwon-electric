@@ -120,7 +120,7 @@ Reference screenshots: `/Users/user/Documents/github/juwon-electric/docs/reviews
 | `/checkout` | §6.1 checkout | Delivery details form (the same fields and validation as classic `components/public/cart/CheckoutForm.tsx`), order summary with the server quote, a payment note driven by `settings.payments.gatewayEnabled` (false: "No payment now: we'll call to confirm and arrange payment"; true: "You'll receive a secure payment link after we confirm your order"), Turnstile `order`, and place order. `noindex` |
 | `/checkout/success` | confirmation | Reads the last placed order summary from `sessionStorage["je/last-order"]` (written by checkout): "Order received", total, what happens next (confirmation call → processing → delivery → installation). Empty state if missing. `noindex` |
 
-- **Header (sticky, white, bottom border):** logo, nav (Packages, Products, Services, Our work, Careers, Contact), phone (from settings) on desktop, and a cart button with a live count badge. Mobile uses a kit `Drawer`.
+- **Header (sticky, white, bottom border):** logo, nav (Packages, Products, Services, Projects, Careers, Contact), phone (from settings) on desktop, and a cart button with a live count badge. Mobile uses a kit `Drawer`.
 - **Footer (white or slate-900? use white with a top border to match the admin):** columns Shop / Company / Contact, newsletter subscribe (Turnstile `subscribe`, reusing the `lib/api/public.ts` `subscribe` call), socials, © year.
 
 ## 5. Ownership (parallel agents: touch only your own files)

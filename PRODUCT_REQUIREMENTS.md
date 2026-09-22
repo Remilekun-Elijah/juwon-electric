@@ -692,6 +692,11 @@ Open items for owner review
 
 12. Change log
 
+2026-09-22 ("Our work" renamed "Projects")
+- §6.10: the portfolio nav label is **Projects** in the header (`storeNav`), the phone drawer and the footer Company column, and the page's `<h1>` and `<title>` are **Projects** (the `PageIntro` eyebrow stays "Portfolio"). The loading skeleton reads "Loading projects".
+- The route is unchanged: `/portfolio` still serves the page and stays the canonical URL, so shared links, the sitemap entry and the classic site's own **Portfolio** nav item are untouched. Renaming the path to `/projects` would need a permanent redirect and is not part of this change.
+- Supersedes the "Our work" label in the footer list (§6.10) and the desktop nav list (§6.11).
+
 2026-09-22 (portfolio amount, not system)
 - §6.10: the portfolio card line that carried a `Zap` icon now carries a naira sign, on both surfaces that render it — the card detail line and the gradient overlay that slides up on photo hover. `lucide-react` ships no naira glyph, so `components/storefront/NairaIcon.tsx` draws one on lucide's 24px grid (`currentColor`, stroke width 2, round caps) to sit beside `MapPin` at the same weight. The screen-reader label on that line is **Price**, not **System**.
 - §6.11: the portfolio form's **System** field is relabelled **Amount** ("What the project cost, e.g. ₦14,500,000"), with a matching placeholder, and the validation messages on both sides say Amount. This is a label change only: the stored field stays `system`, so no data moves and existing records keep showing. Renaming the field itself (API, D1, seeds) is a deferred post-handover cleanup, alongside the `category` removal noted on 2026-09-20.

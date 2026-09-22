@@ -22,7 +22,7 @@ export const storeNav: StoreNavItem[] = [
   { label: "Packages", href: storeRoutes.packages },
   { label: "Products", href: storeRoutes.products },
   { label: "Services", href: storeRoutes.services },
-  { label: "Our work", href: storeRoutes.portfolio },
+  { label: "Projects", href: storeRoutes.portfolio },
   { label: "Our Team", href: storeRoutes.team },
   { label: "Careers", href: storeRoutes.vacancies },
   { label: "Contact us", href: storeRoutes.contact },

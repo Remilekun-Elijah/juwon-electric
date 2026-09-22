@@ -840,7 +840,7 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 **What you'll see on the website:**
 
 - A project with a **Summary** counts as a case study. Up to 3 case studies show on the home page with photo, location, amount and summary.
-- On the **Our work** page, cards show the summary, location and amount.
+- On the **Projects** page, cards show the summary, location and amount.
 
 **Tip:** leave Summary empty for a project you don't want shown as a case study. It still shows in the normal portfolio.
 
@@ -975,7 +975,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 6. **Settings → Website → Homepage & contact:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save changes**.
 7. **Settings → Website → Financing:** enter real terms and select **Save changes**, or switch **Show financing on the website** off and select **Save changes**.
 8. **Settings → Website → Load calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save changes**; or switch **Show the calculator on the website** off and select **Save changes**.
-9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work**, **Our Team** and the footer. No "Sample" label should be left.
+9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Projects**, **Our Team** and the footer. No "Sample" label should be left.
 
 **What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
 
@@ -1040,7 +1040,7 @@ This chapter describes the public website for customers. Staff can use it to gui
 
 **On the home page** you can jump straight to packages by category (**Tubular**, **Lithium**, **Hybrid**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Our Team**, **Careers** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: it lists the same items. **Careers** is in the footer too.
+On a computer, the top menu has **Packages**, **Products**, **Services**, **Projects**, **Our Team**, **Careers** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: it lists the same items. **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
@@ -1179,7 +1179,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 *As a customer, I want to see installations for customers like me so that I know Juwon Electric has done similar work.*
 
 1. On the home page, look at the case studies (photo, location, amount and a short summary).
-2. On **Our work**, browse the full gallery of completed projects.
+2. On **Projects**, browse the full gallery of completed projects.
 3. Each project card shows the summary, location and amount when we've added them.
 
 **Also on the home page:** logos of clients we've powered, shop by category, popular products, reviews from customers, a "We're hiring" strip when there are open roles and, when offered, a **financing** section with payment-plan terms. You can't apply for financing on the website: contact us to ask about it. The last section shows our phone numbers, email, address and opening hours.
@@ -1287,6 +1287,9 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-22 ("Our work" is now "Projects")**
+- Customer: the menu item and page heading that read **Our work** now read **Projects**, in the top menu, the phone menu and the footer. The page itself is unchanged, and its web address (`/portfolio`) still works, so any link you have already shared keeps working.
 
 **2026-09-22 (project cards show the amount)**
 - Customer: on the home page and **Our work**, the line that used to sit beside a lightning bolt now sits beside a naira sign (₦), because it shows what the project cost.
