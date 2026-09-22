@@ -270,6 +270,21 @@ The website was built with **sample content** (made-up FAQs, reviews, client log
 
 ---
 
+### Story 4.8: Check how the website looks when someone shares the link
+
+*As the owner, I want a link to our website to look right when it is pasted into WhatsApp, Instagram or Facebook, so that we look like a real company.*
+
+When anyone shares a link to the site, the chat app shows a preview card: a picture, the page title and a short description. Ours shows one of our own rooftop installations with the headline over it.
+
+1. Paste `https://www.juwonelectric.com` into a WhatsApp chat with yourself and wait a second for the preview to appear.
+2. You should see the photo card, the page name and the description. If you see only a plain link with no picture, tell the developer.
+
+**Use the `www.`** The short version, `juwonelectric.com` with no `www`, does not currently work and will look broken to whoever you send it to. Always share the `www.` address, including in your Instagram and TikTok bio.
+
+Changing the preview picture, title or description is a developer change, not a setting in the admin.
+
+---
+
 ## 5. Admin
 
 Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super admin and Admin accounts. This chapter covers website content and handling an order from start to finish.

@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-19, Security hardening (see section 12, Change log)
+Last updated: 2026-09-22, Share preview image (see section 12, Change log)
 
 1. Executive summary
 
@@ -311,6 +311,7 @@ This subsection is for developers and whoever runs the hosting. None of it is sh
 - Outage behaviour: if the backend is unavailable, visitors keep getting the last good version of each page; a page never cached shows a friendly error with a retry button. Fallback content is never cached over real data.
 - Accessibility: skip link, landmarks, one heading 1 per page, visible focus, labelled inputs, 44 px touch targets, announced cart count changes, and loading, empty and error states for every data view.
 - SEO: canonical public URLs, sitemap and robots shared with the classic site, structured data (Product on product pages, JobPosting on vacancy pages when a location is given, Organization), and noindex on cart, checkout and confirmation pages.
+- Share previews (added 2026-09-22): every public page carries an Open Graph and X card image, so a link pasted into WhatsApp, Instagram, Facebook or X shows a branded picture instead of a bare URL. The image is a 1200 x 630 card built from our own rooftop installation photo with the headline and the free-calculator prompt over it, and it applies to every route that inherits the root layout. Titles and descriptions were already set per page.
 - Checkout payment note (updated 2026-09-17): "No payment now. We’ll call to confirm your order and agree how you’d like to pay." It is the same whatever the online payments setting, because no payment link is sent yet; payment is agreed on the confirmation call. Order-step wording refers to "the items in your order" (a package, single products or both) and installation only when the order includes it. Bot protection (Turnstile) applies to orders, contact and newsletter sign-up.
 
 Home page redesign (added 2026-09-17)
@@ -690,6 +691,11 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-22 (share preview image)
+- §6.10: public pages now produce a share preview picture. `app/opengraph-image.jpg` (1200 x 630, 67 KB, cropped from the real inverter-and-battery photo at `public/panel-3.webp`) and `app/opengraph-image.alt.txt` use the Next.js metadata file convention, so `og:image`, its type, width, height and alt text are generated for every route under the root layout. `twitter.card` was already `summary_large_image`; X falls back to the Open Graph image. JPEG, not PNG: the same card as a PNG was 678 KB, which would have undone a tenth of the 2026-09-18 deployment-size work for no visible gain on a photograph.
+- The canonical origin default in `frontend-next/lib/config.ts` moved from `https://juwonelectric.com` to `https://www.juwonelectric.com`. The apex does not answer (connection times out); only `www` serves the site, and the apex would have produced unreachable canonical URLs, sitemap entries and absolute image URLs whenever `NEXT_PUBLIC_SITE_URL` was not set at build time. `.env.example` now says which host to use in production.
+- Still outstanding: the apex domain itself. Pointing `juwonelectric.com` at `www` is a DNS change, not a code change.
 
 2026-09-20 (Industries We Serve, Solutions by Scale, work no longer by industry)
 - The home and services "Industries We Power" section is renamed **Industries We Serve** and rebuilt as static, image-free icon cards for eight industries (Banking & Financial Institutions, Healthcare, Hospitality, Manufacturing & Industrial, Real Estate, Education, Commercial Facilities, Infrastructure). A new **Solutions by Scale** band follows it (Residential, Commercial, Industrial & Utility-Scale). Both are curated content in the storefront — no photos (a chosen photo may not be from that industry), no admin records, not tied to a project.
