@@ -1,4 +1,5 @@
-import { ArrowRight, ExternalLink, MapPin, Zap } from "lucide-react";
+import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
+import NairaIcon from "@/components/storefront/NairaIcon";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Reveal from "@/components/storefront/motion/Reveal";
 import type { PortfolioItem } from "@/lib/api/types";
@@ -27,9 +28,9 @@ export type PortfolioGridProps = {
 
 /**
  * Responsive installation grid: 1 column at 375 px, 2 from `sm`, 3 from `lg`. Each tile is a full-width block with an
- * aspect-ratio image frame, so tiles always have real width and height (FP-01). Case-study fields (location, system,
+ * aspect-ratio image frame, so tiles always have real width and height (FP-01). Case-study fields (location, price,
  * summary) show when present, with a Sample label on seeded details. The Sample badge sits on the photo, which zooms on
- * hover while the system line slides up over it (TEAM_AND_MOTION_V1 §7.5, §7.6). Tiles reveal in a stagger. Server
+ * hover while the price line slides up over it (TEAM_AND_MOTION_V1 §7.5, §7.6). Tiles reveal in a stagger. Server
  * component.
  */
 export default function PortfolioGrid({ items, headingAs: Heading = "h3", priorityCount = 0 }: PortfolioGridProps) {
@@ -69,7 +70,7 @@ export default function PortfolioGrid({ items, headingAs: Heading = "h3", priori
                       "[@media(hover:hover)]:flex translate-y-2 opacity-0 transition-[opacity,translate] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
                     )}
                   >
-                    <Zap className="mb-0.5 h-4 w-4 shrink-0 text-gold-400" />
+                    <NairaIcon className="mb-0.5 h-4 w-4 shrink-0 text-gold-400" />
                     <span className="line-clamp-2">{system}</span>
                   </div>
                 )}
@@ -110,8 +111,8 @@ export default function PortfolioGrid({ items, headingAs: Heading = "h3", priori
                     {system && (
                       <div className="flex gap-2">
                         <dt>
-                          <Zap aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                          <span className="sr-only">System</span>
+                          <NairaIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                          <span className="sr-only">Price</span>
                         </dt>
                         <dd className="min-w-0 break-words font-medium text-slate-700">{system}</dd>
                       </div>
