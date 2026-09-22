@@ -373,7 +373,7 @@ const PORTFOLIO_FIELDS = {
   summary: (input) =>
     text(input, "summary", { label: "Summary", max: CONTENT_LIMITS.portfolioSummary, multiline: true }) || null,
   location: (input) => text(input, "location", { label: "Location", max: CONTENT_LIMITS.portfolioLocation }) || null,
-  system: (input) => text(input, "system", { label: "System", max: CONTENT_LIMITS.portfolioSystem }) || null,
+  system: (input) => text(input, "system", { label: "Amount", max: CONTENT_LIMITS.portfolioSystem }) || null,
 };
 
 /**

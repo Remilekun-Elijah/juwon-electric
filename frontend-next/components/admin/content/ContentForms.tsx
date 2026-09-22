@@ -198,11 +198,11 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
               maxLength={WEBSITE_LIMITS.portfolioLocation}
             />
           </Field>
-          <Field label="System" error={errors.system}>
+          <Field label="Amount" helper="What the project cost, e.g. ₦14,500,000." error={errors.system}>
             <Input
               value={text(model.system)}
               onChange={set("system")}
-              placeholder="10kVA inverter, 8 × 200Ah lithium"
+              placeholder="₦14,500,000"
               maxLength={WEBSITE_LIMITS.portfolioSystem}
             />
           </Field>

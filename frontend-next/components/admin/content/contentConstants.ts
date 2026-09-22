@@ -172,7 +172,7 @@ export const validateModel = (type: ContentType, model: ContentItem): FieldError
             category: textError(model.category, WEBSITE_LIMITS.portfolioCategory, "Category"),
             summary: textError(model.summary, WEBSITE_LIMITS.portfolioSummary, "Summary"),
             location: textError(model.location, WEBSITE_LIMITS.portfolioLocation, "Location"),
-            system: textError(model.system, WEBSITE_LIMITS.portfolioSystem, "System"),
+            system: textError(model.system, WEBSITE_LIMITS.portfolioSystem, "Amount"),
           };
   return Object.fromEntries(Object.entries(errors).filter(([, message]) => message)) as FieldErrors;
 };

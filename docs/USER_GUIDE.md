@@ -310,7 +310,7 @@ The **Industries We Serve** and **Solutions by Scale** sections on the home and 
 2. Enter **Name**, upload the project photo under **Image** with **Choose image** or drag and drop (or select **Use an image link instead**), and optionally add an **External link** (for example the Instagram post).
 3. Choose where it shows: **Featured on the home page**, **Show on mobile**, **Show on the Portfolio page**. Save.
 
-**Tip:** to show a project as a case study on the home page, also fill in **Category**, **Summary**, **Location** and **System** (chapter 10A, story 10A.4).
+**Tip:** to show a project as a case study on the home page, also fill in **Summary**, **Location** and **Amount** (chapter 10A, story 10A.4).
 
 ### Story 5.3: Handle a website order from start to finish
 
@@ -839,9 +839,8 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 **What you'll see on the website:**
 
-- A project with a **Summary** counts as a case study. Up to 3 case studies show on the home page with photo, category, location, system and summary.
-- On the **Our work** page, customers can filter projects by category, and cards show the summary, location and system.
-- The "Who we power" cards on the home page link to the matching category.
+- A project with a **Summary** counts as a case study. Up to 3 case studies show on the home page with photo, location, amount and summary.
+- On the **Our work** page, cards show the summary, location and amount.
 
 **Tip:** leave Summary empty for a project you don't want shown as a case study. It still shows in the normal portfolio.
 
@@ -972,7 +971,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 2. **Reviews:** delete every Sample review. Add only real ones (story 10A.2).
 3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
 4. **Team:** delete every Sample team member and add the real team, or replace each one's details, upload their real photo and save (story 10A.9).
-5. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
+5. **Portfolio:** open each project marked Sample. Replace **Summary**, **Location** and **Amount** with the real details and save, or clear them.
 6. **Settings → Website → Homepage & contact:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save changes**.
 7. **Settings → Website → Financing:** enter real terms and select **Save changes**, or switch **Show financing on the website** off and select **Save changes**.
 8. **Settings → Website → Load calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save changes**; or switch **Show the calculator on the website** off and select **Save changes**.
@@ -1179,9 +1178,9 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 
 *As a customer, I want to see installations for customers like me so that I know Juwon Electric has done similar work.*
 
-1. On the home page, look at the case studies (photo, type of customer, location, system and a short summary), or select a card under "Who we power", for example homes or businesses.
-2. On **Our work**, use the **category filter** to show only that kind of customer.
-3. Each project card shows the summary, location and system when we've added them.
+1. On the home page, look at the case studies (photo, location, amount and a short summary).
+2. On **Our work**, browse the full gallery of completed projects.
+3. Each project card shows the summary, location and amount when we've added them.
 
 **Also on the home page:** logos of clients we've powered, shop by category, popular products, reviews from customers, a "We're hiring" strip when there are open roles and, when offered, a **financing** section with payment-plan terms. You can't apply for financing on the website: contact us to ask about it. The last section shows our phone numbers, email, address and opening hours.
 
@@ -1288,6 +1287,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-09-22 (project cards show the amount)**
+- Customer: on the home page and **Our work**, the line that used to sit beside a lightning bolt now sits beside a naira sign (₦), because it shows what the project cost.
+- Owner: the portfolio form's **System** box is now **Amount**, for what the project cost, e.g. ₦14,500,000. Anything already typed in that box is kept and still shows — only the label and the example changed.
 
 **2026-09-20 (Industries We Serve, no work-by-industry)**
 - Customer: the "Industries We Power" section is now **Industries We Serve** — a clean set of eight industries shown as icon cards, with no photos. A new **Solutions by Scale** band below it lists Residential, Commercial and Industrial & Utility-Scale. The **Our work** page now shows all projects in one gallery, no longer split by industry.

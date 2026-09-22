@@ -692,6 +692,11 @@ Open items for owner review
 
 12. Change log
 
+2026-09-22 (portfolio amount, not system)
+- §6.10: the portfolio card line that carried a `Zap` icon now carries a naira sign, on both surfaces that render it — the card detail line and the gradient overlay that slides up on photo hover. `lucide-react` ships no naira glyph, so `components/storefront/NairaIcon.tsx` draws one on lucide's 24px grid (`currentColor`, stroke width 2, round caps) to sit beside `MapPin` at the same weight. The screen-reader label on that line is **Price**, not **System**.
+- §6.11: the portfolio form's **System** field is relabelled **Amount** ("What the project cost, e.g. ₦14,500,000"), with a matching placeholder, and the validation messages on both sides say Amount. This is a label change only: the stored field stays `system`, so no data moves and existing records keep showing. Renaming the field itself (API, D1, seeds) is a deferred post-handover cleanup, alongside the `category` removal noted on 2026-09-20.
+- Supersedes the **System** examples in §6.11 and the case-study field lists in §7.
+
 2026-09-22 (share preview image)
 - §6.10: public pages now produce a share preview picture. `app/opengraph-image.jpg` (1200 x 630, 67 KB, cropped from the real inverter-and-battery photo at `public/panel-3.webp`) and `app/opengraph-image.alt.txt` use the Next.js metadata file convention, so `og:image`, its type, width, height and alt text are generated for every route under the root layout. `twitter.card` was already `summary_large_image`; X falls back to the Open Graph image. JPEG, not PNG: the same card as a PNG was 678 KB, which would have undone a tenth of the 2026-09-18 deployment-size work for no visible gain on a photograph.
 - The canonical origin default in `frontend-next/lib/config.ts` moved from `https://juwonelectric.com` to `https://www.juwonelectric.com`. The apex does not answer (connection times out); only `www` serves the site, and the apex would have produced unreachable canonical URLs, sitemap entries and absolute image URLs whenever `NEXT_PUBLIC_SITE_URL` was not set at build time. `.env.example` now says which host to use in production.
