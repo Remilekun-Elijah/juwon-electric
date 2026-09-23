@@ -13,7 +13,7 @@ import {
   packageCategoryOptions,
 } from "@/components/storefront/catalog/packageMeta";
 import PriceTag from "@/components/storefront/PriceTag";
-import Reveal from "@/components/storefront/motion/Reveal";
+import HorizontalScrollList from "@/components/storefront/motion/HorizontalScrollList";
 import { Badge, TabPanel, Tabs, buttonClasses } from "@/components/ui";
 import type { Package } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
@@ -21,14 +21,18 @@ import { packagePath } from "@/lib/packages";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeArrowNudge, storeCard, storeFocus, storeHoverLift, storePress } from "@/lib/storefront/styles";
 
+/** Packages per tab: three fit on desktop and the rest slide in sideways as the page scrolls (HorizontalScrollList). */
+const PER_TAB = 6;
+
 /**
- * Up to three packages for a category, spread from the cheapest to the most premium: all of them when there are three
- * or fewer, otherwise the cheapest, the middle and the most expensive.
+ * Up to `count` packages for a category, spread evenly from the cheapest to the most premium: all of them when there are
+ * `count` or fewer, otherwise the cheapest, the most expensive and evenly spaced ones in between.
  */
-export function pickRange(packages: Package[]): Package[] {
+export function pickRange(packages: Package[], count = PER_TAB): Package[] {
   const sorted = [...packages].sort((a, b) => (lowestPrice(a) || Infinity) - (lowestPrice(b) || Infinity));
-  if (sorted.length <= 3) return sorted;
-  return [sorted[0], sorted[Math.floor((sorted.length - 1) / 2)], sorted[sorted.length - 1]];
+  if (sorted.length <= count) return sorted;
+  if (count <= 1) return sorted.slice(0, count);
+  return Array.from({ length: count }, (_, index) => sorted[Math.round((index * (sorted.length - 1)) / (count - 1))]);
 }
 
 /** Tab icons, reused in order: there are as many tabs as the packages have catalogue categories. */
@@ -93,8 +97,9 @@ function FinderCard({ pkg }: { pkg: Package }) {
 }
 
 /**
- * "Find your package": tabs by catalogue category (Commerce v3 §4), each showing up to three packages from cheapest to
- * premium. The tabs are the categories these packages carry, with the ones that have no category under "Other".
+ * "Find your package": tabs by catalogue category (Commerce v3 §4), each showing up to six packages from cheapest to
+ * premium, in a row that slides sideways as the visitor scrolls: scrolling down brings the other packages in from the
+ * right, scrolling up takes them back out (HorizontalScrollList). The tabs are the categories these packages carry, with the ones that have no category under "Other".
  * Packages with no available option are left out (Commerce v2 §4).
  */
 export default function PackageFinder({ packages: allPackages }: { packages: Package[] }) {
@@ -126,13 +131,13 @@ export default function PackageFinder({ packages: allPackages }: { packages: Pac
       />
       {groups.map((group) => (
         <TabPanel key={group.value} id="package-finder" value={group.value} active={group.value === current.value} className="mt-6">
-          <Reveal as="ul" stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <HorizontalScrollList aria-label={`${group.label} packages`}>
             {pickRange(group.packages).map((pkg) => (
               <li key={String(pkg.id)} className="min-w-0">
                 <FinderCard pkg={pkg} />
               </li>
             ))}
-          </Reveal>
+          </HorizontalScrollList>
           <div className="mt-6">
             <Link
               href={`${storeRoutes.packages}?category=${encodeURIComponent(group.value)}`}

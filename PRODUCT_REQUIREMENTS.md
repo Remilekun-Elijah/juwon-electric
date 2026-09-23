@@ -692,6 +692,12 @@ Open items for owner review
 
 12. Change log
 
+2026-09-23 (home packages and reviews scroll sideways)
+- §6.10: the home **Find your package** tabs show up to six packages each (was three), spread evenly from the cheapest to the most premium (`pickRange`), and **Reviews** shows up to six. Both are a row driven by the page scroll (`HorizontalScrollList`, GSAP ScrollTrigger `pin` + `scrub`, new dependencies `gsap` and `@gsap/react`): the section holds still and scrolling down slides the remaining cards in from the right, scrolling up slides them back out, one pixel of scroll per pixel of travel. Three cards fit on desktop, two on tablets and one (with the next peeking) on phones, so the effect runs on every screen size. The section's content block (title, tabs, cards, button) is pinned when it fits under the sticky header; otherwise only the row (short phones).
+- When scrolling stops, the row settles with a whole card at the left gutter (ScrollTrigger `snap` to each card's position), and the travel ends with the last card fully inside the 16px phone gutter (the distance excludes the frame's side padding). Review stars fill one by one as each card appears: the first cards when the row comes into view, the others as they slide in, resetting when they slide back out (`data-stars`, same `.je-star` transition as the reveal).
+- Without JavaScript or with reduced motion the row is a plain swipeable, snapping row. The reviews' old phone swipe row is replaced by this.
+- `next.config.ts`: `allowedDevOrigins` comes from `DEV_ALLOWED_ORIGINS` (comma-separated hostnames, documented in `.env.example`), so the dev server can be opened from a phone on the same network. Dev only.
+
 2026-09-23 (more compact storefront on phones)
 - §6.10: below 640px the storefront's root font size is 93.75% (15px with the browser default), so every rem-based size (text, spacing, cards, buttons) is about 6% smaller; the home page is ~8% shorter to scroll at 390px. Scoped with `:root:has([data-store-root])` on the storefront layout wrapper, so the admin and all widths from 640px keep 16px. Form fields stay at 16px so iOS Safari does not zoom in when one is focused. Trade-offs: `text-xs` becomes 11.25px and `min-h-11` touch targets 41px (under the 44px iOS guideline, above the 24px WCAG 2.2 AA minimum).
 

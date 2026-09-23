@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { Quote, Star } from "lucide-react";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
-import Reveal from "@/components/storefront/motion/Reveal";
+import HorizontalScrollList from "@/components/storefront/motion/HorizontalScrollList";
 import { Badge } from "@/components/ui";
 import type { Testimonial } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
@@ -30,9 +30,10 @@ function Rating({ rating }: { rating: number }) {
 }
 
 /**
- * Customer reviews (LANDING_V1 §7.9) on a brand-50 band (TEAM_AND_MOTION_V1 §7.5): a static card grid on larger screens
- * and a swipeable row on phones. Nothing rotates on its own; cards reveal in a stagger and their stars fill one by one.
- * Returns nothing without reviews. Server component.
+ * Customer reviews (LANDING_V1 §7.9) on a brand-50 band (TEAM_AND_MOTION_V1 §7.5): up to six cards in a row that slides
+ * sideways as the visitor scrolls (three fit on desktop, two on tablets, one on phones); scrolling down brings the rest
+ * in from the right and scrolling up takes them back out (HorizontalScrollList). Nothing moves on its own.
+ * Returns nothing without reviews. Server component; the list is a client island.
  */
 export default function Reviews({ testimonials }: { testimonials: Testimonial[] }) {
   const reviews = testimonials.filter((review) => review.quote?.trim()).slice(0, HOME_REVIEWS);
@@ -45,21 +46,11 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
       title="Trusted by homes and businesses across Nigeria"
       description="Real experiences from customers who chose Juwon Electric for reliable solar solutions."
     >
-      {/*
-        Phones: a swipe row that bleeds to the screen edge. `relative` makes the row the containing block of the
-        absolutely positioned `sr-only` text inside the cards; without it that text escapes the scroll clip and widens
-        the page (375 px scrollWidth was 1767).
-      */}
-      <Reveal
-        as="ul"
-        stagger
-        aria-label="Customer reviews"
-        className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 lg:gap-5 [&::-webkit-scrollbar]:hidden"
-      >
+      <HorizontalScrollList aria-label="Customer reviews">
         {reviews.map((review) => {
           const rating = typeof review.rating === "number" ? Math.min(5, Math.max(1, Math.round(review.rating))) : null;
           return (
-            <li key={review.id} className="relative w-[85%] max-w-sm shrink-0 snap-start sm:w-auto sm:max-w-none">
+            <li key={review.id} className="relative min-w-0">
               <figure className={cn(storeCard, "flex h-full flex-col border-brand-100 p-5 shadow-elev-2 sm:p-6")}>
                 <div className="flex items-center justify-between gap-3">
                   {rating ? <Rating rating={rating} /> : <Quote aria-hidden="true" className="h-5 w-5 text-brand-300" />}
@@ -84,7 +75,7 @@ export default function Reviews({ testimonials }: { testimonials: Testimonial[] 
             </li>
           );
         })}
-      </Reveal>
+      </HorizontalScrollList>
     </Section>
   );
 }

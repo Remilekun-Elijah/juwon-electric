@@ -70,6 +70,12 @@ const legacyImageRewrites = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Dev server only: extra hostnames allowed to load dev assets, comma-separated in DEV_ALLOWED_ORIGINS. Set it to this
+  // machine's network IP (e.g. DEV_ALLOWED_ORIGINS=192.168.1.20) to test on a phone; without it only localhost works.
+  allowedDevOrigins: (process.env.DEV_ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter(Boolean),
   images: {
     // Local images are optimised. CMS image URLs (any https host) are rendered with `unoptimized` by
     // components/public/SiteImage, so no remotePatterns allowlist is needed for them.
