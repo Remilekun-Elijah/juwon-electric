@@ -62,7 +62,7 @@ export default function HowItWorks() {
             <div className="min-w-0">
               <p className="sr-only">Step {index + 1}</p>
               <h3 className="font-semibold tracking-tight text-white">{title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-white/70">{text}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-white">{text}</p>
             </div>
           </div>
         </li>

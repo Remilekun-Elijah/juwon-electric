@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { storeBody, storeContainer, storeEyebrow, storeH2, storeSection } from "@/lib/storefront/styles";
+import { storeBody, storeContainer, storeEyebrow, storeEyebrowOnSurface, storeH2, storeSection } from "@/lib/storefront/styles";
 import Reveal from "./motion/Reveal";
 
 export type SectionProps = {
@@ -15,7 +15,7 @@ export type SectionProps = {
   actions?: ReactNode;
   /**
    * Surface (TEAM_AND_MOTION_V1 §7.5): `slate` (default) sits on the page background; `white` is a white band with top
-   * and bottom borders; `dark` is a brand-950 band with white text and a gold eyebrow; `tint` is a brand-50 band.
+   * and bottom borders; `dark` is a surface band with white text and a gold eyebrow; `tint` is a brand-50 band.
    */
   tone?: "slate" | "white" | "dark" | "tint";
   className?: string;
@@ -51,7 +51,7 @@ export default function Section({
       className={cn(
         storeSection,
         tone === "white" && "border-y border-slate-200 bg-white",
-        tone === "dark" && "bg-brand-950 text-white",
+        tone === "dark" && "bg-surface text-white",
         tone === "tint" && "border-y border-brand-100 bg-brand-50",
         className
       )}
@@ -60,7 +60,7 @@ export default function Section({
         {hasHeader && (
           <Reveal className="mb-8 flex flex-col gap-4 sm:mb-10 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
-              {eyebrow && <p className={cn(storeEyebrow, dark && "text-gold-400")}>{eyebrow}</p>}
+              {eyebrow && <p className={dark ? storeEyebrowOnSurface : storeEyebrow}>{eyebrow}</p>}
               {title && (
                 <Title
                   id={headingId}
@@ -69,7 +69,7 @@ export default function Section({
                   {title}
                 </Title>
               )}
-              {description && <p className={cn(storeBody, "mt-3 text-base leading-relaxed", dark && "text-white/70")}>{description}</p>}
+              {description && <p className={cn(storeBody, "mt-3 text-base leading-relaxed", dark && "text-white")}>{description}</p>}
             </div>
             {actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
           </Reveal>

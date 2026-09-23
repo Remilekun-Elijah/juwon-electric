@@ -24,7 +24,7 @@ export default function CatalogHelpBand({
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl">
           <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h2>
-          <p className="mt-2 text-white/80">{description}</p>
+          <p className="mt-2 text-white">{description}</p>
         </div>
         <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
           <Link

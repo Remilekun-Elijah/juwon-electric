@@ -26,9 +26,9 @@ export default function BusinessDetails({ business, tone = "light", className }:
     "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
     brand ? "bg-white/10 text-white" : "bg-brand-50 text-brand-700"
   );
-  const label = cn("text-xs font-semibold uppercase tracking-[0.14em]", brand ? "text-brand-100" : "text-slate-500");
+  const label = cn("text-xs font-semibold uppercase tracking-[0.14em]", brand ? "text-surface-label" : "text-slate-500");
   const link = brand
-    ? cn("rounded-sm font-medium text-white underline-offset-4 hover:underline", storeFocus, "focus-visible:ring-white focus-visible:ring-offset-brand-800")
+    ? cn("rounded-sm font-medium text-white underline-offset-4 hover:underline", storeFocus, "focus-visible:ring-white focus-visible:ring-offset-surface")
     : storeLink;
 
   return (

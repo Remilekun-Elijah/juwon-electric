@@ -12,7 +12,7 @@ export type BreadcrumbsProps = {
   items: Crumb[];
   /** Adds a schema.org BreadcrumbList. Default true. */
   jsonLd?: boolean;
-  /** `dark` for the brand-950 page intro: white/60 links and a white current item. */
+  /** `dark` for the red page intro: pale gold (`surface-label`) links and a white current item. */
   tone?: "light" | "dark";
   className?: string;
 };
@@ -38,7 +38,7 @@ export default function Breadcrumbs({ items, jsonLd = true, tone = "light", clas
           }}
         />
       )}
-      <ol className={cn("flex flex-wrap items-center gap-1 text-sm", dark ? "text-white/60" : "text-slate-500")}>
+      <ol className={cn("flex flex-wrap items-center gap-1 text-sm", dark ? "text-surface-label" : "text-slate-500")}>
         {trail.map((crumb, index) => {
           const last = index === trail.length - 1;
           return (

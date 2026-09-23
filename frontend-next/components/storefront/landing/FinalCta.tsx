@@ -7,7 +7,7 @@ import Reveal from "@/components/storefront/motion/Reveal";
 import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { phoneNumbers, primaryPhone, storeRoutes, telHref, whatsappHref } from "@/lib/storefront/routes";
-import { storeArrowNudge, storeContainer, storeFocus, storePress, storeSection } from "@/lib/storefront/styles";
+import { storeArrowNudge, storeContainer, storeEyebrowOnSurface, storeFocus, storePress, storeSection } from "@/lib/storefront/styles";
 
 export type FinalCtaProps = {
   phone: string;
@@ -18,8 +18,8 @@ export type FinalCtaProps = {
   businessHours?: string | null;
 };
 
-const onBrand = "focus-visible:ring-white focus-visible:ring-offset-brand-800";
-const detailLink = cn("inline-flex min-h-11 items-center gap-2 rounded-sm text-brand-50 underline-offset-4 hover:text-gold-300 hover:underline md:min-h-0", storeFocus, onBrand);
+const onBrand = "focus-visible:ring-white focus-visible:ring-offset-surface";
+const detailLink = cn("inline-flex min-h-11 items-center gap-2 rounded-sm text-white underline-offset-4 hover:text-surface-label hover:underline md:min-h-0", storeFocus, onBrand);
 
 /**
  * Closing call to action on the brand panel (LANDING_V1 §7.13) over one of our installation photos, with a gold primary
@@ -39,12 +39,12 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
       <Reveal className={storeContainer}>
         <BrandPanel ring="bottom-left" className="px-5 py-12 text-center shadow-elev-4 sm:px-10 sm:py-16 lg:px-14">
           <Image src="/panel-6.webp" alt="" fill sizes="(min-width: 1280px) 1216px, 100vw" className="-z-20 object-cover" />
-          <div aria-hidden="true" className="absolute inset-0 -z-20 bg-gradient-to-br from-brand-900/95 via-brand-800/85 to-brand-700/65" />
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold-400">Ready when you are</p>
+          <div aria-hidden="true" className="absolute inset-0 -z-20 bg-gradient-to-br from-surface/95 via-surface/85 to-surface/65" />
+          <p className={storeEyebrowOnSurface}>Ready when you are</p>
           <h2 id={headingId} className="mx-auto mt-2 max-w-2xl text-2xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-4xl">
             Power Your Home or Business with Confidence
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-brand-50/90">
+          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-white">
             Choose from our solar packages or speak with our team for a solution tailored to your energy needs. From consultation
             to installation and after-sales support, we make the entire process seamless.
           </p>
@@ -105,7 +105,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
                 </a>
               )}
               {place && (
-                <span className="inline-flex min-h-11 items-center gap-2 text-brand-50 md:min-h-0">
+                <span className="inline-flex min-h-11 items-center gap-2 text-white md:min-h-0">
                   <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-gold-400" />
                   {place}
                 </span>
@@ -113,7 +113,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
             </address>
           )}
           {businessHours && (
-            <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-sm text-brand-100/90">
+            <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-sm text-white">
               <span className="font-medium text-white">Opening hours: </span>
               {businessHours}
             </p>

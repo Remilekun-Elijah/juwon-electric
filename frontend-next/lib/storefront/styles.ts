@@ -11,6 +11,12 @@ export const storeCard = "rounded-2xl border border-slate-200 bg-white shadow-el
 export const storeCardPadding = "p-5 sm:p-6";
 
 export const storeEyebrow = "text-xs font-semibold uppercase tracking-[0.14em] text-brand-700";
+/**
+ * Eyebrow on the red `surface` (page intros, dark sections, red panels, admin login): a solid gold chip with dark text
+ * (12:1). Plain small text on the red read as faint, even in pale gold, wherever an intro photo shows through the wash.
+ */
+export const storeEyebrowOnSurface =
+  "inline-flex w-fit items-center rounded-full bg-gold-400 px-3 py-1 text-[11px] font-bold uppercase leading-none tracking-[0.14em] text-slate-950";
 export const storeH1 = "text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl";
 export const storeH2 = "text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl";
 export const storeH3 = "text-lg font-semibold tracking-tight text-slate-900";

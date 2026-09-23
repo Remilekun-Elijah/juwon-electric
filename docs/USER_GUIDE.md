@@ -1288,8 +1288,20 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-23 (clearer labels, footer and admin)**
+- Customer: the small labels above page titles ("Our People", "Join Our Team", "Our Services", "Catalogue") and above the red sections are now gold badges with dark text, so they're easy to see. Footer column titles are bold white with a gold line under them, and the footer **Subscribe** button is gold.
+- Owner: the admin's top bar is now solid red (it looked pale pink before), and the sign-in page uses the same red.
+- For whoever maintains the website: all the site and admin colours are in one file, `frontend-next/app/theme.css`. Change the red or gold there and both the website and the admin follow.
+
+**2026-09-23 (easier-to-read text on red)**
+- Customer: text on the red sections, the footer and the red panels is now solid white instead of faded white, and the small headings above sections are a pale gold, so everything on the red is easy to read. Gold stays on the big words, numbers and icons.
+- Owner: the admin menu on the left is easier to read too: its links and headings are pale gold and turn white when you point at them.
+
+**2026-09-23 (the logo's red and gold)**
+- Customer: the website's red and yellow now match the two colours of the Juwon Electric logo exactly: the red of the lightning bolt for the red sections, buttons and links, and the gold of the "Juwon Electric" lettering for the gold buttons, highlighted words and icons. The admin menu bar uses the same red.
+
 **2026-09-23 (brand red, industries, hero line, client logos)**
-- Customer: the dark brown areas of the website (the "Why choose us" and "How it works" bands, the colour over the hero photos, the calculator panel, the footer and the small red headings) are now the Juwon Electric red. The admin menu bar changes to red too.
+- Customer: the dark brown areas of the website (the "Why choose us" and "How it works" bands, the colour over the hero photos, the calculator panel, the footer and the small red headings) are now red. The admin menu bar changes to red too.
 - Customer: in **Industries We Serve**, "Manufacturing & Industrial" now reads **Manufacturing & Industrial Facilities**, and the **Infrastructure** card is gone.
 - Customer: on the home page, "Solar & energy solutions across Nigeria" now sits under the **View Packages** and **Chat on WhatsApp** buttons instead of above the headline.
 - Customer: client logos in the scrolling row now turn to full colour and open the client's website every time, including after they have scrolled round once. Before, logos that had come round again stayed grey and could not be clicked.

@@ -19,7 +19,7 @@ export default function SampleBadge({ show = true, tone = "light", className }: 
       title="Sample content, to be replaced before launch"
       className={cn(
         "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-medium uppercase leading-4 tracking-[0.08em]",
-        tone === "brand" ? "bg-white/10 text-brand-50 ring-1 ring-white/20 ring-inset" : "bg-slate-100 text-slate-600 ring-1 ring-slate-200 ring-inset",
+        tone === "brand" ? "bg-white/10 text-white ring-1 ring-white/20 ring-inset" : "bg-slate-100 text-slate-600 ring-1 ring-slate-200 ring-inset",
         className
       )}
     >

@@ -23,7 +23,7 @@ const reassurances = ["No payment to place an order", "We call to confirm", "Ins
 const HEADLINE = ["Reliable Energy", "Solutions for"];
 const HEADLINE_ACCENT = "Homes & Businesses";
 
-const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
+const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 const pill = "inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold transition-[background-color,translate,box-shadow] duration-200 ease-out motion-safe:hover:-translate-y-0.5";
 
 export type HomeHeroProps = {
@@ -58,12 +58,12 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
       id="home-hero"
       aria-labelledby="home-hero-heading"
       data-store-hero=""
-      className="relative isolate -mt-[65px] flex min-h-[max(640px,min(100svh,920px))] flex-col overflow-hidden bg-brand-950 text-white md:-mt-[73px]"
+      className="relative isolate -mt-[65px] flex min-h-[max(640px,min(100svh,920px))] flex-col overflow-hidden bg-surface text-white md:-mt-[73px]"
     >
       <HeroSlideshow slides={HERO_SLIDES} />
       {/* Overlays: left-to-right for the text column, bottom for the stats and controls. */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950/90 via-brand-950/70 to-brand-950/40" />
-      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-brand-950/80 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-surface/90 via-surface/70 to-surface/40" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-surface/80 to-transparent" />
 
       <div className={cn(storeContainer, "flex flex-1 flex-col justify-center pb-24 pt-28 sm:pb-28 md:pt-36")}>
         <div className="max-w-3xl">
@@ -85,7 +85,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
             </span>
           </h1>
 
-          <p style={enterDelay(520)} className="je-enter mt-6 max-w-2xl text-lg leading-relaxed text-white/80 sm:text-xl">
+          <p style={enterDelay(520)} className="je-enter mt-6 max-w-2xl text-lg leading-relaxed text-white sm:text-xl">
             Complete solar, inverter and battery solutions professionally designed, supplied and installed to deliver
             dependable power for your home or business.
           </p>
@@ -118,7 +118,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
             )}
           </div>
 
-          <p style={enterDelay(680)} className="je-enter mt-6 inline-flex items-center gap-2.5 text-xs font-medium uppercase tracking-[0.14em] text-white/80 sm:text-sm">
+          <p style={enterDelay(680)} className="je-enter mt-6 inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white sm:text-sm">
             <span aria-hidden="true" className="relative flex h-2 w-2">
               <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
               <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
@@ -133,7 +133,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
                 <dl className={cn("grid grid-cols-2 gap-x-6 gap-y-6", shownStats.length >= 3 && "sm:grid-cols-3", shownStats.length >= 4 && "sm:grid-cols-4")}>
                   {shownStats.map((stat) => (
                     <div key={`${stat.label}-${stat.value}`} className="flex min-w-0 flex-col-reverse gap-1.5">
-                      <dt className="text-xs font-medium uppercase leading-snug tracking-[0.14em] text-white/70">{stat.label}</dt>
+                      <dt className="text-xs font-medium uppercase leading-snug tracking-[0.14em] text-white">{stat.label}</dt>
                       <dd className="break-words text-4xl font-semibold tabular-nums tracking-tight text-gold-400 sm:text-5xl">
                         <CountUp value={stat.value} delay={600} />
                       </dd>
@@ -143,7 +143,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
                 {statsSample && <SampleBadge tone="brand" className="mt-5" />}
               </>
             ) : (
-              <ul className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/85 sm:text-base">
+              <ul className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-white sm:text-base">
                 {reassurances.map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-gold-400" />
@@ -164,7 +164,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
               className="je-enter pointer-events-auto flex min-w-[280px] items-center justify-between gap-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-elev-5 backdrop-blur-md"
             >
               <div className="min-w-0">
-                <p className="text-sm text-white/75">Complete packages from</p>
+                <p className="text-sm text-white">Complete packages from</p>
                 <p className="mt-0.5 text-2xl font-semibold tabular-nums tracking-tight text-gold-400">{formatPrice(fromPrice)}</p>
               </div>
               <Link

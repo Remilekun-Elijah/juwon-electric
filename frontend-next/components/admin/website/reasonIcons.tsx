@@ -57,7 +57,7 @@ export const REASON_ICON_OPTIONS: { value: ReasonIcon; label: string }[] = [
 export function ReasonIconPreview({ icon }: { icon: string | null | undefined }) {
   const Icon = reasonIcon(icon);
   return (
-    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-950 text-gold-400">
+    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-gold-400">
       {createElement(Icon, { "aria-hidden": "true", className: "size-5" })}
     </span>
   );
