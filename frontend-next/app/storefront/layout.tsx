@@ -14,7 +14,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/store
   const settings = await getStoreChromeSettings();
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col overflow-x-clip bg-slate-50 font-sans text-slate-900 antialiased">
+    <div data-store-root="" className="flex min-h-screen flex-1 flex-col overflow-x-clip bg-slate-50 font-sans text-slate-900 antialiased">
       <a
         href="#store-main"
         className="sr-only z-50 rounded-md bg-white px-4 py-3 text-sm font-medium text-brand-700 shadow-elev-4 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500"

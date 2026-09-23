@@ -70,6 +70,22 @@
   --gold: var(--color-gold-400);
 }
 
+/*
+ * Phones (< 640px): the storefront runs at a 15px root (93.75% of the browser default, so a larger user setting still
+ * scales), making every rem-based size (text, spacing, cards) about 6% more compact. The admin is not affected: only a
+ * page with the storefront wrapper (`data-store-root`, app/storefront/layout.tsx) matches.
+ * Form fields stay at 16px, because iOS Safari zooms the page into any field under 16px when it is focused. Unlayered,
+ * so it wins over the text-size utilities.
+ */
+@media (max-width: 639.98px) {
+  :root:has([data-store-root]) {
+    font-size: 93.75%;
+  }
+  [data-store-root] :is(input, select, textarea) {
+    font-size: 16px;
+  }
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;

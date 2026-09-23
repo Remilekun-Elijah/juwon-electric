@@ -692,6 +692,9 @@ Open items for owner review
 
 12. Change log
 
+2026-09-23 (more compact storefront on phones)
+- §6.10: below 640px the storefront's root font size is 93.75% (15px with the browser default), so every rem-based size (text, spacing, cards, buttons) is about 6% smaller; the home page is ~8% shorter to scroll at 390px. Scoped with `:root:has([data-store-root])` on the storefront layout wrapper, so the admin and all widths from 640px keep 16px. Form fields stay at 16px so iOS Safari does not zoom in when one is focused. Trade-offs: `text-xs` becomes 11.25px and `min-h-11` touch targets 41px (under the 44px iOS guideline, above the 24px WCAG 2.2 AA minimum).
+
 2026-09-23 (products page with no categories)
 - §6.10: `ProductListing` keeps the 16rem category-sidebar column only when there are categories. `CategoryNav` renders nothing without them, so the search bar and the empty state ("Our product catalogue is being updated") were squeezed into the sidebar track with the rest of the row blank; they now span the full width.
 

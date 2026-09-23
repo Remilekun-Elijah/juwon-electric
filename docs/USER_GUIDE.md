@@ -1288,6 +1288,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-23 (more compact on phones)**
+- Customer: on phones, the website's text, spacing and buttons are slightly smaller, so pages fit more on screen and need less scrolling. Forms keep their normal text size so the phone doesn't zoom in while typing. Tablets, computers and the admin are unchanged.
+
 **2026-09-23 (products page layout)**
 - Customer: when there are no product categories yet, the **Products** page's search bar and "Our product catalogue is being updated" message now use the full page width instead of being squeezed into a narrow column on the left.
 
