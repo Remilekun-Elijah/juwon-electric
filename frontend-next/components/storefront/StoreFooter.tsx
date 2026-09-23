@@ -60,19 +60,18 @@ const shown = (href: string, settings: StoreSettings) =>
 /** Focus ring for the dark footer. */
 const darkFocus = cn(
   storeFocus,
-  "focus-visible:ring-gold-400 focus-visible:ring-offset-surface",
+  "focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950",
 );
 const footerLink = cn(
-  "inline-flex min-h-11 items-center rounded-sm text-sm md:min-h-0 text-white transition-colors hover:text-surface-label hover:underline underline-offset-4",
+  "inline-flex min-h-11 items-center rounded-sm text-sm md:min-h-0 text-white/70 transition-colors hover:text-gold-300",
   darkFocus,
 );
-/** Column titles: bold white with a gold rule, since small pale text was hard to see on the red. */
 const columnTitle =
-  "inline-block border-b-2 border-gold-400 pb-1.5 text-sm font-bold uppercase tracking-[0.12em] text-white";
+  "text-xs font-semibold uppercase tracking-[0.14em] text-white/50";
 const contactIcon = "h-4 w-4 shrink-0 text-gold-400";
 
 /**
- * Dark surface footer (TEAM_AND_MOTION_V1 §7.5): Shop / Company / Contact columns, newsletter, socials and ©, with
+ * Dark brand-950 footer (TEAM_AND_MOTION_V1 §7.5): Shop / Company / Contact columns, newsletter, socials and ©, with
  * white/70 text and gold hover links. Server component.
  *
  * Motion: the brand column slides in from the left, the link and contact columns follow one after another (sliding in
@@ -84,7 +83,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
   const whatsapp = whatsappHref(website.whatsappNumber);
 
   return (
-    <footer className="bg-surface text-white">
+    <footer className="bg-brand-950 text-white/70">
       {/* Extra bottom room on phones so the floating action circles never cover the last footer row. */}
       <div
         className={cn(
@@ -95,7 +94,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
       >
         <div className="grid gap-10 lg:grid-cols-12">
           <Reveal from="left" className="lg:col-span-4">
-            {/* 2026-09-19: no white chip behind the logo; the gold mark reads on the surface footer. */}
+            {/* 2026-09-19: no white chip behind the logo; the gold mark reads on the brand-950 footer. */}
             <Link
               href={storeRoutes.home}
               className={cn(
@@ -111,14 +110,14 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                 className="h-10 w-auto"
               />
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
               Reliable solar solutions including inverters, lithium batteries,
               solar panels and complete energy systems — professionally designed
               and installed by our engineering team.
             </p>
             <div className="mt-6 max-w-md">
               <h2 className="text-sm font-semibold text-white">Stay Updated</h2>
-              <p className="mt-1 text-sm leading-relaxed text-white hidden">
+              <p className="mt-1 text-sm leading-relaxed text-white/70 hidden">
                 Get exclusive offers, solar tips and important updates from
                 Juwon Electric.
               </p>
@@ -152,7 +151,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
 
             <div>
               <h2 className={columnTitle}>Contact</h2>
-              <address className="mt-4 space-y-3 text-sm not-italic text-white">
+              <address className="mt-4 space-y-3 text-sm not-italic text-white/70">
                 {phones.length > 0 && (
                   <div className="flex gap-2.5">
                     <Phone
@@ -230,7 +229,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
           from="fade"
           className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p className="text-sm text-white">
+          <p className="text-sm text-white/60">
             © {new Date().getFullYear()} {business.name || SITE_NAME}. All
             rights reserved.
           </p>
@@ -251,7 +250,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                   aria-label={`${label} (opens in a new tab)`}
                   className={cn(
                     // Phones: a round icon button. From sm: the name, as before.
-                    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/15 text-sm font-medium text-white transition-colors hover:border-gold-400/60 hover:bg-white/5 hover:text-surface-label sm:min-w-0 sm:px-4 md:min-h-9",
+                    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/15 text-sm font-medium text-white/70 transition-colors hover:border-gold-400/60 hover:bg-white/5 hover:text-gold-300 sm:min-w-0 sm:px-4 md:min-h-9",
                     darkFocus,
                   )}
                 >

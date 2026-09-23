@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Every colour (brand palette and the shared storefront/admin roles) lives in theme.css. */
+/* Every colour for the storefront and the admin lives in theme.css. */
 @import "./theme.css";
 
 /*
@@ -97,7 +97,7 @@
 
   body::-webkit-scrollbar-thumb,
   *::-webkit-scrollbar-thumb {
-    background: repeating-linear-gradient(var(--color-brand-600), #333, var(--color-brand-600));
+    background: repeating-linear-gradient(var(--color-brand-500), #333, var(--color-brand-500));
   }
 
   body::-webkit-scrollbar-track {

@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { storeEyebrowOnSurface } from "@/lib/storefront/styles";
 import { AUTH_PATHS } from "@/lib/admin/modules";
 import { ApiError, login, requestPasswordReset, resetPassword, saveAdminSession } from "@/lib/api/admin";
 import { LIMITS, validateNewPassword } from "@/lib/validation";
@@ -89,23 +88,23 @@ function PasswordInput({
 
 function BrandPanel() {
   return (
-    <aside className="relative hidden w-[46%] flex-col justify-between gap-10 overflow-hidden bg-surface px-12 py-11 text-white lg:flex xl:px-[76px]">
+    <aside className="relative hidden w-[46%] flex-col justify-between gap-10 overflow-hidden bg-brand-800 px-12 py-11 text-white lg:flex xl:px-[76px]">
       <div
         aria-hidden="true"
         className="absolute -right-44 -top-44 h-[460px] w-[460px] rounded-full border-[90px] border-white/[0.045]"
       />
       <Link
         href="/"
-        className="relative self-start rounded-lg bg-white px-4 py-3 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        className="relative self-start rounded-lg bg-white px-4 py-3 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-800"
       >
         <Image src={LOGO} alt="Juwon Electric home" width={88} height={62} className="h-10 w-auto" priority />
       </Link>
       <div className="relative max-w-[470px]">
-        <p className={storeEyebrowOnSurface}>Juwon Electric admin</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-200">Juwon Electric admin</p>
         <h2 className="mt-3 text-3xl font-bold leading-[1.1] tracking-tight xl:text-4xl">
           Orders, catalog and customer messages in one place.
         </h2>
-        <p className="mt-4 text-sm leading-relaxed text-white">
+        <p className="mt-4 text-sm leading-relaxed text-brand-100/90">
           Sign in to manage packages, follow up on orders and reply to enquiries.
         </p>
         <figure className="mt-8 overflow-hidden rounded-xl border border-white/10 bg-white/5">
@@ -117,10 +116,10 @@ function BrandPanel() {
             sizes="(min-width: 1280px) 470px, 40vw"
             className="aspect-[16/9] w-full object-cover"
           />
-          <figcaption className="px-4 py-3 text-xs text-white">One of our recent inverter and battery installations.</figcaption>
+          <figcaption className="px-4 py-3 text-xs text-white/70">One of our recent inverter and battery installations.</figcaption>
         </figure>
       </div>
-      <p className="relative text-xs text-white">© {new Date().getFullYear()} Juwon Electric</p>
+      <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Juwon Electric</p>
     </aside>
   );
 }

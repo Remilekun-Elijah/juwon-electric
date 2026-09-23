@@ -14,12 +14,12 @@ export type BrandPanelProps = {
 };
 
 /**
- * Brand feature panel copied from the admin login: `bg-surface`, white text, a soft decorative ring.
+ * Brand feature panel copied from the admin login: `bg-brand-800`, white text, a soft decorative ring.
  * Rounded card by default; pass `rounded-none` for a full-bleed band. Server component.
  */
 export default function BrandPanel({ as: Component = "div", ring = "top-right", className, children, ...rest }: BrandPanelProps) {
   return (
-    <Component className={cn("relative isolate overflow-hidden rounded-2xl bg-surface text-white", className)} {...rest}>
+    <Component className={cn("relative isolate overflow-hidden rounded-2xl bg-brand-800 text-white", className)} {...rest}>
       {ring !== "none" && (
         <div
           aria-hidden="true"

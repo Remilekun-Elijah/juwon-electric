@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 /** Cards in the first row load eagerly (4 across at 1280 px). */
 const PRIORITY_PHOTOS = 4;
 
-const onBrand = "focus-visible:ring-white focus-visible:ring-offset-surface";
+const onBrand = "focus-visible:ring-white focus-visible:ring-offset-brand-800";
 
 /**
  * Team page (TEAM_AND_MOTION_V1 §4): intro, a count-up stats strip computed from the data, one section per group with a
@@ -69,7 +69,7 @@ export default async function TeamPage() {
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-10">
               {stats.map((stat) => (
                 <div key={stat.label} className="flex min-w-0 flex-col-reverse gap-0.5 border-l-2 border-gold-400/50 pl-4">
-                  <dt className="text-sm text-white">{stat.label}</dt>
+                  <dt className="text-sm text-white/75">{stat.label}</dt>
                   <dd className="text-3xl font-semibold tabular-nums tracking-tight text-gold-400">
                     <CountUp value={stat.value} delay={500} />
                   </dd>
@@ -130,7 +130,7 @@ export default async function TeamPage() {
                   <h2 id="team-join-heading" className={cn(storeH2, "text-white")}>
                     Want to join us?
                   </h2>
-                  <p className="mt-2 max-w-xl text-base leading-relaxed text-white">
+                  <p className="mt-2 max-w-xl text-base leading-relaxed text-brand-50/90">
                     We’re always glad to hear from engineers, installers and customer care staff who take pride in their work.
                   </p>
                 </div>

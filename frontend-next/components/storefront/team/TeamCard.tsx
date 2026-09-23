@@ -42,7 +42,7 @@ function LinkedinLink({ href, name, onBrand = false }: { href: string; name: str
       className={cn(
         "inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-medium underline-offset-4 hover:underline md:min-h-8",
         storeFocus,
-        onBrand ? "text-white focus-visible:ring-white focus-visible:ring-offset-surface" : "text-brand-700 hover:text-brand-800"
+        onBrand ? "text-white focus-visible:ring-white focus-visible:ring-offset-brand-800" : "text-brand-700 hover:text-brand-800"
       )}
     >
       LinkedIn
@@ -110,7 +110,7 @@ export default function TeamCard({ member, headingAs: Heading = "h3", priority =
         {hasOverlay && (
           <div
             className={cn(
-              "absolute inset-x-0 bottom-0 hidden max-h-full flex-col justify-end bg-gradient-to-t from-surface/95 via-surface/80 to-surface/0 p-4 pt-12 text-white sm:p-5 sm:pt-14",
+              "absolute inset-x-0 bottom-0 hidden max-h-full flex-col justify-end bg-gradient-to-t from-brand-800/95 via-brand-800/80 to-brand-800/0 p-4 pt-12 text-white sm:p-5 sm:pt-14",
               "[@media(hover:hover)]:flex",
               "translate-y-3 opacity-0 transition duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100",
               "motion-reduce:translate-y-0"

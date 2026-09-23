@@ -36,7 +36,7 @@ const BUILT_IN: ReasonCard[] = [
 
 /**
  * "Why customers choose us" (TEAM_AND_MOTION_V1 §7.5): the cards managed in Settings ~~four fixed cards~~ (2026-09-18,
- * admin → Website → Why choose us), on a dark surface band with glass cards, gold icon circles and a soft gold glow
+ * admin → Website → Why choose us), on a dark brand-950 band with glass cards, gold icon circles and a soft gold glow
  * on hover. With no reasons saved it falls back to the four built-in ones. Server component.
  */
 export default function WhyChooseUs({ reasons = [] }: { reasons?: Reason[] }) {
@@ -58,7 +58,7 @@ export default function WhyChooseUs({ reasons = [] }: { reasons?: Reason[] }) {
                 className={cn(
                   "group flex h-full gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:flex-col sm:p-6",
                   "transition-[translate,background-color,border-color,box-shadow] duration-300 ease-out",
-                  "hover:border-gold-400/40 hover:bg-white/[0.08] hover:shadow-[0_0_48px_-12px_rgba(232,197,87,0.35)] motion-safe:hover:-translate-y-0.5"
+                  "hover:border-gold-400/40 hover:bg-white/[0.08] hover:shadow-[0_0_48px_-12px_rgba(223,198,56,0.35)] motion-safe:hover:-translate-y-0.5"
                 )}
               >
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold-400/15 text-gold-400 ring-1 ring-gold-400/30 transition-colors duration-300 group-hover:bg-gold-400 group-hover:text-slate-950">
@@ -66,7 +66,7 @@ export default function WhyChooseUs({ reasons = [] }: { reasons?: Reason[] }) {
                 </span>
                 <div className="min-w-0">
                   <h3 className="font-semibold tracking-tight text-white">{card.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-white">{card.text}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/70">{card.text}</p>
                   {card.sample && <SampleBadge tone="brand" className="mt-3" />}
                 </div>
               </div>

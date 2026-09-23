@@ -162,7 +162,7 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className={storeDarkBadge}>{packageRating(pkg)}</span>
-          {hasSolarOption(pkg) && <span className={`${storeDarkBadge} border-gold-400/40 text-surface-label`}>Available with solar</span>}
+          {hasSolarOption(pkg) && <span className={`${storeDarkBadge} border-gold-400/40 text-gold-300`}>Available with solar</span>}
           {productCount > 0 && (
             <span className={storeDarkBadge}>
               Includes {productCount} {productCount === 1 ? "product" : "products"}

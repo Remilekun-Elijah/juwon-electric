@@ -8,7 +8,7 @@ import { storeCard, storeCardPadding, storeContainer } from "@/lib/storefront/st
 /** Dark PageIntro-shaped placeholder (TEAM_AND_MOTION_V1 §8.1); `data-store-hero` keeps the header transparent over it. */
 export function IntroSkeleton({ breadcrumbs = false, children }: { breadcrumbs?: boolean; children?: ReactNode }) {
   return (
-    <div data-store-hero="" className="-mt-[65px] bg-surface md:-mt-[73px]">
+    <div data-store-hero="" className="-mt-[65px] bg-brand-950 md:-mt-[73px]">
       <div className={cn(storeContainer, "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
         <p role="status" className="sr-only">
           Loading…

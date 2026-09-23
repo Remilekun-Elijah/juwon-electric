@@ -1,49 +1,42 @@
 /*
- * Juwon Electric colours: the one file to edit to retheme the storefront and the admin together.
+ * Juwon Electric colours: the one file to edit to retheme the storefront and the admin together. Both apps use these
+ * Tailwind colour names (bg-brand-950, text-gold-400, ...), so a value changed here changes every place that uses it.
  *
- * Section 1 (roles) says what each colour is FOR, and both apps use these names, so changing a value here changes
- * every place with that role. Section 2 is the brand palette taken from the logo (public/logo.svg, measured
- * 2026-09-23): the lightning-bolt red #d42027 and the lettering gold #e8c557 (bulb #f5e285).
+ * Where each colour shows:
+ * - brand-950 (#3a090b): the dark background of the storefront (dark sections such as "Why choose us" and "How it
+ *   works", page intros, header bar, home hero wash, footer) and of the admin (sidebar, top bar).
+ * - brand-900 / brand-800: the storefront's red panels (load calculator teaser, final call to action, contact band,
+ *   team card overlay) and the admin sign-in side panel.
+ * - brand-700: small red headings and hover states on light pages. brand-500 / brand-600: buttons, links and focus
+ *   rings on light pages. brand-50 to brand-400: light tints behind icons, badges and bands.
+ * - gold-400: gold buttons, headline accent, stat numbers, icons and eyebrows on the dark background; gold-300 its
+ *   hover and the headline gradient start; gold-500 / gold-600 the gradient end.
  *
- * Contrast to keep when changing a value (WCAG AA): small text needs 4.5:1, large text (24 px+) and icons 3:1.
- * White on --color-surface is 5.2:1 and --color-surface-label on it is 4.8:1; slate-950 on gold-400 is 12:1.
+ * Contrast to keep when changing a value (WCAG AA): small text 4.5:1, large text (24 px+) and icons 3:1.
  *
- * Not driven by this file (update by hand): the browser tab colour `themeColor` in app/layout.tsx, and the red baked
- * into public/quote.svg, public/circular.svg and public/getInTouch.svg.
+ * Not driven by this file (update by hand): the browser tab colour `themeColor` in app/layout.tsx, the gold glow in
+ * components/storefront/landing/WhyChooseUs.tsx, and the red baked into public/quote.svg, public/circular.svg and
+ * public/getInTouch.svg.
  */
 @theme {
-  /* ---- 1. Roles (shared by the storefront and the admin) ---- */
-
-  /* The red background: storefront dark sections, page intros, header bar, home hero wash, calculator and call-to-action
-     panels, footer; admin sidebar, top bar and login panel. Classes: bg-surface, from-surface/90, ring-offset-surface. */
-  --color-surface: #d42027;
-  /* Small text on the red that is not plain white: section eyebrows, footer column titles, labels, breadcrumb links, the
-     admin sidebar links and headings. Only white and this pale gold reach 4.5:1 on the red. Class: text-surface-label. */
-  --color-surface-label: #fef6d6;
-
-  /* ---- 2. Brand palette ---- */
-
-  /* Red. 500/600: buttons, links, focus rings, icons on light pages (5.2:1 on white). 700/800: hover and pressed states
-     and small red text on light pages (eyebrows such as "Our clients"). 50-400: tints for light backgrounds and badges.
-     900/950: dark red for text on light tints (e.g. text-brand-900 on bg-brand-50). */
+  /* Brand red. */
   --color-brand-50: #fef2f2;
   --color-brand-100: #fde3e4;
   --color-brand-200: #fac8ca;
   --color-brand-300: #f4a1a4;
   --color-brand-400: #ea7075;
-  --color-brand-500: #d42027;
-  --color-brand-600: #d42027;
-  --color-brand-700: #b91c22;
-  --color-brand-800: #a3191e;
-  --color-brand-900: #8a151a;
-  --color-brand-950: #5c0e11;
+  --color-brand-500: #db464c;
+  --color-brand-600: #db464c;
+  --color-brand-700: #94161b;
+  --color-brand-800: #811418;
+  --color-brand-900: #5e0f12;
+  --color-brand-950: #3a090b;
 
-  /* Gold. 400 (logo lettering): gold buttons, headline accent, stat numbers, icons on the red; text on it is slate-950.
-     300 (logo bulb): gold hover and gradient start. 500/600: gradient end and pressed. */
-  --color-gold-300: #f5e285;
-  --color-gold-400: #e8c557;
-  --color-gold-500: #d9b243;
-  --color-gold-600: #b8932a;
+  /* Gold accent from the Juwon logo (TEAM_AND_MOTION_V1 §7.1). Dark surfaces only; text on gold is slate-950. */
+  --color-gold-300: #ecd873;
+  --color-gold-400: #dfc638;
+  --color-gold-500: #c9ad1f;
+  --color-gold-600: #a48c16;
 
   /* WhatsApp brand colours, used only for links that open WhatsApp. */
   --color-whatsapp: #25d366;
@@ -51,9 +44,9 @@
   --color-whatsapp-deep: #075e54;
 
   /* Classic (Vite-look) site colours, used by app/(public) when NEXT_PUBLIC_PUBLIC_UI=classic. */
-  --color-navbar_color: #d42027;
+  --color-navbar_color: #94161b;
   --color-header_color: #004449;
-  --color-deep_red: #b91c22;
+  --color-deep_red: #811418;
   --color-offWhite: #fdfaec;
   --color-faint: #85793e;
   --color-diamond: #a7c6ed;

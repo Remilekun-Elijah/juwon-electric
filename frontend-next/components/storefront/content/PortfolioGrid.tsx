@@ -82,7 +82,7 @@ export default function PortfolioGrid({ items, headingAs: Heading = "h3", priori
                     <div
                       aria-hidden="true"
                       className={cn(
-                        "absolute inset-x-0 bottom-0 hidden items-end gap-2 bg-gradient-to-t from-surface/85 to-transparent px-4 pb-3 pt-10 text-sm font-medium text-white",
+                        "absolute inset-x-0 bottom-0 hidden items-end gap-2 bg-gradient-to-t from-brand-950/85 to-transparent px-4 pb-3 pt-10 text-sm font-medium text-white",
                         "[@media(hover:hover)]:flex translate-y-2 opacity-0 transition-[opacity,translate] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
                       )}
                     >

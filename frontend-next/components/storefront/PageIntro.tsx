@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/cn";
-import { enterDelay, storeContainer, storeEyebrowOnSurface } from "@/lib/storefront/styles";
+import { enterDelay, storeContainer } from "@/lib/storefront/styles";
 import Breadcrumbs, { type Crumb } from "./Breadcrumbs";
 
 /** Our own installation photos (public/panel-*.webp) for page intros. */
@@ -46,7 +46,7 @@ export type PageIntroProps = {
 /**
  * Dark page intro (TEAM_AND_MOTION_V1 §8.1), the inner-page version of the home hero. Server component.
  *
- * - the `surface` red (app/theme.css) with one of our installation photos at low opacity under the home hero's left-to-right dark gradient.
+ * - brand-950 (deep brand red) with one of our installation photos at low opacity under the home hero's left-to-right dark gradient.
  *   Body text is white/75, breadcrumbs white/60 and the eyebrow gold-400. Measured on every page's photo at full zoom, the
  *   brightest backdrop pixel anywhere in the band stays under 4% luminance, so the weakest of these (white/60) still
  *   has 5.6:1.
@@ -81,13 +81,13 @@ export default function PageIntro({
   return (
     <header
       data-store-hero=""
-      className={cn("relative isolate -mt-[65px] overflow-hidden bg-surface text-white md:-mt-[73px]", className)}
+      className={cn("relative isolate -mt-[65px] overflow-hidden bg-brand-950 text-white md:-mt-[73px]", className)}
     >
       <div aria-hidden="true" className="absolute inset-0 -z-20 overflow-hidden">
         <Image src={image} alt="" fill sizes="100vw" loading="eager" className={cn("object-cover opacity-40", !quick && "je-kenburns")} />
       </div>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-surface/95 via-surface/80 to-surface/55" />
-      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-surface/80 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950/95 via-brand-950/80 to-brand-950/55" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-brand-950/80 to-transparent" />
 
       <div className={cn(storeContainer, compact ? "pb-8 pt-24" : "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
         {hasTrail && breadcrumbs && <Breadcrumbs items={breadcrumbs} tone="dark" className={cn(enter, compact ? "mb-4" : "mb-6")} />}
@@ -98,7 +98,7 @@ export default function PageIntro({
             </div>
           )}
           {eyebrow && (
-            <p style={next()} className={cn(enter, storeEyebrowOnSurface)}>
+            <p style={next()} className={cn(enter, "text-xs font-semibold uppercase tracking-[0.14em] text-gold-400")}>
               {eyebrow}
             </p>
           )}
@@ -122,7 +122,7 @@ export default function PageIntro({
             )}
           </Heading>
           {description && (
-            <p style={next()} className={cn(enter, "mt-4 text-base leading-relaxed text-white sm:text-lg")}>
+            <p style={next()} className={cn(enter, "mt-4 text-base leading-relaxed text-white/75 sm:text-lg")}>
               {description}
             </p>
           )}

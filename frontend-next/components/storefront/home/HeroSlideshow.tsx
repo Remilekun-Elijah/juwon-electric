@@ -15,7 +15,7 @@ export type HeroSlideshowProps = {
   interval?: number;
 };
 
-const indicatorFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
+const indicatorFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
 
 /**
  * Hero background (§7.3): photos crossfade (opacity, 1 s) with a slow zoom on the visible one, and round gold dots at
@@ -92,7 +92,7 @@ export default function HeroSlideshow({ slides: allSlides, interval = 7000 }: He
 
       {slides.length > 1 && (
         <div className="absolute inset-x-0 bottom-5 z-10 flex justify-center sm:bottom-7">
-          <div className="flex items-center gap-1 rounded-full border border-white/10 bg-surface/40 py-1 pl-2 pr-1 backdrop-blur-md">
+          <div className="flex items-center gap-1 rounded-full border border-white/10 bg-brand-950/40 py-1 pl-2 pr-1 backdrop-blur-md">
             <ul className="flex items-center" aria-label="Background photos">
               {slides.map((slide, index) => {
                 const current = index === active;
@@ -124,7 +124,7 @@ export default function HeroSlideshow({ slides: allSlides, interval = 7000 }: He
                 type="button"
                 onClick={() => setUserPaused((value) => !value)}
                 aria-label={userPaused ? "Play the photo slideshow" : "Pause the photo slideshow"}
-                className={cn("flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 hover:text-white", indicatorFocus)}
+                className={cn("flex h-8 w-8 items-center justify-center rounded-full text-white/90 transition-colors hover:bg-white/10 hover:text-white", indicatorFocus)}
               >
                 {userPaused ? <Play aria-hidden="true" className="h-3.5 w-3.5 fill-current" /> : <Pause aria-hidden="true" className="h-3.5 w-3.5 fill-current" />}
               </button>

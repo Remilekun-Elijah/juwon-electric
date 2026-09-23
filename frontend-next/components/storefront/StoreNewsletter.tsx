@@ -11,8 +11,7 @@ import { LIMITS, isValidEmail } from "@/lib/validation";
 
 /**
  * Footer newsletter signup: `POST /subscribe` with Turnstile action "subscribe" (same call as the classic footer).
- * `tone="dark"` for the surface footer (TEAM_AND_MOTION_V1 §7.5): the button is gold like the other calls to action on the
- * red (a red button disappeared into the footer), and errors are pale gold, since red text is unreadable on red.
+ * `tone="dark"` for the brand-950 footer (TEAM_AND_MOTION_V1 §7.5).
  */
 export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "dark" }) {
   const dark = tone === "dark";
@@ -88,10 +87,6 @@ export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "
           loading={loading}
           loadingText="Subscribing…"
           icon={<Mail aria-hidden="true" />}
-          className={cn(
-            dark &&
-              "bg-gold-400 font-semibold text-slate-950 shadow-elev-2 hover:bg-gold-300 active:bg-gold-500 focus-visible:ring-surface-label focus-visible:ring-offset-surface"
-          )}
         >
           Subscribe
         </Button>
@@ -102,7 +97,7 @@ export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "
             id="store-newsletter-error"
             className={cn(
               "mt-2 text-sm",
-              dark ? "font-medium text-surface-label" : "text-red-700",
+              dark ? "text-red-300" : "text-red-700",
             )}
           >
             {error}
@@ -113,7 +108,7 @@ export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "
         id="store-newsletter-note"
         className={cn(
           "mt-2 text-xs",
-          dark ? "text-white" : "text-slate-500",
+          dark ? "text-white/60" : "text-slate-500",
         )}
       >
         Get exclusive offers, solar tips and important updates from Juwon
@@ -124,7 +119,7 @@ export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "
         error={turnstile.error}
         bindContainer={turnstile.bindContainer}
         className="mt-2"
-        errorClassName={cn("text-sm", dark ? "font-medium text-surface-label" : "text-red-700")}
+        errorClassName={cn("text-sm", dark ? "text-red-300" : "text-red-700")}
       />
     </form>
   );

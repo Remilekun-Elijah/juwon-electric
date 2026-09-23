@@ -7,7 +7,7 @@ import { buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { StoreSettings } from "@/lib/storefront/data";
 import { contactTopicPath, primaryPhone, storeRoutes, telHref } from "@/lib/storefront/routes";
-import { storeContainer, storeEyebrowOnSurface, storePress, storeSection } from "@/lib/storefront/styles";
+import { storeContainer, storePress, storeSection } from "@/lib/storefront/styles";
 import BusinessDetails from "./BusinessDetails";
 
 export type ContactBandProps = {
@@ -38,11 +38,11 @@ export default function ContactBand({
         <BrandPanel className="px-5 py-10 sm:px-10 sm:py-12 lg:px-14">
           <div className={cn("grid gap-10", showDetails && "lg:grid-cols-2 lg:items-center")}>
             <div className="max-w-2xl">
-              <p className={storeEyebrowOnSurface}>Talk to us</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-100">Talk to us</p>
               <h2 id={headingId} className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                 {title}
               </h2>
-              <p className="mt-3 text-base leading-relaxed text-white">{description}</p>
+              <p className="mt-3 text-base leading-relaxed text-brand-50/90">{description}</p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 {phone && (
                   <a
@@ -50,7 +50,7 @@ export default function ContactBand({
                     className={buttonClasses({
                       variant: "secondary",
                       size: "lg",
-                      className: cn("bg-white text-brand-800 hover:bg-brand-50 focus-visible:ring-white focus-visible:ring-offset-surface", storePress),
+                      className: cn("bg-white text-brand-800 hover:bg-brand-50 focus-visible:ring-white focus-visible:ring-offset-brand-800", storePress),
                     })}
                   >
                     <Phone aria-hidden="true" />
@@ -62,7 +62,7 @@ export default function ContactBand({
                   className={buttonClasses({
                     variant: "outline",
                     size: "lg",
-                    className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white focus-visible:ring-white focus-visible:ring-offset-surface", storePress),
+                    className: cn("border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white focus-visible:ring-white focus-visible:ring-offset-brand-800", storePress),
                   })}
                 >
                   <MessageSquare aria-hidden="true" />

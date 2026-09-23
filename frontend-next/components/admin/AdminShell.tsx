@@ -43,15 +43,15 @@ function NavItem({
         onClick={onSelect}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+          "group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950",
           active
             ? "bg-white/10 text-white before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-r-sm before:bg-gold-400"
-            : "text-surface-label hover:bg-white/5 hover:text-white"
+            : "text-gold-300 hover:bg-white/5 hover:text-white"
         )}
       >
         <Icon
           aria-hidden="true"
-          className={cn("h-[18px] w-[18px] shrink-0", active ? "text-surface-label" : "text-surface-label group-hover:text-white")}
+          className={cn("h-[18px] w-[18px] shrink-0", active ? "text-gold-400" : "text-gold-400/70 group-hover:text-gold-300")}
         />
         <span className="truncate">{module.label}</span>
         {count ? (
@@ -67,7 +67,7 @@ function NavItem({
 
 /**
  * Sidebar body, shared by the fixed desktop rail and the mobile drawer: logo, grouped navigation and sign out.
- * It sits on the storefront's dark brand surface (`bg-surface`), so links are gold, the current page is white on a
+ * It sits on the storefront's dark brand surface (`bg-brand-950`), so links are gold, the current page is white on a
  * translucent white pill with a gold edge marker, and every rule is a `white/10` hairline.
  */
 function SidebarContent({
@@ -90,14 +90,14 @@ function SidebarContent({
     <>
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5">
         <Image src={LOGO} alt="Juwon Electric" width={88} height={62} className="h-9 w-auto" priority />
-        <span className="border-l border-white/20 pl-3 text-[11px] font-bold uppercase tracking-[0.06em] text-surface-label">
+        <span className="border-l border-white/20 pl-3 text-[11px] font-bold uppercase tracking-[0.06em] text-gold-300">
           Admin
         </span>
         {onClose && (
           <Button
             variant="ghost"
             size="icon-sm"
-            className="ml-auto text-surface-label hover:bg-white/10 hover:text-white focus-visible:ring-gold-400 focus-visible:ring-offset-surface"
+            className="ml-auto text-gold-300 hover:bg-white/10 hover:text-white focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950"
             aria-label="Close navigation menu"
             onClick={onClose}
           >
@@ -112,7 +112,7 @@ function SidebarContent({
             if (!items.length) return null;
             return (
               <div key={group.id}>
-                <h2 className="mb-2 px-3 text-[11px] font-bold uppercase tracking-wider text-surface-label">{group.label}</h2>
+                <h2 className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gold-400/80">{group.label}</h2>
                 <ul className="space-y-1">
                   {items.map((module) => (
                     <NavItem
@@ -133,7 +133,7 @@ function SidebarContent({
         <button
           type="button"
           onClick={onSignOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-label transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold-300 transition-colors hover:bg-red-500/15 hover:text-red-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950"
         >
           <LogOut aria-hidden="true" className="h-[18px] w-[18px]" />
           Sign out
@@ -150,10 +150,10 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <Menu>
-      <MenuButton className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface data-[open]:bg-white/10">
+      <MenuButton className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950 data-[open]:bg-white/10">
         <Avatar name={name} src={admin.avatarUrl ?? undefined} size="sm" decorative className="bg-gold-400 text-slate-950" />
         <span className="hidden max-w-[160px] truncate text-sm font-medium text-white md:block">{name}</span>
-        <ChevronDown aria-hidden="true" className="h-4 w-4 text-white" />
+        <ChevronDown aria-hidden="true" className="h-4 w-4 text-white/70" />
         <span className="sr-only">Open account menu</span>
       </MenuButton>
       <MenuItems
@@ -194,9 +194,8 @@ type AdminShellProps = {
 /**
  * Admin chrome: dark brand sidebar (desktop rail + mobile drawer), sticky top bar and the page area.
  *
- * The chrome matches the storefront: sidebar and top bar are the solid `surface` red from app/theme.css (the top bar
- * was translucent, which washed it out to pink over the light page) with a `white/10` hairline border, pale gold
- * (`surface-label`) sidebar links and white top-bar text. The content
+ * The chrome matches the storefront: sidebar and top bar are the deep brand red (`bg-brand-950`, the top bar
+ * translucent over a blur) with a `white/10` hairline border, gold sidebar links and white top-bar text. The content
  * area behind it stays the light slate the admin pages are designed for, and the account dropdown panel stays light.
  */
 export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner, children }: AdminShellProps) {
@@ -236,7 +235,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
       >
         Skip to content
       </a>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/10 bg-surface md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/10 bg-brand-950 md:flex">
         <SidebarContent activeId={activeId} counts={counts} onSelect={closeDrawer} onSignOut={onSignOut} />
       </aside>
 
@@ -262,7 +261,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
           >
             <DialogPanel
               aria-label="Admin navigation"
-              className="fixed inset-y-0 left-0 flex w-[min(86vw,280px)] flex-col bg-surface font-sans text-white antialiased shadow-elev-5"
+              className="fixed inset-y-0 left-0 flex w-[min(86vw,280px)] flex-col bg-brand-950 font-sans text-white antialiased shadow-elev-5"
             >
               <SidebarContent
                 activeId={activeId}
@@ -280,11 +279,11 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
       </Transition>
 
       <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip md:pl-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-surface px-4 text-white md:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-brand-950/90 px-4 text-white backdrop-blur supports-[backdrop-filter]:bg-brand-950/80 md:px-6 lg:px-8">
           <Button
             variant="outline"
             size="icon"
-            className="border-white/20 bg-white/10 text-white shadow-none hover:bg-white/20 hover:text-white focus-visible:ring-gold-400 focus-visible:ring-offset-surface md:hidden"
+            className="border-white/20 bg-white/10 text-white shadow-none hover:bg-white/20 hover:text-white focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950 md:hidden"
             aria-label="Open navigation menu"
             aria-expanded={drawerOpen}
             onClick={() => setDrawerOpen(true)}
@@ -296,7 +295,7 @@ export function AdminShell({ activeId, counts = {}, onRefresh, onSignOut, banner
             <Button
               variant="outline"
               size="icon"
-              className="border-white/20 bg-white/10 text-white shadow-none hover:bg-white/20 hover:text-white focus-visible:ring-gold-400 focus-visible:ring-offset-surface"
+              className="border-white/20 bg-white/10 text-white shadow-none hover:bg-white/20 hover:text-white focus-visible:ring-gold-400 focus-visible:ring-offset-brand-950"
               onClick={onRefresh}
               aria-label="Refresh data"
               title="Refresh data"

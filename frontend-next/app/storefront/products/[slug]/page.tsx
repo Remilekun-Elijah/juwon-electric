@@ -120,13 +120,13 @@ export default async function ProductPage({ params }: PageProps<"/storefront/pro
         ]}
         image={INTRO_IMAGES.panels}
       >
-        <p className="text-sm text-white">
+        <p className="text-sm text-white/75">
           {product.sku && <span className="tabular-nums">SKU {product.sku}</span>}
           {product.sku && product.category && <span aria-hidden="true"> · </span>}
           {product.category && (
             <Link
               href={categoryPath(product.category)}
-              className={cn("rounded-sm font-medium text-surface-label underline underline-offset-4 transition-colors hover:text-white", storeOnDarkFocus)}
+              className={cn("rounded-sm font-medium text-gold-300 underline-offset-4 transition-colors hover:text-gold-400 hover:underline", storeOnDarkFocus)}
             >
               {product.category.name}
             </Link>
