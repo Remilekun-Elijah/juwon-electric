@@ -692,6 +692,9 @@ Open items for owner review
 
 12. Change log
 
+2026-09-23 (package page order on phones)
+- §6.10: on a package page the sections are in the source (and phone) order **What it powers**, **What's included**, **Price and options**, **Delivery and installation**, so a phone reads what the system does before the price. From `lg` the price card is placed in the right column across the three rows (`lg:col-start-3 lg:row-span-3`, still sticky) and the desktop layout is unchanged. Screen reader and keyboard order match the phone order.
+
 2026-09-23 (home packages and reviews scroll sideways)
 - §6.10: the home **Find your package** tabs show up to six packages each (was three), spread evenly from the cheapest to the most premium (`pickRange`), and **Reviews** shows up to six. Both are a row driven by the page scroll (`HorizontalScrollList`, GSAP ScrollTrigger `pin` + `scrub`, new dependencies `gsap` and `@gsap/react`): the section holds still and scrolling down slides the remaining cards in from the right, scrolling up slides them back out, one pixel of scroll per pixel of travel. Three cards fit on desktop, two on tablets and one (with the next peeking) on phones, so the effect runs on every screen size. The section's content block (title, tabs, cards, button) is pinned when it fits under the sticky header; otherwise only the row (short phones).
 - When scrolling stops, the row settles with a whole card at the left gutter (ScrollTrigger `snap` to each card's position), and the travel ends with the last card fully inside the 16px phone gutter (the distance excludes the frame's side padding). Review stars fill one by one as each card appears: the first cards when the row comes into view, the others as they slide in, resetting when they slide back out (`data-stars`, same `.je-star` transition as the reveal).

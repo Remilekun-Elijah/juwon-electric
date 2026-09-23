@@ -1288,6 +1288,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-23 (package page order on phones)**
+- Customer: on a phone, a package page now shows **What it powers** first, then **What's included**, then the price and **Add to cart**, then delivery and installation. On a computer the price stays in the right-hand column as before.
+
 **2026-09-23 (packages and reviews slide in as you scroll)**
 - Customer: on the home page, **Find your package** now shows up to six packages in each tab and **Reviews** up to six reviews. When you reach either section it holds still, and scrolling down slides the other cards in from the right; scrolling back up slides them out again. When you stop scrolling, the row settles on a whole card, and on phones every card stays fully in view with a margin on both sides. Review stars fill in one by one as each review appears. It works on phones, tablets and computers. If your device is set to reduce motion, you swipe the row instead.
 
