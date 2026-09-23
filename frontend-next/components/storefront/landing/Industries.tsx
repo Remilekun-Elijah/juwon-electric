@@ -1,4 +1,4 @@
-import { Building, Building2, Factory, GraduationCap, HeartPulse, Hotel, House, Landmark, Store, Waypoints, type LucideIcon } from "lucide-react";
+import { Building, Building2, Factory, GraduationCap, HeartPulse, Hotel, House, Landmark, Store, type LucideIcon } from "lucide-react";
 import Section from "@/components/storefront/Section";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { cn } from "@/lib/cn";
@@ -11,11 +11,10 @@ const INDUSTRIES: Industry[] = [
   { name: "Banking & Financial Institutions", icon: Landmark },
   { name: "Healthcare", icon: HeartPulse },
   { name: "Hospitality", icon: Hotel },
-  { name: "Manufacturing & Industrial", icon: Factory },
+  { name: "Manufacturing & Industrial Facilities", icon: Factory },
   { name: "Real Estate", icon: Building2 },
   { name: "Education", icon: GraduationCap },
   { name: "Commercial Facilities", icon: Store },
-  { name: "Infrastructure", icon: Waypoints },
 ];
 
 type Scale = { name: string; description: string; icon: LucideIcon };

@@ -39,13 +39,14 @@ export type HomeHeroProps = {
 
 /**
  * Full-bleed home hero (TEAM_AND_MOTION_V1 §7.3) under the transparent header: a photo slideshow with dark gradients,
- * a glass status pill, a three-line headline with the last word in gold, the lead, a gold "View Packages" and a glass
- * WhatsApp or call button, the website stats with gold count-up numbers, a glass price card and a scroll cue. The price
- * card shows from xl, above the floating actions: at lg it would cover the stats row.
+ * a three-line headline with the last word in gold, the lead, a gold "View Packages" and a glass WhatsApp or call button,
+ * a status line ("Solar & energy solutions across Nigeria") under the buttons, the website stats with gold count-up
+ * numbers, a glass price card and a scroll cue. The price card shows from xl, above the floating actions: at lg it would
+ * cover the stats row.
  *
- * Entrance is CSS only, so the content is in the HTML and runs before hydration: the pill, headline lines (rising out of
- * a clipped mask), lead, buttons, stats and price card follow each other in about 100 ms steps. Reduced motion turns
- * it all off.
+ * Entrance is CSS only, so the content is in the HTML and runs before hydration: the headline lines (rising out of a
+ * clipped mask), lead, buttons, status line, stats and price card follow each other in about 100 ms steps. Reduced
+ * motion turns it all off.
  */
 export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [], statsSample = false }: HomeHeroProps) {
   const mainPhone = primaryPhone(phone);
@@ -66,15 +67,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
 
       <div className={cn(storeContainer, "flex flex-1 flex-col justify-center pb-24 pt-28 sm:pb-28 md:pt-36")}>
         <div className="max-w-3xl">
-          <p className="je-enter inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-md sm:text-sm">
-            <span aria-hidden="true" className="relative flex h-2 w-2">
-              <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
-              <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            SOLAR &amp; ENERGY SOLUTIONS ACROSS NIGERIA
-          </p>
-
-          <h1 id="home-hero-heading" className="mt-6 max-w-[22ch] text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-6xl xl:text-7xl">
+          <h1 id="home-hero-heading" className="max-w-[22ch] text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-6xl xl:text-7xl">
             {HEADLINE.map((line, index) => (
               <span key={line} className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
                 <span style={enterDelay(120 + index * 100)} className="je-line block">
@@ -125,7 +118,15 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
             )}
           </div>
 
-          <div style={enterDelay(720)} className="je-enter mt-10 border-t border-white/15 pt-8">
+          <p style={enterDelay(680)} className="je-enter mt-6 inline-flex items-center gap-2.5 text-xs font-medium uppercase tracking-[0.14em] text-white/80 sm:text-sm">
+            <span aria-hidden="true" className="relative flex h-2 w-2">
+              <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
+              <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            Solar &amp; energy solutions across Nigeria
+          </p>
+
+          <div style={enterDelay(720)} className="je-enter mt-8 border-t border-white/15 pt-8">
             {shownStats.length > 0 ? (
               <>
                 <h2 className="sr-only">Juwon Electric in numbers</h2>
