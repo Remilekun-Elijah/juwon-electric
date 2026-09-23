@@ -1288,6 +1288,13 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-23 (brand red, industries, hero line, client logos)**
+- Customer: the dark brown areas of the website (the "Why choose us" and "How it works" bands, the colour over the hero photos, the calculator panel, the footer and the small red headings) are now the Juwon Electric red. The admin menu bar changes to red too.
+- Customer: in **Industries We Serve**, "Manufacturing & Industrial" now reads **Manufacturing & Industrial Facilities**, and the **Infrastructure** card is gone.
+- Customer: on the home page, "Solar & energy solutions across Nigeria" now sits under the **View Packages** and **Chat on WhatsApp** buttons instead of above the headline.
+- Customer: client logos in the scrolling row now turn to full colour and open the client's website every time, including after they have scrolled round once. Before, logos that had come round again stayed grey and could not be clicked.
+- Owner: logo files for GIG Logistics, Olowu Palace, Nepal Energies, Sound City, RCCG, Olsale Farms, Assemblies of God and Superb Mart are on the website. To show one, go to **Website** → **Client logos**, select **Add client logo**, then **Use an image link instead**, and type its path: `/clients/gig-logistics.png`, `/clients/olowu-palace.png`, `/clients/nepal-energies.png`, `/clients/soundcity.png`, `/clients/rccg.png`, `/clients/olsale-farms.png`, `/clients/assemblies-of-god.png` or `/clients/superb-mart.png`. The Superb Mart logo is blurry: ask them for their original logo file.
+
 **2026-09-22 ("Show on mobile" now does something)**
 - Owner: the **Show on mobile** switch on a project used to have no effect on the website. It now works: on a phone, projects with the switch off are held back behind a **Show N more projects** button at the bottom of the grid, and tapping it reveals them. On a tablet or computer every project shows and there is no button. The switch is on by default, so a project you have not touched keeps showing as before.
 - Customer: the heading on the services page reads **Services** (the small line above it still reads "Our services").

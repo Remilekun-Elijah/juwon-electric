@@ -21,10 +21,12 @@
   --color-brand-400: #ea7075;
   --color-brand-500: #db464c;
   --color-brand-600: #db464c;
-  --color-brand-700: #94161b;
-  --color-brand-800: #811418;
-  --color-brand-900: #5e0f12;
-  --color-brand-950: #3a090b;
+  /* 700-950 are reds close to brand-600, not the old maroon/brown. They stay deep enough for text: 700 on white is
+     5.2:1, and white on 900/950 (the dark sections, header, hero wash and footer) is 6.0:1. */
+  --color-brand-700: #c8373d;
+  --color-brand-800: #bf3339;
+  --color-brand-900: #b82f35;
+  --color-brand-950: #b82f35;
 
   /* Gold accent from the Juwon logo (TEAM_AND_MOTION_V1 §7.1). Dark surfaces only; text on gold is slate-950. */
   --color-gold-300: #ecd873;
@@ -38,9 +40,9 @@
   --color-whatsapp-deep: #075e54;
 
   /* Original Juwon colours (keep; used across the public site). */
-  --color-navbar_color: #94161b;
+  --color-navbar_color: #c8373d;
   --color-header_color: #004449;
-  --color-deep_red: #811418;
+  --color-deep_red: #b82f35;
   --color-offWhite: #fdfaec;
   --color-faint: #85793e;
   --color-diamond: #a7c6ed;
