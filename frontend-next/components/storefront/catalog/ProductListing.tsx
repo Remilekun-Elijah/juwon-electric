@@ -62,9 +62,12 @@ export default function ProductListing({ categories, category, result, q, page, 
   const end = Math.min(start + items.length - 1, total);
   const scopeLabel = category ? category.name.toLowerCase() : "products";
   const hrefFor = (target: number) => listingHref(basePath, { ...keep, q, page: target });
+  // CategoryNav renders nothing without categories; keeping the sidebar column then squeezed the search bar and the
+  // empty state into the 16rem track and left the rest of the row blank.
+  const hasSidebar = categories.length > 0;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-8">
+    <div className={cn("grid gap-6 lg:gap-8", hasSidebar && "lg:grid-cols-[16rem_minmax(0,1fr)]")}>
       <CategoryNav categories={categories} activeId={category?.id} style={enterDelay(250)} className="je-in je-in-left lg:sticky lg:top-24 lg:self-start" />
 
       <div className="min-w-0">

@@ -692,6 +692,9 @@ Open items for owner review
 
 12. Change log
 
+2026-09-23 (products page with no categories)
+- §6.10: `ProductListing` keeps the 16rem category-sidebar column only when there are categories. `CategoryNav` renders nothing without them, so the search bar and the empty state ("Our product catalogue is being updated") were squeezed into the sidebar track with the rest of the row blank; they now span the full width.
+
 2026-09-23 (original colours back, now in one file)
 - The owner asked to go back to the colours from before 2026-09-23, on the storefront and in the admin, while keeping them in one file. Every colour change of the four entries below (brand red instead of brown; the logo's red and gold; readable text on the red; one colour file with labels, footer and admin on the red) is reverted: `brand-500`/`600` `#db464c`, `700` `#94161b`, `800` `#811418`, `900` `#5e0f12`, `950` `#3a090b`, gold `#ecd873` / `#dfc638` / `#c9ad1f` / `#a48c16`, and the components' original text colours, eyebrows, footer titles, Subscribe button and admin top bar. The `surface` / `surface-label` roles and the `storeEyebrowOnSurface` chip are gone.
 - Kept: the palette now lives in one file, `frontend-next/app/theme.css` (imported by `globals.css`), with a note of where each colour shows in the storefront and the admin, so both are retuned from there. The Vacancies editor border, the scrollbar and the classic `--gold` read from it; `themeColor` in `app/layout.tsx`, the Why choose us glow and three SVG illustrations still hold their own values (listed in the file).

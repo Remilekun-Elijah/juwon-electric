@@ -1288,6 +1288,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-09-23 (products page layout)**
+- Customer: when there are no product categories yet, the **Products** page's search bar and "Our product catalogue is being updated" message now use the full page width instead of being squeezed into a narrow column on the left.
+
 **2026-09-23 (original colours back)**
 - Customer: the website and the admin are back to their original colours: the deep brown-red background, the brighter red buttons and the original gold. The other changes from today stay: the industries list, the "Solar & energy solutions across Nigeria" line under the hero buttons, and the client logos.
 - For whoever maintains the website: all the colours are still in one file, `frontend-next/app/theme.css`. It notes where each colour shows, so the website and the admin can be retuned from there.
