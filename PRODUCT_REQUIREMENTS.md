@@ -3,7 +3,7 @@ Juwon Electric — Product Requirements Document (PRD)
 Title: Juwon Electric — Solar Commerce & Installation Platform
 Prepared by: Juwon Electric Product Team
 Date: 2026-09-16
-Last updated: 2026-09-22, Share preview image (see section 12, Change log)
+Last updated: 2026-09-30, Admin on its own subdomain (see section 12, Change log)
 
 1. Executive summary
 
@@ -208,6 +208,7 @@ Persona: HR
 6.6 Users & Roles
 - Roles (as implemented, 2026-09-17): superadmin, admin, inventory, sales, engineer, hr, support. The earlier `customer` role is not an admin role: customers have no accounts in this release.
 - Admin pages gated by role; engineer views limited to assigned jobs
+- Admin host: in production the admin console lives on its own subdomain (`admin.juwonelectric.com`, set by `NEXT_PUBLIC_ADMIN_HOST`). `/admin` on the public site (`www.juwonelectric.com/admin`) shows the site's 404 page; the admin host's home page opens the admin, and any public page opened on the admin host goes to the same page on the public site.
 - Access is granted by capabilities attached to each role; the server enforces every capability and the admin console hides what a role cannot use. A missing capability returns "You do not have permission to perform this action."
 - Only a super admin can create or change Super admin and Admin accounts. No one can change their own role or deactivate themselves, and the last active super admin cannot be demoted or deactivated. Deactivating an account signs it out everywhere.
 - Capability summary per role:
@@ -691,6 +692,10 @@ Open items for owner review
 - Storefront delivery claim: the cart ("Delivery within Lagos: Free" in the order summary and "Free delivery within Lagos." below it) and the order confirmation ("Delivery within Lagos is free.") say delivery within Lagos is free. This is not confirmed by the business. Status: to be reviewed later (owner, 2026-09-17). Keep or remove once confirmed.
 
 12. Change log
+
+2026-09-30 (admin on its own subdomain)
+- §6.6: with `NEXT_PUBLIC_ADMIN_HOST` set (production: `admin.juwonelectric.com`), `proxy.ts` serves `/admin/*` only on that host. `/admin` on any other host renders the active public site's 404 (status 404); on the admin host `/` redirects to `/admin` and any other path redirects to the same path on `NEXT_PUBLIC_SITE_URL`. Unset keeps `/admin` on every host (local development, Vercel previews).
+- Deploy: add the domain in Vercel and a DNS `CNAME` for `admin`, add `https://admin.juwonelectric.com` to the API's `ALLOWED_ORIGINS`, and set `ADMIN_APP_URL` to `https://admin.juwonelectric.com/admin`. Admin sessions are stored per host, so everyone signs in once more after the switch.
 
 2026-09-23 (package page order on phones)
 - §6.10: on a package page the sections are in the source (and phone) order **What it powers**, **What's included**, **Price and options**, **Delivery and installation**, so a phone reads what the system does before the price. From `lg` the price card is placed in the right column across the three rows (`lg:col-start-3 lg:row-span-3`, still sticky) and the desktop layout is unchanged. Screen reader and keyboard order match the phone order.

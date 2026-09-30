@@ -48,7 +48,7 @@ Everyone except engineers can also **view** Settings. Only Super admin and Admin
 
 ### Sign in
 
-1. Open the admin console at `/admin` on the Juwon Electric website (for example `https://<your website>/admin`).
+1. Open the admin console at **https://admin.juwonelectric.com** (it takes you to the sign-in page). The old address, `www.juwonelectric.com/admin`, now shows "page not found", so update any bookmarks.
 2. Enter your **Email address** and **Password**.
 3. Select **Sign in**.
 
