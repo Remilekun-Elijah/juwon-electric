@@ -23,7 +23,7 @@ const detailLink = cn("inline-flex min-h-11 items-center gap-2 rounded-sm text-b
 
 /**
  * Closing call to action on the brand panel (LANDING_V1 §7.13) over one of our installation photos, with a gold primary
- * button (TEAM_AND_MOTION_V1 §7.5): Shop packages, Call, and WhatsApp when set, then the business phone numbers, email,
+ * button (TEAM_AND_MOTION_V1 §7.5): View Packages, Call Us, and WhatsApp when set, then the business phone numbers, email,
  * address and opening hours (the home page has no separate contact band). Server component.
  */
 export default function FinalCta({ phone, email, address, whatsappNumber, businessHours }: FinalCtaProps) {
@@ -42,10 +42,11 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
           <div aria-hidden="true" className="absolute inset-0 -z-20 bg-gradient-to-br from-brand-900/95 via-brand-800/85 to-brand-700/65" />
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold-400">Ready when you are</p>
           <h2 id={headingId} className="mx-auto mt-2 max-w-2xl text-2xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-4xl">
-            Keep your lights on through every outage
+            Power Your Home or Business with Confidence
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-brand-50/90">
-            Choose a package online or talk to an engineer. There’s nothing to pay when you place an order: we call you to confirm first.
+            Choose from our solar packages or speak with our team for a solution tailored to your energy needs. From consultation
+            to installation and after-sales support, we make the entire process seamless.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
@@ -56,7 +57,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
                 className: cn("group border-transparent bg-gold-400 text-slate-950 hover:bg-gold-300 hover:text-slate-950", onBrand, storePress),
               })}
             >
-              Shop packages
+              View Packages
               <ArrowRight aria-hidden="true" className={storeArrowNudge} />
             </Link>
             {mainPhone && (
@@ -69,7 +70,7 @@ export default function FinalCta({ phone, email, address, whatsappNumber, busine
                 })}
               >
                 <Phone aria-hidden="true" />
-                <span className="tabular-nums">Call {mainPhone}</span>
+                <span className="tabular-nums">Call Us {mainPhone}</span>
               </a>
             )}
             {whatsapp && (

@@ -1,11 +1,42 @@
 import type { NextConfig } from "next";
 
-// Baseline response headers for every route. No CSP yet: Turnstile, Quill (admin) and next/font need a reviewed policy.
+// The backend API origin allowed by connect-src. Derived from NEXT_PUBLIC_BACKEND_URL at
+// config-eval (build) time; when it is unset or unparseable we fall back to allowing any
+// https: connection so a missing build env cannot break the storefront's API calls.
+const backendConnectSrc = (() => {
+  const raw = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (!raw) return "https:";
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return "https:";
+  }
+})();
+
+// This CSP is intentionally permissive on script-src ('unsafe-inline'): a nonce/hash-based
+// strict policy can break Next.js hydration and next/font, so tightening script-src is a
+// separate task and explicitly out of scope here. img-src stays broad (data: https:) because
+// CMS/admin images can point at any https host.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https:",
+  "font-src 'self'",
+  "frame-src https://challenges.cloudflare.com",
+  `connect-src 'self' https://challenges.cloudflare.com ${backendConnectSrc}`,
+].join("; ");
+
+// Baseline response headers for every route.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
 ];
 
 /**
@@ -39,6 +70,12 @@ const legacyImageRewrites = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Dev server only: extra hostnames allowed to load dev assets, comma-separated in DEV_ALLOWED_ORIGINS. Set it to this
+  // machine's network IP (e.g. DEV_ALLOWED_ORIGINS=192.168.1.20) to test on a phone; without it only localhost works.
+  allowedDevOrigins: (process.env.DEV_ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter(Boolean),
   images: {
     // Local images are optimised. CMS image URLs (any https host) are rendered with `unoptimized` by
     // components/public/SiteImage, so no remotePatterns allowlist is needed for them.

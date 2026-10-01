@@ -1,6 +1,6 @@
 // Admin user management rules shared by Express and the Worker (API_CONTRACT_V3 §2).
 // Pure ESM. Each runtime supplies its own store, validators and error type.
-import { ROLES, canManageRole, isValidRole, normalizeRole } from "./capabilities.js";
+import { canManageRole, isValidRole, normalizeRole } from "./capabilities.js";
 
 export const USER_MESSAGES = {
   list: "Users retrieved.",
@@ -114,5 +114,3 @@ export const checkUserChange = ({ actor, target, nextRole, nextActive, admins, f
 };
 
 export const roleChangeSummary = (user, from, to) => `Changed role of ${user.email}: ${from || "none"} → ${to}`;
-
-export { ROLES };

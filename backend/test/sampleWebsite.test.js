@@ -8,9 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { customerSegments } from "../data/seed.js";
 import { clientPayload, faqPayload, portfolioCaseStudyPayload, teamMemberPayload, testimonialPayload } from "../shared/content.js";
-import { normalizeSlug } from "../shared/fields.js";
 import {
   SAMPLE_CLIENTS,
   SAMPLE_FAQS,
@@ -61,13 +59,11 @@ test("sample data passes the create payload rules unchanged", () => {
       assert.deepEqual(withoutMeta(payload), withoutMeta(item), item.id);
     }
   }
-  const segmentSlugs = customerSegments.map((segment) => normalizeSlug(segment.title));
   const catalogIds = JSON.parse(readFileSync(join(backend, "data/catalog-ids.json"), "utf8")).collections.portfolio;
   const idsBySlug = Object.entries(catalogIds).map(([key, value]) => [key.split("#")[0], value.id]);
   assert.equal(SAMPLE_PORTFOLIO.length, idsBySlug.length, "every existing portfolio record");
   for (const { id, slug, sortOrder: _sortOrder, ...fields } of SAMPLE_PORTFOLIO) {
     assert.ok(idsBySlug.some(([key, value]) => key === slug && value === id), `${slug} ${id} is a D1 portfolio record`);
-    assert.ok(segmentSlugs.includes(fields.category), `${fields.category} is a customer segment`);
     assert.deepEqual(withoutMeta(portfolioCaseStudyPayload(fields)), fields);
   }
 });

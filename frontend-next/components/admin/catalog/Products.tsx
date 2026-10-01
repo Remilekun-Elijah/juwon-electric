@@ -374,5 +374,3 @@ export function Products() {
     </AdminPage>
   );
 }
-
-export default Products;

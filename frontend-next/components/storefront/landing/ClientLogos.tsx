@@ -60,7 +60,9 @@ function LogoTile({ client, src, allSample, duplicate = false }: Logo & { allSam
  * name, safe websites link out. Returns nothing without usable logos. Server component, CSS-only motion.
  *
  * - When there are more logos than fit in one row, they scroll slowly in a marquee (two copies of the list, 40 s a
- *   loop, edge fade). It pauses on hover and keyboard focus. The copy is `inert` and hidden from assistive technology.
+ *   loop, edge fade). It pauses on hover and keyboard focus. The copy is hidden from assistive technology and its links
+ *   are out of the tab order, but it is not `inert`: that would block the pointer, so logos that had looped round
+ *   would stay grey and could not be clicked.
  * - Up to 6 logos show as a static grid from `lg`; below `lg` they scroll once there are 3 or more.
  * - Reduced motion: always the static grid (2 / 3 / 6 per row), and the copy is hidden.
  */
@@ -111,7 +113,7 @@ export default function ClientLogos({ clients }: { clients: Client[] }) {
           <div className={viewport}>
             <div className={track}>
               <ul className={list}>{items(false)}</ul>
-              <ul aria-hidden="true" inert className={cn(list, "motion-reduce:hidden", !marqueeOnDesktop && "lg:hidden")}>
+              <ul aria-hidden="true" className={cn(list, "motion-reduce:hidden", !marqueeOnDesktop && "lg:hidden")}>
                 {items(true)}
               </ul>
             </div>

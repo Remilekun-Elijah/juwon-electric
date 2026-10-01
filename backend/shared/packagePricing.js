@@ -16,7 +16,6 @@ export const PACKAGE_LIMITS = Object.freeze({
   adjustmentMax: 1_000_000_000,
 });
 
-export const UNAVAILABLE_ITEMS_MESSAGE = "Some items in your cart are no longer available. Please refresh your cart.";
 export const TOP_LEVEL_ITEMS_MESSAGE = "Add products to each option instead of the package.";
 
 /** Stored money values: numbers, or display strings such as "₦1,150,000". */

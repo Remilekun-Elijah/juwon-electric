@@ -74,6 +74,3 @@ export type AdminSelf = {
  */
 export const capabilitiesFor = (admin: Partial<AdminSelf> | null | undefined): Set<string> =>
   new Set(Array.isArray(admin?.capabilities) ? admin.capabilities : []);
-
-export const can = (admin: Partial<AdminSelf> | null | undefined, capability: Capability) =>
-  Array.isArray(admin?.capabilities) && admin.capabilities.includes(capability);

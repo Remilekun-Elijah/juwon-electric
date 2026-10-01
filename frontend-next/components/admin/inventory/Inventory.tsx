@@ -341,5 +341,3 @@ export function Inventory() {
     </AdminPage>
   );
 }
-
-export default Inventory;

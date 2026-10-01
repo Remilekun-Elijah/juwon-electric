@@ -173,11 +173,32 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
 
       <div className={cn(storeContainer, "py-10 sm:py-14")}>
         <PackageOptionScope defaultIndex={defaultCartOptionIndex(pkg)}>
-          <div className="grid gap-6 lg:grid-cols-3 lg:items-start lg:gap-8">
+          {/*
+            Source order is the phone order: what it powers, what's included, price and options, delivery. From lg the
+            price card is placed in the right column across all three rows (sticky), with the sections on the left.
+          */}
+          <div className="grid gap-6 lg:grid-cols-3 lg:items-start lg:gap-x-8 lg:gap-y-6">
+            <Reveal as="section" aria-labelledby="package-powers" style={enterDelay(250)} className={cn(storeCard, storeCardPadding, "je-in lg:col-span-2")}>
+              <h2 id="package-powers" className={storeH3}>
+                What it powers
+              </h2>
+              <p className="mt-3 leading-relaxed text-slate-600">{pkg.load}</p>
+              <p className="mt-3 text-sm text-slate-500">
+                A typical load for a {pkg.kva}kVA system. Every home is different, so we check your appliances before installation.
+              </p>
+            </Reveal>
+
+            <Reveal as="section" aria-labelledby="package-included" style={enterDelay(320)} className={cn(storeCard, storeCardPadding, "je-in lg:col-span-2")}>
+              <h2 id="package-included" className={storeH3}>
+                What’s included
+              </h2>
+              <PackageIncluded pkg={pkg} categories={categories} linkProducts={productsEnabled} />
+            </Reveal>
+
             <aside
               aria-labelledby="package-buy"
-              style={enterDelay(250)}
-              className={cn(storeCard, storeCardPadding, "je-in je-in-right lg:sticky lg:top-24 lg:order-last")}
+              style={enterDelay(400)}
+              className={cn(storeCard, storeCardPadding, "je-in je-in-right lg:sticky lg:top-24 lg:col-start-3 lg:row-span-3 lg:row-start-1 lg:self-start")}
             >
               <h2 id="package-buy" className={storeH3}>
                 Price and options
@@ -212,43 +233,24 @@ export default async function PackageDetailPage({ params }: PageProps<"/storefro
               )}
             </aside>
 
-            <div className="space-y-6 lg:col-span-2">
-              <Reveal as="section" aria-labelledby="package-powers" style={enterDelay(320)} className={cn(storeCard, storeCardPadding, "je-in")}>
-                <h2 id="package-powers" className={storeH3}>
-                  What it powers
-                </h2>
-                <p className="mt-3 leading-relaxed text-slate-600">{pkg.load}</p>
-                <p className="mt-3 text-sm text-slate-500">
-                  A typical load for a {pkg.kva}kVA system. Every home is different, so we check your appliances before installation.
-                </p>
+            <Reveal as="section" aria-labelledby="package-install" style={enterDelay(480)} className={cn(storeCard, storeCardPadding, "je-in lg:col-span-2")}>
+              <h2 id="package-install" className={storeH3}>
+                Delivery and installation
+              </h2>
+              <Reveal as="ul" stagger className="mt-4 grid gap-5 sm:grid-cols-2">
+                {reassurance.map(({ icon: Icon, title, body }) => (
+                  <li key={title} className="flex gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                      <Icon aria-hidden="true" className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">{body}</p>
+                    </div>
+                  </li>
+                ))}
               </Reveal>
-
-              <Reveal as="section" aria-labelledby="package-included" style={enterDelay(400)} className={cn(storeCard, storeCardPadding, "je-in")}>
-                <h2 id="package-included" className={storeH3}>
-                  What’s included
-                </h2>
-                <PackageIncluded pkg={pkg} categories={categories} linkProducts={productsEnabled} />
-              </Reveal>
-
-              <Reveal as="section" aria-labelledby="package-install" style={enterDelay(480)} className={cn(storeCard, storeCardPadding, "je-in")}>
-                <h2 id="package-install" className={storeH3}>
-                  Delivery and installation
-                </h2>
-                <Reveal as="ul" stagger className="mt-4 grid gap-5 sm:grid-cols-2">
-                  {reassurance.map(({ icon: Icon, title, body }) => (
-                    <li key={title} className="flex gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                        <Icon aria-hidden="true" className="h-5 w-5" />
-                      </span>
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-                        <p className="mt-1 text-sm leading-relaxed text-slate-600">{body}</p>
-                      </div>
-                    </li>
-                  ))}
-                </Reveal>
-              </Reveal>
-            </div>
+            </Reveal>
           </div>
         </PackageOptionScope>
       </div>

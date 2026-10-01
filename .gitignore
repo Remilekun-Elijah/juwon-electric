@@ -145,3 +145,8 @@ backend/cloudflare/.wrangler/
 
 # Local image uploads (Express; UPLOADS_V1)
 backend/data/uploads/
+
+# local secret (ElevenLabs API key) — never commit
+.el_key
+.claude
+tiktok-series

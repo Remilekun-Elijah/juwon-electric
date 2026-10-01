@@ -195,9 +195,6 @@ export const errorDetails = <T = unknown>(error: unknown): T | undefined =>
     ? ((error.data as { details?: T }).details ?? undefined)
     : undefined;
 
-/** Name used by the screens ported from the Vite admin. */
-export const adminRequest = adminFetch;
-
 const post = <T>(path: string, body: unknown = {}) => adminFetch<T>(path, { method: "POST", body });
 const put = <T>(path: string, body: unknown) => adminFetch<T>(path, { method: "PUT", body });
 const del = <T>(path: string) => adminFetch<T>(path, { method: "DELETE" });

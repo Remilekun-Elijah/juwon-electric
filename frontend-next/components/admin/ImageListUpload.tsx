@@ -450,5 +450,3 @@ export function ImageListUpload({
     </div>
   );
 }
-
-export default ImageListUpload;

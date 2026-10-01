@@ -9,33 +9,33 @@ import Reveal from "@/components/storefront/motion/Reveal";
 const steps = [
   {
     icon: ClipboardCheck,
-    title: "Order or call",
-    text: "Order a complete package or individual products online, or call us and we’ll recommend what you need. You don’t pay anything online.",
+    title: "Order",
+    text: "Choose a package online or contact our team. We’ll assess your energy requirements and recommend the most suitable solution.",
   },
   {
     icon: PhoneCall,
-    title: "Confirmation call",
-    text: "We call to confirm your order and delivery details, then agree how you’d like to pay and when to deliver.",
+    title: "System Confirmation",
+    text: "We confirm your selected system, installation requirements, payment terms and delivery details before proceeding.",
   },
   {
     icon: Settings2,
-    title: "Processing",
-    text: "We get the items in your order ready from stock and, if you need installation, book our engineers.",
+    title: "Processing & Scheduling",
+    text: "Your equipment and materials are prepared, and where required, a site inspection is completed before scheduling installation.",
   },
   {
     icon: Truck,
     title: "Delivery",
-    text: "Your order is delivered to your address on the agreed date.",
+    text: "Your complete system and installation materials are delivered to the project location as scheduled.",
   },
   {
     icon: Wrench,
-    title: "Installation",
-    text: "If your order includes installation, our engineers install and test it, then show you how to use and look after it.",
+    title: "Installation & Handover",
+    text: "Our engineers professionally install, configure and test your system, then guide you through its operation and monitoring.",
   },
   {
     icon: Headphones,
-    title: "After-sales support",
-    text: "Call or message us for checks, maintenance and answers whenever you need them.",
+    title: "After-Sales Support",
+    text: "Our support continues after installation with technical assistance, maintenance and applicable warranty support.",
   },
 ];
 

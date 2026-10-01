@@ -5,7 +5,7 @@ import { useAdminQuery } from "@/components/admin/AdminContext";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { categoryOptions } from "@/components/admin/catalog/categoryTree";
 import { Alert, Field, Input, Select, Switch, Textarea } from "@/components/ui";
-import { getCategories, getServicesAdmin } from "@/lib/api/admin";
+import { getCategories } from "@/lib/api/admin";
 import { WEBSITE_LIMITS } from "@/lib/admin/website";
 import { LIMITS } from "@/lib/validation";
 import type { ContentItem, FieldErrors } from "./contentConstants";
@@ -146,17 +146,6 @@ export function ServiceForm({ model, setModel, errors = {} }: ContentFormProps) 
 
 export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps) {
   const set = (key: keyof ContentItem) => (event: ControlEvent) => setModel({ ...model, [key]: event.target.value });
-  const segments = useAdminQuery("portfolio-form:segments", async () => (await getServicesAdmin()).data?.customerSegments || []);
-  const category = model.category || "";
-  const segmentOptions = [
-    { value: "", label: "No category" },
-    ...(segments.data ?? [])
-      .filter((segment) => segment.slug)
-      .map((segment) => ({ value: segment.slug as string, label: segment.isActive ? segment.title : `${segment.title} (hidden)` })),
-  ];
-  if (category && segments.data && !segmentOptions.some((option) => option.value === category)) {
-    segmentOptions.push({ value: category, label: `${category} (not found)` });
-  }
   const summaryLength = text(model.summary).trim().length;
   return (
     <div className="space-y-5">
@@ -181,29 +170,13 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
         purpose="portfolio"
         error={errors.image}
         linkHelper="A photo in the site’s public folder, e.g. /image-1.jpg, or a full https:// URL."
-        previewAlt={model.name ? `Image for ${model.name}` : "Portfolio image"}
+        previewAlt={model.name ? `Image for ${model.name}` : "Project image"}
       />
       <fieldset className="space-y-4 rounded-lg border border-slate-200 p-4">
         <legend className="px-1 text-sm font-medium text-slate-700">Case study</legend>
         <p className="text-sm text-slate-500">
           Optional. Items with a summary can appear as case studies on the home page.
         </p>
-        <Field
-          label="Category"
-          error={errors.category}
-          helper={
-            segments.error && !segments.data
-              ? `Couldn’t load customer segments. ${segments.error}`
-              : "Who this installation was for. Customers can filter the portfolio by it."
-          }
-        >
-          <Select
-            value={category}
-            disabled={segments.initialLoading && Boolean(category)}
-            options={segments.initialLoading && category ? [{ value: category, label: "Loading segments…" }] : segmentOptions}
-            onChange={(event) => setModel({ ...model, category: event.target.value || null })}
-          />
-        </Field>
         <Field
           label="Summary"
           error={errors.summary}
@@ -225,11 +198,11 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
               maxLength={WEBSITE_LIMITS.portfolioLocation}
             />
           </Field>
-          <Field label="System" error={errors.system}>
+          <Field label="Amount" helper="What the project cost, e.g. ₦14,500,000." error={errors.system}>
             <Input
               value={text(model.system)}
               onChange={set("system")}
-              placeholder="10kVA inverter, 8 × 200Ah lithium"
+              placeholder="₦14,500,000"
               maxLength={WEBSITE_LIMITS.portfolioSystem}
             />
           </Field>
@@ -258,7 +231,7 @@ export function PortfolioForm({ model, setModel, errors = {} }: ContentFormProps
           onChange={(value) => setModel({ ...model, mobile: value })}
         />
         <Switch
-          label="Show on the Portfolio page"
+          label="Show on the Projects page"
           checked={Boolean(model.isActive)}
           onChange={(value) => setModel({ ...model, isActive: value })}
         />

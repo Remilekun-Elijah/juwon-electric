@@ -46,20 +46,6 @@ export const formatDateTime = (value: unknown) => {
     : "—";
 };
 
-/** `YYYY-MM-DDTHH:mm` in local time, for `<input type="datetime-local">`. */
-export const toDateTimeInput = (value: unknown) => {
-  const date = toDate(value);
-  if (!date) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-/** Local `datetime-local` value → ISO string (or null when empty/invalid). */
-export const fromDateTimeInput = (value: string) => {
-  const date = toDate(value);
-  return date ? date.toISOString() : null;
-};
-
 export const getRecordDate = (item: { receivedAt?: string; createdAt?: string } | null | undefined) =>
   item?.receivedAt || item?.createdAt;
 

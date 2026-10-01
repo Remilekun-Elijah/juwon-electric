@@ -33,6 +33,7 @@ deployment, not this app.
 | `NEXT_PUBLIC_SITE_URL` | Yes in production | `https://juwonelectric.com` | Canonical origin for `metadataBase`, Open Graph URLs, `sitemap.xml` and `robots.txt`. Defaults to `https://juwonelectric.com`. Read in `lib/config.ts`. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | `0x4AAAAAAA…` | Cloudflare Turnstile on contact, newsletter and order forms. Unset disables Turnstile (no script, no widget, no token); the API must then also run without Turnstile. Read in `lib/config.ts`. |
 | `NEXT_PUBLIC_ADMIN_PREVIEW` | No — **dev only, never in production** | `true` | When exactly `true`, the admin falls back to contract mocks for API routes that don't exist yet (`404 "Route not found."`). Anything else, including unset, is off. Read in `lib/config.ts` (`config.adminPreview`). |
+| `NEXT_PUBLIC_ADMIN_HOST` | No (recommended in production) | `admin.juwonelectric.com` | Hostname the admin is served on. When set, `proxy.ts` serves `/admin/*` only on that host (its `/` redirects to `/admin`, other paths redirect to `NEXT_PUBLIC_SITE_URL`), and `/admin` on any other host renders the 404. Unset serves `/admin` on every host. Rebuild after changing it. |
 | `NEXT_PUBLIC_PUBLIC_UI` | No | `classic` | Which public site to serve. Unset (or any value other than `classic`) serves the new storefront in `app/storefront`; `classic` serves the ported Vite-look site in `app/(public)`. Applied by `proxy.ts` and exposed as `config.publicUi`. Rebuild after changing it. |
 
 Only `lib/config.ts`, `lib/api/client.ts`, `next.config.ts` and `proxy.ts` read `process.env`. Components never do.
@@ -69,8 +70,8 @@ Two public sites ship in the same build, and `NEXT_PUBLIC_PUBLIC_UI` picks one:
 | `classic` | Ported Vite-look site | `app/(public)/**`, `components/public/**` |
 
 - `proxy.ts` does the switch. In storefront mode it rewrites every public path `P` to `/storefront` + `P`, keeping
-  the query string. It skips `/admin`, `/api`, `/_next` and any path with a dot, such as `sitemap.xml`, `robots.txt`
-  and files in `public/`.
+  the query string. It skips `/api`, `/_next` and any path with a dot, such as `sitemap.xml`, `robots.txt` and files
+  in `public/`. `/admin` is never rewritten; with `NEXT_PUBLIC_ADMIN_HOST` set it is served only on the admin host.
 - `/storefront/*` always redirects (308) to the path without the prefix, in both modes, so there is only one public
   URL per page. Storefront pages set `alternates.canonical` to the public path.
 - `sitemap.xml` and `robots.txt` are shared by both modes. The cart and checkout pages are `noindex`.
@@ -128,7 +129,12 @@ It answers `401` without a valid admin token, `400` for a body that isn't `{ "ta
    Production and Preview environments. Do **not** set `NEXT_PUBLIC_ADMIN_PREVIEW` in Production. For Preview
    deployments, set `NEXT_PUBLIC_SITE_URL` to the preview origin (or leave the default) so previews aren't indexed as
    production.
-3. Allow the site origin in the API's CORS settings, and add the site hostname to the Turnstile widget if it is enabled.
-4. Deploy. On the storefront (the default), admin edits show on the next page view and open pages refresh within about a
+3. Admin subdomain (optional, recommended): add `admin.juwonelectric.com` under the project's **Settings → Domains**,
+   create the DNS record Vercel shows (a `CNAME` for `admin` pointing at Vercel), and set
+   `NEXT_PUBLIC_ADMIN_HOST=admin.juwonelectric.com` for Production. Leave it unset in Preview so preview URLs keep
+   serving `/admin`. On the API, add `https://admin.juwonelectric.com` to `ALLOWED_ORIGINS` and set `ADMIN_APP_URL` to
+   `https://admin.juwonelectric.com/admin`. Admins sign in again once, because sessions are stored per host.
+4. Allow the site origin in the API's CORS settings, and add the site hostname to the Turnstile widget if it is enabled.
+5. Deploy. On the storefront (the default), admin edits show on the next page view and open pages refresh within about a
    minute (see "How admin changes reach the storefront"). On the classic site they appear within about 5 minutes (ISR).
    Because `NEXT_PUBLIC_*` values are inlined at build time, redeploy after changing any of them.

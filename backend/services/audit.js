@@ -8,23 +8,6 @@ const RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 let lastCleanupAt = 0;
 
-export const AUDIT_ENTITIES = [
-  "package",
-  "service",
-  "portfolio",
-  "customerSegment",
-  "order",
-  "contact",
-  "newsletter",
-  "user",
-  "vacancy",
-  "faq",
-  "testimonial",
-  "client",
-  "team_member",
-  "upload",
-];
-
 const truncate = (value, max) =>
   typeof value === "string" ? value.slice(0, max) : value ?? null;
 

@@ -11,16 +11,16 @@ import HeroSlideshow, { type HeroSlide } from "./HeroSlideshow";
 
 /** Our own installation photos (public/panel-*.webp). The first is the eagerly loaded, server-rendered background. */
 const HERO_SLIDES: HeroSlide[] = [
-  { src: "/panel-3.webp", alt: "Solar panels installed by Juwon Electric on a flat commercial rooftop" },
-  { src: "/panel-1.webp", alt: "Rows of solar panels on a rooftop at sunset" },
-  { src: "/panel-5.webp", alt: "Solar panels fitted along the roof of a family home" },
-  { src: "/panel-2.webp", alt: "Solar panels installed on the roof of a commercial building" },
+  { src: "/panel-3.webp", alt: "Wall-mounted inverters and lithium batteries installed by Juwon Electric" },
+  { src: "/panel-1.webp", alt: "A bank of inverters and batteries in a completed commercial installation" },
+  { src: "/panel-5.webp", alt: "An inverter and battery backup system fitted in a family home" },
+  { src: "/panel-2.webp", alt: "A large power installation with several inverters and batteries" },
 ];
 
 const reassurances = ["No payment to place an order", "We call to confirm", "Installation included"];
 
 /** Headline lines; the last word gets the gold gradient. */
-const HEADLINE = ["Reliable Energy Solutions", "for"];
+const HEADLINE = ["Reliable Energy", "Solutions for"];
 const HEADLINE_ACCENT = "Homes & Businesses";
 
 const onDarkFocus = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950";
@@ -39,13 +39,14 @@ export type HomeHeroProps = {
 
 /**
  * Full-bleed home hero (TEAM_AND_MOTION_V1 §7.3) under the transparent header: a photo slideshow with dark gradients,
- * a glass status pill, a three-line headline with the last word in gold, the lead, a gold "Shop packages" and a glass
- * WhatsApp or call button, the website stats with gold count-up numbers, a glass price card and a scroll cue. The price
- * card shows from xl, above the floating actions: at lg it would cover the stats row.
+ * a three-line headline with the last word in gold, the lead, a gold "View Packages" and a glass WhatsApp or call button,
+ * a status line ("Solar & energy solutions across Nigeria") under the buttons, the website stats with gold count-up
+ * numbers, a glass price card and a scroll cue. The price card shows from xl, above the floating actions: at lg it would
+ * cover the stats row.
  *
- * Entrance is CSS only, so the content is in the HTML and runs before hydration: the pill, headline lines (rising out of
- * a clipped mask), lead, buttons, stats and price card follow each other in about 100 ms steps. Reduced motion turns
- * it all off.
+ * Entrance is CSS only, so the content is in the HTML and runs before hydration: the headline lines (rising out of a
+ * clipped mask), lead, buttons, status line, stats and price card follow each other in about 100 ms steps. Reduced
+ * motion turns it all off.
  */
 export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [], statsSample = false }: HomeHeroProps) {
   const mainPhone = primaryPhone(phone);
@@ -66,15 +67,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
 
       <div className={cn(storeContainer, "flex flex-1 flex-col justify-center pb-24 pt-28 sm:pb-28 md:pt-36")}>
         <div className="max-w-3xl">
-          <p className="je-enter inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-md sm:text-sm">
-            <span aria-hidden="true" className="relative flex h-2 w-2">
-              <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
-              <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            Solar &amp; energy solutions across Nigeria
-          </p>
-
-          <h1 id="home-hero-heading" className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 id="home-hero-heading" className="max-w-[22ch] text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-6xl xl:text-7xl">
             {HEADLINE.map((line, index) => (
               <span key={line} className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
                 <span style={enterDelay(120 + index * 100)} className="je-line block">
@@ -99,7 +92,7 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
 
           <div style={enterDelay(620)} className="je-enter mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={storeRoutes.packages} className={cn(pill, "group bg-gold-400 text-slate-950 shadow-elev-4 hover:bg-gold-300", onDarkFocus, storePress)}>
-              Shop packages
+              View Packages
               <ArrowRight aria-hidden="true" className="h-5 w-5 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5" />
             </Link>
             {whatsapp ? (
@@ -125,7 +118,15 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
             )}
           </div>
 
-          <div style={enterDelay(720)} className="je-enter mt-10 border-t border-white/15 pt-8">
+          <p style={enterDelay(680)} className="je-enter mt-6 inline-flex items-center gap-2.5 text-xs font-medium uppercase tracking-[0.14em] text-white/80 sm:text-sm">
+            <span aria-hidden="true" className="relative flex h-2 w-2">
+              <span className="je-ping absolute inset-0 rounded-full bg-emerald-400" />
+              <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            Solar &amp; energy solutions across Nigeria
+          </p>
+
+          <div style={enterDelay(720)} className="je-enter mt-8 border-t border-white/15 pt-8">
             {shownStats.length > 0 ? (
               <>
                 <h2 className="sr-only">Juwon Electric in numbers</h2>

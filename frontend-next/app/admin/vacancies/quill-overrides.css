@@ -1,10 +1,10 @@
 /* Quill editor overrides to match public brand tokens */
 .ql-toolbar {
   background: #FEF2F2; /* brand.50 */
-  border: 1px solid #DB464C; /* brand.500 */
+  border: 1px solid var(--color-brand-500);
 }
 .ql-container {
-  border: 1px solid #DB464C;
+  border: 1px solid var(--color-brand-500);
   background: #FDFAEC; /* offWhite */
 }
 .ql-editor {
