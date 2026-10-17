@@ -123,7 +123,7 @@ export default async function TeamPage() {
               />
               <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-brand-950/70 to-transparent" />
               <p className="absolute bottom-4 left-5 text-sm font-semibold text-white">
-                Our engineers, <span className="text-gold-400">on site</span>
+                An engineer, <span className="text-gold-400">on site</span>
               </p>
             </div>
           </div>

@@ -63,7 +63,10 @@ export default function AboutUsSpotlight() {
           </Reveal>
 
           <Reveal from="right" className="relative order-first mx-auto w-full max-w-xl lg:order-none lg:max-w-none">
-            <div aria-hidden="true" className="absolute -right-4 -top-4 hidden h-28 w-28 rounded-3xl border-2 border-gold-400/50 sm:block" />
+            <div
+              aria-hidden="true"
+              className="absolute -right-3 -top-3 h-24 w-24 rounded-2xl bg-[radial-gradient(var(--color-brand-300)_1.5px,transparent_1.5px)] [background-size:12px_12px] sm:-right-5 sm:-top-5 sm:h-32 sm:w-32"
+            />
             <div className="relative aspect-5/4 overflow-hidden sm:aspect-16/11 lg:aspect-4/5 rounded-3xl shadow-elev-4 ring-1 ring-white/15">
               <Image
                 src="/engineer.jpg"
