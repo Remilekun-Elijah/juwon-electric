@@ -5,8 +5,8 @@ import Section from "@/components/storefront/Section";
 import { availablePackages, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
-// About us design: AboutUsSpotlight (2026-10-17). To roll back, change the path below to "@/components/storefront/home/AboutUsClassic".
-import AboutUs from "@/components/storefront/home/AboutUsSpotlight";
+// About us design: AboutUsClassic (back in use 2026-10-17). For the dark design, change the path below to "@/components/storefront/home/AboutUsSpotlight".
+import AboutUs from "@/components/storefront/home/AboutUsClassic";
 import CareersTeaser from "@/components/storefront/home/CareersTeaser";
 import CategoryGrid from "@/components/storefront/home/CategoryGrid";
 import HomeHero from "@/components/storefront/home/HomeHero";

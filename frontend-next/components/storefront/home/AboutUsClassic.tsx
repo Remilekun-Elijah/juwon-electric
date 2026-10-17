@@ -18,7 +18,7 @@ const POINTS = [
 const STEPS = ["Assess", "Design", "Install", "Support"];
 
 /**
- * Home "About us" band, classic design (in use until 2026-10-17; switch back in app/storefront/(home)/page.tsx): a photo collage (installation plus an engineer on site, with a dark brand card naming the
+ * Home "About us" band, classic design (in use; app/storefront/(home)/page.tsx picks it or AboutUsSpotlight): a photo collage (installation plus an engineer on site, with a dark brand card naming the
  * four steps of a job) beside the company story, three point cards and two calls to action. Server component.
  */
 export default function AboutUsClassic() {

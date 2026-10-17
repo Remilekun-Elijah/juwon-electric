@@ -16,8 +16,8 @@ const SECTORS = [
 
 /**
  * Home "About us" band, spotlight design (2026-10-17): a dark brand band with the owner's heading and copy beside a
- * tall engineer photo carrying a sectors card (above the text, in a shorter 5:4 frame with a slimmer sectors card, below 1024 px). The classic design is
- * kept in AboutUsClassic.tsx; app/storefront/(home)/page.tsx picks one. Server component.
+ * tall engineer photo carrying a sectors card (above the text, in a shorter 5:4 frame with a slimmer sectors card, below 1024 px). Not in use since 2026-10-17 (the classic
+ * design, AboutUsClassic.tsx, is back); app/storefront/(home)/page.tsx picks one. Server component.
  */
 export default function AboutUsSpotlight() {
   return (
