@@ -27,6 +27,8 @@ export type PageIntroProps = {
   children?: ReactNode;
   /** Right-hand column from `lg` (a portrait or figure); stacks under the text on phones. */
   aside?: ReactNode;
+  /** On phones and tablets, show the aside above the text instead of under it (the team page's engineer photo). */
+  asideFirst?: boolean;
   className?: string;
   /** Loading placeholders pass "p" so a streamed fallback never adds a second `h1`. */
   headingAs?: "h1" | "p";
@@ -66,6 +68,7 @@ export default function PageIntro({
   actions,
   children,
   aside,
+  asideFirst = false,
   className,
   headingAs = "h1",
   image = INTRO_IMAGES.rooftop,
@@ -144,7 +147,7 @@ export default function PageIntro({
             )}
           </div>
           {aside && (
-            <div style={next()} className={cn(enter, "min-w-0")}>
+            <div style={next()} className={cn(enter, "min-w-0", asideFirst && "order-first lg:order-none")}>
               {aside}
             </div>
           )}

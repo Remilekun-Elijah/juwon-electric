@@ -1286,6 +1286,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-10-17 (team page on phones)**
+- Customer: on phones and tablets, the engineer photo at the top of the **Our Team** page now shows above the introduction instead of below it.
+
 **2026-10-12 (team page, about us, bigger logo)**
 - Customer: the **Our Team** page has a new look: our values and an engineer's photo at the top, then heads of departments, engineers, the support teams side by side, and a **Work With Us** button at the bottom. People are placed by their **Group**: a group with the word "Head", "Heads", "Leadership", "Management", "Director" or "Executive" in its name shows under heads of departments, and one with "Engineer" or "Install" under engineers. Bios and LinkedIn links now show under each person instead of on hover, and the count-up figures at the top are gone.
 - Customer: the home page has a new **About us** section and no longer shows **Find your package**. Packages are still in the top menu. The About us section has the heading **Reliable Power, Engineered for Your Peace of Mind.**, a short company description, two photos, three short points and two buttons: **Meet our team** and **Talk to an engineer**, which opens Contact us.

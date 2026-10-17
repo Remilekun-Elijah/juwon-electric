@@ -104,6 +104,7 @@ export default async function TeamPage() {
         }
         description="The professionals behind Juwon Electric, delivering excellence across engineering, project execution, operations and customer experience."
         image={INTRO_IMAGES.commercial}
+        asideFirst
         aside={
           <div className="relative mx-auto w-full max-w-md lg:max-w-none">
             <div aria-hidden="true" className="absolute -bottom-5 -left-5 hidden h-44 w-44 rounded-full border-[12px] border-gold-400/70 sm:block" />
