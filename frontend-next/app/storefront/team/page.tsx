@@ -7,8 +7,7 @@ import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
 import Reveal from "@/components/storefront/motion/Reveal";
-import { EngineerCard, GroupPanel, HeadCard, TeamGrid } from "@/components/storefront/team/TeamShowcase";
-import type { TeamGroup } from "@/lib/storefront/team";
+import { EngineerCard, GroupPanel, HeadCard, TeamGrid, cardWidth } from "@/components/storefront/team/TeamShowcase";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { slugify } from "@/lib/format";
@@ -16,7 +15,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { getStoreTeam } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
 import { storeArrowNudge, storeContainer, storePress } from "@/lib/storefront/styles";
-import { groupTeam, isEngineeringGroup, isLeadershipGroup } from "@/lib/storefront/team";
+import { groupTeam } from "@/lib/storefront/team";
 
 export const revalidate = 60;
 
@@ -38,45 +37,16 @@ const CLOSING = [
   { label: "A Brighter Tomorrow", icon: Sun },
 ];
 
-type Card = typeof HeadCard | typeof EngineerCard;
-
 /**
- * The groups of one section as card rows. A single group is one row; several groups each get their name as a
- * centred h3 above their row, so the admin's Group heading still shows (cards then use h4).
- */
-function GroupRows({ groups, card: CardComponent, columns }: { groups: (TeamGroup & { id: string })[]; card: Card; columns?: 4 | 5 }) {
-  const labelled = groups.length > 1;
-  return (
-    <div className="space-y-10 sm:space-y-12">
-      {groups.map((group) => (
-        <div key={group.id} id={group.id} className="scroll-mt-20">
-          {labelled && <h3 className="mb-5 text-center text-lg font-semibold tracking-tight text-slate-900 sm:mb-6">{group.name}</h3>}
-          <TeamGrid columns={columns}>
-            {group.members.map((member) => (
-              <li key={member.id} className="min-w-0">
-                <CardComponent member={member} headingAs={labelled ? "h4" : "h3"} />
-              </li>
-            ))}
-          </TeamGrid>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * Team page (2026-10-12 owner layout): intro with our values, "Meet the Heads of Departments" (leadership groups),
- * "Meet the Engineers" (engineering and installation groups), "Meet the Support Teams" (every other group, as tinted
- * panels side by side), and a "One Team, One Goal" strip linking to open roles. Groups are matched by name
- * (lib/storefront/team); gold stays on dark surfaces (TEAM_AND_MOTION_V1 §7.1). Structured data lists non-sample
- * members only.
+ * Team page (owner's mockup, 2026-10-17): intro with our values, then the groups from the API in their order (the
+ * order groups first appear in the sorted list). The first group (its name as the heading) shows as dark portrait
+ * cards (heads of departments), the second as photo tiles (engineers), and every later group as a tinted
+ * panel side by side. Group names, people and bios all come from the API; nothing is matched on names. Closes with
+ * a "One Team, One Goal" strip linking to open roles. Structured data lists non-sample members only.
  */
 export default async function TeamPage() {
   const members = await getStoreTeam();
   const groups = groupTeam(members).map((group, index) => ({ ...group, id: `team-${slugify(group.name) || index}` }));
-  const heads = groups.filter((group) => isLeadershipGroup(group.name));
-  const engineers = groups.filter((group) => !isLeadershipGroup(group.name) && isEngineeringGroup(group.name));
-  const others = groups.filter((group) => !isLeadershipGroup(group.name) && !isEngineeringGroup(group.name));
   const allSample = members.length > 0 && members.every((member) => member.sample);
   const employees = members.filter((member) => !member.sample);
 
@@ -173,67 +143,39 @@ export default async function TeamPage() {
         </Section>
       )}
 
-      {heads.length > 0 && (
-        <Section
-          id="heads-of-departments"
-          tone="white"
-          eyebrow="Our departments"
-          title={
-            <>
-              Meet the <span className="text-brand-700">Heads of Departments</span>
-            </>
-          }
-          description="Strategic leadership driving efficiency, innovation and exceptional service at Juwon Electric."
-          align="center"
-          className="scroll-mt-20"
-        >
-          <GroupRows groups={heads} card={HeadCard} />
-        </Section>
-      )}
-
-      {engineers.length > 0 && (
-        <Section
-          id="engineers"
-          eyebrow="Field and technical"
-          title={
-            <>
-              Meet the <span className="text-brand-700">Engineers</span>
-            </>
-          }
-          description="Our skilled field and technical engineers design, install and maintain reliable solar solutions."
-          align="center"
-          className="scroll-mt-20"
-        >
-          <GroupRows groups={engineers} card={EngineerCard} columns={4} />
-        </Section>
-      )}
-
-      {others.length > 0 && (
-        <Section
-          id="support-teams"
-          tone="white"
-          eyebrow="Behind the scenes"
-          title={
-            <>
-              Meet the <span className="text-brand-700">Support Teams</span>
-            </>
-          }
-          description="The people who keep every order, installation and customer conversation running smoothly."
-          align="center"
-          className="scroll-mt-20"
-        >
-          <Reveal
-            as="ul"
-            stagger
-            className={cn("grid gap-5", others.length === 2 && "md:grid-cols-2", others.length >= 3 && "md:grid-cols-2 lg:grid-cols-3")}
+      {groups.slice(0, 2).map((group, index) => {
+        const Card = index === 0 ? HeadCard : EngineerCard;
+        return (
+          <Section
+            key={group.id}
+            id={group.id}
+            tone={index === 0 ? "white" : "slate"}
+            eyebrow={group.members.length === 1 ? "1 person" : `${group.members.length} people`}
+            title={group.name}
+            align="center"
+            className="scroll-mt-20"
           >
-            {others.map((group) => (
-              <li key={group.id} className={cn("min-w-0", others.length === 1 && "mx-auto w-full max-w-2xl")}>
-                <GroupPanel group={group} />
+            <TeamGrid>
+              {group.members.map((member) => (
+                <li key={member.id} className={cn("min-w-0", cardWidth)}>
+                  <Card member={member} />
+                </li>
+              ))}
+            </TeamGrid>
+          </Section>
+        );
+      })}
+
+      {groups.length > 2 && (
+        <section aria-label="More of our team" className="border-y border-slate-200 bg-white py-10 sm:py-14">
+          <Reveal as="ul" stagger className={cn(storeContainer, "flex flex-col gap-4 md:flex-row md:flex-wrap md:items-stretch md:justify-center md:gap-5")}>
+            {groups.slice(2).map((group, index) => (
+              <li key={group.id} className="min-w-0">
+                <GroupPanel group={group} tint={index} />
               </li>
             ))}
           </Reveal>
-        </Section>
+        </section>
       )}
 
       <section aria-labelledby="team-join-heading" className="border-y border-brand-100 bg-brand-50 py-8 sm:py-10">

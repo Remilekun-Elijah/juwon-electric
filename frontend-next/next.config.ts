@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { OPTIMISED_IMAGE_HOSTS, OPTIMISED_IMAGE_PATH } from "./lib/images";
 
 // The backend API origin allowed by connect-src. Derived from NEXT_PUBLIC_BACKEND_URL at
 // config-eval (build) time; when it is unset or unparseable we fall back to allowing any
@@ -77,9 +78,10 @@ const nextConfig: NextConfig = {
     .map((host) => host.trim())
     .filter(Boolean),
   images: {
-    // Local images are optimised. CMS image URLs (any https host) are rendered with `unoptimized` by
-    // components/public/SiteImage, so no remotePatterns allowlist is needed for them.
+    // Local images and admin uploads on our own API (lib/images) are optimised. Other CMS image URLs (any https
+    // host) are rendered with `unoptimized` by components/public/SiteImage.
     formats: ["image/avif", "image/webp"],
+    remotePatterns: OPTIMISED_IMAGE_HOSTS.map((hostname) => ({ protocol: "https" as const, hostname, pathname: `${OPTIMISED_IMAGE_PATH}**` })),
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

@@ -1023,13 +1023,13 @@ The team page was built with **12 sample team members**: made-up names with draw
 2. Moving a sample member or switching them off doesn't remove the Sample badge. Only changing their details and saving does.
 3. Check `/team` on your phone: no card should show a "Sample" label, and no photo should be a drawing.
 
-**What you'll see on the website:** the **Our Team** page with our values and an engineer's photo at the top, then **Meet the Heads of Departments**, **Meet the Engineers** and **Meet the Support Teams**, and a **Work With Us** button linking to open roles. Each person's photo, name, role, bio and LinkedIn link show on their card. Where someone appears depends on their **Group** (see story 11.14). **Team** is in the top menu, and **Our Team** is in the footer.
+**What you'll see on the website:** the **Our Team** page with our values and an engineer's photo at the top, then one section for each **Group** you set in the admin, and a **Work With Us** button linking to open roles. Each person's photo, name, role, bio and LinkedIn link show on their card. Where someone appears depends on their **Group** (see story 11.14). **Team** is in the top menu, and **Our Team** is in the footer.
 
 **Tips and common mistakes**
 
 - Type each group name the same way every time ("Operations", not "operations"), or you'll get two groups.
 - Only use a person's photo, bio and LinkedIn link with their agreement.
-- A group with the word "Head", "Heads", "Leadership", "Management", "Director" or "Executive" in its name shows under **Meet the Heads of Departments**; one with "Engineer" or "Install" under **Meet the Engineers**; every other group under **Meet the Support Teams**. Name your groups accordingly.
+- Each **Group** becomes its own section, named after the group. The first group shows as dark cards, the second as photo tiles and the rest as coloured panels. Groups appear in the order of their first person by **Sort order**, and people within a group follow their Sort order. To rename a section, rename the group on its members; to move a section up, give one of its members a lower Sort order.
 - The team page tells search engines about real team members only. Sample members are never included.
 
 ---
@@ -1223,9 +1223,9 @@ At the bottom right of most pages you may see one button. On a phone it is a rou
 *As a customer, I want to see the people behind Juwon Electric so that I know who I'm dealing with.*
 
 1. Select **Our Team** in the top menu or the footer.
-2. The page opens with what our team stands for and a photo of one of our engineers, then **Meet the Heads of Departments**: each card shows a photo (or initials), their role, name, their bio in full and a **LinkedIn** link when they have one.
-3. **Meet the Engineers** shows our field and technical engineers, and **Meet the Support Teams** shows every other team (for example Customer Service, Administration, Finance & Accounts) in panels side by side. A panel's one-line description is fixed wording chosen from the team's name; tell us if you want it changed.
-4. Every person's bio and **LinkedIn** link (when set in the admin) show under their name. Which section someone appears in depends on their **Group** in the admin (see the change log for 2026-10-12).
+2. The page opens with what our team stands for and a photo of one of our engineers, then your first group (for example Meet Our Leaders) as dark cards with each person's role, name and full bio, your second group (for example Engineering & installations) as photo tiles, and every other group as a coloured panel side by side.
+3. Section headings are exactly your **Group** names (nothing is added in front), and their order follows **Sort order**: the group of the person with the lowest Sort order comes first.
+4. Every person's bio and **LinkedIn** link (when set in the admin) show under their name. Which section someone appears in depends on their **Group** in the admin (see story 11.14).
 5. Interested in working with us? Select **Work With Us** at the bottom.
 
 ---
@@ -1285,6 +1285,10 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-10-17 (Our Team page from your groups)**
+- Customer: below the unchanged header, the **Our Team** page follows the new design: the first group as dark cards, the second as photo tiles and the rest as coloured panels, all named and ordered by your **Groups** in the admin. Every card shows the full bio. Team photos load faster.
+- Admin: group names no longer need words like "Head" or "Engineer"; whatever you type as the Group is the section name.
 
 **2026-10-17 (new About us look)**
 - Customer: the **About us** section on the home page has a new dark look: the heading and company description beside a tall photo of an engineer and the three kinds of customers we serve (Residential, Commercial, Industrial). On phones the photo shows first, above the heading. The previous look is kept and can be brought back on request.

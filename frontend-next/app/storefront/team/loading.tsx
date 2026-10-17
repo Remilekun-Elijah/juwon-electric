@@ -4,7 +4,7 @@ import { storeContainer, storeSection } from "@/lib/storefront/styles";
 
 const pulse = "motion-reduce:animate-none";
 
-/** Mirrors the team page (2026-10-12 layout): two-column intro with a portrait, a centred header and a 2/3/5 card row. */
+/** Mirrors the team page: two-column intro with a portrait, the team jump links, and one group section (row cards on phones, a 2/3/4 grid from `sm`). */
 export default function Loading() {
   const bar = cn(pulse, "bg-white/10");
   return (
@@ -32,21 +32,26 @@ export default function Loading() {
         </div>
       </div>
 
+      <div className="flex gap-2 overflow-hidden border-b border-slate-200 bg-white px-4 py-3 sm:justify-center">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Skeleton key={index} className={cn(pulse, "h-10 w-36 shrink-0 rounded-full")} />
+        ))}
+      </div>
+
       <div className={cn(storeSection, "border-y border-slate-200 bg-white")}>
         <div className={storeContainer}>
           <div className="mb-8 flex flex-col items-center sm:mb-10">
-            <Skeleton className={cn(pulse, "h-3 w-28")} />
-            <Skeleton className={cn(pulse, "mt-3 h-8 w-72 max-w-full sm:h-9")} />
-            <Skeleton className={cn(pulse, "mt-4 h-4 w-96 max-w-full")} />
+            <Skeleton className={cn(pulse, "h-3 w-20")} />
+            <Skeleton className={cn(pulse, "mt-3 h-8 w-64 max-w-full sm:h-9")} />
           </div>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-5 [&>div]:w-[calc(50%-0.5rem)] md:[&>div]:w-[calc(33.333%-0.875rem)] xl:[&>div]:w-[calc(20%-1rem)]">
+          <div className="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
             {Array.from({ length: 5 }, (_, index) => (
-              <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                <Skeleton className={cn(pulse, "aspect-[4/5] w-full rounded-none")} />
-                <div className="p-4">
+              <div key={index} className="grid grid-cols-[6.5rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-slate-200 bg-white sm:block">
+                <Skeleton className={cn(pulse, "min-h-36 w-full rounded-none sm:aspect-4/5 sm:min-h-0")} />
+                <div className="p-4 sm:p-5">
                   <Skeleton className={cn(pulse, "h-4 w-3/4")} />
                   <Skeleton className={cn(pulse, "mt-2 h-3.5 w-1/2")} />
-                  <Skeleton className={cn(pulse, "mt-3 h-3 w-full")} />
+                  <Skeleton className={cn(pulse, "mt-4 h-3 w-full")} />
                   <Skeleton className={cn(pulse, "mt-1.5 h-3 w-5/6")} />
                 </div>
               </div>
