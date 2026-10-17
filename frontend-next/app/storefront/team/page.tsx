@@ -107,7 +107,10 @@ export default async function TeamPage() {
         asideFirst
         aside={
           <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <div aria-hidden="true" className="absolute -bottom-5 -left-5 hidden h-44 w-44 rounded-full border-[12px] border-gold-400/70 sm:block" />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-3 -left-3 h-24 w-24 rounded-2xl bg-[radial-gradient(var(--color-brand-300)_1.5px,transparent_1.5px)] [background-size:12px_12px] sm:-bottom-5 sm:-left-5 sm:h-32 sm:w-32"
+            />
             <div aria-hidden="true" className="absolute -right-3 -top-3 hidden h-24 w-24 rounded-2xl bg-gold-400/15 sm:block" />
             <div className="relative aspect-[16/10] overflow-hidden rounded-3xl shadow-elev-4 ring-1 ring-white/15 sm:aspect-[4/3]">
               <Image

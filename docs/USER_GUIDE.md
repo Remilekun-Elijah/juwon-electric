@@ -1286,6 +1286,9 @@ This guide is a living document. **Update it in the same change as every feature
 
 ### Change log
 
+**2026-10-17 (new About us look)**
+- Customer: the **About us** section on the home page has a new dark look: the heading and company description beside a tall photo of an engineer and the three kinds of customers we serve (Residential, Commercial, Industrial). On phones the photo shows first, above the heading. The previous look is kept and can be brought back on request.
+
 **2026-10-17 (team page on phones)**
 - Customer: on phones and tablets, the engineer photo at the top of the **Our Team** page now shows above the introduction instead of below it.
 
