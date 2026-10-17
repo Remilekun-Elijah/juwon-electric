@@ -14,20 +14,3 @@ export function groupTeam(members: TeamMember[]): TeamGroup[] {
   }
   return [...groups.values()];
 }
-
-/** Engineers and installers: members of groups whose name mentions "Engineer" or "Install". */
-export const isEngineeringGroup = (name: string) => /engineer|install/i.test(name);
-
-export type TeamStat = { label: string; value: string };
-
-/** Figures computed from the list only (no invented numbers). Engineers are left out when there are none. */
-export function teamStats(groups: TeamGroup[]): TeamStat[] {
-  const size = groups.reduce((total, group) => total + group.members.length, 0);
-  const engineers = groups.filter((group) => isEngineeringGroup(group.name)).reduce((total, group) => total + group.members.length, 0);
-  const stats: TeamStat[] = [
-    { label: size === 1 ? "Team member" : "Team members", value: String(size) },
-    { label: groups.length === 1 ? "Team" : "Teams", value: String(groups.length) },
-  ];
-  if (engineers > 0) stats.push({ label: engineers === 1 ? "Engineer and installer" : "Engineers and installers", value: String(engineers) });
-  return stats;
-}

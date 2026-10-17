@@ -1,0 +1,6 @@
+# Vulnerability disclosure for Juwon Electric (RFC 9116).
+# Renew "Expires" before it passes; scanners treat an expired file as missing.
+Contact: mailto:remilekunelijah97@gmail.com
+Expires: 2027-09-30T23:00:00.000Z
+Preferred-Languages: en
+Canonical: https://www.juwonelectric.com/.well-known/security.txt

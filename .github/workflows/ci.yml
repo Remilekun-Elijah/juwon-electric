@@ -36,6 +36,11 @@ jobs:
       - name: Install
         run: npm ci
 
+      # Fails the build on a new high/critical dependency CVE. Lower-severity and
+      # dev-only advisories don't block (see docs/DEPLOYMENT.md, "Dependency audits").
+      - name: Audit dependencies
+        run: npm audit --audit-level=high --omit=dev
+
       - name: Lint (ESLint and control/format character check)
         run: npm run lint
 
@@ -62,6 +67,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm audit --audit-level=high --omit=dev
+
       # Bundles src/ plus backend/shared without deploying (no credentials needed).
       - name: Build (wrangler dry run)
         run: npx wrangler deploy --dry-run --outdir dist
@@ -85,6 +93,9 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high --omit=dev
 
       - name: Lint
         run: npm run lint

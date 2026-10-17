@@ -193,16 +193,6 @@ export const list = (body, key, { label = key, max, each }) => {
   return raw.map((item, index) => each(item, index));
 };
 
-export const urlList = (body, key, { label = key, max }) =>
-  list(body, key, {
-    label,
-    max,
-    each: (item) => {
-      if (typeof item !== "string") throw badRequest(`${label} must be a list of URLs.`);
-      return checkUrl(item.trim(), `Each entry in ${label}`);
-    },
-  });
-
 export const imageUrlList = (body, key, { label = key, max }) =>
   list(body, key, {
     label,
@@ -224,13 +214,6 @@ export const textList = (body, key, { label = key, max, itemMax, unique = true }
 
 export const isPlainObject = (value) =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
-
-export const objectField = (body, key, { label = key } = {}) => {
-  const raw = body?.[key];
-  if (raw === undefined) return undefined;
-  if (!isPlainObject(raw)) throw badRequest(`${label} must be an object.`);
-  return raw;
-};
 
 /** Record id reference: undefined when absent, null when null/"", else the trimmed id. */
 export const idRef = (body, key, { label = key, required = false } = {}) => {

@@ -48,7 +48,7 @@ Everyone except engineers can also **view** Settings. Only Super admin and Admin
 
 ### Sign in
 
-1. Open the admin console at `/admin` on the Juwon Electric website (for example `https://<your website>/admin`).
+1. Open the admin console at **https://admin.juwonelectric.com** (it takes you to the sign-in page). The old address, `www.juwonelectric.com/admin`, now shows "page not found", so update any bookmarks.
 2. Enter your **Email address** and **Password**.
 3. Select **Sign in**.
 
@@ -108,7 +108,7 @@ The menu on the left (or behind the menu button on a phone) is grouped like this
 
 In this guide, a path such as **Settings → Website → Homepage & contact** means: open **Settings**, then **Homepage & contact** under **Website** in that list.
 
-- **Moving between settings pages:** on a computer, the list on the left of each settings page jumps straight to another page. On a phone or tablet, use the row of buttons above the page (swipe it sideways to see them all). **Back to settings** returns to the overview.
+- **Moving between settings pages:** on a computer, the list on the left of each settings page jumps straight to another page. On a phone or tablet, use the row of buttons above the page (swipe it sideways to see them all). There is no separate overview page — the list is always beside the page you are on.
 - **Saving:** each page saves on its own. As soon as you change something, a bar appears at the bottom with "Unsaved changes". Select **Save changes** to save, or **Discard** to put back what was saved.
 - **Leaving with unsaved changes:** if you open another page before saving, the console asks "You have unsaved changes. Leave without saving?" Select **Keep editing** to go back and save, or **Leave without saving** to drop the changes. Closing or reloading the browser tab asks the same through the browser.
 - **View only:** staff who can view but not change Settings see the same pages with greyed-out fields and no save bar.
@@ -270,31 +270,47 @@ The website was built with **sample content** (made-up FAQs, reviews, client log
 
 ---
 
+### Story 4.8: Check how the website looks when someone shares the link
+
+*As the owner, I want a link to our website to look right when it is pasted into WhatsApp, Instagram or Facebook, so that we look like a real company.*
+
+When anyone shares a link to the site, the chat app shows a preview card: a picture, the page title and a short description. Ours shows one of our own rooftop installations with the headline over it.
+
+1. Paste `https://www.juwonelectric.com` into a WhatsApp chat with yourself and wait a second for the preview to appear.
+2. You should see the photo card, the page name and the description. If you see only a plain link with no picture, tell the developer.
+
+**Use the `www.`** The short version, `juwonelectric.com` with no `www`, does not currently work and will look broken to whoever you send it to. Always share the `www.` address, including in your Instagram and TikTok bio.
+
+Changing the preview picture, title or description is a developer change, not a setting in the admin.
+
+---
+
 ## 5. Admin
 
 Admins can do everything in chapters 4, 6, 7, 9 and 10, except managing Super admin and Admin accounts. This chapter covers website content and handling an order from start to finish.
 
-### Story 5.1: Update services and customer segments
+### Story 5.1: Update services
 
-*As an admin, I want to keep the Services page accurate so that customers know what we offer and who we serve.*
+*As an admin, I want to keep the Services page accurate so that customers know what we offer.*
 
 1. Go to **Services**.
 2. To add a service, select **Add service**. To change one, select **Edit** on its row.
 3. Fill in **Title** and **Description**. For **Image**, select **Choose image** or drag a photo onto the box (see [Adding images](#adding-images)); or select **Use an image link instead** and type a path such as `/panel-4.webp` or a full `https://` link. Optionally fill in **Button label** and **Button link**.
 4. Tick **Show on the Services page** to make it public. Save.
-5. For **Customer segments** (the kinds of customers listed under "Who we serve", for example homes or businesses), open the customer segments section on the Services page. Fill in **Title** and **Subtitle**, upload the **Image** with **Choose image** (or use an image link), tick **Show on the Services page**, and save.
 
 **Tip:** untick "Show on…" to hide an item without deleting it.
+
+The **Industries We Serve** and **Solutions by Scale** sections on the home and Services pages are a fixed list built into the site, so there is nothing to manage for them here.
 
 ### Story 5.2: Add work to the portfolio
 
 *As an admin, I want to show completed installations so that customers trust our work.*
 
-1. Go to **Portfolio** and add a project.
+1. Go to **Projects** and add a project.
 2. Enter **Name**, upload the project photo under **Image** with **Choose image** or drag and drop (or select **Use an image link instead**), and optionally add an **External link** (for example the Instagram post).
 3. Choose where it shows: **Featured on the home page**, **Show on mobile**, **Show on the Portfolio page**. Save.
 
-**Tip:** to show a project as a case study on the home page, also fill in **Category**, **Summary**, **Location** and **System** (chapter 10A, story 10A.4).
+**Tip:** to show a project as a case study on the home page, also fill in **Summary**, **Location** and **Amount** (chapter 10A, story 10A.4).
 
 ### Story 5.3: Handle a website order from start to finish
 
@@ -731,7 +747,7 @@ This chapter covers the content on the home page and the new website pages: FAQs
 
 | Task | Who |
 |---|---|
-| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Our Team** members; add case-study details to **Portfolio** | Super admin, Admin, Sales |
+| Add, edit, reorder and delete **FAQs**, **Reviews**, **Client logos** and **Our Team** members; add case-study details to **Projects** | Super admin, Admin, Sales |
 | View FAQs, Reviews, Client logos and Team | Also Inventory and Support (view only) |
 | Change **Settings → Website → Homepage & contact**, **Financing** and **Load calculator** | Super admin, Admin |
 
@@ -814,9 +830,8 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 *As an admin, I want to describe completed projects properly so that customers can see installations like the one they need.*
 
-1. Go to **Portfolio** and open a project (or add one, story 5.2).
+1. Go to **Projects** and open a project (or add one, story 5.2).
 2. Fill in the case-study details:
-   - **Category**: pick the kind of customer (the customer segments, for example homes or businesses).
    - **Summary** (up to 500 characters): the customer's problem and what we did, in plain words.
    - **Location** (up to 100 characters), for example "Lekki, Lagos". Don't give a full street address.
    - **System** (up to 200 characters): what we installed, for example "10kVA inverter, 8 × 200Ah lithium, 12 × 550W panels".
@@ -824,9 +839,8 @@ FAQs, Reviews, Client logos and Team are in the **Website** group of the menu.
 
 **What you'll see on the website:**
 
-- A project with a **Summary** counts as a case study. Up to 3 case studies show on the home page with photo, category, location, system and summary.
-- On the **Our work** page, customers can filter projects by category, and cards show the summary, location and system.
-- The "Who we power" cards on the home page link to the matching category.
+- A project with a **Summary** counts as a case study. Up to 3 case studies show on the home page with photo, location, amount and summary.
+- On the **Projects** page, cards show the summary, location and amount.
 
 **Tip:** leave Summary empty for a project you don't want shown as a case study. It still shows in the normal portfolio.
 
@@ -948,7 +962,7 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 
 **How to spot sample content**
 
-- In the admin: a **Sample** badge on the item or on a settings page, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Portfolio** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
+- In the admin: a **Sample** badge on the item or on a settings page, and the banner "Sample content is showing on the website. Edit or replace it before launch." at the top of **FAQs**, **Reviews**, **Client logos**, **Team** or **Projects** while they still have sample items. When you edit a sample item, the form reminds you: "Saving your changes turns this into real content and removes the Sample badge."
 - On the website: a small "Sample" label on stats, reviews, client logos, team member cards, case-study details, financing and calculator notes. **Sample FAQs have no label on the website**, so check them in the admin.
 
 **What to do**
@@ -957,11 +971,11 @@ The calculator is at `/calculator`. It's **off unless you switch it on**.
 2. **Reviews:** delete every Sample review. Add only real ones (story 10A.2).
 3. **Client logos:** delete every Sample client. Add only real clients who agreed (story 10A.3).
 4. **Team:** delete every Sample team member and add the real team, or replace each one's details, upload their real photo and save (story 10A.9).
-5. **Portfolio:** open each project marked Sample. Replace **Category**, **Summary**, **Location** and **System** with the real details and save, or clear them.
+5. **Portfolio:** open each project marked Sample. Replace **Summary**, **Location** and **Amount** with the real details and save, or clear them.
 6. **Settings → Website → Homepage & contact:** replace the stats with true figures (or remove them), enter the real WhatsApp number (the sample is `+2348000000000`) and real business hours. Select **Save changes**.
 7. **Settings → Website → Financing:** enter real terms and select **Save changes**, or switch **Show financing on the website** off and select **Save changes**.
 8. **Settings → Website → Load calculator:** check every appliance, the sizing assumptions and the generator costs, then select **Save changes**; or switch **Show the calculator on the website** off and select **Save changes**.
-9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Our work**, **Our Team** and the footer. No "Sample" label should be left.
+9. Open the website on your phone and check the home page, **Calculator**, **FAQ**, **Projects**, **Our Team** and the footer. No "Sample" label should be left.
 
 **What you'll see:** as soon as you save an item or section, its **Sample** badge and website label disappear. The banner disappears when no sample items are left on that screen.
 
@@ -1009,13 +1023,13 @@ The team page was built with **12 sample team members**: made-up names with draw
 2. Moving a sample member or switching them off doesn't remove the Sample badge. Only changing their details and saving does.
 3. Check `/team` on your phone: no card should show a "Sample" label, and no photo should be a drawing.
 
-**What you'll see on the website:** the **Our Team** page with figures counting up (team members, teams, and engineers and installers), a section for each group with photo cards, and a "Want to join us?" band linking to open roles. On a computer, pointing at a card or tabbing to it zooms the photo and shows the bio and LinkedIn link over it; on a phone, the bio and link show under the role. **Team** is in the top menu, and **Our Team** is in the footer.
+**What you'll see on the website:** the **Our Team** page with our values and an engineer's photo at the top, then one section for each **Group** you set in the admin, and a **Work With Us** button linking to open roles. Each person's photo, name, role, bio and LinkedIn link show on their card. Where someone appears depends on their **Group** (see story 11.14). **Team** is in the top menu, and **Our Team** is in the footer.
 
 **Tips and common mistakes**
 
 - Type each group name the same way every time ("Operations", not "operations"), or you'll get two groups.
 - Only use a person's photo, bio and LinkedIn link with their agreement.
-- The "engineers and installers" figure counts members of groups whose name contains "Engineer" or "Install". Name your engineering group accordingly.
+- Each **Group** becomes its own section, named after the group. The first group shows as dark cards, the second as photo tiles and the rest as coloured panels. Groups appear in the order of their first person by **Sort order**, and people within a group follow their Sort order. To rename a section, rename the group on its members; to move a section up, give one of its members a lower Sort order.
 - The team page tells search engines about real team members only. Sample members are never included.
 
 ---
@@ -1026,13 +1040,13 @@ This chapter describes the public website for customers. Staff can use it to gui
 
 **On the home page** you can jump straight to packages by category (**Tubular**, **Lithium**, **Hybrid**, with how many packages each has) in the "Find your package" section, and see the lowest package price under "Complete packages from" (story 11.12).
 
-On a computer, the top menu has **Packages**, **Products**, **Services**, **Our work**, **Our Team** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: the menu also lists **Careers** (right after **Our Team**). **Careers** is in the footer too.
+On a computer, the top menu has **Packages**, **Products**, **Services**, **Projects**, **Our Team**, **Careers** and **Contact us**, plus the gold **Load calculator** button (it reads **Get a quote** when the calculator is switched off) and the **cart** button with a count. The count includes both packages and products in your cart. On a phone, select the menu button: it lists the same items. **Careers** is in the footer too.
 
 ### Story 11.1: Browse packages
 
 *As a customer, I want to find a package that suits my home or business so that I get reliable power.*
 
-1. Select **Packages** (or **Shop packages** on the home page).
+1. Select **Packages** (or **View Packages** on the home page).
 2. Filter by category (the categories your packages use) and inverter size (kVA), or sort by price.
 3. Each card shows the name, kVA, voltage, what it can power, the starting price ("from ₦…"), whether a solar option exists, and how many items are included.
 
@@ -1104,7 +1118,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a job seeker, I want to see open roles and apply so that I can work with Juwon Electric.*
 
-1. Select **Careers** in the footer, or in the menu on a phone (you can also select **See open roles** on the home page or the team page). Filter by department or employment type.
+1. Select **Careers** in the footer, or in the menu on a phone (you can also select **See open roles** on the home page or **Work With Us** on the team page). Filter by department or employment type.
 2. Open a vacancy to read the description, responsibilities and requirements.
 3. Select **Apply by email**. Your email app opens with the subject "Application: <job title>". Attach your CV and send.
 
@@ -1164,9 +1178,9 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 
 *As a customer, I want to see installations for customers like me so that I know Juwon Electric has done similar work.*
 
-1. On the home page, look at the case studies (photo, type of customer, location, system and a short summary), or select a card under "Who we power", for example homes or businesses.
-2. On **Our work**, use the **category filter** to show only that kind of customer.
-3. Each project card shows the summary, location and system when we've added them.
+1. On the home page, look at the case studies (photo, location, amount and a short summary).
+2. On **Projects**, browse the full gallery of completed projects.
+3. Each project card shows the summary, location and amount when we've added them.
 
 **Also on the home page:** logos of clients we've powered, shop by category, popular products, reviews from customers, a "We're hiring" strip when there are open roles and, when offered, a **financing** section with payment-plan terms. You can't apply for financing on the website: contact us to ask about it. The last section shows our phone numbers, email, address and opening hours.
 
@@ -1177,7 +1191,7 @@ The **Calculator** page is only available when Juwon Electric has switched it on
 1. The top of the home page is a large photo area (the hero). The photos of our installations change every 7 seconds.
    - The thin bars at the bottom centre show which photo is on screen; the gold fill shows how long until the next one. Select a bar to show that photo.
    - Select the **pause** button next to the bars to stop the photos changing, and **play** to start again. The photos also pause while your mouse is over the top area or you are moving through it with the keyboard.
-2. Select **Shop packages** to see all packages, or **Chat on WhatsApp** (or **Talk to an engineer**, which calls us, when WhatsApp isn't set up).
+2. Select **View Packages** to see all packages, or **Chat on WhatsApp** (or **Talk to an engineer**, which calls us, when WhatsApp isn't set up).
 3. Below the buttons you'll see a few figures about our work (for example the number of installations). They count up from 0 when the page opens.
 4. On a large computer screen, a card at the bottom right shows the lowest package price ("Complete packages from ₦…"). Select its arrow to compare packages.
 5. To work out what size system you need, select **Load calculator** in the top menu. For a price for your own needs, open the menu and select **Get a quote**, which opens the contact form with the topic already set to Quote. On a phone both are at the bottom of the menu.
@@ -1209,12 +1223,10 @@ At the bottom right of most pages you may see one button. On a phone it is a rou
 *As a customer, I want to see the people behind Juwon Electric so that I know who I'm dealing with.*
 
 1. Select **Our Team** in the top menu or the footer.
-2. The **Our Team** page shows how many team members, teams, and engineers and installers there are. The figures count up when the page opens.
-3. People are grouped under headings, for example "Leadership" or "Engineering & installations". Each card shows a photo (or initials), name and role.
-4. To read more about someone:
-   - On a computer, point at their card, or tab to it with the keyboard. The photo zooms a little and their bio and a **LinkedIn** link (when they have one) appear over it.
-   - On a phone or tablet, the bio and **LinkedIn** link show under their role.
-5. Interested in working with us? Select **See open roles** in the "Want to join us?" band at the bottom.
+2. The page opens with what our team stands for and a photo of one of our engineers, then your first group (for example Meet Our Leaders) as dark cards with each person's role, name and full bio, your second group (for example Engineering & installations) as photo tiles, and every other group as a coloured panel side by side.
+3. Section headings are exactly your **Group** names (nothing is added in front), and their order follows **Sort order**: the group of the person with the lowest Sort order comes first.
+4. Every person's bio and **LinkedIn** link (when set in the admin) show under their name. Which section someone appears in depends on their **Group** in the admin (see story 11.14).
+5. Interested in working with us? Select **Work With Us** at the bottom.
 
 ---
 
@@ -1246,15 +1258,15 @@ When staff change something in the admin console (a price, a product, a package,
 | **Can't delete a category** | Packages, products or subcategories still use it ("Category has subcategories, products or packages."). | Move its products and subcategories to another category, and change the **Category** on its packages (story 7.5), then delete. |
 | **An engineer can't see a job** | They aren't on the job's crew, or the job was cancelled. | Open the job in **Installations** and add them under **Engineers**. |
 | **Invite or reset token doesn't work** | Tokens expire after 30 minutes and work once. | Use **Forgot password?** to get a new one. |
-| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Portfolio**, and in **Settings → Website** → Homepage & contact, Financing and Load calculator. |
+| **Sample label showing on the website** | The item or settings section is still sample content. It stays marked until someone edits and saves it, or deletes it. Sample FAQs have no label, so check them in the admin too. | Follow story 10A.8: replace and save, or delete, each item with a **Sample** badge in **Website** → FAQs, Reviews and Client logos, in **Projects**, and in **Settings → Website** → Homepage & contact, Financing and Load calculator. |
 | **Calculator/financing not showing** (website) | It's switched off in Settings. Both are off unless someone switches them on. | A Super admin or Admin opens **Settings → Website → Load calculator** or **Financing**, switches on **Show the calculator on the website** or **Show financing on the website**, checks the values and selects **Save changes** (stories 10A.6 and 10A.7). Leave financing off unless real terms are agreed. |
 | **WhatsApp button missing** (website) | No **WhatsApp number** is set in **Settings → Website → Homepage & contact**, or the page hasn't refreshed yet. The floating buttons never show on the cart and checkout pages. | Enter the number, save, and reload the website (story 10A.5). On the cart or checkout, this is expected. |
 | **Can't leave a settings page** ("You have unsaved changes. Leave without saving?") | You changed something on that page and haven't saved it. | Select **Keep editing**, then **Save changes** (or **Discard**). Or select **Leave without saving** if you don't want the change. |
 | **No Save button in Settings** | The save bar only appears after you change something. If fields are greyed out, your role can only view Settings. | Change a field to see **Save changes**. For view-only accounts, ask a Super admin or Admin to make the change. |
 | **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Show on the website** is on, and reload the website. |
 | **Hero photos aren't changing** (home page) | The slideshow is paused: someone selected the pause button, or the mouse is resting over the photo area, or keyboard focus is inside it. Or the device is set to reduce motion, which turns off automatic changes. | Select the **play** button next to the bars, or move the mouse away. With reduce motion on, this is expected: select a bar to see each photo. |
-| **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're under the right heading. |
-| **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings → Website → Homepage & contact** (home stats) or the team list (team page figures are counted from it). |
+| **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're in the right section (story 11.14). |
+| **Numbers show 0 briefly** (home page stats) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings → Website → Homepage & contact**. |
 | **Image won't upload** | The file isn't a supported picture, the connection dropped, or uploads are unavailable for a while ("Image uploads are unavailable right now. Please use an image link or try again later."). | Read the message under the field and follow [Adding images](#adding-images). Check your connection and try again. If uploads are unavailable, select **Use an image link instead**, or try again later. |
 | **Image looks blurry** (website) | The original picture was small or low quality. Large photos are shrunk to a sensible size, but small ones can't be made sharper. | Upload a larger, sharper original with **Replace**. Use the photo straight from the camera, not a screenshot or a copy from a chat. |
 | **Wrong file type** ("That file isn’t an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image.") | Only JPEG, PNG and WebP pictures can be uploaded. SVG drawings, PDFs and documents can't. | Save or export the picture as JPEG or PNG and upload that, or ask whoever sent it for a PNG or JPEG. You can also use an image link. |
@@ -1273,6 +1285,90 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-10-17 (Our Team page from your groups)**
+- Customer: below the unchanged header, the **Our Team** page follows the new design: the first group as dark cards, the second as photo tiles and the rest as coloured panels, all named and ordered by your **Groups** in the admin. Every card shows the full bio. Team photos load faster.
+- Admin: group names no longer need words like "Head" or "Engineer"; whatever you type as the Group is the section name.
+
+**2026-10-17 (new About us look)**
+- Customer: the **About us** section on the home page has a new dark look: the heading and company description beside a tall photo of an engineer and the three kinds of customers we serve (Residential, Commercial, Industrial). On phones the photo shows first, above the heading. Later the same day the previous look was brought back; the dark look is kept and can return on request.
+
+**2026-10-17 (team page on phones)**
+- Customer: on phones and tablets, the engineer photo at the top of the **Our Team** page now shows above the introduction instead of below it.
+
+**2026-10-12 (team page, about us, bigger logo)**
+- Customer: the **Our Team** page has a new look: our values and an engineer's photo at the top, then heads of departments, engineers, the support teams side by side, and a **Work With Us** button at the bottom. People are placed by their **Group**: a group with the word "Head", "Heads", "Leadership", "Management", "Director" or "Executive" in its name shows under heads of departments, and one with "Engineer" or "Install" under engineers. Bios and LinkedIn links now show under each person instead of on hover, and the count-up figures at the top are gone.
+- Customer: the home page has a new **About us** section and no longer shows **Find your package**. Packages are still in the top menu. The About us section has the heading **Reliable Power, Engineered for Your Peace of Mind.**, a short company description, two photos, three short points and two buttons: **Meet our team** and **Talk to an engineer**, which opens Contact us.
+- Customer: the logo is bigger in the header and footer.
+
+**2026-09-23 (package page order on phones)**
+- Customer: on a phone, a package page now shows **What it powers** first, then **What's included**, then the price and **Add to cart**, then delivery and installation. On a computer the price stays in the right-hand column as before.
+
+**2026-09-23 (packages and reviews slide in as you scroll)**
+- Customer: on the home page, **Find your package** now shows up to six packages in each tab and **Reviews** up to six reviews. When you reach either section it holds still, and scrolling down slides the other cards in from the right; scrolling back up slides them out again. When you stop scrolling, the row settles on a whole card, and on phones every card stays fully in view with a margin on both sides. Review stars fill in one by one as each review appears. It works on phones, tablets and computers. If your device is set to reduce motion, you swipe the row instead.
+
+**2026-09-23 (more compact on phones)**
+- Customer: on phones, the website's text, spacing and buttons are slightly smaller, so pages fit more on screen and need less scrolling. Forms keep their normal text size so the phone doesn't zoom in while typing. Tablets, computers and the admin are unchanged.
+
+**2026-09-23 (products page layout)**
+- Customer: when there are no product categories yet, the **Products** page's search bar and "Our product catalogue is being updated" message now use the full page width instead of being squeezed into a narrow column on the left.
+
+**2026-09-23 (original colours back)**
+- Customer: the website and the admin are back to their original colours: the deep brown-red background, the brighter red buttons and the original gold. The other changes from today stay: the industries list, the "Solar & energy solutions across Nigeria" line under the hero buttons, and the client logos.
+- For whoever maintains the website: all the colours are still in one file, `frontend-next/app/theme.css`. It notes where each colour shows, so the website and the admin can be retuned from there.
+
+**2026-09-23 (clearer labels, footer and admin)**
+- Customer: the small labels above page titles ("Our People", "Join Our Team", "Our Services", "Catalogue") and above the red sections are now gold badges with dark text, so they're easy to see. Footer column titles are bold white with a gold line under them, and the footer **Subscribe** button is gold.
+- Owner: the admin's top bar is now solid red (it looked pale pink before), and the sign-in page uses the same red.
+- For whoever maintains the website: all the site and admin colours are in one file, `frontend-next/app/theme.css`. Change the red or gold there and both the website and the admin follow.
+
+**2026-09-23 (easier-to-read text on red)**
+- Customer: text on the red sections, the footer and the red panels is now solid white instead of faded white, and the small headings above sections are a pale gold, so everything on the red is easy to read. Gold stays on the big words, numbers and icons.
+- Owner: the admin menu on the left is easier to read too: its links and headings are pale gold and turn white when you point at them.
+
+**2026-09-23 (the logo's red and gold)**
+- Customer: the website's red and yellow now match the two colours of the Juwon Electric logo exactly: the red of the lightning bolt for the red sections, buttons and links, and the gold of the "Juwon Electric" lettering for the gold buttons, highlighted words and icons. The admin menu bar uses the same red.
+
+**2026-09-23 (brand red, industries, hero line, client logos)**
+- Customer: the dark brown areas of the website (the "Why choose us" and "How it works" bands, the colour over the hero photos, the calculator panel, the footer and the small red headings) are now red. The admin menu bar changes to red too.
+- Customer: in **Industries We Serve**, "Manufacturing & Industrial" now reads **Manufacturing & Industrial Facilities**, and the **Infrastructure** card is gone.
+- Customer: on the home page, "Solar & energy solutions across Nigeria" now sits under the **View Packages** and **Chat on WhatsApp** buttons instead of above the headline.
+- Customer: client logos in the scrolling row now turn to full colour and open the client's website every time, including after they have scrolled round once. Before, logos that had come round again stayed grey and could not be clicked.
+- Owner: logo files for GIG Logistics, Olowu Palace, Nepal Energies, Sound City, RCCG, Olsale Farms, Assemblies of God and Superb Mart are on the website. To show one, go to **Website** → **Client logos**, select **Add client logo**, then **Use an image link instead**, and type its path: `/clients/gig-logistics.png`, `/clients/olowu-palace.png`, `/clients/nepal-energies.png`, `/clients/soundcity.png`, `/clients/rccg.png`, `/clients/olsale-farms.png`, `/clients/assemblies-of-god.png` or `/clients/superb-mart.png`. The Superb Mart logo is blurry: ask them for their original logo file.
+
+**2026-09-22 ("Show on mobile" now does something)**
+- Owner: the **Show on mobile** switch on a project used to have no effect on the website. It now works: on a phone, projects with the switch off are held back behind a **Show N more projects** button at the bottom of the grid, and tapping it reveals them. On a tablet or computer every project shows and there is no button. The switch is on by default, so a project you have not touched keeps showing as before.
+- Customer: the heading on the services page reads **Services** (the small line above it still reads "Our services").
+
+**2026-09-22 (admin: Portfolio is now Projects)**
+- Owner: in the admin menu under Catalog, **Portfolio** now reads **Projects**, and so do the page heading, the buttons ("Add project"), the search box and the confirmation messages. The switch on the form that read "Show on the Portfolio page" now reads "Show on the Projects page". Nothing you have entered changes, and the page is in the same place in the menu.
+- Owner: on **Settings → Inventory**, the note under **Low-stock alerts** now reads "Recipients are set in Settings → Notification emails → Low stock", without the extra step.
+
+**2026-09-22 ("Our work" is now "Projects")**
+- Customer: the menu item and page heading that read **Our work** now read **Projects**, in the top menu, the phone menu and the footer. The page itself is unchanged, and its web address (`/portfolio`) still works, so any link you have already shared keeps working.
+
+**2026-09-22 (project cards show the amount)**
+- Customer: on the home page and **Our work**, the line that used to sit beside a lightning bolt now sits beside a naira sign (₦), because it shows what the project cost.
+- Owner: the portfolio form's **System** box is now **Amount**, for what the project cost, e.g. ₦14,500,000. Anything already typed in that box is kept and still shows — only the label and the example changed.
+
+**2026-09-20 (Industries We Serve, no work-by-industry)**
+- Customer: the "Industries We Power" section is now **Industries We Serve** — a clean set of eight industries shown as icon cards, with no photos. A new **Solutions by Scale** band below it lists Residential, Commercial and Industrial & Utility-Scale. The **Our work** page now shows all projects in one gallery, no longer split by industry.
+- Owner: you no longer manage "customer segments," and the portfolio form no longer has a **Category** (industry) field — the industries list is fixed in the site. Nothing you already entered is lost; those fields are just no longer shown.
+
+**2026-09-20 (real installation photos)**
+- Customer: the home page, page banners, "who we serve" cards and the work gallery now show our own inverter and battery installation photos instead of the stock pictures. The gallery images fill their cards fully.
+- Owner: you supplied 25 photos; they were tidied up for the web (turned upright, resized and compressed) and put in place for you. On the live site, the work-gallery pictures need a one-time update at the next deploy to fill their cards — this is noted for the developer.
+
+**2026-09-20 (friendlier "page not found")**
+- Customer: the "page not found" (404) page now points to four helpful places — Packages, Products, Our services and Contact us — instead of three, so a wrong or old link is easier to recover from.
+
+**2026-09-19 (owner copy pass)**
+- Customer: new wording across the home page, cart and services pages, and the footer.
+- Owner: the services, the first three reviews, the phone numbers, office address and opening hours were updated for you; the rest are editable as usual under Website and Settings.
+
+**2026-09-18 (careers in the top menu)**
+- Customer: **Careers** is now in the top menu, so open roles are one click away from any page.
+- Owner: four sample vacancies are on the site for review (three open, one draft). Replace or delete them under **Careers** in the admin before launch.
 
 **2026-09-18 (why choose us and team copy)**
 - Customer: new wording in the "Why Customers Choose Us" band and at the top of the team page.

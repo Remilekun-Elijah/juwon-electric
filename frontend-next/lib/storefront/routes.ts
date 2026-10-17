@@ -14,23 +14,22 @@ export const storeRoutes = {
 export type StoreNavItem = { label: string; href: string };
 
 /**
- * Header navigation, in order. Careers moved to the mobile drawer and the footer when Team was added
- * (TEAM_AND_MOTION_V1 §4); Calculator left the list on 2026-09-17, when the gold header button became **Load
- * calculator** (the drawer keeps its own button).
+ * Header navigation, in order. Calculator left the list on 2026-09-17, when the gold header button became **Load
+ * calculator** (the drawer keeps its own button); Careers joined it on 2026-09-18, after Our Team, so open roles are
+ * one click from every page. With products switched off the list is six items.
  */
 export const storeNav: StoreNavItem[] = [
   { label: "Packages", href: storeRoutes.packages },
   { label: "Products", href: storeRoutes.products },
   { label: "Services", href: storeRoutes.services },
-  { label: "Our work", href: storeRoutes.portfolio },
+  { label: "Projects", href: storeRoutes.portfolio },
   { label: "Our Team", href: storeRoutes.team },
+  { label: "Careers", href: storeRoutes.vacancies },
   { label: "Contact us", href: storeRoutes.contact },
 ];
 
-/** Mobile drawer navigation: the header items plus Careers, placed after Team. */
-export const storeDrawerNav: StoreNavItem[] = storeNav.flatMap((item) =>
-  item.href === storeRoutes.team ? [item, { label: "Careers", href: storeRoutes.vacancies }] : [item]
-);
+/** Mobile drawer navigation: the same items (Careers is in the header list since 2026-09-18). */
+export const storeDrawerNav: StoreNavItem[] = storeNav;
 
 /** sessionStorage key for the last placed order summary (written by checkout, read by /checkout/success). */
 export const LAST_ORDER_KEY = "je/last-order";
@@ -52,15 +51,30 @@ export const isActivePath = (pathname: string | null | undefined, href: string) 
   return path === href || path.startsWith(`${href}/`);
 };
 
+/**
+ * A Nigerian number in international form for display (2026-09-19): "08144571553" becomes "+2348144571553", and a
+ * number that already carries a country code, or any other format, is left as it is.
+ */
+export const internationalPhone = (phone: string | null | undefined) => {
+  const value = (phone || "").trim();
+  if (!value || value.startsWith("+")) return value;
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("0")) return `+234${digits.slice(1)}`;
+  if (digits.length === 13 && digits.startsWith("234")) return `+${digits}`;
+  return value;
+};
+
 /** First number of a settings phone field that may hold several ("+234…, +234…"). */
-export const primaryPhone = (phone: string | null | undefined) => (phone || "").split(/[,;/]/)[0]?.trim() || "";
+export const primaryPhone = (phone: string | null | undefined) =>
+  internationalPhone((phone || "").split(/[,;/]/)[0]?.trim() || "");
 
 /** All numbers of a settings phone field. */
 export const phoneNumbers = (phone: string | null | undefined) =>
   (phone || "")
     .split(/[,;/]/)
-    .map((value) => value.trim())
+    .map((value) => internationalPhone(value.trim()))
     .filter(Boolean);
+
 
 /** `tel:` href for a display phone number. */
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
@@ -73,7 +87,3 @@ export const whatsappHref = (phone: string | null | undefined, text = "Hello Juw
   const digits = whatsappDigits(phone);
   return digits ? `https://wa.me/${digits}?text=${encodeURIComponent(text)}` : "";
 };
-
-/** `/portfolio?category=<slug>`, or `/portfolio` without a slug. */
-export const portfolioCategoryPath = (category: string | null | undefined) =>
-  category ? `${storeRoutes.portfolio}?category=${encodeURIComponent(category)}` : storeRoutes.portfolio;

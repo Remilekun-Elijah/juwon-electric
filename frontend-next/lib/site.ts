@@ -35,6 +35,3 @@ export const contactFallback = {
   email: "inquiries@juwonelectric.com",
   address: "86, aladelola street, Ikosi ketu, Lagos, Nigeria",
 } as const;
-
-/** Public revalidation window (FE_CONVENTIONS §4). Route segment configs must use the literal 300. */
-export const REVALIDATE_SECONDS = 300;

@@ -47,8 +47,18 @@ export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-describedby="store-newsletter-note">
-      <label htmlFor="store-newsletter-email" className={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      aria-describedby="store-newsletter-note"
+    >
+      <label
+        htmlFor="store-newsletter-email"
+        className={cn(
+          "text-sm font-medium hidden",
+          dark ? "text-white" : "text-slate-900",
+        )}
+      >
         Email address
       </label>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -71,19 +81,38 @@ export default function StoreNewsletter({ tone = "light" }: { tone?: "light" | "
           disabled={loading}
           className="min-w-0 sm:flex-1"
         />
-        <Button type="submit" size="lg" loading={loading} loadingText="Subscribing…" icon={<Mail aria-hidden="true" />}>
+        <Button
+          type="submit"
+          size="lg"
+          loading={loading}
+          loadingText="Subscribing…"
+          icon={<Mail aria-hidden="true" />}
+        >
           Subscribe
         </Button>
       </div>
       <div aria-live="polite">
         {error && (
-          <p id="store-newsletter-error" className={cn("mt-2 text-sm", dark ? "text-red-300" : "text-red-700")}>
+          <p
+            id="store-newsletter-error"
+            className={cn(
+              "mt-2 text-sm",
+              dark ? "text-red-300" : "text-red-700",
+            )}
+          >
             {error}
           </p>
         )}
       </div>
-      <p id="store-newsletter-note" className={cn("mt-2 text-xs", dark ? "text-white/60" : "text-slate-500")}>
-        Occasional offers and maintenance tips. Unsubscribe any time.
+      <p
+        id="store-newsletter-note"
+        className={cn(
+          "mt-2 text-xs",
+          dark ? "text-white/60" : "text-slate-500",
+        )}
+      >
+        Get exclusive offers, solar tips and important updates from Juwon
+        Electric.
       </p>
       <TurnstileWidget
         enabled={turnstile.enabled}

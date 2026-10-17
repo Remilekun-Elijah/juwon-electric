@@ -261,5 +261,3 @@ export function Categories() {
     </AdminPage>
   );
 }
-
-export default Categories;

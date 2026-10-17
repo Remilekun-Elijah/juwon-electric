@@ -253,6 +253,3 @@ export const sanitizeRichText = (input) => {
   while (stack.length) out += `</${stack.pop()}>`;
   return out;
 };
-
-// Alias for code written against BE-2's backend/shared/sanitizeHtml.js.
-export const sanitizeHtml = sanitizeRichText;

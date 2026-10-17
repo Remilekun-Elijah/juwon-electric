@@ -627,7 +627,7 @@ Every migration is idempotent (`IF NOT EXISTS`, guarded `UPDATE ... WHERE`), has
 - A narrower allowlist is the safer default.
 - Forcing `target="_blank"` with `rel=noopener` removes a class of tab-nabbing bugs.
 
-BE-2 has already adopted it: `bd75e45` holds a byte-identical `richText.js` and fixtures, and `sanitizeHtml.js` does not exist on the branch. The `sanitizeHtml` alias export may stay until integration, but new code must import `sanitizeRichText`. Any future widening is a contract change: update §0.5 and the fixtures together, and apply it to every field.
+BE-2 has already adopted it: `bd75e45` holds a byte-identical `richText.js` and fixtures, and `sanitizeHtml.js` does not exist on the branch. The `sanitizeHtml` alias export was removed on 2026-09-18 (integration is done); import `sanitizeRichText`. Any future widening is a contract change: update §0.5 and the fixtures together, and apply it to every field.
 
 **BE-1 vacancy interpretations:**
 10. **Confirmed.** Any move out of `closed` (to `open` or `draft`) clears `closedAt`.

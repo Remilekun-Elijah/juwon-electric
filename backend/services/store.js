@@ -3,7 +3,7 @@ import { copyFile, mkdir, readdir, readFile, rename, stat, unlink, writeFile } f
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
-import { customerSegments, portfolioItems, serviceOfferings } from "../data/seed.js";
+import { portfolioItems, serviceOfferings } from "../data/seed.js";
 import { ApiError, notFound } from "./errors.js";
 import { belowZero, buildMovement, matchesMovementFilters, mergeChanges, movementOrder, planStockChanges } from "../shared/inventory.js";
 import { isMongoMode, track, useMongo } from "./runtime.js";
@@ -14,7 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const dbPath = process.env.JSON_STORE_PATH
   ? resolve(process.env.JSON_STORE_PATH)
   : resolve(__dirname, "../data/db.json");
-const plansPath = resolve(__dirname, "../../frontend/src/utils/plans.json");
+const plansPath = resolve(__dirname, "../data/plans.json");
 
 // Only the public catalog collections have slugs (and admin-controlled sortOrder).
 export const CATALOG_COLLECTIONS = [
@@ -240,7 +240,7 @@ const flattenPlans = (groups) =>
     .flatMap((group) => group.plan || [])
     .map((item, index) => normalizePackage(item, index));
 
-// Default public catalog (packages from frontend plans.json, the rest from
+// Default public catalog (packages from data/plans.json, the rest from
 // data/seed.js). Record ids and timestamps are freshly generated; callers that
 // need stable ids (e.g. the Cloudflare seed export) override them.
 // With strict=true a missing/invalid plans.json throws instead of yielding [].
@@ -258,9 +258,9 @@ export const buildDefaultCatalog = async ({ strict = false } = {}) => {
   return {
     packages,
     services: serviceOfferings.map((item, index) => withMeta(item, index, "services")),
-    customerSegments: customerSegments.map((item, index) =>
-      withMeta(item, index, "customerSegments")
-    ),
+    // Customer segments are no longer seeded (2026-09-20). The collection stays registered, so a fresh
+    // catalogue simply starts with none.
+    customerSegments: [],
     portfolio: portfolioItems.map((item, index) => withMeta(item, index, "portfolio")),
   };
 };
@@ -559,12 +559,6 @@ export const updateCollectionItemIf = async (collection, query, patch) => {
     db[collection] = items;
     return items[index];
   });
-};
-
-export const updateCollectionItemByQuery = async (collection, query, payload) => {
-  const item = await updateCollectionItemIf(collection, query, payload);
-  if (!item) throw notFound(collection);
-  return item;
 };
 
 /** Appends `entry` to the array `field` (atomically) and sets `patch` fields. */

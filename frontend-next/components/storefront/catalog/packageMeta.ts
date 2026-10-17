@@ -146,8 +146,6 @@ export const defaultCartOptionIndex = (pkg: Pick<Package, "options">) => {
 export const optionItems = (option: { items?: ComposedItem[] | null }): ComposedItem[] => option.items ?? [];
 
 /** Composed options list products; legacy options only have the kits text. */
-export const isComposedOption = (option: { composed?: boolean; items?: ComposedItem[] | null }) => optionItems(option).length > 0;
-
 /**
  * Number of distinct products in the cheapest available composed option, for the card hint "Includes N products".
  * 0 when that option is legacy (no products listed).

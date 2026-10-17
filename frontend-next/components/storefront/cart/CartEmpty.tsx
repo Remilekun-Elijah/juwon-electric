@@ -24,8 +24,8 @@ export default function CartEmpty({
   const body =
     description ??
     (productsEnabled
-      ? "Choose an inverter package to keep your lights on through NEPA outages, or add batteries, panels and parts from our products."
-      : "Choose an inverter package to keep your lights on through NEPA outages.");
+      ? "Explore our solar packages and products to find the right energy solution for your home or business."
+      : "Explore our solar packages and find the right energy solution for your home or business.");
   return (
     <div className={cn(storeContainer, "py-8 sm:py-12")}>
       <div role="status" className={cn(storeCard, "je-in je-in-fast mx-auto flex max-w-2xl flex-col items-center px-6 py-12 text-center sm:py-16")}>
@@ -44,7 +44,7 @@ export default function CartEmpty({
           ) : null}
           <Link href={storeRoutes.packages} className={buttonClasses({ variant: backToCart ? "outline" : "primary", size: "lg" })}>
             <Package aria-hidden="true" />
-            Shop packages
+            View Packages
           </Link>
           {productsEnabled && (
             <Link href={storeRoutes.products} className={buttonClasses({ variant: "outline", size: "lg" })}>

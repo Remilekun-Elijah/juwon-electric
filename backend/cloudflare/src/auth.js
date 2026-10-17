@@ -103,7 +103,7 @@ const RATE_LIMITS = {
 // Fixed-window counter stored in D1. The single UPSERT ... RETURNING statement is
 // atomic, so concurrent requests cannot both read a stale count. Returns
 // { count, resetAt, limited } or null when the table is missing / D1 errors (fail open).
-export const hitRateLimit = async (env, ctx, name, identity) => {
+export const hitRateLimit = async (env, ctx, name, identity, { failClosed = false } = {}) => {
   const { limit, windowMs } = RATE_LIMITS[name];
   const key = `${name}:${identity}`;
   const currentTime = Date.now();
@@ -120,6 +120,7 @@ export const hitRateLimit = async (env, ctx, name, identity) => {
       .bind(key, currentTime + windowMs, currentTime, currentTime)
       .first();
   } catch (error) {
+    if (failClosed) throw new ApiError(503, "Service temporarily unavailable.");
     console.warn(
       `Rate limiting skipped for ${name}; apply migrations/0002_rate_limits.sql if the table is missing.`,
       describeError(error)
@@ -141,8 +142,8 @@ export const hitRateLimit = async (env, ctx, name, identity) => {
   return { count: Number(row.count), resetAt, limited: Number(row.count) > limit, remainingMs: resetAt - currentTime };
 };
 
-export const enforceRateLimit = async (env, ctx, name, identity) => {
-  const outcome = await hitRateLimit(env, ctx, name, identity);
+export const enforceRateLimit = async (env, ctx, name, identity, { failClosed = false } = {}) => {
+  const outcome = await hitRateLimit(env, ctx, name, identity, { failClosed });
   if (!outcome?.limited) return;
   const remainingMs = Math.max(outcome.remainingMs, 1000);
   const { fullMessage, message: prefix = "Too many requests. Please try again in" } = RATE_LIMITS[name];
@@ -175,7 +176,7 @@ const lockoutError = (remainingMs) => {
 // 429 when the count is over the threshold or a lock is active. The lock is set once,
 // for 15 minutes, when the count first goes over the threshold. Fails open (with a
 // warning) if the table is missing.
-export const countLoginAttempt = async (env, ctx, key, threshold) => {
+export const countLoginAttempt = async (env, ctx, key, threshold, { failClosed = false } = {}) => {
   const currentTime = Date.now();
   let row;
   try {
@@ -198,6 +199,7 @@ export const countLoginAttempt = async (env, ctx, key, threshold) => {
       .bind(key, currentTime, currentTime - LOGIN_WINDOW_MS, threshold, currentTime + LOCK_DURATION_MS)
       .first();
   } catch (error) {
+    if (failClosed) throw new ApiError(503, "Service temporarily unavailable.");
     console.warn(
       "Login attempt counter skipped; apply migrations/0004_admin_security.sql if the table is missing.",
       describeError(error)

@@ -5,24 +5,25 @@ import Section from "@/components/storefront/Section";
 import { availablePackages, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
+// About us design: AboutUsClassic (back in use 2026-10-17). For the dark design, change the path below to "@/components/storefront/home/AboutUsSpotlight".
+import AboutUs from "@/components/storefront/home/AboutUsClassic";
 import CareersTeaser from "@/components/storefront/home/CareersTeaser";
 import CategoryGrid from "@/components/storefront/home/CategoryGrid";
 import HomeHero from "@/components/storefront/home/HomeHero";
 import HomeProductCard from "@/components/storefront/home/HomeProductCard";
 import HowItWorks from "@/components/storefront/home/HowItWorks";
-import PackageFinder from "@/components/storefront/home/PackageFinder";
 import CalculatorTeaser from "@/components/storefront/landing/CalculatorTeaser";
 import ClientLogos from "@/components/storefront/landing/ClientLogos";
 import FaqPreview from "@/components/storefront/landing/FaqPreview";
 import Financing from "@/components/storefront/landing/Financing";
 import FinalCta from "@/components/storefront/landing/FinalCta";
+import Industries from "@/components/storefront/landing/Industries";
 import Reviews from "@/components/storefront/landing/Reviews";
-import Solutions from "@/components/storefront/landing/Solutions";
 import WhyChooseUs from "@/components/storefront/landing/WhyChooseUs";
 import Reveal from "@/components/storefront/motion/Reveal";
 import { buildCategoryTree } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
-import { caseStudies, segmentTitles } from "@/lib/storefront/content";
+import { caseStudies } from "@/lib/storefront/content";
 import {
   getStoreCategories,
   getStoreClients,
@@ -31,7 +32,6 @@ import {
   getStorePortfolio,
   getStoreProducts,
   getStoreReasons,
-  getStoreServices,
   getStoreSettings,
   getStoreTestimonials,
   getStoreVacancies,
@@ -59,16 +59,15 @@ const seeAll = (href: string, label: string) => (
 
 /**
  * Storefront home in the LANDING_V1 §7 order, with the shop sections restored after packages (products are sold online):
- * hero, stats, client logos, why choose us, solutions, packages, shop by category, popular products, calculator teaser,
+ * hero, stats, client logos, about us, why choose us, solutions, shop by category, popular products, calculator teaser,
  * case studies, reviews, how it works, financing, FAQ, careers teaser and the final call to action. Every section after
  * the hero hides itself when it has no data (the static "Why choose us" and "How it works" always show).
  */
 export default async function HomePage() {
-  const [allPackages, categories, products, services, portfolio, settings, testimonials, clients, faqs, vacancies, reasons] = await Promise.all([
+  const [allPackages, categories, products, portfolio, settings, testimonials, clients, faqs, vacancies, reasons] = await Promise.all([
     getStorePackages(),
     getStoreCategories(),
     getStoreProducts({ page: 1 }),
-    getStoreServices(),
     getStorePortfolio(),
     getStoreSettings(),
     getStoreTestimonials(),
@@ -88,7 +87,6 @@ export default async function HomePage() {
   const popularProducts = products.items.filter((product) => product.inStock).slice(0, POPULAR_PRODUCTS);
   // Settings → Website: with products off, the shop-by-category and popular-products sections stay off the home page.
   const productsEnabled = settings.website.productsEnabled;
-  const segments = services.customerSegments;
   const studies = caseStudies(featuredFirst(portfolio)).slice(0, HOME_CASE_STUDIES);
 
   // Financing worked example: the cheapest available package.
@@ -108,22 +106,12 @@ export default async function HomePage() {
 
       <ClientLogos clients={clients} />
 
+      <AboutUs />
+
       <WhyChooseUs reasons={reasons} />
 
-      <Solutions segments={segments} />
+      <Industries />
 
-      {packages.length > 0 && (
-        <Section
-          id="packages"
-          tone="white"
-          eyebrow="Packages"
-          title="Find your package"
-          description="Complete systems with the inverter, batteries and installation included. Choose a category to see options from entry level to premium."
-          actions={seeAll(storeRoutes.packages, "All packages")}
-        >
-          <PackageFinder packages={packages} />
-        </Section>
-      )}
 
       {productsEnabled && topCategories.length > 0 && (
         <Section
@@ -158,7 +146,7 @@ export default async function HomePage() {
           description="Explore some of our completed solar and energy projects across residential, commercial and institutional applications."
           actions={seeAll(storeRoutes.portfolio, "View All Projects")}
         >
-          <PortfolioGrid items={studies} categoryTitles={segmentTitles(segments)} linkToCategory />
+          <PortfolioGrid items={studies} />
         </Section>
       )}
 
@@ -167,8 +155,8 @@ export default async function HomePage() {
       <Section
         tone="dark"
         eyebrow="How it works"
-        title="From your first call to after-sales support"
-        description="Every order is confirmed by phone before anything is delivered, and our own engineers do the installation."
+        title="From Enquiry to After-Sales Support"
+        description="Every order is confirmed with you before anything is delivered, and our own engineers carry out the installation."
       >
         <HowItWorks />
       </Section>

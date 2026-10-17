@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Briefcase, Users } from "lucide-react";
-import BrandPanel from "@/components/storefront/BrandPanel";
+import { ArrowRight, Award, HeartHandshake, Sun, Target, Users, UsersRound, Wrench } from "lucide-react";
 import JsonLd from "@/components/storefront/JsonLd";
 import PageIntro, { INTRO_IMAGES } from "@/components/storefront/PageIntro";
 import SampleBadge from "@/components/storefront/SampleBadge";
 import Section from "@/components/storefront/Section";
-import CountUp from "@/components/storefront/motion/CountUp";
 import Reveal from "@/components/storefront/motion/Reveal";
-import TeamCard from "@/components/storefront/team/TeamCard";
+import { EngineerCard, GroupPanel, HeadCard, TeamGrid, cardWidth } from "@/components/storefront/team/TeamShowcase";
 import { EmptyState, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { slugify } from "@/lib/format";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { getStoreTeam } from "@/lib/storefront/data";
 import { storeRoutes } from "@/lib/storefront/routes";
-import { storeArrowNudge, storeContainer, storeH2, storePress, storeSection } from "@/lib/storefront/styles";
-import { groupTeam, teamStats } from "@/lib/storefront/team";
+import { storeArrowNudge, storeContainer, storePress } from "@/lib/storefront/styles";
+import { groupTeam } from "@/lib/storefront/team";
 
 export const revalidate = 60;
 
@@ -26,22 +25,30 @@ export const metadata: Metadata = {
   alternates: { canonical: "/team" },
 };
 
-/** Cards in the first row load eagerly (4 across at 1280 px). */
-const PRIORITY_PHOTOS = 4;
+const VALUES = [
+  { label: "Skilled Professionals", icon: Wrench },
+  { label: "Customer Focused", icon: HeartHandshake },
+  { label: "Driven by Excellence", icon: Award },
+];
 
-const onBrand = "focus-visible:ring-white focus-visible:ring-offset-brand-800";
+const CLOSING = [
+  { label: "One Team", icon: UsersRound },
+  { label: "One Goal", icon: Target },
+  { label: "A Brighter Tomorrow", icon: Sun },
+];
 
 /**
- * Team page (TEAM_AND_MOTION_V1 §4): intro, a count-up stats strip computed from the data, one section per group with a
- * headshot card grid (2 / 3 / 4 columns), and a "Want to join us?" band. Structured data lists non-sample members only.
+ * Team page (owner's mockup, 2026-10-17): intro with our values, then the groups from the API in their order (the
+ * order groups first appear in the sorted list). The first group (its name as the heading) shows as dark portrait
+ * cards (heads of departments), the second as photo tiles (engineers), and every later group as a tinted
+ * panel side by side. Group names, people and bios all come from the API; nothing is matched on names. Closes with
+ * a "One Team, One Goal" strip linking to open roles. Structured data lists non-sample members only.
  */
 export default async function TeamPage() {
   const members = await getStoreTeam();
   const groups = groupTeam(members).map((group, index) => ({ ...group, id: `team-${slugify(group.name) || index}` }));
-  const stats = teamStats(groups);
   const allSample = members.length > 0 && members.every((member) => member.sample);
   const employees = members.filter((member) => !member.sample);
-  let photoIndex = 0;
 
   return (
     <>
@@ -60,49 +67,67 @@ export default async function TeamPage() {
 
       <PageIntro
         eyebrow="Our people"
-        title="Meet the Team"
+        title={
+          <>
+            Meet the <span className="text-gold-400">Team</span>
+          </>
+        }
         description="The professionals behind Juwon Electric, delivering excellence across engineering, project execution, operations and customer experience."
         image={INTRO_IMAGES.commercial}
-      >
-        {members.length > 0 && (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-10">
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex min-w-0 flex-col-reverse gap-0.5 border-l-2 border-gold-400/50 pl-4">
-                  <dt className="text-sm text-white/75">{stat.label}</dt>
-                  <dd className="text-3xl font-semibold tabular-nums tracking-tight text-gold-400">
-                    <CountUp value={stat.value} delay={500} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            {allSample && <SampleBadge tone="brand" />}
+        asideFirst
+        aside={
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-3 -left-3 h-24 w-24 rounded-2xl bg-[radial-gradient(var(--color-brand-300)_1.5px,transparent_1.5px)] [background-size:12px_12px] sm:-bottom-5 sm:-left-5 sm:h-32 sm:w-32"
+            />
+            <div aria-hidden="true" className="absolute -right-3 -top-3 hidden h-24 w-24 rounded-2xl bg-gold-400/15 sm:block" />
+            <div className="relative aspect-[16/10] overflow-hidden rounded-3xl shadow-elev-4 ring-1 ring-white/15 sm:aspect-[4/3]">
+              <Image
+                src="/engineer.jpg"
+                alt="A Juwon Electric engineer commissioning an inverter"
+                fill
+                priority
+                sizes="(min-width: 1280px) 480px, (min-width: 1024px) 40vw, (min-width: 640px) 448px, 100vw"
+                className="object-cover object-[50%_18%]"
+              />
+              <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-brand-950/70 to-transparent" />
+              <p className="absolute bottom-4 left-5 text-sm font-semibold text-white">
+                An engineer, <span className="text-gold-400">on site</span>
+              </p>
+            </div>
           </div>
-        )}
+        }
+      >
+        <div className="max-w-2xl space-y-4 text-base leading-relaxed text-white/75">
+          <p>
+            At Juwon Electric, our greatest strength is our people. We are a team of skilled, passionate and dedicated
+            professionals working together to power homes and businesses with reliable, sustainable and innovative solar
+            energy solutions.
+          </p>
+          <p>
+            From our engineers and project teams to our customer support and administrative staff, every member plays a
+            vital role in ensuring your satisfaction and a brighter, cleaner future.
+          </p>
+        </div>
+        <ul className="mt-8 grid grid-cols-3 gap-3 border-t border-white/10 pt-6 sm:flex sm:flex-wrap sm:gap-x-10 sm:gap-y-5">
+          {VALUES.map(({ label, icon: Icon }) => (
+            <li key={label} className="flex flex-col items-center gap-2 text-center text-sm font-semibold text-white sm:flex-row sm:gap-3 sm:text-left">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold-400 text-slate-950 shadow-elev-2">
+                <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <span className="max-w-[7rem] leading-snug">{label}</span>
+            </li>
+          ))}
+          {allSample && (
+            <li className="flex items-center">
+              <SampleBadge tone="brand" />
+            </li>
+          )}
+        </ul>
       </PageIntro>
 
-      {groups.length > 0 ? (
-        groups.map((group, groupIndex) => (
-          <Section
-            key={group.id}
-            id={group.id}
-            tone={groupIndex % 2 === 1 ? "white" : "slate"}
-            title={group.name}
-            className={cn("scroll-mt-20", groupIndex > 0 && "pt-12 sm:pt-16")}
-          >
-            <Reveal as="ul" stagger className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-6 xl:grid-cols-4">
-              {group.members.map((member) => {
-                const priority = photoIndex++ < PRIORITY_PHOTOS;
-                return (
-                  <li key={member.id} className="min-w-0">
-                    <TeamCard member={member} priority={priority} />
-                  </li>
-                );
-              })}
-            </Reveal>
-          </Section>
-        ))
-      ) : (
+      {groups.length === 0 && (
         <Section>
           <EmptyState
             standalone
@@ -118,36 +143,60 @@ export default async function TeamPage() {
         </Section>
       )}
 
-      <section aria-labelledby="team-join-heading" className={storeSection}>
-        <Reveal className={storeContainer}>
-          <BrandPanel ring="bottom-left" className="px-5 py-10 sm:px-10 sm:py-12 lg:px-14">
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="flex min-w-0 gap-4">
-                <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 sm:flex">
-                  <Briefcase aria-hidden="true" className="h-6 w-6" />
+      {groups.slice(0, 2).map((group, index) => {
+        const Card = index === 0 ? HeadCard : EngineerCard;
+        return (
+          <Section
+            key={group.id}
+            id={group.id}
+            tone={index === 0 ? "white" : "slate"}
+            eyebrow={group.members.length === 1 ? "1 person" : `${group.members.length} people`}
+            title={group.name}
+            align="center"
+            className="scroll-mt-20"
+          >
+            <TeamGrid>
+              {group.members.map((member) => (
+                <li key={member.id} className={cn("min-w-0", cardWidth)}>
+                  <Card member={member} />
+                </li>
+              ))}
+            </TeamGrid>
+          </Section>
+        );
+      })}
+
+      {groups.length > 2 && (
+        <section aria-label="More of our team" className="border-y border-slate-200 bg-white py-10 sm:py-14">
+          <Reveal as="ul" stagger className={cn(storeContainer, "flex flex-col gap-4 md:flex-row md:flex-wrap md:items-stretch md:justify-center md:gap-5")}>
+            {groups.slice(2).map((group, index) => (
+              <li key={group.id} className="min-w-0">
+                <GroupPanel group={group} tint={index} />
+              </li>
+            ))}
+          </Reveal>
+        </section>
+      )}
+
+      <section aria-labelledby="team-join-heading" className="border-y border-brand-100 bg-brand-50 py-8 sm:py-10">
+        <Reveal className={cn(storeContainer, "flex flex-col items-center gap-6 lg:flex-row lg:justify-between")}>
+          <h2 id="team-join-heading" className="sr-only">
+            Work with us
+          </h2>
+          <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+            {CLOSING.map(({ label, icon: Icon }) => (
+              <li key={label} className="flex items-center gap-3 text-base font-semibold text-slate-900">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-400 text-slate-950">
+                  <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
                 </span>
-                <div className="min-w-0">
-                  <h2 id="team-join-heading" className={cn(storeH2, "text-white")}>
-                    Want to join us?
-                  </h2>
-                  <p className="mt-2 max-w-xl text-base leading-relaxed text-brand-50/90">
-                    We’re always glad to hear from engineers, installers and customer care staff who take pride in their work.
-                  </p>
-                </div>
-              </div>
-              <Link
-                href={storeRoutes.vacancies}
-                className={buttonClasses({
-                  variant: "secondary",
-                  size: "lg",
-                  className: cn("group w-full shrink-0 bg-white text-brand-800 hover:bg-brand-50 md:w-auto", onBrand, storePress),
-                })}
-              >
-                See open roles
-                <ArrowRight aria-hidden="true" className={storeArrowNudge} />
-              </Link>
-            </div>
-          </BrandPanel>
+                {label}
+              </li>
+            ))}
+          </ul>
+          <Link href={storeRoutes.vacancies} className={buttonClasses({ size: "lg", className: cn("group w-full shrink-0 sm:w-auto", storePress) })}>
+            Work With Us
+            <ArrowRight aria-hidden="true" className={storeArrowNudge} />
+          </Link>
         </Reveal>
       </section>
     </>

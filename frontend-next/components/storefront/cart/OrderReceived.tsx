@@ -134,7 +134,7 @@ export default function OrderReceived({ phone, email }: OrderReceivedProps) {
             <div className="mt-6 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
               <Link href={storeRoutes.packages} className={buttonClasses({ size: "lg" })}>
                 <Package aria-hidden="true" />
-                Shop packages
+                View Packages
               </Link>
               <Link href={storeRoutes.cart} className={buttonClasses({ variant: "outline", size: "lg" })}>
                 Go to cart

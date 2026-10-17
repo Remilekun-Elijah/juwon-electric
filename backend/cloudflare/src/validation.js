@@ -50,8 +50,6 @@ export const LIMITS = {
   pageLimitMax: 100,
 };
 
-export const ORDER_STATUSES = ["pending", "completed", "cancelled"];
-export const PAYMENT_STATUSES = ["unpaid", "partial", "paid", "refunded"];
 export const CONTACT_STATUSES = ["new", "contacted", "completed"];
 export const NEWSLETTER_STATUSES = ["new", "active", "inactive"];
 

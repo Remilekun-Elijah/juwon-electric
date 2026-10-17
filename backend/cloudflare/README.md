@@ -156,7 +156,7 @@ Admin sessions are required: until `admin_sessions` exists, admin login returns 
 | `TURNSTILE_DISABLED` | `true` skips Turnstile (one-time warning). Use it in `.dev.vars` for `wrangler dev`, or temporarily when deploying before the frontend widget is live. | Turnstile is enforced. |
 | `TURNSTILE_HOSTNAMES` | Comma-separated hostnames the siteverify `hostname` must match. | Hostnames of `ALLOWED_ORIGINS`; if that is unset too, the hostname is not checked. |
 | `DEV_EXPOSE_RESET_TOKEN` | `true` returns password reset tokens in the API response, but only for requests to `localhost`/`127.0.0.1`. Local development only. | Tokens are only emailed. |
-| `INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET` | Svix/Resend signing secret (`whsec_...`) for `POST /webhooks/contact-reply`. | Falls back to `INBOUND_EMAIL_WEBHOOK_SECRET` (`x-webhook-secret` header); if neither is set the webhook returns 401. |
+| `INBOUND_EMAIL_WEBHOOK_SIGNING_SECRET` | Svix/Resend signing secret (`whsec_...`) for `POST /webhooks/contact-reply` (required; the static `x-webhook-secret` fallback was removed 2026-09-19). | Without it, or with a bad signature, the webhook returns 401. |
 | `ADMIN_TOKEN` | Legacy static admin token (32+ characters, no placeholder; otherwise ignored with a warning). Still works (no session) but logs a warning; audit entries show `static-token`; logout returns "Static admin tokens cannot be signed out; remove ADMIN_TOKEN to revoke access.". Remove it once admin accounts are in use. | - |
 
 Local development: put these in `.dev.vars` (never commit it).

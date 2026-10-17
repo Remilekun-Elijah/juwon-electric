@@ -110,13 +110,13 @@ function BrandPanel() {
         <figure className="mt-8 overflow-hidden rounded-xl border border-white/10 bg-white/5">
           <Image
             src="/panel-4.webp"
-            alt="Solar panels installed by Juwon Electric on a customer’s roof"
+            alt="A completed inverter and battery installation by Juwon Electric"
             width={2269}
             height={1563}
             sizes="(min-width: 1280px) 470px, 40vw"
             className="aspect-[16/9] w-full object-cover"
           />
-          <figcaption className="px-4 py-3 text-xs text-white/70">A rooftop solar installation by our team.</figcaption>
+          <figcaption className="px-4 py-3 text-xs text-white/70">One of our recent inverter and battery installations.</figcaption>
         </figure>
       </div>
       <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Juwon Electric</p>

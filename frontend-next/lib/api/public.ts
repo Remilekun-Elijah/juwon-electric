@@ -20,7 +20,6 @@ import type {
   PublicSettings,
   PublicVacancy,
   Reason,
-  SaveCartPayload,
   ServicesData,
   SubscribePayload,
   TeamMember,
@@ -56,9 +55,6 @@ export type PortfolioQuery = { featured?: boolean; category?: string };
 /** `GET /portfolio?featured=&category=` (Landing v1 §2: `category` is a customer-segment slug). */
 export const getPortfolio = (params: PortfolioQuery = {}, init?: ApiRequestInit) =>
   getPublicData<PortfolioItem[]>("/portfolio", { featured: params.featured || undefined, category: params.category || undefined }, init);
-
-export const getPortfolioItem = (id: string, init?: ApiRequestInit) =>
-  getPublicData<PortfolioItem>(`/portfolio/${seg(id)}`, undefined, init);
 
 /* ---------- Website content (Landing v1 §1: active only, sorted) ---------- */
 
@@ -115,9 +111,6 @@ export const getPublicSettings = (init?: ApiRequestInit) =>
 
 /** `POST /cart/quote` with the same item fields as `placeOrder`. */
 export const quoteCart = (items: CartRequestItem[], init?: ApiRequestInit) => post<CartQuote>("/cart/quote", { items }, init);
-
-/** `POST /cart` (abandoned-cart capture; unused by the Vite site). Turnstile action "cart". */
-export const saveCart = (payload: SaveCartPayload, init?: ApiRequestInit) => post<unknown>("/cart", payload, init);
 
 export const placeOrder = (payload: OrderPayload, init?: ApiRequestInit) => post<PlacedOrder>("/order", payload, init);
 
