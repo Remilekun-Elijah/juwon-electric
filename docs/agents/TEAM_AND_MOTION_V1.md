@@ -56,16 +56,16 @@ Add `frontend-next/public/samples/team/member-1.svg` … `member-12.svg`.
 
 ## 4. Team page `/team` (storefront)
 
-- **Header:** `PageIntro` with eyebrow "Our people", title "Our Team", and the description "The engineers, installers and customer care staff behind every Juwon Electric system."
-- **Stats strip:** team size, number of groups and engineers count, computed from the data (members in groups whose name contains "Engineer" or "Install"). Uses the count-up animation (§5). No invented figures.
-- **Groups:** each group is a section with an h2 group name and a responsive card grid (2 columns at 375 px, 3 at 768, 4 at 1280).
-- **Card:**
-  - square photo (rounded-2xl), name, role
-  - on hover or focus: the photo zooms gently (scale 1.04), and a brand-800/80 gradient overlay slides up showing the bio (when present) and a LinkedIn icon link (when present)
-  - on touch devices the bio is shown under the role instead, since there's no hover
-  - a Sample pill on sample members
-- **Call to action band:** "Want to join us?" linking to `/vacancies`.
-- **Discoverability:** add `/team` to the sitemap, the footer (Company column), and the header nav only if it fits. Metadata with canonical. `loading.tsx`. JSON-LD `Organization` with `employee` entries (name, jobTitle) for non-sample members only.
+Replaced 2026-10-12 by the owner's layout (PRODUCT_REQUIREMENTS.md §6.11, "`/team` page — layout replaced 2026-10-12"). The original spec is kept struck through for history; the discoverability and structured-data rules still apply.
+
+- **Header:** `PageIntro` with eyebrow "Our people", title "Meet the **Team**" (Team in gold), the owner's description and two paragraphs, three values with gold round icons, and the engineer photo `public/engineer.jpg` in a right-hand `aside` column from 1024 px (16:10 under the text on phones, 4:3 from 640 px).
+- ~~**Stats strip:** team size, number of groups and engineers count, computed from the data (members in groups whose name contains "Engineer" or "Install"). Uses the count-up animation (§5). No invented figures.~~ Removed 2026-10-12: the team page has no figures.
+- **Sections by group name** (whole words, `lib/storefront/team.ts`): "Meet the Heads of Departments" for head(s)/leadership/management/director(s)/executive(s); "Meet the Engineers" for Engineer/Install; "Meet the Support Teams" for everything else. Several groups in one section each keep their name as a centred h3 above their row.
+- **Cards:** heads are white portrait cards (4:5 photo, brand-700 rule, name, role, full bio, LinkedIn link); engineers are 4:3 photo cards; support teams are brand-50 panels with small tiles. Rows are centred (`TeamGrid`), 2 / 3 / 5 (heads) or 4 (engineers) across. Initials avatar for a missing photo; Sample pill on sample members; staggered reveal.
+- ~~**Groups:** each group is a section with an h2 group name and a responsive card grid (2 columns at 375 px, 3 at 768, 4 at 1280).~~
+- ~~**Card:** square photo (rounded-2xl), name, role; on hover or focus the photo zooms gently and a brand-800/80 gradient overlay slides up showing the bio and a LinkedIn icon link; on touch devices the bio is shown under the role instead.~~ The bio and LinkedIn link now always show under the name and role.
+- **Closing strip:** brand-50 band with One Team · One Goal · A Brighter Tomorrow (gold icons inside brand-700 circles, so gold stays on dark per §7.1) and a brand **Work With Us** button linking to `/vacancies`. ~~"Want to join us?" band.~~
+- **Discoverability:** add `/team` to the sitemap, the footer (Company column), and the header nav only if it fits. Metadata with canonical. `loading.tsx` mirrors the layout above. JSON-LD `Organization` with `employee` entries (name, jobTitle) for non-sample members only.
 
 ## 5. Motion system (storefront-wide; no new dependencies)
 
@@ -87,7 +87,7 @@ Build it with CSS transitions and keyframes plus a tiny `IntersectionObserver` h
 5. **Hero entrance.** Staggered entrance of eyebrow → h1 → text → buttons → chips → photo card (Reveal with delays). The price card floats in slightly after the photo.
 6. **Section headings.** Eyebrow and title reveal as you scroll.
 7. **How it works.** Steps reveal in sequence, and the connecting line draws across (scaleX 0→1) on reveal.
-8. **Stats band and team stats** use `CountUp`.
+8. **Stats band** uses `CountUp` (team stats were removed 2026-10-12).
 9. **Calculator results** animate number changes with a short count, 250 ms.
 10. **Accessibility.**
     - Under `prefers-reduced-motion: reduce` there's no movement: fades are at most 150 ms, or disabled, and there's no marquee or count-up (final values show immediately).
@@ -220,7 +220,7 @@ Alternate surfaces so no two adjacent sections share the same white background:
 
 ### 7.6 Animation checklist (everything that can animate)
 - Reveal on scroll for every section heading and card grid (staggered).
-- CountUp: hero stats, team stats, the calculator teaser preview.
+- CountUp: hero stats, the calculator teaser preview (team stats removed 2026-10-12).
 - Marquee: client logos.
 - Hover: card lift and glow; image zoom; arrow nudge; button press.
 - How it works: the line draws and steps appear in sequence.
@@ -270,7 +270,7 @@ Every page gets:
 | Cart | Lines stagger in. Removing a line collapses its height and fades it; undo restores it with a slide. The quantity stepper tweens; the summary total tweens with `AnimatedNumber`; the empty-state illustration floats gently. |
 | Checkout | Form sections reveal in sequence; the summary slides in; the "Place order" button has a loading shimmer. |
 | Order success | Check-mark draw animation; the fulfilment steps stagger with a line draw; a small confetti-free celebration (scale and fade on the heading only). |
-| FAQ, calculator, team | Already animated. Only bring their intros onto the new `PageIntro`. |
+| FAQ, calculator, team | Already animated. Only bring their intros onto the new `PageIntro`. (Team relaid out 2026-10-12, see §4.) |
 | 404 | Heading and illustration float in; the links stagger. |
 
 ### 8.3 Rules (unchanged from §5 and §7)

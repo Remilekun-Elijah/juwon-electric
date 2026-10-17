@@ -18,6 +18,8 @@ export type SectionProps = {
    * and bottom borders; `dark` is a brand-950 band with white text and a gold eyebrow; `tint` is a brand-50 band.
    */
   tone?: "slate" | "white" | "dark" | "tint";
+  /** `center` stacks the header in the middle of the band (actions go under the description). */
+  align?: "start" | "center";
   className?: string;
   containerClassName?: string;
   children?: ReactNode;
@@ -36,6 +38,7 @@ export default function Section({
   description,
   actions,
   tone = "slate",
+  align = "start",
   className,
   containerClassName,
   children,
@@ -58,7 +61,12 @@ export default function Section({
     >
       <div className={cn(storeContainer, containerClassName)}>
         {hasHeader && (
-          <Reveal className="mb-8 flex flex-col gap-4 sm:mb-10 md:flex-row md:items-end md:justify-between">
+          <Reveal
+            className={cn(
+              "mb-8 flex flex-col gap-4 sm:mb-10",
+              align === "center" ? "items-center text-center" : "md:flex-row md:items-end md:justify-between"
+            )}
+          >
             <div className="max-w-3xl">
               {eyebrow && <p className={cn(storeEyebrow, dark && "text-gold-400")}>{eyebrow}</p>}
               {title && (

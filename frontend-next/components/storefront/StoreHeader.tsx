@@ -176,12 +176,12 @@ export default function StoreHeader({ phone, calculatorEnabled, productsEnabled 
         <Link
           href={storeRoutes.home}
           className={cn(
-            "-ml-2 shrink-0 rounded-lg px-2 py-1",
+            "-ml-2 shrink-0 rounded-lg px-2 py-0.5",
             storeFocus,
             glassFocus
           )}
         >
-          <Image src="/logo.svg" alt="Juwon Electric home" width={88} height={62} priority className="h-9 w-auto md:h-10" />
+          <Image src="/logo.svg" alt="Juwon Electric home" width={88} height={62} priority className="h-12 w-auto md:h-14" />
         </Link>
 
         <nav aria-label="Main" className="hidden flex-1 justify-center lg:flex">

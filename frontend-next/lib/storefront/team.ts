@@ -18,16 +18,17 @@ export function groupTeam(members: TeamMember[]): TeamGroup[] {
 /** Engineers and installers: members of groups whose name mentions "Engineer" or "Install". */
 export const isEngineeringGroup = (name: string) => /engineer|install/i.test(name);
 
-export type TeamStat = { label: string; value: string };
+/** Leadership: groups named for heads of department, leadership, management, directors or executives (whole words). */
+export const isLeadershipGroup = (name: string) => /\b(heads?|leadership|management|directors?|executives?)\b/i.test(name);
 
-/** Figures computed from the list only (no invented numbers). Engineers are left out when there are none. */
-export function teamStats(groups: TeamGroup[]): TeamStat[] {
-  const size = groups.reduce((total, group) => total + group.members.length, 0);
-  const engineers = groups.filter((group) => isEngineeringGroup(group.name)).reduce((total, group) => total + group.members.length, 0);
-  const stats: TeamStat[] = [
-    { label: size === 1 ? "Team member" : "Team members", value: String(size) },
-    { label: groups.length === 1 ? "Team" : "Teams", value: String(groups.length) },
-  ];
-  if (engineers > 0) stats.push({ label: engineers === 1 ? "Engineer and installer" : "Engineers and installers", value: String(engineers) });
-  return stats;
+/**
+ * One-line description for a support team panel, matched on the group name. Placeholder copy (2026-10-12) until
+ * groups carry their own description; unmatched groups get none.
+ */
+export function groupBlurb(name: string): string | null {
+  if (/customer|support|care|sales/i.test(name)) return "Always ready to listen, support and provide the best solutions for our clients.";
+  if (/admin|operation|logistic/i.test(name)) return "Keeping the business running efficiently and effectively.";
+  if (/financ|account/i.test(name)) return "Ensuring financial integrity, planning and accountability.";
+  if (/market|brand|communicat/i.test(name)) return "Telling our story and keeping customers informed.";
+  return null;
 }

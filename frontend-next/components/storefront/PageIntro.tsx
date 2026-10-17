@@ -25,6 +25,8 @@ export type PageIntroProps = {
   actions?: ReactNode;
   /** Extra content under the header row (filters, meta, badges), styled for dark. */
   children?: ReactNode;
+  /** Right-hand column from `lg` (a portrait or figure); stacks under the text on phones. */
+  aside?: ReactNode;
   className?: string;
   /** Loading placeholders pass "p" so a streamed fallback never adds a second `h1`. */
   headingAs?: "h1" | "p";
@@ -63,6 +65,7 @@ export default function PageIntro({
   breadcrumbs,
   actions,
   children,
+  aside,
   className,
   headingAs = "h1",
   image = INTRO_IMAGES.rooftop,
@@ -91,52 +94,61 @@ export default function PageIntro({
 
       <div className={cn(storeContainer, compact ? "pb-8 pt-24" : "pb-12 pt-28 sm:pb-16 sm:pt-32")}>
         {hasTrail && breadcrumbs && <Breadcrumbs items={breadcrumbs} tone="dark" className={cn(enter, compact ? "mb-4" : "mb-6")} />}
-        <div className="max-w-3xl">
-          {icon && (
-            <div style={next()} className="je-in je-in-pop mb-4">
-              {icon}
+        <div className={cn(aside && "grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center lg:gap-16")}>
+          <div className="min-w-0">
+            <div className="max-w-3xl">
+              {icon && (
+                <div style={next()} className="je-in je-in-pop mb-4">
+                  {icon}
+                </div>
+              )}
+              {eyebrow && (
+                <p style={next()} className={cn(enter, "text-xs font-semibold uppercase tracking-[0.14em] text-gold-400")}>
+                  {eyebrow}
+                </p>
+              )}
+              <Heading
+                className={cn(
+                  "text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl",
+                  eyebrow && "mt-3",
+                  celebrate && "je-in je-in-pop",
+                  quick && !celebrate && enter
+                )}
+                style={celebrate || quick ? next() : undefined}
+              >
+                {celebrate || quick ? (
+                  title
+                ) : (
+                  <span className="-mb-[0.15em] block overflow-hidden pb-[0.15em]">
+                    <span style={next()} className="je-line block">
+                      {title}
+                    </span>
+                  </span>
+                )}
+              </Heading>
+              {description && (
+                <p style={next()} className={cn(enter, "mt-4 text-base leading-relaxed text-white/75 sm:text-lg")}>
+                  {description}
+                </p>
+              )}
+            </div>
+            {actions && (
+              <div style={next()} className={cn(enter, "mt-6 flex flex-wrap items-center gap-3")}>
+                {actions}
+              </div>
+            )}
+            {children && (
+              <div style={next()} className={cn(enter, "mt-6")}>
+                {children}
+              </div>
+            )}
+          </div>
+          {aside && (
+            <div style={next()} className={cn(enter, "min-w-0")}>
+              {aside}
             </div>
           )}
-          {eyebrow && (
-            <p style={next()} className={cn(enter, "text-xs font-semibold uppercase tracking-[0.14em] text-gold-400")}>
-              {eyebrow}
-            </p>
-          )}
-          <Heading
-            className={cn(
-              "text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl",
-              eyebrow && "mt-3",
-              celebrate && "je-in je-in-pop",
-              quick && !celebrate && enter
-            )}
-            style={celebrate || quick ? next() : undefined}
-          >
-            {celebrate || quick ? (
-              title
-            ) : (
-              <span className="-mb-[0.15em] block overflow-hidden pb-[0.15em]">
-                <span style={next()} className="je-line block">
-                  {title}
-                </span>
-              </span>
-            )}
-          </Heading>
-          {description && (
-            <p style={next()} className={cn(enter, "mt-4 text-base leading-relaxed text-white/75 sm:text-lg")}>
-              {description}
-            </p>
-          )}
         </div>
-        {actions && (
-          <div style={next()} className={cn(enter, "mt-6 flex flex-wrap items-center gap-3")}>
-            {actions}
-          </div>
-        )}
-        {children && (
-          <div style={next()} className={cn(enter, "mt-6")}>
-            {children}
-          </div>
-        )}
       </div>
     </header>
   );

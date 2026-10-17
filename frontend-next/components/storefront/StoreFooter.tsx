@@ -107,7 +107,7 @@ export default function StoreFooter({ settings }: { settings: StoreSettings }) {
                 alt={`${SITE_NAME} home`}
                 width={88}
                 height={62}
-                className="h-10 w-auto"
+                className="h-14 w-auto"
               />
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">

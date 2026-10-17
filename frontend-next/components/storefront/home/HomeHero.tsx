@@ -86,8 +86,8 @@ export default function HomeHero({ phone, whatsappNumber, fromPrice, stats = [],
           </h1>
 
           <p style={enterDelay(520)} className="je-enter mt-6 max-w-2xl text-lg leading-relaxed text-white/80 sm:text-xl">
-            Complete solar, inverter and battery solutions professionally designed, supplied and installed to deliver
-            dependable power for your home or business.
+            Complete solar, inverter, and battery solutions, expertly designed, supplied, and installed to provide
+            reliable, efficient, and uninterrupted power for your home or business.
           </p>
 
           <div style={enterDelay(620)} className="je-enter mt-8 flex flex-col gap-3 sm:flex-row">

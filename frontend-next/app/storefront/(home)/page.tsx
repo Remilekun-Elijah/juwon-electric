@@ -5,12 +5,12 @@ import Section from "@/components/storefront/Section";
 import { availablePackages, lowestPrice } from "@/components/storefront/catalog/packageMeta";
 import OrganizationJsonLd from "@/components/storefront/content/OrganizationJsonLd";
 import PortfolioGrid, { featuredFirst } from "@/components/storefront/content/PortfolioGrid";
+import AboutUs from "@/components/storefront/home/AboutUs";
 import CareersTeaser from "@/components/storefront/home/CareersTeaser";
 import CategoryGrid from "@/components/storefront/home/CategoryGrid";
 import HomeHero from "@/components/storefront/home/HomeHero";
 import HomeProductCard from "@/components/storefront/home/HomeProductCard";
 import HowItWorks from "@/components/storefront/home/HowItWorks";
-import PackageFinder from "@/components/storefront/home/PackageFinder";
 import CalculatorTeaser from "@/components/storefront/landing/CalculatorTeaser";
 import ClientLogos from "@/components/storefront/landing/ClientLogos";
 import FaqPreview from "@/components/storefront/landing/FaqPreview";
@@ -58,7 +58,7 @@ const seeAll = (href: string, label: string) => (
 
 /**
  * Storefront home in the LANDING_V1 §7 order, with the shop sections restored after packages (products are sold online):
- * hero, stats, client logos, why choose us, solutions, packages, shop by category, popular products, calculator teaser,
+ * hero, stats, client logos, about us, why choose us, solutions, shop by category, popular products, calculator teaser,
  * case studies, reviews, how it works, financing, FAQ, careers teaser and the final call to action. Every section after
  * the hero hides itself when it has no data (the static "Why choose us" and "How it works" always show).
  */
@@ -105,22 +105,12 @@ export default async function HomePage() {
 
       <ClientLogos clients={clients} />
 
+      <AboutUs />
+
       <WhyChooseUs reasons={reasons} />
 
       <Industries />
 
-      {packages.length > 0 && (
-        <Section
-          id="packages"
-          tone="white"
-          eyebrow="Packages"
-          title="Find your package"
-          description="Complete systems with the inverter, batteries and installation included. Choose a category to see options from entry level to premium."
-          actions={seeAll(storeRoutes.packages, "All packages")}
-        >
-          <PackageFinder packages={packages} />
-        </Section>
-      )}
 
       {productsEnabled && topCategories.length > 0 && (
         <Section

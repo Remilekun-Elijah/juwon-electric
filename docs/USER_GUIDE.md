@@ -1023,13 +1023,13 @@ The team page was built with **12 sample team members**: made-up names with draw
 2. Moving a sample member or switching them off doesn't remove the Sample badge. Only changing their details and saving does.
 3. Check `/team` on your phone: no card should show a "Sample" label, and no photo should be a drawing.
 
-**What you'll see on the website:** the **Our Team** page with figures counting up (team members, teams, and engineers and installers), a section for each group with photo cards, and a "Want to join us?" band linking to open roles. On a computer, pointing at a card or tabbing to it zooms the photo and shows the bio and LinkedIn link over it; on a phone, the bio and link show under the role. **Team** is in the top menu, and **Our Team** is in the footer.
+**What you'll see on the website:** the **Our Team** page with our values and an engineer's photo at the top, then **Meet the Heads of Departments**, **Meet the Engineers** and **Meet the Support Teams**, and a **Work With Us** button linking to open roles. Each person's photo, name, role, bio and LinkedIn link show on their card. Where someone appears depends on their **Group** (see story 11.14). **Team** is in the top menu, and **Our Team** is in the footer.
 
 **Tips and common mistakes**
 
 - Type each group name the same way every time ("Operations", not "operations"), or you'll get two groups.
 - Only use a person's photo, bio and LinkedIn link with their agreement.
-- The "engineers and installers" figure counts members of groups whose name contains "Engineer" or "Install". Name your engineering group accordingly.
+- A group with the word "Head", "Heads", "Leadership", "Management", "Director" or "Executive" in its name shows under **Meet the Heads of Departments**; one with "Engineer" or "Install" under **Meet the Engineers**; every other group under **Meet the Support Teams**. Name your groups accordingly.
 - The team page tells search engines about real team members only. Sample members are never included.
 
 ---
@@ -1118,7 +1118,7 @@ The **Order received** page shows your order summary and these steps:
 
 *As a job seeker, I want to see open roles and apply so that I can work with Juwon Electric.*
 
-1. Select **Careers** in the footer, or in the menu on a phone (you can also select **See open roles** on the home page or the team page). Filter by department or employment type.
+1. Select **Careers** in the footer, or in the menu on a phone (you can also select **See open roles** on the home page or **Work With Us** on the team page). Filter by department or employment type.
 2. Open a vacancy to read the description, responsibilities and requirements.
 3. Select **Apply by email**. Your email app opens with the subject "Application: <job title>". Attach your CV and send.
 
@@ -1223,12 +1223,10 @@ At the bottom right of most pages you may see one button. On a phone it is a rou
 *As a customer, I want to see the people behind Juwon Electric so that I know who I'm dealing with.*
 
 1. Select **Our Team** in the top menu or the footer.
-2. The **Our Team** page shows how many team members, teams, and engineers and installers there are. The figures count up when the page opens.
-3. People are grouped under headings, for example "Leadership" or "Engineering & installations". Each card shows a photo (or initials), name and role.
-4. To read more about someone:
-   - On a computer, point at their card, or tab to it with the keyboard. The photo zooms a little and their bio and a **LinkedIn** link (when they have one) appear over it.
-   - On a phone or tablet, the bio and **LinkedIn** link show under their role.
-5. Interested in working with us? Select **See open roles** in the "Want to join us?" band at the bottom.
+2. The page opens with what our team stands for and a photo of one of our engineers, then **Meet the Heads of Departments**: each card shows a photo (or initials), their role, name, their bio in full and a **LinkedIn** link when they have one.
+3. **Meet the Engineers** shows our field and technical engineers, and **Meet the Support Teams** shows every other team (for example Customer Service, Administration, Finance & Accounts) in panels side by side. A panel's one-line description is fixed wording chosen from the team's name; tell us if you want it changed.
+4. Every person's bio and **LinkedIn** link (when set in the admin) show under their name. Which section someone appears in depends on their **Group** in the admin (see the change log for 2026-10-12).
+5. Interested in working with us? Select **Work With Us** at the bottom.
 
 ---
 
@@ -1267,8 +1265,8 @@ When staff change something in the admin console (a price, a product, a package,
 | **No Save button in Settings** | The save bar only appears after you change something. If fields are greyed out, your role can only view Settings. | Change a field to see **Save changes**. For view-only accounts, ask a Super admin or Admin to make the change. |
 | **A home page section is missing** (stats, client logos, case studies, reviews, FAQ) | Each section hides itself when it has nothing to show: no active items, no stats, or no portfolio item with a **Summary**. | Add the content, check **Show on the website** is on, and reload the website. |
 | **Hero photos aren't changing** (home page) | The slideshow is paused: someone selected the pause button, or the mouse is resting over the photo area, or keyboard focus is inside it. Or the device is set to reduce motion, which turns off automatic changes. | Select the **play** button next to the bars, or move the mouse away. With reduce motion on, this is expected: select a bar to see each photo. |
-| **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're under the right heading. |
-| **Numbers show 0 briefly** (home page stats, team page) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings → Website → Homepage & contact** (home stats) or the team list (team page figures are counted from it). |
+| **Team member not showing** (team page) | Their **Show on the website** switch is off (hidden), they were deleted, or the page hasn't refreshed yet. | In **Website** → **Team**, edit them, switch **Show on the website** on and save, then reload `/team`. Check the **Group** is spelled as intended, so they're in the right section (story 11.14). |
+| **Numbers show 0 briefly** (home page stats) | The figures count up from 0 to the real value when they come into view. This is an animation, not missing data. | Wait a second. If a figure stays wrong, check it in **Settings → Website → Homepage & contact**. |
 | **Image won't upload** | The file isn't a supported picture, the connection dropped, or uploads are unavailable for a while ("Image uploads are unavailable right now. Please use an image link or try again later."). | Read the message under the field and follow [Adding images](#adding-images). Check your connection and try again. If uploads are unavailable, select **Use an image link instead**, or try again later. |
 | **Image looks blurry** (website) | The original picture was small or low quality. Large photos are shrunk to a sensible size, but small ones can't be made sharper. | Upload a larger, sharper original with **Replace**. Use the photo straight from the camera, not a screenshot or a copy from a chat. |
 | **Wrong file type** ("That file isn’t an image. Choose a JPEG, PNG or WebP image." or "Upload a JPEG, PNG or WebP image.") | Only JPEG, PNG and WebP pictures can be uploaded. SVG drawings, PDFs and documents can't. | Save or export the picture as JPEG or PNG and upload that, or ask whoever sent it for a PNG or JPEG. You can also use an image link. |
@@ -1287,6 +1285,11 @@ This guide is a living document. **Update it in the same change as every feature
 - Add a dated entry to the change log below, and update the matching section of `PRODUCT_REQUIREMENTS.md`.
 
 ### Change log
+
+**2026-10-12 (team page, about us, bigger logo)**
+- Customer: the **Our Team** page has a new look: our values and an engineer's photo at the top, then heads of departments, engineers, the support teams side by side, and a **Work With Us** button at the bottom. People are placed by their **Group**: a group with the word "Head", "Heads", "Leadership", "Management", "Director" or "Executive" in its name shows under heads of departments, and one with "Engineer" or "Install" under engineers. Bios and LinkedIn links now show under each person instead of on hover, and the count-up figures at the top are gone.
+- Customer: the home page has a new **About us** section and no longer shows **Find your package**. Packages are still in the top menu. The About us section has the heading **Reliable Power, Engineered for Your Peace of Mind.**, a short company description, two photos, three short points and two buttons: **Meet our team** and **Talk to an engineer**, which opens Contact us.
+- Customer: the logo is bigger in the header and footer.
 
 **2026-09-23 (package page order on phones)**
 - Customer: on a phone, a package page now shows **What it powers** first, then **What's included**, then the price and **Add to cart**, then delivery and installation. On a computer the price stays in the right-hand column as before.
